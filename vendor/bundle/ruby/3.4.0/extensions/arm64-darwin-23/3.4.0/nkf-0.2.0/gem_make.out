@@ -1,0 +1,18 @@
+current directory: /Users/mandip/Desktop/Work/exchangapay/vendor/bundle/ruby/3.4.0/gems/nkf-0.2.0/ext/nkf
+/Users/mandip/.rbenv/versions/3.4.2/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/mandip/Desktop/Work/exchangapay/vendor/bundle/ruby/3.4.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250909-61164-ceunzc sitelibdir\=./.gem.20250909-61164-ceunzc clean
+
+current directory: /Users/mandip/Desktop/Work/exchangapay/vendor/bundle/ruby/3.4.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250909-61164-ceunzc sitelibdir\=./.gem.20250909-61164-ceunzc
+compiling nkf.c
+linking shared-object nkf.bundle
+
+current directory: /Users/mandip/Desktop/Work/exchangapay/vendor/bundle/ruby/3.4.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250909-61164-ceunzc sitelibdir\=./.gem.20250909-61164-ceunzc install
+/opt/homebrew/bin/ginstall -c -m 0755 nkf.bundle ./.gem.20250909-61164-ceunzc
+
+current directory: /Users/mandip/Desktop/Work/exchangapay/vendor/bundle/ruby/3.4.0/gems/nkf-0.2.0/ext/nkf
+make DESTDIR\= sitearchdir\=./.gem.20250909-61164-ceunzc sitelibdir\=./.gem.20250909-61164-ceunzc clean
