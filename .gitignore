@@ -193,6 +193,10 @@ ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 ios/Podfile.lock
 
+# iOS build generated files
+ios/build/generated/
+ios/*/PrivacyInfo.xcprivacy
+
 # Ruby/CocoaPods
 vendor/
 gems/
