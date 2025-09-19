@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1043952397065",
+    "project_id": "exchangapay-64e93",
+    "storage_bucket": "exchangapay-64e93.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043952397065:android:914ebd75cb57e92bd081d8",
+        "android_client_info": {
+          "package_name": "com.exchanga"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlJx3JRxmJXGurXddd3EjyQGXnknwIx0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043952397065:android:2c97c4bd6c7b70add081d8",
+        "android_client_info": {
+          "package_name": "com.exchangapay.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlJx3JRxmJXGurXddd3EjyQGXnknwIx0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
