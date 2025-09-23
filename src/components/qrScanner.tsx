@@ -11,13 +11,21 @@ import {
 import IonIcon from "react-native-vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
 import QRCodeScanner from "react-native-qrcode-scanner";
-// import { RNCamera } from "react-native-camera";
+import { RNCamera } from "react-native-camera";
 import { request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import { commonStyles } from "./CommonStyles";
 import ParagraphComponent from "./Paragraph/Paragraph";
 import { NEW_COLOR } from "../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
-const QRCodeScannerComp: React.FC = ({ onCaptureCode, onClose }) => {
+interface QRCodeScannerProps {
+  onCaptureCode: (data: string) => void;
+  onClose: () => void;
+}
+
+const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
+  onCaptureCode,
+  onClose,
+}) => {
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<
@@ -48,7 +56,6 @@ const QRCodeScannerComp: React.FC = ({ onCaptureCode, onClose }) => {
     checkPermission();
   }, []);
 
-
   const requestCameraPermission = useCallback(async () => {
     // const permission = await Camera.requestCameraPermission();
     // if (permission === "denied") await Linking.openSettings();
@@ -63,12 +70,22 @@ const QRCodeScannerComp: React.FC = ({ onCaptureCode, onClose }) => {
           onCaptureCode(e.data);
           onClose();
         }}
-        // flashMode={
-        //   torch
-        //     ? RNCamera.Constants.FlashMode.torch
-        //     : RNCamera.Constants.FlashMode.off
-        // }
-        topContent={<ParagraphComponent text={"Scan address"} style={[commonStyles.fs16, commonStyles.fw700, commonStyles.textBlack, commonStyles.flex1,]} />}
+        flashMode={
+          torch
+            ? RNCamera.Constants.FlashMode.torch
+            : RNCamera.Constants.FlashMode.off
+        }
+        topContent={
+          <ParagraphComponent
+            text={"Scan address"}
+            style={[
+              commonStyles.fs16,
+              commonStyles.fw700,
+              commonStyles.textBlack,
+              commonStyles.flex1,
+            ]}
+          />
+        }
         bottomContent={
           <TouchableOpacity
             style={styles.buttonTouchable}
@@ -115,11 +132,7 @@ const QRCodeScannerComp: React.FC = ({ onCaptureCode, onClose }) => {
           }
         }}
       >
-        <AntDesign
-          name="arrowleft"
-          size={22}
-          color={NEW_COLOR.TEXT_BLACK}
-        />
+        <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} />
       </TouchableOpacity>
     </View>
   );
@@ -130,7 +143,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: NEW_COLOR.SCREENBG_WHITE,
     ...StyleSheet.absoluteFillObject,
-    paddingTop: 30
+    paddingTop: 30,
   },
   button: {
     marginBottom: 10,

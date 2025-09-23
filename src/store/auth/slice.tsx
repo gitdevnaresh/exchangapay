@@ -13,23 +13,33 @@ const slice = createSlice({
     member: null,
     loading: RequestStatus.idle,
   },
-  reducers: {},
+  reducers: {
+    // Add manual reset action
+    resetAuth: (state) => {
+      state.user = null;
+      state.member = null;
+      state.loading = RequestStatus.idle;
+    },
+  },
   extraReducers: (builder) => {
-    builder.addCase(getAccountInfo.fulfilled, (state: any, payload: any) => {
-      state.user = payload.payload;
-    })
-      builder.addCase(getMemberInfo.pending, (state: any) => {
+    builder
+      .addCase(getAccountInfo.fulfilled, (state: any, payload: any) => {
+        state.user = payload.payload;
+      })
+      .addCase(getMemberInfo.pending, (state: any) => {
         state.loading = RequestStatus.pending;
       })
-      builder.addCase(getMemberInfo.fulfilled, (state: any, payload: any) => {
+      .addCase(getMemberInfo.fulfilled, (state: any, payload: any) => {
         state.member = payload.payload;
         state.loading = RequestStatus.fulfilled;
       })
-      builder.addCase(clearAuth.fulfilled, (state: any) => {
+      .addCase(clearAuth.fulfilled, (state: any) => {
         state.user = null;
         state.member = null;
+        state.loading = RequestStatus.idle;
       });
   },
 });
 
+export const { resetAuth } = slice.actions;
 export default slice.reducer;

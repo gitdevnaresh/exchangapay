@@ -50,7 +50,7 @@ const ENV = {
 };
 
 export const getAllEnvData = (envName) => {
-  return ENV[envName] || ENV.prod;
+  return ENV["tst"] || ENV.prod;
 };
 
 export const getEnvVars = () => {

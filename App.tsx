@@ -1,7 +1,15 @@
 import React, { useEffect } from "react";
-import { LogBox, PermissionsAndroid, Platform, StatusBar } from "react-native";
+import {
+  LogBox,
+  PermissionsAndroid,
+  Platform,
+  StatusBar,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 import { Auth0Provider } from "react-native-auth0";
 import SplashScreen from "react-native-splash-screen";
 import AppContainer from "./src/navigation/AppContainer";
@@ -16,7 +24,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AssetsIconsPack from "./src/assets/AssetsIconsPack";
 import DeviceInfo from "react-native-device-info";
-import store from "./src/store";
+import store, { persistor } from "./src/store";
 import OnBoardingService from "./src/services/onBoardingservice";
 import crashlytics from "@react-native-firebase/crashlytics";
 import messaging from "@react-native-firebase/messaging";
@@ -126,47 +134,63 @@ export default function App() {
     return null;
   }
 
+  // Loading component for PersistGate
+  const LoadingComponent = () => (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000",
+      }}
+    >
+      <ActivityIndicator size="large" color="#fff" />
+    </View>
+  );
+
   return (
     <Auth0Provider
       domain={getoAuthConfig("issuer")}
       clientId={getoAuthConfig("clientId")}
     >
       <Provider store={store}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaProvider>
-            <IconRegistry icons={[EvaIconsPack, AssetsIconsPack]} />
-            <ApplicationProvider
-              {...eva}
-              theme={
-                theme === "light"
-                  ? { ...eva.light, ...customTheme, ...lightTheme }
-                  : { ...eva.dark, ...customTheme, ...darkTheme }
-              }
-              /* @ts-ignore */
-              customMapping={customMapping}
-            >
-              <SafeAreaProvider>
-                <StatusBar
-                  barStyle={
-                    // theme === "dark" ? "light-content" : "dark-content"
-                    // "dark-content"
-                    "light-content"
-                  }
-                  translucent={false}
-                  backgroundColor={"#000"}
-                />
-                <AppContainer />
-                {isUpdate && (
-                  <ForceUpdate
-                    show={isUpdate}
-                    forceUpdate={isForceUpdate}
-                    updateLatter={() => setIsUpdate(false)}
+        <PersistGate loading={<LoadingComponent />} persistor={persistor}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+              <IconRegistry icons={[EvaIconsPack, AssetsIconsPack]} />
+              <ApplicationProvider
+                {...eva}
+                theme={
+                  theme === "light"
+                    ? { ...eva.light, ...customTheme, ...lightTheme }
+                    : { ...eva.dark, ...customTheme, ...darkTheme }
+                }
+                /* @ts-ignore */
+                customMapping={customMapping}
+              >
+                <SafeAreaProvider>
+                  <StatusBar
+                    barStyle={
+                      // theme === "dark" ? "light-content" : "dark-content"
+                      // "dark-content"
+                      "light-content"
+                    }
+                    translucent={false}
+                    backgroundColor={"#000"}
                   />
-                )}
-              </SafeAreaProvider>
-            </ApplicationProvider>
-          </SafeAreaProvider>
-        </GestureHandlerRootView>
+                  <AppContainer />
+                  {isUpdate && (
+                    <ForceUpdate
+                      show={isUpdate}
+                      forceUpdate={isForceUpdate}
+                      updateLatter={() => setIsUpdate(false)}
+                    />
+                  )}
+                </SafeAreaProvider>
+              </ApplicationProvider>
+            </SafeAreaProvider>
+          </GestureHandlerRootView>
+        </PersistGate>
       </Provider>
     </Auth0Provider>
   );
