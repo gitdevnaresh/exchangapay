@@ -10,8 +10,11 @@ import {
 
 import IonIcon from "react-native-vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
-import QRCodeScanner from "react-native-qrcode-scanner";
-import { RNCamera } from "react-native-camera";
+import {
+  Camera,
+  useCameraDevices,
+  useCodeScanner,
+} from "react-native-vision-camera";
 import { request, PERMISSIONS, RESULTS } from "react-native-permissions";
 import { commonStyles } from "./CommonStyles";
 import ParagraphComponent from "./Paragraph/Paragraph";
@@ -32,12 +35,24 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
     boolean | null
   >(null);
   const isFocused = useIsFocused();
-  //   const isForeground = useIsForeground()
-  // const isActive = isFocused;
   const [torch, setTorch] = useState(false);
-  useEffect(() => {
-    requestCameraPermission();
-  }, []);
+
+  const devices = useCameraDevices();
+  const device = devices.find((d) => d.position === "back") || devices[0];
+
+  const codeScanner = useCodeScanner({
+    codeTypes: ["qr", "ean-13"],
+    onCodeScanned: (codes) => {
+      if (codes.length > 0) {
+        const code = codes[0];
+        if (code.value) {
+          onCaptureCode(code.value);
+          onClose();
+        }
+      }
+    },
+  });
+
   useEffect(() => {
     const checkPermission = async () => {
       if (Platform.OS === "android") {
@@ -56,74 +71,77 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
     checkPermission();
   }, []);
 
-  const requestCameraPermission = useCallback(async () => {
-    // const permission = await Camera.requestCameraPermission();
-    // if (permission === "denied") await Linking.openSettings();
-    // setHasCameraPermission(permission === "granted");
-  }, []);
+  if (!hasPermission) {
+    return (
+      <View style={styles.container}>
+        <ParagraphComponent
+          text={"Camera permission is required"}
+          style={[
+            commonStyles.fs16,
+            commonStyles.fw700,
+            commonStyles.textBlack,
+            commonStyles.flex1,
+          ]}
+        />
+      </View>
+    );
+  }
+
+  if (device == null) {
+    return (
+      <View style={styles.container}>
+        <ParagraphComponent
+          text={"No camera device found"}
+          style={[
+            commonStyles.fs16,
+            commonStyles.fw700,
+            commonStyles.textBlack,
+            commonStyles.flex1,
+          ]}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <QRCodeScanner
-        showMarker={true}
-        onRead={(e) => {
-          onCaptureCode(e.data);
-          onClose();
-        }}
-        flashMode={
-          torch
-            ? RNCamera.Constants.FlashMode.torch
-            : RNCamera.Constants.FlashMode.off
-        }
-        topContent={
-          <ParagraphComponent
-            text={"Scan address"}
-            style={[
-              commonStyles.fs16,
-              commonStyles.fw700,
-              commonStyles.textBlack,
-              commonStyles.flex1,
-            ]}
-          />
-        }
-        bottomContent={
-          <TouchableOpacity
-            style={styles.buttonTouchable}
-            onPress={() => {
-              setTorch(!torch);
-            }}
-          >
-            <IonIcon
-              name={torch ? "flash" : "flash-off"}
-              color={NEW_COLOR.TEXT_BLACK}
-              size={24}
-            />
-          </TouchableOpacity>
-        }
+      <Camera
+        style={StyleSheet.absoluteFill}
+        device={device}
+        isActive={isFocused}
+        codeScanner={codeScanner}
+        torch={torch ? "on" : "off"}
+        enableZoomGesture={false}
       />
-      {/* {device != null && (
-        <Camera
-          style={StyleSheet.absoluteFill}
-          device={device}
-          isActive={true}
-          codeScanner={codeScanner}
-          torch={torch ? "on" : "off"}
-          enableZoomGesture={false}
+
+      {/* Top content */}
+      <View style={styles.topContent}>
+        <ParagraphComponent
+          text={"Scan address"}
+          style={[
+            commonStyles.fs16,
+            commonStyles.fw700,
+            commonStyles.textBlack,
+            commonStyles.flex1,
+          ]}
         />
-      )} */}
+      </View>
+
+      {/* Flash toggle button */}
       <TouchableOpacity
+        style={styles.rightButtonRow}
         onPress={() => {
           setTorch(!torch);
         }}
       >
-        <View style={styles.rightButtonRow}>
-          <IonIcon
-            name={torch ? "flash" : "flash-off"}
-            color={NEW_COLOR.TEXT_BLACK}
-            size={24}
-          />
-        </View>
+        <IonIcon
+          name={torch ? "flash" : "flash-off"}
+          color={NEW_COLOR.TEXT_BLACK}
+          size={24}
+        />
       </TouchableOpacity>
+
+      {/* Back button */}
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => {
@@ -163,6 +181,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 10,
     top: 10,
+  },
+  topContent: {
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 1,
   },
   backButton: {
     position: "absolute",

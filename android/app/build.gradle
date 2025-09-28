@@ -77,18 +77,17 @@ def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
     ndkVersion rootProject.ext.ndkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk rootProject.ext.compileSdkVersion
+    buildToolsVersion "35.0.0"
+    compileSdk 35
 
     namespace "com.exchangapay.app"
     defaultConfig {
         applicationId "com.exchangapay.app"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
-               manifestPlaceholders = [auth0Domain: "exchangapay-tst.eu.auth0.com", auth0Scheme: "${applicationId}.auth0"]
-//  missingDimensionStrategy 'react-native-camera', 'general' 
+        manifestPlaceholders = [auth0Domain: "exchangapay-tst.eu.auth0.com", auth0Scheme: "${applicationId}.auth0"] 
     }
     signingConfigs {
         debug {

@@ -6,6 +6,7 @@ import {
   StatusBar,
   View,
   ActivityIndicator,
+  ErrorBoundary,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
@@ -34,7 +35,7 @@ import { getAllEnvData } from "./Environment";
 import { initializeCrashlytics } from "./src/utils/ApiService";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 
-LogBox.ignoreAllLogs(true);
+LogBox.ignoreAllLogs(false); // Enable logs for debugging
 
 console.log("App.tsx - Store imported:", typeof store);
 
@@ -51,11 +52,19 @@ export default function App() {
 
   useTokenRefresh();
   React.useEffect(() => {
-    crashlytics().log("App mounted.");
-    AsyncStorage.getItem("theme").then((value) => {
-      if (value === "light" || value === "dark") setTheme(value);
-    });
-    initializeCrashlytics();
+    try {
+      crashlytics().log("App mounted.");
+      AsyncStorage.getItem("theme")
+        .then((value) => {
+          if (value === "light" || value === "dark") setTheme(value);
+        })
+        .catch((error) => {
+          console.log("Error getting theme:", error);
+        });
+      initializeCrashlytics();
+    } catch (error) {
+      console.log("Error in app initialization:", error);
+    }
   }, []);
 
   useEffect(() => {
