@@ -184,7 +184,6 @@ const CardDetails = React.memo((props: any) => {
       }
       const response: any = await CardsModuleService.getcardPin(body);
       if (response.status === 200) {
-        console.log(response.data)
         setShowPinDetails(response?.data);
         setShowPin(true);
       }

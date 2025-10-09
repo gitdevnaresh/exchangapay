@@ -1,61 +1,32 @@
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Image,
-  ScrollView,
-  SafeAreaView,
-  BackHandler,
-  ActivityIndicator,
-  Modal,
-  Text,
-  Platform,
-  Alert,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View, Image, ScrollView, SafeAreaView, BackHandler, ActivityIndicator, Modal, Text, Platform, Alert } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { useIsFocused } from "@react-navigation/core";
-import { Container } from "../../components";
+import { Container } from '../../components';
 import { useSelector } from "react-redux";
 import { ms, s } from "../../constants/theme/scale";
-import {
-  NEW_COLOR,
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
-} from "../../constants/theme/variables";
+import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
-import Feather from "react-native-vector-icons/Feather";
+import Feather from 'react-native-vector-icons/Feather';
 import DefaultButton from "../../components/DefaultButton";
 import LabelComponent from "../../components/Paragraph/label";
 import { commonStyles } from "../../components/CommonStyles";
 import { Field, Formik } from "formik";
 import CustomPickerAcc from "../../components/CustomPicker";
-import InputDefault from "../../components/DefaultFiat";
+import InputDefault from '../../components/DefaultFiat';
 import { EditProfileSchema } from "./EditProfileInfoSchema";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import ProfileService from "../../services/profile";
 import DatePickers from "react-native-date-picker";
-import {
-  formatDate,
-  formatDateMonth,
-  formatDateTimeAPI,
-  isErrorDispaly,
-  trimValues,
-} from "../../utils/helpers";
+import { formatDate, formatDateMonth, formatDateTimeAPI, isErrorDispaly, trimValues } from "../../utils/helpers";
 import Loadding from "../../components/skeleton";
 import ErrorComponent from "../../components/Error";
 import { personalInfoLoader } from "./skeleton_views";
-import SignatureCanvas from "react-native-signature-canvas";
+import SignatureCapture from 'react-native-signature-capture';
 import RadioButton from "../../components/Button/RadioButton";
 import { PERMISSIONS, request, RESULTS } from "react-native-permissions";
-import {
-  FIELD_CONSTANTS,
-  FORMIK_CONSTANTS,
-  PLACEHOLDER_CONSTANTS,
-  PROFILE_CONSTANTS,
-  UserDetails,
-} from "./constants";
+import { FIELD_CONSTANTS, FORMIK_CONSTANTS, PLACEHOLDER_CONSTANTS, PROFILE_CONSTANTS, UserDetails } from "./constants";
 import OverlayPopup from "../cards/SelectPopup";
 import { CREATE_KYC_ADDRESS_CONST } from "../cards/constant";
 import moment from "moment";
@@ -71,14 +42,14 @@ const EditProfile = (props: any) => {
   const [passortImage, setPassortImage] = useState<any>(null);
   const [signImage, setSignImage] = useState<any>(null);
   const [editDataLoading, setEditDataLoading] = useState<boolean>(false);
-  const [errormsg, setErrormsg] = useState<string>("");
+  const [errormsg, setErrormsg] = useState<string>('');
   const [btnLoading, setBtnLoading] = useState(false);
   const [countryLookUp, setCountryLookUp] = useState<any>([]);
   const [genderLookUp, setGenderLookUp] = useState<any>([]);
   const [idTypesLookUp, setIdTypesLookUp] = useState<any>([]);
-  const [frontIdPhoto, setFrontIdPhoto] = useState<string>("");
-  const [singaturePhoto, setSingaturePhoto] = useState<string>("");
-  const [handHoldingPhoto, setHandHoldingPhoto] = useState<string>("");
+  const [frontIdPhoto, setFrontIdPhoto] = useState<string>('');
+  const [singaturePhoto, setSingaturePhoto] = useState<string>('');
+  const [handHoldingPhoto, setHandHoldingPhoto] = useState<string>('');
   const [uploading, setUploading] = useState<boolean>(false);
   const [idPhotoLoading, setIdPhotoLoading] = useState<boolean>(false);
   const [signPhotoLoading, setSignPhotoLoading] = useState<boolean>(false);
@@ -95,7 +66,7 @@ const EditProfile = (props: any) => {
   const [selfie, setSelfie] = useState<any>("");
   const [isSelfieLoading, setIsSelfieLoading] = useState<boolean>(false);
   const [backPhoto, setBackPhoto] = useState<any>("");
-  const [isBackLoading, setBackLoading] = useState<boolean>(false);
+  const [isBackLoading, setBackLoading] = useState<boolean>(false)
   const [selfieError, setSelfieError] = useState<any>("");
   const [backImagError, setBackImageError] = useState<any>("");
   const [signModelVisible, setSignModelVisible] = useState<boolean>(false);
@@ -111,11 +82,12 @@ const EditProfile = (props: any) => {
     documentNumber: "",
     expireyDate: expirydate,
     firstName: "",
-    emergencyContactName: "",
+    emergencyContactName: ""
   });
   useEffect(() => {
     fetchProfileEditView();
     fetchLookUps();
+
   }, []);
   const isFocused = useIsFocused();
   useEffect(() => {
@@ -126,37 +98,42 @@ const EditProfile = (props: any) => {
       const response: any = await ProfileService.getprofileEditLookups();
       setCountryLookUp(response.data.Country);
       setGenderLookUp(response.data.Gender);
-      setIdTypesLookUp(response.data.IdTypes);
-      setErrormsg("");
+      setIdTypesLookUp(response.data.IdTypes)
+      setErrormsg('');
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(error));
     }
+
   };
 
   const handleSaveSignature = (event: any) => {
     const { pathName, encoded } = event;
     if (pathName || encoded) {
-      selectSignPhoto(event);
+      selectSignPhoto(event)
       togglePopup();
     }
   };
 
   const handleOpenSelfiePopup = () => {
-    setOpenSelfiePopup(!openSelfiePopup);
+    setOpenSelfiePopup(!openSelfiePopup)
   };
 
   const saveSign = () => {
     try {
       signatureRef?.current?.saveImage();
-    } catch (error) {}
+    } catch (error) {
+    }
   };
 
   const resetSign = () => {
     try {
       signatureRef?.current?.resetImage();
-    } catch (error) {}
+    } catch (error) {
+    }
   };
+
+
 
   const togglePopup = () => {
     setPopupVisible(!popupVisible);
@@ -166,19 +143,15 @@ const EditProfile = (props: any) => {
   const fetchProfileEditView = async () => {
     try {
       setEditDataLoading(true);
-      const response: any = await ProfileService.getProfileEditView(
-        userInfo.id
-      );
-      if (response?.ok) {
+      const response: any = await ProfileService.getProfileEditView(userInfo.id);
+      if(response?.ok){
         const apiDate = response.data?.dob ? new Date(response.data.dob) : null;
-        const apiExpireyDate = response.data?.expirationDate
-          ? new Date(response.data?.expirationDate)
-          : null;
+        const apiExpireyDate = response.data?.expirationDate ? new Date(response.data?.expirationDate) : null
         setFrontIdPhoto(response?.data?.frontIdPhoto);
         setHandHoldingPhoto(response?.data?.handHoldingPhoto);
         setSingaturePhoto(response.data?.singaturePhoto);
         setSelfie(response?.data?.profileImage);
-        setBackPhoto(response?.data?.backDocImage);
+        setBackPhoto(response?.data?.backDocImage)
         setExpirydate(apiExpireyDate);
         const intialValue = {
           realfirstName: response?.data?.firstName,
@@ -191,17 +164,19 @@ const EditProfile = (props: any) => {
           emergencyContactName: response?.data?.emergencyContactName,
           expireyDate: response?.data?.expirationDate,
           firstName: response?.data?.fullName,
-        };
+  
+        }
         setDate(apiDate);
         setInitValues(intialValue);
-        setErrormsg("");
+        setErrormsg('');
         setEditDataLoading(false);
         ref?.current?.scrollTo({ y: 0, animated: true });
-      } else {
+      }else{
         setErrormsg(isErrorDispaly(response));
         setEditDataLoading(false);
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollTo({ y: 0, animated: true }); 
       }
+     
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(error));
@@ -216,70 +191,70 @@ const EditProfile = (props: any) => {
     if (!idPhoto && !handHoldingPhoto) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setSelectIdPhoto(PROFILE_CONSTANTS.IS_REQUIRED);
+
     }
     if (!signImage && !singaturePhoto) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setSignPhoto(PROFILE_CONSTANTS.IS_REQUIRED);
+
     }
     if (!backPhoto) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setBackImageError(PROFILE_CONSTANTS.IS_REQUIRED);
+
     }
     if (!selfie) {
+
       ref?.current?.scrollTo({ y: 0, animated: true });
       setSelfieError(PROFILE_CONSTANTS.IS_REQUIRED);
+
+
     }
-    if (
-      !selfie ||
-      (!signImage && !singaturePhoto) ||
-      (!idPhoto && !handHoldingPhoto) ||
-      !backPhoto ||
-      (!signImage && !singaturePhoto) ||
-      (!idPhoto && !handHoldingPhoto) ||
-      (!passortImage && !frontIdPhoto)
-    ) {
-      return;
+    if (!selfie || (!signImage && !singaturePhoto) || (!idPhoto && !handHoldingPhoto) || !backPhoto || (!signImage && !singaturePhoto) || (!idPhoto && !handHoldingPhoto) || (!passortImage && !frontIdPhoto)) {
+      return
     }
-    setBtnLoading(true);
-    const trimedValues = trimValues(values);
+    setBtnLoading(true)
+    const trimedValues=trimValues(values)
     let Obj: UserDetails = {
-      firstName: trimedValues.realfirstName,
-      lastName: trimedValues.reallastName,
-      gender: trimedValues.gender,
-      dob: formatDateTimeAPI(date),
-      idIssuranceCountry: trimedValues.idIssuranceCountry,
-      documentType: trimedValues.documentType,
-      documentNumber: trimedValues.documentNumber,
-      frontIdPhoto: passortImage || frontIdPhoto,
-      handHoldingIdPhoto: idPhoto || handHoldingPhoto,
-      singaturePhoto: signImage || singaturePhoto,
-      emergencyContactName: trimedValues.emergencyContactName,
-      expirationDate: formatDateTimeAPI(expirydate),
-      profileImage: selfie,
-      backDocImage: backPhoto,
+      "firstName": trimedValues.realfirstName,
+      "lastName": trimedValues.reallastName,
+      "gender": trimedValues.gender,
+      "dob": formatDateTimeAPI(date),
+      "idIssuranceCountry": trimedValues.idIssuranceCountry,
+      "documentType": trimedValues.documentType,
+      "documentNumber": trimedValues.documentNumber,
+      "frontIdPhoto": passortImage || frontIdPhoto,
+      "handHoldingIdPhoto": idPhoto || handHoldingPhoto,
+      "singaturePhoto": signImage || singaturePhoto,
+      "emergencyContactName": trimedValues.emergencyContactName,
+      "expirationDate": formatDateTimeAPI(expirydate),
+      "profileImage": selfie,
+      "backDocImage": backPhoto,
     };
 
     try {
-      const res: any = await ProfileService?.updateProfile(userInfo.id, Obj);
+      const res: any = await ProfileService?.updateProfile(userInfo.id, Obj)
       if (res.status === 200) {
         props?.navigation?.goBack();
-        setBtnLoading(false);
-        setErrormsg("");
+        setBtnLoading(false)
+        setErrormsg('');
       } else {
         setErrormsg(isErrorDispaly(res));
         ref?.current?.scrollTo({ y: 0, animated: true });
-        setBtnLoading(false);
+        setBtnLoading(false)
       }
-      setPassportImg("");
-      setSelectIdPhoto("");
-      setSignPhoto("");
-    } catch (error) {
+      setPassportImg('');
+      setSelectIdPhoto('');
+      setSignPhoto('');
+
+    }
+    catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(error));
-      setBtnLoading(false);
+      setBtnLoading(false)
     }
   };
-  const acceptedExtensions = [".jpg", ".jpeg", ".png"];
+  const acceptedExtensions = ['.jpg', '.jpeg', '.png'];
   const verifyFileTypes = (fileList) => {
     const fileName = fileList;
     if (!hasAcceptedExtension(fileName)) {
@@ -289,17 +264,13 @@ const EditProfile = (props: any) => {
     return true;
   };
   const hasAcceptedExtension = (fileName: string) => {
-    const extension = fileName
-      .substring(fileName.lastIndexOf("."))
-      .toLowerCase();
+    const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
     return acceptedExtensions.includes(extension);
   };
   const selectPassortImage = async () => {
-    setPassportImg("");
+    setPassportImg("")
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -313,17 +284,15 @@ const EditProfile = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setPassortImage(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setPassortImage((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setErrormsg("");
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
           }
         } else {
+
           if (!isValid) {
             setErrormsg(PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT);
             ref?.current?.scrollTo({ y: 0, animated: true });
@@ -336,18 +305,17 @@ const EditProfile = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(err));
-    } finally {
-      setUploading(false);
     }
+    finally {
+      setUploading(false);
+    };
   };
 
   const handleSelectSignPhoto = async () => {
     setPassportImg("");
     setSignModelVisible(false);
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -360,17 +328,15 @@ const EditProfile = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setSignImage(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setSignImage((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setErrormsg("");
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
           }
         } else {
+
           if (!isValid) {
             setErrormsg(PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT);
             ref?.current?.scrollTo({ y: 0, animated: true });
@@ -383,10 +349,15 @@ const EditProfile = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(err));
-    } finally {
-      setUploading(false);
     }
+    finally {
+      setUploading(false);
+
+    };
+
   };
+
+
 
   const verifyFileSize = (fileSize: any) => {
     const maxSizeInBytes = 20 * 1024 * 1024;
@@ -394,15 +365,13 @@ const EditProfile = (props: any) => {
   };
   const selectsetIdPhoto = async () => {
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValidType = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
         if (isValidType && isValidSize) {
           setIdPhotoLoading(true);
-          setSelectIdPhoto("");
+          setSelectIdPhoto("")
           let formData = new FormData();
           formData.append(PROFILE_CONSTANTS.DOCUMENT, {
             uri: result.assets[0].uri,
@@ -411,13 +380,10 @@ const EditProfile = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setIdPhoto(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setIdPhoto((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setErrormsg("");
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
           }
@@ -436,32 +402,36 @@ const EditProfile = (props: any) => {
       setErrormsg(isErrorDispaly(err));
     } finally {
       setIdPhotoLoading(false);
-    }
+    };
   };
+
 
   const selectSignPhoto = async (event: any) => {
     try {
+
       setSignPhotoLoading(true);
 
       let Obj = {
-        imageBytes: event.encoded,
-      };
+        "imageBytes": event.encoded
+      }
       const uploadRes = await ProfileService.uploadSingnitureFile(Obj);
       if (uploadRes.status === 200) {
-        setSignImage(
-          uploadRes?.data && uploadRes.data?.length > 0 ? uploadRes.data[0] : ""
-        );
+        setSignImage((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
         setErrormsg("");
-      } else {
+      }
+      else {
         ref?.current?.scrollTo({ y: 0, animated: true });
         setErrormsg(isErrorDispaly(uploadRes));
       }
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(err));
-    } finally {
-      setSignPhotoLoading(false);
     }
+    finally {
+      setSignPhotoLoading(false);
+
+    };
+
   };
 
   useEffect(() => {
@@ -483,8 +453,8 @@ const EditProfile = (props: any) => {
     if (props?.route?.params?.cardId) {
       props.navigation.push(PROFILE_CONSTANTS.APPLY_EXCHANGE_CARD, {
         cardId: props?.route?.params?.cardId,
-        logo: props?.route?.params?.logo,
-      });
+        logo: props?.route?.params?.logo
+      })
     } else {
       props.navigation.goBack();
     }
@@ -493,11 +463,13 @@ const EditProfile = (props: any) => {
   const validateAge = (value: any) => {
     if (!value) {
       return false;
+
     } else {
       const today = moment();
       const birthDate = moment(value);
-      return today.diff(birthDate, "years") >= 18;
+      return today.diff(birthDate, 'years') >= 18;
     }
+
   };
 
   const validate = async (values: any) => {
@@ -517,16 +489,14 @@ const EditProfile = (props: any) => {
       if (!idPhoto && !handHoldingPhoto) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.handHoldingPhoto = PROFILE_CONSTANTS.IS_REQUIRED;
-      }
-      if (!backPhoto) {
+      } if (!backPhoto) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.backPhoto = PROFILE_CONSTANTS.IS_REQUIRED;
       }
       if (!signImage && !singaturePhoto) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.singaturePhoto = PROFILE_CONSTANTS.IS_REQUIRED;
-      }
-      if (!selfie) {
+      } if (!selfie) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.selfie = PROFILE_CONSTANTS.IS_REQUIRED;
       }
@@ -549,28 +519,25 @@ const EditProfile = (props: any) => {
       if (!values.reallastName) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.reallastName = PROFILE_CONSTANTS.IS_REQUIRED;
-      }
-      if (!date) {
+      } if (!date) {
         ref?.current?.scrollTo({ y: 0, animated: true });
         errors.dateOfBirth = PROFILE_CONSTANTS.IS_REQUIRED;
       }
-      if (date !== null && validateAge(date) === false) {
+      if ((date !== null) && (validateAge(date) === false)) {
         ref?.current?.scrollTo({ y: 0, animated: true });
-        errors.dateOfBirth = "You must be at least 18 years old";
-      }
-      if (!expirydate) {
+        errors.dateOfBirth = 'You must be at least 18 years old';
+      } if (!expirydate) {
         errors.expireyDate = PROFILE_CONSTANTS.IS_REQUIRED;
         ref?.current?.scrollTo({ y: 0, animated: true });
       }
       if (values?.expireyDate < values?.dateOfBirth) {
-        errors.expireyDate =
-          CREATE_KYC_ADDRESS_CONST.EXPIRY_DATE_VALIDATION_VALIDATION;
+        errors.expireyDate = CREATE_KYC_ADDRESS_CONST.EXPIRY_DATE_VALIDATION_VALIDATION;
         ref?.current?.scrollTo({ y: 0, animated: true });
         return;
-      }
-      setPassportImg(errors.frontIdPhoto || "");
-      setSelectIdPhoto(errors.handHoldingPhoto || "");
-      setSignPhoto(errors.singaturePhoto || "");
+      };
+      setPassportImg(errors.frontIdPhoto || '');
+      setSelectIdPhoto(errors.handHoldingPhoto || '');
+      setSignPhoto(errors.singaturePhoto || '');
       setSelfieError(errors.selfie);
       setBackImageError(errors.backPhoto);
       return errors;
@@ -578,12 +545,13 @@ const EditProfile = (props: any) => {
   };
 
   const handleExpiryDateModel = () => {
-    setExpiryDatePicker(!expiryDatePicker);
+    setExpiryDatePicker(!expiryDatePicker)
   };
 
   const handleDateOfBirthModel = () => {
-    setShowPicker(!showPicker);
+    setShowPicker(!showPicker)
   };
+
 
   const requestCameraPermission = async () => {
     try {
@@ -597,10 +565,7 @@ const EditProfile = (props: any) => {
       if (result === RESULTS.GRANTED) {
         return true;
       } else if (result === RESULTS.DENIED) {
-        Alert.alert(
-          PROFILE_CONSTANTS.PERMISSION,
-          PROFILE_CONSTANTS.CAMERA_ACCESS_IS_NEEDED_TO_TAKE_A_SELFIE
-        );
+        Alert.alert(PROFILE_CONSTANTS.PERMISSION, PROFILE_CONSTANTS.CAMERA_ACCESS_IS_NEEDED_TO_TAKE_A_SELFIE);
         return false;
       } else if (result === RESULTS.BLOCKED) {
         Alert.alert(
@@ -614,19 +579,17 @@ const EditProfile = (props: any) => {
     }
   };
 
+
   const selectSelfie = async () => {
     setSelfie("");
-    setOpenSelfiePopup(false);
+    setOpenSelfiePopup(false)
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
       return;
     }
     try {
-      const result = await launchCamera({
-        mediaType: "photo",
-        cameraType: "front",
-      });
-      setOpenSelfiePopup(false);
+      const result = await launchCamera({ mediaType: 'photo', cameraType: "front" });
+      setOpenSelfiePopup(false)
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -634,23 +597,19 @@ const EditProfile = (props: any) => {
           setIsSelfieLoading(true);
           setSelfieError("");
           let formData = new FormData();
-          formData.append("document", {
+          formData.append('document', {
             uri: result.assets[0].uri,
             type: result.assets[0].type,
             name: result.assets[0].fileName,
           });
           const uploadRes = await ProfileService.uploadFile(formData);
-          setOpenSelfiePopup(false);
+          setOpenSelfiePopup(false)
           if (uploadRes.status === 200) {
-            setSelfie(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setSelfie((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setErrormsg("");
           } else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setOpenSelfiePopup(false);
+            setOpenSelfiePopup(false)
             setErrormsg(isErrorDispaly(uploadRes));
           }
         } else {
@@ -674,15 +633,13 @@ const EditProfile = (props: any) => {
   const selectBackPhoto = async () => {
     setBackPhoto("");
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
         if (isValid && isValidSize) {
           setBackLoading(true);
-          setBackImageError("");
+          setBackImageError("")
           let formData = new FormData();
           formData.append(PROFILE_CONSTANTS.DOCUMENT, {
             uri: result.assets[0].uri,
@@ -691,17 +648,15 @@ const EditProfile = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setBackPhoto(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setBackPhoto((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setErrormsg("");
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
           }
         } else {
+
           if (!isValid) {
             setErrormsg(PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT);
             ref?.current?.scrollTo({ y: 0, animated: true });
@@ -714,25 +669,24 @@ const EditProfile = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(err));
-    } finally {
-      setBackLoading(false);
     }
+    finally {
+      setBackLoading(false);
+    };
   };
 
   const handleVisibleSignModel = () => {
-    setSignModelVisible(!signModelVisible);
+    setSignModelVisible(!signModelVisible)
   };
 
   const handleCloseSignModel = () => {
-    setSignModelVisible(false);
+    setSignModelVisible(false)
   };
 
   const selectFacePhoto = async () => {
-    setOpenSelfiePopup(false);
+    setOpenSelfiePopup(false)
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValidType = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -747,15 +701,12 @@ const EditProfile = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setSelfie(
-              uploadRes?.data && uploadRes.data?.length > 0
-                ? uploadRes.data[0]
-                : ""
-            );
+            setSelfie((uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "");
             setIsSelfieLoading(false);
-            setOpenSelfiePopup(false);
+            setOpenSelfiePopup(false)
             setSelfieError("");
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
           }
@@ -774,12 +725,14 @@ const EditProfile = (props: any) => {
       setErrormsg(isErrorDispaly(err));
     } finally {
       setIsSelfieLoading(false);
-      setOpenSelfiePopup(false);
-    }
+      setOpenSelfiePopup(false)
+    };
   };
   const handleCloseError = () => {
-    setErrormsg("");
+    setErrormsg("")
   };
+
+
 
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
@@ -824,20 +777,23 @@ const EditProfile = (props: any) => {
                       commonStyles.textBlack,
                       commonStyles.fw700,
                     ]}
-                    text={
-                      (props?.route?.params?.isQuickLink &&
-                        PROFILE_CONSTANTS?.ADD_KYC_INFORMATION) ||
-                      PROFILE_CONSTANTS?.EDIT_KYC_INFORMATION
-                    }
+                    text={props?.route?.params?.isQuickLink && PROFILE_CONSTANTS?.ADD_KYC_INFORMATION || PROFILE_CONSTANTS?.EDIT_KYC_INFORMATION}
                   />
                   <ParagraphComponent
                     text={PROFILE_CONSTANTS?.NOTE_PLEASE_WRITE_IN_ENGLISH}
-                    style={[commonStyles.fs10, styles.note, commonStyles.fw300]}
+                    style={[
+                      commonStyles.fs10,
+                      styles.note,
+                      commonStyles.fw300,
+                    ]}
                   />
                 </View>
               </View>
               {errormsg && (
-                <ErrorComponent message={errormsg} onClose={handleCloseError} />
+                <ErrorComponent
+                  message={errormsg}
+                  onClose={handleCloseError}
+                />
               )}
               <Formik
                 initialValues={initValues}
@@ -853,11 +809,11 @@ const EditProfile = (props: any) => {
                     handleSubmit,
                     errors,
                     handleBlur,
-                    values,
-                    setFieldValue,
+                    values, setFieldValue
                   } = formik;
                   return (
                     <>
+
                       <Field
                         touched={touched.realfirstName}
                         name={FORMIK_CONSTANTS.REAL_FIRST_NAME}
@@ -894,22 +850,14 @@ const EditProfile = (props: any) => {
                       />
 
                       <View style={[commonStyles.mb24]} />
-                      <LabelComponent
-                        text={FIELD_CONSTANTS.GENDER}
-                        Children={
-                          <LabelComponent
-                            text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
-                            style={commonStyles.textError}
-                          />
-                        }
-                        style={[commonStyles.mb10]}
-                      />
+                      <LabelComponent text={FIELD_CONSTANTS.GENDER} Children={<LabelComponent
+                        text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
+                        style={commonStyles.textError}
+                      />} style={[commonStyles.mb10]} />
                       <RadioButton
                         options={genderLookUp}
                         selectedOption={values.gender}
-                        onSelect={(val: any) =>
-                          setFieldValue(PLACEHOLDER_CONSTANTS.GENDER, val)
-                        }
+                        onSelect={(val: any) => setFieldValue(PLACEHOLDER_CONSTANTS.GENDER, val)}
                         nameField={FIELD_CONSTANTS?.NAME}
                         valueField={FIELD_CONSTANTS?.NAME}
                       />
@@ -927,35 +875,20 @@ const EditProfile = (props: any) => {
                       )}
                       <View style={[commonStyles.mb26]} />
 
-                      <LabelComponent
-                        text={FIELD_CONSTANTS?.DATE_OF_BIRTH}
-                        Children={
-                          <LabelComponent
-                            text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
-                            style={commonStyles.textError}
-                          />
-                        }
-                        style={[commonStyles.mb10]}
-                      />
+                      <LabelComponent text={FIELD_CONSTANTS?.DATE_OF_BIRTH} Children={<LabelComponent
+                        text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
+                        style={commonStyles.textError}
+                      />} style={[commonStyles.mb10]} />
                       <View
                         style={[
-                          styles.input,
-                          commonStyles.dflex,
-                          commonStyles.alignCenter,
-                          commonStyles.justifyContent,
+                          styles.input, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent
                         ]}
                       >
-                        {(date !== null && (
-                          <ParagraphComponent
-                            style={[commonStyles.fs14, commonStyles.textBlack]}
-                            text={formatDateMonth(date)}
-                          />
-                        )) || (
-                          <ParagraphComponent
-                            style={[commonStyles.fs14, commonStyles.textGrey]}
-                            text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                          />
-                        )}
+                        {date !== null && (
+                          <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack]} text={formatDateMonth(date)} />
+                        ) || (
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.textGrey]} text={PROFILE_CONSTANTS?.DD_MM_YYYY} />
+                          )}
                         {showPicker && (
                           <DatePickers
                             modal
@@ -963,8 +896,8 @@ const EditProfile = (props: any) => {
                             open={showPicker}
                             date={date || new Date()}
                             onConfirm={(date) => {
-                              setShowPicker(false);
-                              setDate(date);
+                              setShowPicker(false)
+                              setDate(date)
                             }}
                             onCancel={() => {
                               setShowPicker(false);
@@ -972,6 +905,7 @@ const EditProfile = (props: any) => {
                             theme={PROFILE_CONSTANTS?.DARK}
                             maximumDate={new Date()}
                           />
+
                         )}
                         <View>
                           <Feather
@@ -1034,6 +968,7 @@ const EditProfile = (props: any) => {
                         data={idTypesLookUp}
                         placeholder={PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE}
                         modalTitle={PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE}
+
                         placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
                         component={CustomPickerAcc}
                         Children={
@@ -1054,9 +989,7 @@ const EditProfile = (props: any) => {
                         customContainerStyle={{
                           height: 80,
                         }}
-                        placeholder={
-                          PLACEHOLDER_CONSTANTS.ENTER_DOCUMENT_NUMBER
-                        }
+                        placeholder={PLACEHOLDER_CONSTANTS.ENTER_DOCUMENT_NUMBER}
                         component={InputDefault}
                         innerRef={docno}
                         Children={
@@ -1068,35 +1001,18 @@ const EditProfile = (props: any) => {
                       />
                       <View style={[commonStyles.mb26]} />
 
-                      <LabelComponent
-                        text={FIELD_CONSTANTS.DOCUMNET_EXPIRY_DATE}
-                        Children={
-                          <LabelComponent
-                            text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                            style={commonStyles.textError}
-                          />
-                        }
-                        style={[commonStyles.mb10]}
-                      />
+                      <LabelComponent text={FIELD_CONSTANTS.DOCUMNET_EXPIRY_DATE} Children={<LabelComponent
+                        text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
+                        style={commonStyles.textError}
+                      />} style={[commonStyles.mb10]} />
                       <View
-                        style={[
-                          styles.input,
-                          commonStyles.dflex,
-                          commonStyles.alignCenter,
-                          commonStyles.justifyContent,
-                        ]}
+                        style={[styles.input, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent]}
                       >
-                        {(expirydate !== null && (
-                          <ParagraphComponent
-                            style={[commonStyles.fs14, commonStyles.textBlack]}
-                            text={formatDateMonth(expirydate)}
-                          />
-                        )) || (
-                          <ParagraphComponent
-                            style={[commonStyles.fs14, commonStyles.textGrey]}
-                            text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                          />
-                        )}
+                        {expirydate !== null && (
+                          <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack]} text={formatDateMonth(expirydate)} />
+                        ) || (
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.textGrey]} text={PROFILE_CONSTANTS?.DD_MM_YYYY} />
+                          )}
                         {expiryDatePicker && (
                           <DatePickers
                             modal
@@ -1104,14 +1020,16 @@ const EditProfile = (props: any) => {
                             open={expiryDatePicker}
                             date={expirydate || new Date()}
                             onConfirm={(date) => {
-                              setExpiryDatePicker(false);
-                              setExpirydate(date);
+                              setExpiryDatePicker(false)
+                              setExpirydate(date)
                             }}
                             onCancel={() => {
                               setExpiryDatePicker(false);
                             }}
                             theme={PROFILE_CONSTANTS.DARK}
+
                           />
+
                         )}
                         <View>
                           <Feather
@@ -1139,11 +1057,9 @@ const EditProfile = (props: any) => {
                         onPress={selectPassortImage}
                         activeOpacity={0.6}
                       >
-                        <View>
+                        <View >
                           <LabelComponent
-                            text={
-                              FIELD_CONSTANTS.UPLOAD_YOUR_FORNT_PHOTO_ID_20MB
-                            }
+                            text={FIELD_CONSTANTS.UPLOAD_YOUR_FORNT_PHOTO_ID_20MB}
                             Children={
                               <LabelComponent
                                 text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
@@ -1163,15 +1079,13 @@ const EditProfile = (props: any) => {
                                 commonStyles.textBlack,
                                 commonStyles.fw500,
                               ]}
-                              text={
-                                PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FRONT_PHOTO_ID
-                              }
+                              text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FRONT_PHOTO_ID}
                               numberOfLines={1}
                             />
+
+
                           </View>
-                          {passportImg && (
-                            <Text style={{ color: "red" }}>{passportImg}</Text>
-                          )}
+                          {passportImg && <Text style={{ color: 'red' }}>{passportImg}</Text>}
                         </View>
                       </TouchableOpacity>
                       <View style={[commonStyles.mb16]} />
@@ -1199,9 +1113,9 @@ const EditProfile = (props: any) => {
                           </View>
                         )}
                         {(passortImage || frontIdPhoto) && !uploading && (
-                          <View style={[styles.passport]}>
+                          <View style={[styles.passport,]}>
                             <Image
-                              style={{ borderRadius: 16, flex: 1 }}
+                              style={{ borderRadius: 16, flex: 1, }}
                               overlayColor="#fff"
                               resizeMode="contain"
                               source={{ uri: passortImage || frontIdPhoto }}
@@ -1209,17 +1123,10 @@ const EditProfile = (props: any) => {
                           </View>
                         )}
                         {!(passortImage || frontIdPhoto) && !uploading && (
-                          <View
-                            style={[
-                              styles.passport,
-                              { backgroundColor: "#F6FCFE" },
-                            ]}
-                          >
+
+                          <View style={[styles.passport, { backgroundColor: "#F6FCFE" }]}>
                             <Image
-                              style={[
-                                commonStyles.mxAuto,
-                                { borderRadius: 16, flex: 1 },
-                              ]}
+                              style={[commonStyles.mxAuto, { borderRadius: 16, flex: 1, }]}
                               overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
                               resizeMode="contain"
                               source={require("../../assets/images/cards/passport.png")}
@@ -1249,11 +1156,9 @@ const EditProfile = (props: any) => {
                                 commonStyles.fs12,
                                 commonStyles.textGrey,
                                 commonStyles.fw400,
-                                commonStyles.mb4,
+                                commonStyles.mb4
                               ]}
-                              text={
-                                PLACEHOLDER_CONSTANTS.PLEASE_UPLOAD_THE_A_PHOTO_OF_THE_INFORMATION_PAGE_ALONG_WITH_YOUR_PRIFILE_PICTURE
-                              }
+                              text={PLACEHOLDER_CONSTANTS.PLEASE_UPLOAD_THE_A_PHOTO_OF_THE_INFORMATION_PAGE_ALONG_WITH_YOUR_PRIFILE_PICTURE}
                             />
                             <ParagraphComponent
                               style={[
@@ -1261,20 +1166,21 @@ const EditProfile = (props: any) => {
                                 commonStyles.textGrey,
                                 commonStyles.fw400,
                               ]}
-                              text={
-                                PLACEHOLDER_CONSTANTS.ENSURE_THAT_THE_ID_FRAME_IS_FULLY_VISIBLE_THE_FRONT_IS_CLEAR_AND_THE_BRIGHTNESS_IS_UNIFORM
-                              }
+                              text={PLACEHOLDER_CONSTANTS.ENSURE_THAT_THE_ID_FRAME_IS_FULLY_VISIBLE_THE_FRONT_IS_CLEAR_AND_THE_BRIGHTNESS_IS_UNIFORM}
                             />
                           </View>
                         </View>
+
                       </View>
+
+
 
                       <View style={[commonStyles.mb26]} />
                       <TouchableOpacity
                         onPress={selectBackPhoto}
                         activeOpacity={0.6}
                       >
-                        <View>
+                        <View >
                           <LabelComponent
                             text={FIELD_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID}
                             Children={
@@ -1296,18 +1202,16 @@ const EditProfile = (props: any) => {
                                 commonStyles.textBlack,
                                 commonStyles.fw500,
                               ]}
-                              text={
-                                PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID
-                              }
+                              text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID}
                               numberOfLines={1}
                             />
+
+
                           </View>
                         </View>
                       </TouchableOpacity>
 
-                      {backImagError && (
-                        <Text style={{ color: "red" }}>{backImagError}</Text>
-                      )}
+                      {backImagError && <Text style={{ color: 'red' }}>{backImagError}</Text>}
                       <View style={[commonStyles.mb16]} />
                       <View
                         style={{
@@ -1332,9 +1236,9 @@ const EditProfile = (props: any) => {
                           </View>
                         )}
                         {backPhoto && !isBackLoading && (
-                          <View style={[styles.passport]}>
+                          <View style={[styles.passport,]}>
                             <Image
-                              style={{ borderRadius: 16, flex: 1 }}
+                              style={{ borderRadius: 16, flex: 1, }}
                               overlayColor="#fff"
                               resizeMode="contain"
                               source={{ uri: backPhoto }}
@@ -1342,17 +1246,10 @@ const EditProfile = (props: any) => {
                           </View>
                         )}
                         {!backPhoto && !isBackLoading && (
-                          <View
-                            style={[
-                              styles.passport,
-                              { backgroundColor: "#F6FCFE" },
-                            ]}
-                          >
+
+                          <View style={[styles.passport, { backgroundColor: "#F6FCFE" }]}>
                             <Image
-                              style={[
-                                commonStyles.mxAuto,
-                                { borderRadius: 16, flex: 1 },
-                              ]}
+                              style={[commonStyles.mxAuto, { borderRadius: 16, flex: 1, }]}
                               overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
                               resizeMode="contain"
                               source={require("../../assets/images/cards/passport.png")}
@@ -1368,9 +1265,7 @@ const EditProfile = (props: any) => {
                           activeOpacity={0.6}
                         >
                           <LabelComponent
-                            text={
-                              PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB
-                            }
+                            text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB}
                             Children={
                               <LabelComponent
                                 text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
@@ -1390,17 +1285,12 @@ const EditProfile = (props: any) => {
                                 commonStyles.textBlack,
                                 commonStyles.fw500,
                               ]}
-                              text={
-                                FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID
-                              }
+                              text={FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID}
                               numberOfLines={1}
                             />
+
                           </View>
-                          {selectIdPhoto && (
-                            <Text style={{ color: "red" }}>
-                              {selectIdPhoto}
-                            </Text>
-                          )}
+                          {selectIdPhoto && <Text style={{ color: 'red' }}>{selectIdPhoto}</Text>}
                         </TouchableOpacity>
                         <View style={[commonStyles.mb16]} />
                         <View
@@ -1419,35 +1309,30 @@ const EditProfile = (props: any) => {
                                 { minHeight: 150 },
                               ]}
                             >
-                              <ActivityIndicator size="large" color="#fff" />
-                            </View>
-                          )}
-                          {(idPhoto || handHoldingPhoto) && !idPhotoLoading && (
-                            <View style={[styles.passport]}>
-                              <Image
-                                style={{ borderRadius: 16, flex: 1 }}
-                                overlayColor="#fff"
-                                resizeMode="contain"
-                                source={{
-                                  uri: idPhoto || handHoldingPhoto,
-                                }}
+                              <ActivityIndicator
+                                size="large"
+                                color="#fff"
                               />
                             </View>
                           )}
+                          {(idPhoto || handHoldingPhoto) &&
+                            !idPhotoLoading && (
+                              <View style={[styles.passport,]}>
+                                <Image
+                                  style={{ borderRadius: 16, flex: 1, }}
+                                  overlayColor="#fff"
+                                  resizeMode="contain"
+                                  source={{
+                                    uri: idPhoto || handHoldingPhoto,
+                                  }}
+                                />
+                              </View>
+                            )}
                           {!(idPhoto || handHoldingPhoto) &&
                             !idPhotoLoading && (
-                              <View
-                                style={[
-                                  styles.passport,
-                                  { backgroundColor: "#F5F8FF" },
-                                ]}
-                              >
+                              <View style={[styles.passport, { backgroundColor: "#F5F8FF" }]}>
                                 <Image
-                                  style={{
-                                    borderRadius: 12,
-                                    flex: 1,
-                                    width: "100%",
-                                  }}
+                                  style={{ borderRadius: 12, flex: 1, width: "100%" }}
                                   overlayColor="#fff"
                                   resizeMode="contain"
                                   source={require("../../assets/images/cards/passportholding.png")}
@@ -1461,7 +1346,7 @@ const EditProfile = (props: any) => {
                           onPress={handleOpenSelfiePopup}
                           activeOpacity={0.6}
                         >
-                          <View>
+                          <View >
                             <LabelComponent
                               text={FIELD_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO_20MB}
                               Children={
@@ -1484,17 +1369,15 @@ const EditProfile = (props: any) => {
                                   commonStyles.textBlack,
                                   commonStyles.fw500,
                                 ]}
-                                text={
-                                  PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO
-                                }
+                                text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO}
                                 numberOfLines={1}
                               />
+
+
                             </View>
                           </View>
                         </TouchableOpacity>
-                        {selfieError && (
-                          <Text style={{ color: "red" }}>{selfieError}</Text>
-                        )}
+                        {selfieError && <Text style={{ color: 'red' }}>{selfieError}</Text>}
 
                         <View style={[commonStyles.mb16]} />
 
@@ -1521,27 +1404,20 @@ const EditProfile = (props: any) => {
                             </View>
                           )}
                           {selfie && !isSelfieLoading && (
-                            <View style={[styles.passport]}>
+                            <View style={[styles.passport,]}>
                               <Image
-                                style={{ borderRadius: 16, flex: 1 }}
+                                style={{ borderRadius: 16, flex: 1, }}
                                 overlayColor="#fff"
                                 resizeMode="contain"
                                 source={{ uri: selfie }}
                               />
                             </View>
                           )}
-                          {!selfie && !isSelfieLoading && (
-                            <View
-                              style={[
-                                styles.passport,
-                                { backgroundColor: "#928781" },
-                              ]}
-                            >
+                          {(!selfie && !isSelfieLoading) && (
+
+                            <View style={[styles.passport, { backgroundColor: "#928781" }]}>
                               <Image
-                                style={[
-                                  commonStyles.mxAuto,
-                                  { width: "100%", flex: 1 },
-                                ]}
+                                style={[commonStyles.mxAuto, { width: "100%", flex: 1 }]}
                                 overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
                                 resizeMode="contain"
                                 source={require("../../assets/images/userface.jpg")}
@@ -1567,6 +1443,7 @@ const EditProfile = (props: any) => {
                                 }
                               />
                               <View style={styles.SelectStyle}>
+
                                 <Ionicons
                                   name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
                                   size={22}
@@ -1581,12 +1458,9 @@ const EditProfile = (props: any) => {
                                   ]}
                                   text={PROFILE_CONSTANTS?.ADD_YOUR_SIGNATURE}
                                 />
+
                               </View>
-                              {signPhoto && (
-                                <Text style={{ color: "red" }}>
-                                  {signPhoto}
-                                </Text>
-                              )}
+                              {signPhoto && <Text style={{ color: 'red' }}>{signPhoto}</Text>}
                             </View>
                           </TouchableOpacity>
                           <View style={[commonStyles.mb16]} />
@@ -1614,9 +1488,9 @@ const EditProfile = (props: any) => {
                             )}
                             {(signImage || singaturePhoto) &&
                               !signPhotoLoading && (
-                                <View style={[styles.passport]}>
+                                <View style={[styles.passport,]}>
                                   <Image
-                                    style={{ borderRadius: 16, flex: 1 }}
+                                    style={{ borderRadius: 16, flex: 1, }}
                                     resizeMode="contain"
                                     source={{
                                       uri: signImage || singaturePhoto,
@@ -1626,13 +1500,9 @@ const EditProfile = (props: any) => {
                               )}
                             {!(signImage || singaturePhoto) &&
                               !signPhotoLoading && (
-                                <View style={[styles.passport]}>
+                                <View style={[styles.passport,]}>
                                   <Image
-                                    style={{
-                                      borderRadius: 16,
-                                      flex: 1,
-                                      width: "100%",
-                                    }}
+                                    style={{ borderRadius: 16, flex: 1, width: "100%" }}
                                     resizeMode="cover"
                                     source={require("../../assets/images/cards/default-sign.png")}
                                   />
@@ -1665,7 +1535,9 @@ const EditProfile = (props: any) => {
                                       commonStyles.fw700,
                                     ]}
                                   />
-                                  <TouchableOpacity onPress={togglePopup}>
+                                  <TouchableOpacity
+                                    onPress={togglePopup}
+                                  >
                                     <AntDesign
                                       name={PROFILE_CONSTANTS.CLOSE}
                                       size={22}
@@ -1673,23 +1545,19 @@ const EditProfile = (props: any) => {
                                     />
                                   </TouchableOpacity>
                                 </View>
-                                <View style={styles.signatureCaptureContainer}>
-                                  <SignatureCanvas
+                                <View
+                                  style={styles.signatureCaptureContainer}
+                                >
+                                  <SignatureCapture
                                     ref={signatureRef}
-                                    onOK={handleSaveSignature}
-                                    onEmpty={() => {}}
-                                    descriptionText="Sign here"
-                                    clearText="Clear"
-                                    confirmText="Save"
-                                    penColor="#000000"
+                                    style={styles.signatureCapture}
+                                    onSaveEvent={handleSaveSignature}
+                                    onDragEvent={() => { }}
+                                    showNativeButtons={false}
                                     backgroundColor="#ffffff"
-                                    webStyle={`
-                                        .m-signature-pad {box-shadow: none; border: none; } 
-                                        .m-signature-pad--body {border: none;}
-                                        .m-signature-pad--footer {display: none; margin: 0px;}
-                                        body,html {
-                                        width: 100%; height: 100%;}
-                                    `}
+                                    strokeColor="#000000"
+                                    minStrokeWidth={4}
+                                    maxStrokeWidth={4}
                                   />
                                 </View>
                                 <View style={[commonStyles.mb24]} />
@@ -1714,10 +1582,13 @@ const EditProfile = (props: any) => {
                                   iconArrowRight={false}
                                   closeIcon={true}
                                 />
+
                               </View>
                             </View>
                           </Modal>
                         </View>
+
+
 
                         <Field
                           touched={touched.emergencyContactName}
@@ -1725,9 +1596,7 @@ const EditProfile = (props: any) => {
                           label={FIELD_CONSTANTS.EMERGENCY_CONTACT_NAME}
                           error={errors.emergencyContactName}
                           handleBlur={handleBlur}
-                          placeholder={
-                            PLACEHOLDER_CONSTANTS.ENTER_EMERGENCY_CONTACT_NAME
-                          }
+                          placeholder={PLACEHOLDER_CONSTANTS.ENTER_EMERGENCY_CONTACT_NAME}
                           component={InputDefault}
                           Children={
                             <LabelComponent
@@ -1736,6 +1605,7 @@ const EditProfile = (props: any) => {
                             />
                           }
                         />
+
                       </View>
                       <View style={[commonStyles.mb32]} />
                       <View style={[commonStyles.justify, styles.flexcol]}>
@@ -1748,6 +1618,7 @@ const EditProfile = (props: any) => {
                           disable={undefined}
                           onPress={handleSubmit}
                         />
+
                       </View>
                       <View style={commonStyles.mb32} />
                     </>
@@ -1783,7 +1654,9 @@ const EditProfile = (props: any) => {
         windowWidth={WINDOW_WIDTH}
         windowHeight={WINDOW_HEIGHT}
       />
+
     </SafeAreaView>
+
   );
 };
 
@@ -1804,55 +1677,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 100 / 2,
-    borderWidth: 1,
-    borderColor: NEW_COLOR.TEXT_BLACK,
+    borderRadius: 100 / 2, borderWidth: 1, borderColor: NEW_COLOR.TEXT_BLACK
   },
   ml12: {
-    marginLeft: 12,
+    marginLeft: 12
   },
   px8: { paddingVertical: 8 },
   mb4: { marginBottom: 4 },
   nameTitle: { fontSize: 16, fontWeight: "600", lineHeight: 19 },
-  wauto: { alignSelf: "flex-start" },
+  wauto: { alignSelf: 'flex-start', },
   camPosition: { position: "absolute", right: -4, bottom: 5 },
   defaultimg: {
-    width: 78,
-    height: 78,
-    borderRadius: 100 / 2,
-    overflow: "hidden",
+    width: 78, height: 78, borderRadius: 100 / 2, overflow: "hidden"
   },
   note: { color: NEW_COLOR.TEXT_BLACK, fontStyle: "italic" },
   SelectStyle: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
+    justifyContent: "center", borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: NEW_COLOR.DASHED_BORDER_STYLE,
     marginBottom: 6,
-    gap: 9,
-    minHeight: 54,
-    backgroundColor: NEW_COLOR.BG_BLACK,
+    gap: 9, minHeight: 54, backgroundColor: NEW_COLOR.BG_BLACK,
     borderStyle: "dashed",
   },
   textLightorange: { color: NEW_COLOR.TEXT_LIGHTORANGE, marginRight: 12 },
-  bgorange: {
-    backgroundColor: NEW_COLOR.MENU_CARD_BG,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  passport: {
-    width: "100%",
-    borderRadius: 16,
-    height: 250,
-    borderWidth: 1,
-    borderColor: NEW_COLOR.BORDER_LIGHT,
-    overflow: "hidden",
-  },
+  bgorange: { backgroundColor: NEW_COLOR.MENU_CARD_BG, paddingHorizontal: 24, paddingVertical: 16, borderRadius: 12, },
+  passport: { width: '100%', borderRadius: 16, height: 250, borderWidth: 1, borderColor: NEW_COLOR.BORDER_LIGHT, overflow: "hidden" },
   mb30: { marginBottom: 30 },
   pb26: { paddingBottom: 26 },
   textWhite: { color: "#fff" },
@@ -1861,50 +1714,34 @@ const styles = StyleSheet.create({
   },
   mb14: { marginBottom: 14 },
   mb24: { marginBottom: 24 },
-  my24: { marginBottom: 24, marginTop: 24 },
+  my24: { marginBottom: 24, marginTop: 24, },
   colorSecondary: { color: "#B1B1B1" },
   title: { fontSize: 18, fontWeight: "500", lineHeight: 21 },
   mb40: { marginBottom: 40 },
   ml20: { marginLeft: 20 },
   justify: { justifyContent: "space-between" },
   infoCard: {
-    backgroundColor: "#1A171D",
-    borderRadius: 15,
-    marginBottom: 15,
-    padding: 16,
+    backgroundColor: "#1A171D", borderRadius: 15, marginBottom: 15, padding: 16
   },
-  pr16: { paddingRight: 16 },
-  alignCenter: { alignItems: "center" },
+  pr16: { paddingRight: 16, },
+  alignCenter: { alignItems: "center", },
   dflex: { flexDirection: "row" },
   pageTitle: {
-    fontSize: 24,
-    fontWeight: "500",
-    lineHeight: 29,
-    color: "#AAAAAC",
+    fontSize: 24, fontWeight: "500", lineHeight: 29, color: "#AAAAAC",
   },
-  bgpurple: {
-    backgroundColor: NEW_COLOR.BG_PURPLE,
-    color: NEW_COLOR.TEXT_WHITE,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
-  },
+  bgpurple: { backgroundColor: NEW_COLOR.BG_PURPLE, color: NEW_COLOR.TEXT_WHITE, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 100, },
   textcenter: { textAlign: "center" },
   container: {
     flex: 1,
     padding: 24,
     backgroundColor: "#fff",
   },
-  flexcol: { flexDirection: "column", flex: 1 },
+  flexcol: { flexDirection: 'column', flex: 1 },
   gap8: { gap: 8 },
   ml8: { marginLeft: 10 },
-  mb8: { marginBottom: 8 },
-  mb32: { marginBottom: 32 },
-  circle: {
-    borderColor: NEW_COLOR.BORDER_LIGHT,
-    borderWidth: 1,
-    borderRadius: 100,
-  },
+  mb8: { marginBottom: 8, },
+  mb32: { marginBottom: 32, },
+  circle: { borderColor: NEW_COLOR.BORDER_LIGHT, borderWidth: 1, borderRadius: 100 },
   p16: { padding: 16 },
   fw800: {
     fontWeight: "800",
@@ -1918,30 +1755,29 @@ const styles = StyleSheet.create({
   },
   popupContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   popupContent: {
     backgroundColor: NEW_COLOR.DARK_BG,
     padding: 20,
     borderRadius: 10,
-    width: "90%",
+    width: '90%',
   },
   popupHeaderText: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   signatureCaptureContainer: {
-    alignItems: "center",
-    borderWidth: 1,
+    alignItems: 'center', borderWidth: 1,
     borderColor: NEW_COLOR.BORDER_GREY,
     borderRadius: 0,
   },
   signatureCapture: {
-    width: "100%",
+    width: '100%',
     height: (WINDOW_HEIGHT * 50) / 100,
     borderWidth: 1,
     borderColor: NEW_COLOR.BORDER_GREY,
@@ -1953,21 +1789,21 @@ const styles = StyleSheet.create({
   fw500: {
     fontWeight: "500",
   },
-  mb28: { marginBottom: 28 },
+  mb28: { marginBottom: 28, },
   textBlack: {
-    color: NEW_COLOR.TEXT_BLACK,
+    color: NEW_COLOR.TEXT_BLACK
   },
   fs10: {
-    fontSize: ms(10),
+    fontSize: ms(10)
   },
   fs12: {
-    fontSize: ms(12),
+    fontSize: ms(12)
   },
   fs14: {
-    fontSize: ms(14),
+    fontSize: ms(14)
   },
   fs16: {
-    fontSize: ms(16),
+    fontSize: ms(16)
   },
   input: {
     borderRadius: 8,
@@ -1976,17 +1812,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: NEW_COLOR.TEXT_WHITE,
     paddingVertical: 8,
-    paddingHorizontal: 14,
-    height: 46,
-  },
-  selfiePreview: {
-    width: "100%",
-    height: "100%",
-  },
-  overlayContent: {
+    paddingHorizontal: 14, height: 46
+  }, selfiePreview: {
+    width: '100%',
+    height: '100%',
+  }, overlayContent: {
     paddingHorizontal: s(28),
     paddingVertical: s(24),
-    borderRadius: 25,
-    backgroundColor: NEW_COLOR.DARK_BG,
+    borderRadius: 25, backgroundColor: NEW_COLOR.DARK_BG,
   },
 });

@@ -111,7 +111,9 @@ const SendCryptoDetails = React.memo((props: any) => {
       "walletAddress": address,
       "amount": sendAmmount,
       "feeComission": fee?.fee,
+      "concurrencyStamp": fee?.concurrencyStamp || "",
       "createdBy": encryptAES(userName),
+
 
     };
     try {
@@ -307,6 +309,7 @@ const SendCryptoDetails = React.memo((props: any) => {
       payeeId: selectedPayee.id || "",
       walletCode: cryptoWithdrawData.code,
       amount: sendAmmount,
+      concurrencyStamp: fee?.concurrencyStamp || "",
       createdby: encryptAES(userName),
     };
     try {
@@ -502,10 +505,7 @@ const SendCryptoDetails = React.memo((props: any) => {
 
           <View style={[styles.mt26, commonStyles.mb32]}>
             {errormsg && (<ErrorComponent message={errormsg} onClose={handleCloseError} />)}
-            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8, commonStyles.bgCard, commonStyles.rounded8, commonStyles.p12, commonStyles.mb30]}>
-              <AntDesign name="infocirlceo" size={16} color={NEW_COLOR.BG_ORANGE} />
-              <ParagraphComponent text={'Whitelisting will take 24 hours for approval'} style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textBlack, { width: s(340) }]} />
-            </View>
+
             <TouchableOpacity onPress={handleOpenModel}>
               <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.justifyCenter, commonStyles.alignCenter]}>
                 <ParagraphComponent text={selectedNetwork || ""} style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]} />

@@ -111,3 +111,13 @@ export const DASHBOARD_CONSTANTS = {
   SETTINGS_OUTLINE: 'ios-list-outline',
 
 };
+export interface SecurityInfo {
+  percentage: number;
+  level: string;
+  email: string;  // encrypted string
+  phone: string;  // encrypted string
+  isSecurityQuestionsEnabled: boolean;
+  isGoogleAuthEnabled: boolean;
+  isFaceResgEnabled: boolean;
+  isAuth0Enabled: boolean | null;
+}

@@ -149,7 +149,7 @@ const RigistrationReferral = () => {
 
 
     const onChangeText = (value: any) => {
-        const cleanedValue = value.replace(/[^a-zA-Z0-9]/g, "");
+        const cleanedValue = value.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase();
         setIsValid(null);
         setErrormsg("")
         setReferralCode(cleanedValue);
@@ -268,7 +268,7 @@ const RigistrationReferral = () => {
                 />
                 <View style={[commonStyles.mb16]} />
                 <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
-                    <TouchableOpacity onPress={handleLgout} style={[commonStyles.px10]} >
+                    <TouchableOpacity onPress={handleLgout} style={[commonStyles.px10]} disabled={saveLoading} >
                         <Text style={[commonStyles.textCenter, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text>
                     </TouchableOpacity>
 

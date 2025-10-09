@@ -1,74 +1,72 @@
-import React, { useEffect, useState } from "react";
-import { View, SafeAreaView, ScrollView, Linking, Text } from "react-native";
+
+import React, { useEffect, useState } from 'react';
+import { View, SafeAreaView, ScrollView, Linking, Text } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
-import { TouchableOpacity } from "react-native";
-import AuthService from "../../services/auth";
-import { useSelector } from "react-redux";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
-import ParagraphComponent from "../../components/Paragraph/Paragraph";
-import { commonStyles } from "../../components/CommonStyles";
-import { NEW_COLOR, WINDOW_WIDTH } from "../../constants/theme/variables";
-import { s } from "../../constants/theme/scale";
-import {
-  CONSTANTS,
-  EMAIL_CONSTANTS,
-  REGISTRATION_CONSTATNTS,
-} from "./constants";
-import { RenderHTML } from "react-native-render-html";
-import ErrorComponent from "../../components/Error";
-import { isErrorDispaly } from "../../utils/helpers";
-import { progressSkeltons } from "../Profile/skeleton_views";
-import Loadding from "../../components/skeleton";
-import { SvgUri } from "react-native-svg";
-import useLogout from "../../hooks/useLogOut";
-import useMemberLogin from "../../hooks/useMemberLogin";
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import AuthService from '../../services/auth';
+import { useSelector } from 'react-redux';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import ParagraphComponent from '../../components/Paragraph/Paragraph';
+import { commonStyles } from '../../components/CommonStyles';
+import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';
+import { s } from '../../constants/theme/scale';
+import { CONSTANTS, EMAIL_CONSTANTS, REGISTRATION_CONSTATNTS } from './constants';
+import { RenderHTML } from 'react-native-render-html';
+import ErrorComponent from '../../components/Error';
+import { isErrorDispaly } from '../../utils/helpers';
+import { progressSkeltons } from '../Profile/skeleton_views';
+import Loadding from '../../components/skeleton';
+import { SvgUri } from 'react-native-svg';
+import useLogout from '../../hooks/useLogOut';
+import useMemberLogin from '../../hooks/useMemberLogin';
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
   const navigation = useNavigation<any>();
-  const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  const [saveLoading, setSaveLoading] = useState<boolean>(false)
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const [htmlContent, setHtmlContent] = useState<any>({});
   const [errorMsg, setErrorMsg] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLogout, setIsLogout] = useState<boolean>(false);
-  const { logout } = useLogout();
+  const [isLogout, setIsLogout] = useState<boolean>(false)
+  const { logout } = useLogout()
   const isFocused = useIsFocused();
   const skeltons = progressSkeltons();
   const { getMemDetails } = useMemberLogin();
   useEffect(() => {
     handleGetCustomerNotes();
-  }, [isFocused]);
+  }, [isFocused])
+
+
 
   const handleGetCustomerNotes = async () => {
     setHtmlContent({});
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const response: any = await AuthService.customerNotes();
+      console.log("response", response);
       if (response?.data) {
         setHtmlContent(response?.data);
-        setIsLoading(false);
+        setIsLoading(false)
       } else {
         setErrorMsg(isErrorDispaly(response));
         setHtmlContent({});
-        setIsLoading(false);
+        setIsLoading(false)
       }
     } catch (error) {
       setErrorMsg(isErrorDispaly(error));
       setHtmlContent({});
-      setIsLoading(false);
+      setIsLoading(false)
     }
   };
   const handleLinkPress = (href: any) => {
-    if (href.startsWith("mailto:")) {
-      Linking.openURL(href).catch((err) =>
-        console.error("Failed to open email:", err)
-      );
+    if (href.startsWith('mailto:')) {
+      Linking.openURL(href).catch(err => console.error("Failed to open email:", err));
     } else {
-      navigation.navigate("addKycInfomation", {
-        screenName: "resumit",
+      navigation.navigate('addKycInfomation', {
+        screenName: "resumit"
       });
     }
   };
@@ -77,31 +75,26 @@ const UnderReview = () => {
   };
   const handleRejectedNav = () => {
     navigation.navigate("addKycInfomation", {
-      screenName: "resumit",
-    });
+      screenName: "resumit"
+    })
   };
   const handleRefresh = async () => {
     setSaveLoading(true);
-    await getMemDetails({});
-    handleGetCustomerNotes();
+    await getMemDetails({})
+    handleGetCustomerNotes()
     setSaveLoading(false);
+
   };
   const handleLogout = async () => {
-    setIsLogout(true);
+    setIsLogout(true)
     await logout();
-    setIsLogout(false);
-  };
+    setIsLogout(false)
+  }
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
       <ScrollView>
         <Container style={commonStyles.container}>
-          <View
-            style={[
-              commonStyles.dflex,
-              commonStyles.alignCenter,
-              commonStyles.mxAuto,
-            ]}
-          >
+          <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
             <SvgUri
               uri={REGISTRATION_CONSTATNTS.EXCHANGAPAY_LOGO}
               width={s(61)}
@@ -109,177 +102,134 @@ const UnderReview = () => {
             />
             <ParagraphComponent
               text={REGISTRATION_CONSTATNTS.EXCHANGA_PAY}
-              style={[
-                commonStyles.fs32,
-                commonStyles.fw800,
-                commonStyles.textOrange,
-                commonStyles.textCenter,
-              ]}
+              style={[commonStyles.fs32, commonStyles.fw800, commonStyles.textOrange, commonStyles.textCenter]}
             />
           </View>
 
           {isLoading && <Loadding contenthtml={skeltons} />}
-          {errorMsg && (
-            <ErrorComponent message={errorMsg} onClose={handleCloseError} />
-          )}
+          {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
 
-          {!isLoading && htmlContent?.message && (
-            <View style={commonStyles.flex1}>
-              <RenderHTML
-                contentWidth={WINDOW_WIDTH}
-                source={{ html: htmlContent?.message }}
-                tagsStyles={{
-                  body: { color: NEW_COLOR.TEXT_BLACK },
-                }}
-                renderersProps={{
-                  a: {
-                    onPress: (event, href) => handleLinkPress(href),
-                  },
-                }}
-                enableExperimentalMarginCollapsing={true}
-              />
-            </View>
-          )}
-          {!isLoading &&
-            (userInfo.customerState === "Approval In Progress" ||
-              userInfo.customerState === "Registered" ||
-              (userInfo.customerState === "Approved" &&
-                userInfo?.isSumsubKyc)) &&
-            !htmlContent?.message && (
-              <Container style={[commonStyles.container, commonStyles.flex1]}>
-                <View style={commonStyles.flex1}>
-                  <ParagraphComponent
-                    text="KYC Verification Status"
-                    style={[
-                      commonStyles.fs22,
-                      commonStyles.fw700,
-                      commonStyles.textCenter,
-                      commonStyles.mb16,
-                      commonStyles.textBlack,
-                      { marginTop: 24 },
-                    ]}
-                  />
+          {(!isLoading && htmlContent?.message) && <View style={commonStyles.flex1}>
+            <RenderHTML
+              contentWidth={WINDOW_WIDTH}
+              source={{ html: htmlContent?.message }}
+              tagsStyles={{
+                body: { color: NEW_COLOR.TEXT_BLACK },
+              }}
+              renderersProps={{
+                a: {
+                  onPress: (event, href) => handleLinkPress(href),
+                },
+              }}
 
+              enableExperimentalMarginCollapsing={true}
+            />
+
+          </View>}
+          {((!isLoading && (userInfo.customerState === "Approval In Progress" || userInfo.customerState === "Registered" || (userInfo.customerState === "Approved" && userInfo?.isSumsubKyc))) && (!htmlContent?.message)) && (
+            <Container style={[commonStyles.container, commonStyles.flex1]}>
+              <View style={commonStyles.flex1}>
+
+                <ParagraphComponent
+                  text="KYC Verification Status"
+                  style={[
+                    commonStyles.fs22,
+                    commonStyles.fw700,
+                    commonStyles.textCenter,
+                    commonStyles.mb16,
+                    commonStyles.textBlack,
+                    { marginTop: 24 }
+                  ]}
+                />
+
+
+                <ParagraphComponent
+                  style={[
+                    commonStyles.textCenter,
+                    commonStyles.fs16,
+                    commonStyles.mb16,
+                    commonStyles.textBlack
+                  ]}
+                  text={
+                    "Thank you for completing your KYC. We are currently reviewing your documents. This process typically takes 1–5 minutes, but may occasionally take longer.\n\nOnce you’ve received your verification results via email, click the refresh button to update your status.\n\nIf you have any questions or need assistance, please don’t hesitate to contact our support team at "
+                  }
+                />
+                <TouchableOpacity
+                  onPress={() => Linking.openURL('mailto:support@exchangapay.com')}
+                  activeOpacity={0.7}
+                >
                   <ParagraphComponent
+                    text="support@exchangapay.com"
                     style={[
                       commonStyles.textCenter,
                       commonStyles.fs16,
-                      commonStyles.mb16,
                       commonStyles.textBlack,
+                      { color: "#0099FF", textDecorationLine: "underline" }
                     ]}
-                    text={
-                      "Thank you for completing your KYC. We are currently reviewing your documents. This process typically takes 1–5 minutes, but may occasionally take longer.\n\nOnce you’ve received your verification results via email, click the refresh button to update your status.\n\nIf you have any questions or need assistance, please don’t hesitate to contact our support team at "
-                    }
                   />
-                  <TouchableOpacity
-                    onPress={() =>
-                      Linking.openURL("mailto:support@exchangapay.com")
-                    }
-                    activeOpacity={0.7}
-                  >
-                    <ParagraphComponent
-                      text="support@exchangapay.com"
-                      style={[
-                        commonStyles.textCenter,
-                        commonStyles.fs16,
-                        commonStyles.textBlack,
-                        { color: "#0099FF", textDecorationLine: "underline" },
-                      ]}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </Container>
-            )}
+                </TouchableOpacity>
+              </View>
+            </Container>)
+          }
           <View style={[commonStyles.mb24]} />
-          {!isLoading &&
-            userInfo.customerState === "Rejected" &&
-            !htmlContent?.message &&
-            userInfo.isKYC && (
-              <DefaultButton
-                title={"Re-Sumbit KYC"}
-                customTitleStyle={styles.btnConfirmTitle}
-                icon={undefined}
-                style={undefined}
-                customButtonStyle={undefined}
-                customContainerStyle={undefined}
-                backgroundColors={undefined}
-                colorful={undefined}
-                transparent={undefined}
-                loading={undefined}
-                onPress={handleRejectedNav}
-              />
-            )}
-          {!isLoading && !isLogout && (
-            <DefaultButton
-              title={CONSTANTS?.REFRESH}
-              customTitleStyle={styles.btnConfirmTitle}
-              icon={undefined}
-              style={undefined}
-              customButtonStyle={undefined}
-              customContainerStyle={undefined}
-              backgroundColors={undefined}
-              colorful={undefined}
-              transparent={undefined}
-              disable={saveLoading}
-              loading={saveLoading}
-              refresh={true}
-              onPress={handleRefresh}
-            />
-          )}
-          {!isLoading && !isLogout && (
-            <View
-              style={[
-                commonStyles.dflex,
-                commonStyles.alignCenter,
-                commonStyles.justifyCenter,
-                commonStyles.mt10,
-              ]}
-            >
-              <TouchableOpacity
-                onPress={handleLogout}
-                style={[commonStyles.px10]}
-              >
-                <Text
-                  style={[
-                    commonStyles.textCenter,
-                    commonStyles.textOrange,
-                    commonStyles.fs16,
-                    commonStyles.fw600,
-                  ]}
-                >
-                  {EMAIL_CONSTANTS.LOG_OUT}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {!isLoading && (userInfo.customerState === "Rejected" && (!htmlContent?.message && userInfo.isKYC)) && <DefaultButton
+            title={"Re-Sumbit KYC"}
+            customTitleStyle={styles.btnConfirmTitle}
+            icon={undefined}
+            style={undefined}
+            customButtonStyle={undefined}
+            customContainerStyle={undefined}
+            backgroundColors={undefined}
+            colorful={undefined}
+            transparent={undefined}
+            loading={undefined}
+            onPress={handleRejectedNav}
+          />}
+          {(!isLoading && !isLogout) && <DefaultButton
+            title={CONSTANTS?.REFRESH}
+            customTitleStyle={styles.btnConfirmTitle}
+            icon={undefined}
+            style={undefined}
+            customButtonStyle={undefined}
+            customContainerStyle={undefined}
+            backgroundColors={undefined}
+            colorful={undefined}
+            transparent={undefined}
+            disable={saveLoading}
+            loading={saveLoading}
+            refresh={true}
+            onPress={handleRefresh}
+          />}
+          {(!isLoading && !isLogout) && <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, commonStyles.mt10]}>
+            <TouchableOpacity onPress={handleLogout} style={[commonStyles.px10]} ><Text style={[commonStyles.textCenter, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text></TouchableOpacity>
+          </View>
+          }
         </Container>
       </ScrollView>
     </SafeAreaView>
-  );
+
+
+  )
 };
+
 
 export default UnderReview;
 
 const themedStyles = StyleService.create({
   btnConfirmTitle: {
-    color: NEW_COLOR.TEXT_ALWAYS_WHITE,
-  },
-  dashedBorder: {
+    color: NEW_COLOR.TEXT_ALWAYS_WHITE
+  }, dashedBorder: {
     padding: 4,
     borderRadius: s(50) / 2,
-    borderWidth: 1,
-    borderColor: NEW_COLOR.PROFILE_BORDER,
-    borderStyle: "dashed",
-  },
-  profile: {
+    borderWidth: 1, borderColor: NEW_COLOR.PROFILE_BORDER,
+    borderStyle: "dashed"
+  }, profile: {
     width: s(36),
     height: s(36),
     borderRadius: s(36) / 2,
-  },
-  container: {
+  }, container: {
     flex: 1,
-  },
-  resend: {
+  }, resend: {
     textAlign: "center",
   },
 });

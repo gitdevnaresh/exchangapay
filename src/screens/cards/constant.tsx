@@ -176,7 +176,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
     },
     passport: {
         docExpiryDate: Yup.date().required('is required')
-            .min(moment().startOf('day').toDate(), 'Expiry date must be greater than current date.'),
+            .min(moment().add(1, 'day').startOf('day').toDate(), 'Expiry date must be greater than current date.'),
         idType: Yup.string().required('is required'),
         idNumber: Yup.string().required('is required')
             .matches(/^[a-zA-Z0-9]*$/, "Document Number must contain only characters and numbers")
@@ -306,7 +306,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
         annualSalary: Yup.number()
             .required('is required')
             .typeError('Annual Salary must be a number')
-            .min(0, 'Annual Salary must be greater than or equal to 0'),
+            .moreThan(0, 'Annual Salary must be greater than 0.'),
         accountPurpose: Yup.string()
             .required('is required')
             .test('no-emojis', 'Account Purpose cannot contain emojis.', value => {
@@ -320,12 +320,18 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
         expectedMonthlyVolume: Yup.number()
             .required('is required')
             .typeError('Expected Monthly Volume must be a number')
-            .min(0, 'Expected Monthly Volume must be greater than or equal to 0'),
-    }, issuedate: {
-        docissueDate: Yup.date()
-            .required('is required')
-            .max(moment().endOf('day').toDate(), 'Issue date cannot be in the future.')
+            .moreThan(0, 'Expected Monthly Volume must be greater than 0.'),
     },
+    issuedate: {
+        docissueDate: Yup.date()
+            .required('is required.')
+            .max(moment().subtract(1, 'day').endOf('day').toDate(), 'Document issue date cannot be today or in the future.')
+            .test('before-expiry', ' Document issue date cannot be after expiry date.', function (value) {
+                const { docExpiryDate } = this.parent;
+                if (!value || !docExpiryDate) return true;
+                return moment(value).isSameOrBefore(moment(docExpiryDate), 'day');
+            })
+    }
 
 };
 
@@ -349,7 +355,7 @@ export const CREATE_KYC_ADDRESS_CONST = {
     TITTLE_ID_PROOFS: "ID Proofs",
     TITTLE_ADDRESS_INFORMATION: "Address Information",
     TITTLE_EMERGENCY_CONTACT: "Emergency Contact",
-    TITTLE_FINANCIAL_PROFILE: "Financial Profile",
+    TITTLE_FINANCIAL_PROFILE: "Occupation Details",
     TITTLE_ISSUE_DATE: "Issue Date"
 };
 export const FORM_DATA_CONSTANTS = {
@@ -420,7 +426,7 @@ export const FORM_DATA_LABEL = {
     ANNUAL_SALARY: "Annual Salary",
     ACCOUNT_PURPOSE: "Account Purpose",
     EXPECTED_MONTHLY_VOLUME: "Expected Monthly Volume",
-    ISSUE_DATE: "Issue Date"
+    ISSUE_DATE: "Document Issue Date"
 
 }
 export const FORM_DATA_PLACEHOLDER = {

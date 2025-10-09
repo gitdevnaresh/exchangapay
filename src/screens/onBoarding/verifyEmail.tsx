@@ -22,6 +22,7 @@ import CommonPopup from '../../components/commonPopup';
 import { SvgUri } from 'react-native-svg';
 import * as Keychain from "react-native-keychain";
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
+import { NEW_COLOR } from '../../constants/theme/variables';
 
 
 const VerifyEmail = () => {
@@ -155,7 +156,7 @@ const VerifyEmail = () => {
                         text="Please check your inbox and click the link to verify your email address. once you're done,tap the button below to continue"
                     />
                     <View style={{ minHeight: 30, justifyContent: 'center', alignItems: 'center' }}>
-                        {loadMail && <><ActivityIndicator size={EMAIL_CONSTANTS.SMALL} style={styles.loading} color={styles.WHITE} /></>}
+                        {loadMail && <><ActivityIndicator size={EMAIL_CONSTANTS.SMALL} style={styles.loading} color={NEW_COLOR.BG_ORANGE} /></>}
                         {!loadMail &&
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter,]}>
                                 <TouchableOpacity onPress={resendMail} >
@@ -182,7 +183,7 @@ const VerifyEmail = () => {
 
                         <View style={commonStyles.mt14} />
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
-                            <TouchableOpacity onPress={handleLgout} style={[commonStyles.px10]} >
+                            <TouchableOpacity onPress={handleLgout} style={[commonStyles.px10]} disabled={btnLoader}>
                                 <Text style={[styles.resend, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text>
 
                             </TouchableOpacity>

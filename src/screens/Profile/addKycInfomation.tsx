@@ -1,59 +1,31 @@
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Image,
-  ScrollView,
-  SafeAreaView,
-  BackHandler,
-  ActivityIndicator,
-  Modal,
-  Platform,
-  Alert,
-  TextInput,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, View, Image, ScrollView, SafeAreaView, BackHandler, ActivityIndicator, Modal, Platform, Alert, TextInput, Keyboard } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { Container } from "../../components";
+import { Container } from '../../components';
 import { useDispatch, useSelector } from "react-redux";
 import { ms, s } from "../../constants/theme/scale";
-import {
-  NEW_COLOR,
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
-} from "../../constants/theme/variables";
+import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
-import Feather from "react-native-vector-icons/Feather";
+import Feather from 'react-native-vector-icons/Feather';
 import DefaultButton from "../../components/DefaultButton";
 import LabelComponent from "../../components/Paragraph/label";
 import { commonStyles } from "../../components/CommonStyles";
 import { Field, Formik } from "formik";
 import CustomPickerAcc from "../../components/CustomPicker";
-import InputDefault from "../../components/DefaultFiat";
+import InputDefault from '../../components/DefaultFiat';
 import { EditProfileSchema } from "./EditProfileInfoSchema";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import ProfileService from "../../services/profile";
 import DatePickers from "react-native-date-picker";
-import {
-  formatDateMonth,
-  formatDateTimeAPI,
-  formateExpiryValidationDate,
-  isErrorDispaly,
-  trimValues,
-} from "../../utils/helpers";
+import { formatDateMonth, formatDateTimeAPI, formateExpiryValidationDate, isErrorDispaly, trimValues } from "../../utils/helpers";
 import Loadding from "../../components/skeleton";
 import ErrorComponent from "../../components/Error";
 import { personalInfoLoader } from "./skeleton_views";
 import SignatureCanvas from "react-native-signature-canvas";
 import RadioButton from "../../components/Button/RadioButton";
 import { PERMISSIONS, request, RESULTS } from "react-native-permissions";
-import {
-  FIELD_CONSTANTS,
-  FORMIK_CONSTANTS,
-  PLACEHOLDER_CONSTANTS,
-  PROFILE_CONSTANTS,
-} from "./constants";
+import { FIELD_CONSTANTS, FORMIK_CONSTANTS, PLACEHOLDER_CONSTANTS, PROFILE_CONSTANTS } from "./constants";
 import OverlayPopup from "../cards/SelectPopup";
 import PhoneCodePicker from "../../components/PhoneCodeSelect";
 import CardsModuleService from "../../services/card";
@@ -65,6 +37,8 @@ import { USER_CONSTANTS } from "../onBoarding/constants";
 import { isCardKycCompleted } from "../../redux/Actions/UserActions";
 import { CommonActions, useIsFocused } from "@react-navigation/native";
 import useSendUserWebhook from "../../hooks/useSendUserWebhook";
+
+
 
 const AddKycInfomation = (props: any) => {
   const ref = useRef<any>(null);
@@ -86,31 +60,12 @@ const AddKycInfomation = (props: any) => {
   const [expirydate, setExpirydate] = useState<any>(null);
   const [expiryDatePicker, setExpiryDatePicker] = useState<boolean>(false);
   const [isSelfieLoading, setIsSelfieLoading] = useState<boolean>(false);
-  const [isBackLoading, setBackLoading] = useState<boolean>(false);
+  const [isBackLoading, setBackLoading] = useState<boolean>(false)
   const [signModelVisible, setSignModelVisible] = useState<boolean>(false);
   const [openSelfiePopup, setOpenSelfiePopup] = useState<boolean>(false);
-  const [lists, setLists] = useState<any>({
-    countryLookUp: [],
-    genderLookUp: [],
-    idTypesLookUp: [],
-    countryCodelist: [],
-  });
-  const [errorMsgs, setErrorMsgs] = useState<any>({
-    frontPhotoIdError: "",
-    backPhotoIdError: "",
-    handHoldingPhotoError: "",
-    selfieError: "",
-    signatureError: "",
-    dateOfBirthError: "",
-    errorMsg: null,
-  });
-  const [uploadImgs, setUploadImgs] = useState<any>({
-    frontIdPhoto: "",
-    handHoldingPhoto: "",
-    selfie: "",
-    signImage: "",
-    backIdPhoto: "",
-  });
+  const [lists, setLists] = useState<any>({ countryLookUp: [], genderLookUp: [], idTypesLookUp: [], countryCodelist: [] });
+  const [errorMsgs, setErrorMsgs] = useState<any>({ frontPhotoIdError: "", backPhotoIdError: "", handHoldingPhotoError: "", selfieError: "", signatureError: "", dateOfBirthError: "", errorMsg: null });
+  const [uploadImgs, setUploadImgs] = useState<any>({ frontIdPhoto: "", handHoldingPhoto: "", selfie: "", signImage: "", backIdPhoto: "" });
   const { getMemDetails } = useMemberLogin();
   const { screenName } = props.route.params || {};
   const dispatch = useDispatch();
@@ -131,7 +86,7 @@ const AddKycInfomation = (props: any) => {
     emergencyContactPhoneCode: "",
     emergencyContactPhoneNumber: "",
     lastName: "",
-    firstName: "",
+    firstName: ""
   });
 
   useEffect(() => {
@@ -141,8 +96,8 @@ const AddKycInfomation = (props: any) => {
     setErrorMsgs((prev) => ({
       ...prev,
       frontPhotoIdError: "",
-      selfieError: "",
-    }));
+      selfieError: ""
+    }))
   }, [isFocused]);
 
   const handleUpdateDocuments = async (data: any) => {
@@ -150,55 +105,48 @@ const AddKycInfomation = (props: any) => {
       const response = await ProfileService.updateKycDocuments(data);
       if (response?.ok) {
       } else {
-        setErrorMsgs(isErrorDispaly(response));
+        setErrorMsgs(isErrorDispaly(response))
       }
     } catch (error) {
-      setErrorMsgs(isErrorDispaly(error));
+      setErrorMsgs(isErrorDispaly(error))
     }
-  };
+  }
 
   const fetchLookUps = async () => {
     try {
       const response: any = await ProfileService.getprofileEditLookups();
-      setLists((prev: any) => ({
-        ...prev,
-        countryLookUp: response?.data?.Country,
-        genderLookUp: response?.data?.Gender,
-        idTypesLookUp: response?.data?.IdTypes,
-      }));
+      setLists((prev: any) => ({ ...prev, countryLookUp: response?.data?.Country, genderLookUp: response?.data?.Gender, idTypesLookUp: response?.data?.IdTypes }));
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
-      setErrorMsgs((prev: any) => ({
-        ...prev,
-        errorMsg: isErrorDispaly(error),
-      }));
+      setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(error) }))
     }
   };
 
-  const handleSaveSignature = (signature: string) => {
-    if (signature) {
-      // Create an event-like object to maintain compatibility with existing code
-      const event = { pathName: null, encoded: signature };
-      selectSignPhoto(event);
+  const handleSaveSignature = (event: any) => {
+    const { pathName, encoded } = event;
+    if (pathName || encoded) {
+      selectSignPhoto(event)
       togglePopup();
     }
   };
 
   const handleOpenSelfiePopup = () => {
-    setOpenSelfiePopup(!openSelfiePopup);
+    setOpenSelfiePopup(!openSelfiePopup)
   };
 
   const saveSign = () => {
     try {
       signatureRef?.current?.saveImage();
-    } catch (error) {}
+    } catch (error) {
+    }
   };
 
   const resetSign = () => {
     try {
       signatureRef?.current?.resetImage();
-    } catch (error) {}
+    } catch (error) {
+    }
   };
   const togglePopup = () => {
     setPopupVisible(!popupVisible);
@@ -209,104 +157,87 @@ const AddKycInfomation = (props: any) => {
     try {
       setEditDataLoading(true);
       const response: any = await ProfileService.getProfileEditView();
-      const decryptedDob = response.data?.dob ? response.data.dob : null;
-      const decryptedExpirationDate = decryptAES(response.data?.expirationDate)
-        ? formateExpiryValidationDate(decryptAES(response.data.expirationDate))
-        : null;
-      const apiDate = decryptedDob ? new Date(decryptedDob) : null;
-      const apiExpireyDate = decryptedExpirationDate
-        ? new Date(decryptedExpirationDate)
-        : null;
-      setExpirydate(apiExpireyDate);
-      setDate(apiDate);
-      setUploadImgs((prev: any) => ({
-        ...prev,
-        signImage: response.data?.singaturePhoto,
-        frontIdPhoto: response?.data?.frontIdPhoto,
-        handHoldingPhoto: response?.data?.handHoldingPhoto,
-        selfie: response?.data?.profileImage,
-        backIdPhoto: response?.data?.backDocImage,
-      }));
-      const decryptedFirstName = response.data?.firstName
-        ? decryptAES(response.data.firstName)
-        : "";
-      const decryptedLastName = response.data?.lastName
-        ? decryptAES(response.data.lastName)
-        : "";
-      const decryptedDocumentNumber = response.data?.documentNumber
-        ? decryptAES(response.data.documentNumber)
-        : "";
-      const decryptedEmergencyContactName = response.data?.emergencyContactName
-        ? decryptAES(response.data.emergencyContactName)
-        : "";
-      const decryptedEmergencyContact = response.data?.emergencyContact
-        ? decryptAES(response.data.emergencyContact)
-        : "";
-      const decryptedEmergencyContactEmail = response.data
-        ?.emergencyContactEmail
-        ? decryptAES(response.data.emergencyContactEmail)
-        : "";
-      const decryptedMobileCode = response.data?.mobileCode
-        ? decryptAES(response.data.mobileCode)
-        : "";
-      const decryptedEmergencyContactMobileCode = response.data
-        ?.emergencyContactMobileCode
-        ? decryptAES(response.data.emergencyContactMobileCode)
-        : "";
-      const intialValue = {
-        firstName: decryptedFirstName,
-        lastName: decryptedLastName,
-        gender: response?.data?.gender,
-        dateOfBirth: decryptedDob,
-        idIssuranceCountry: response?.data?.idIssuranceCountry || "",
-        documentType: response?.data?.documentType || "passport",
-        documentNumber: decryptedDocumentNumber || "",
-        emergencyContactName: decryptedEmergencyContactName,
-        expireyDate: decryptedExpirationDate || "",
-        phoneNumber: decryptedEmergencyContact,
-        emergencyContactEmail: decryptedEmergencyContactEmail,
-        phoneCode: decryptedMobileCode,
-        emergencyContactPhoneCode: decryptedEmergencyContactMobileCode,
-        emergencyContactPhoneNumber: decryptedEmergencyContact,
-      };
-      setInitValues(intialValue);
-      setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
-      setEditDataLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      if (response?.ok) {
+        const decryptedDob = response.data?.dob ? response.data.dob : null;
+        const decryptedExpirationDate = decryptAES(response.data?.expirationDate) ? formateExpiryValidationDate(decryptAES(response.data.expirationDate)) : null;
+        const apiDate = decryptedDob ? new Date(decryptedDob) : null;
+        const apiExpireyDate = decryptedExpirationDate ? new Date(decryptedExpirationDate) : null;
+        setExpirydate(apiExpireyDate);
+        setDate(apiDate);
+        setUploadImgs((prev: any) => ({
+          ...prev,
+          signImage: response.data?.singaturePhoto,
+          frontIdPhoto: response?.data?.frontIdPhoto,
+          handHoldingPhoto: response?.data?.handHoldingPhoto,
+          selfie: response?.data?.profileImage,
+          backIdPhoto: response?.data?.backDocImage
+        }));
+        const decryptedFirstName = response.data?.firstName ? decryptAES(response.data.firstName) : "";
+        const decryptedLastName = response.data?.lastName ? decryptAES(response.data.lastName) : "";
+        const decryptedDocumentNumber = response.data?.documentNumber ? decryptAES(response.data.documentNumber) : "";
+        const decryptedEmergencyContactName = response.data?.emergencyContactName ? decryptAES(response.data.emergencyContactName) : "";
+        const decryptedEmergencyContact = response.data?.emergencyContact ? decryptAES(response.data.emergencyContact) : "";
+        const decryptedEmergencyContactEmail = response.data?.emergencyContactEmail ? decryptAES(response.data.emergencyContactEmail) : "";
+        const decryptedMobileCode = response.data?.mobileCode ? decryptAES(response.data.mobileCode) : "";
+        const decryptedEmergencyContactMobileCode = response.data?.emergencyContactMobileCode ? decryptAES(response.data.emergencyContactMobileCode) : "";
+        const intialValue = {
+          firstName: decryptedFirstName,
+          lastName: decryptedLastName,
+          gender: response?.data?.gender,
+          dateOfBirth: decryptedDob,
+          idIssuranceCountry: response?.data?.idIssuranceCountry || "",
+          documentType: response?.data?.documentType || "passport",
+          documentNumber: decryptedDocumentNumber || "",
+          emergencyContactName: decryptedEmergencyContactName,
+          expireyDate: decryptedExpirationDate || "",
+          phoneNumber: decryptedEmergencyContact,
+          emergencyContactEmail: decryptedEmergencyContactEmail,
+          phoneCode: decryptedMobileCode,
+          emergencyContactPhoneCode: decryptedEmergencyContactMobileCode,
+          emergencyContactPhoneNumber: decryptedEmergencyContact
+        };
+        setInitValues(intialValue);
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
+        setEditDataLoading(false);
+        ref?.current?.scrollTo({ y: 0, animated: true });
+      } else {
+        ref?.current?.scrollTo({ y: 0, animated: true });
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(error) }));
+        setEditDataLoading(false);
+      }
+
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
-      setErrorMsgs((prev: any) => ({
-        ...prev,
-        errorMsg: isErrorDispaly(error),
-      }));
+      setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(error) }));
       setEditDataLoading(false);
-    }
+    };
   };
 
+
   const handleUpdate = async (values: any) => {
-    setBtnLoading(true);
+    setBtnLoading(true)
     const formteddateOfBirth = formatDateTimeAPI(date);
-    const formatedexpityDate = formatDateTimeAPI(expirydate);
+    const formatedexpityDate = formatDateTimeAPI(expirydate)
     const updateValues = trimValues(values);
     let Obj = {
-      idIssuranceCountry: updateValues.idIssuranceCountry || "",
-      documentCountry: "",
-      firstName: encryptAES(updateValues.firstName) || "",
-      lastName: encryptAES(updateValues.lastName) || "",
-      documentType: updateValues.documentType || "",
-      documentNumber: encryptAES(updateValues.documentNumber) || "",
-      expirationDate: encryptAES(formatedexpityDate) || "",
-      dob: formteddateOfBirth || "",
-      gender: updateValues.gender || "",
-      frontIdPhoto: uploadImgs?.frontIdPhoto || "",
-      backDocImage: uploadImgs?.backIdPhoto || "",
-      handHoldingIdPhoto: uploadImgs?.handHoldingPhoto || "",
-      faceImage: uploadImgs?.selfie || "",
-      singaturePhoto: uploadImgs.signImage || "",
-      emergencyContact: updateValues?.emergencyContactPhoneNumber || "",
-      emergencyContactName: updateValues.emergencyContactName || "",
-      emergencyContactEmail: updateValues.emergencyContactEmail || "",
-      emergencyContactMobileCode: updateValues?.emergencyContactPhoneCode || "",
+      "idIssuranceCountry": updateValues.idIssuranceCountry || "",
+      "documentCountry": "",
+      "firstName": encryptAES(updateValues.firstName) || "",
+      "lastName": encryptAES(updateValues.lastName) || "",
+      "documentType": updateValues.documentType || "",
+      "documentNumber": encryptAES(updateValues.documentNumber) || "",
+      "expirationDate": encryptAES(formatedexpityDate) || "",
+      "dob": formteddateOfBirth || "",
+      "gender": updateValues.gender || "",
+      "frontIdPhoto": uploadImgs?.frontIdPhoto || "",
+      "backDocImage": uploadImgs?.backIdPhoto || "",
+      "handHoldingIdPhoto": uploadImgs?.handHoldingPhoto || "",
+      "faceImage": uploadImgs?.selfie || "",
+      "singaturePhoto": uploadImgs.signImage || "",
+      "emergencyContact": updateValues?.emergencyContactPhoneNumber || "",
+      "emergencyContactName": updateValues.emergencyContactName || "",
+      "emergencyContactEmail": updateValues.emergencyContactEmail || "",
+      "emergencyContactMobileCode": updateValues?.emergencyContactPhoneCode || "",
     };
 
     try {
@@ -314,7 +245,7 @@ const AddKycInfomation = (props: any) => {
       if (res.status === 200) {
         getMemDetails({}, false, true);
         await sendWebhook("Update");
-        dispatch(isCardKycCompleted(true));
+        dispatch(isCardKycCompleted(true))
         if (props?.route?.params?.screenName === "splash_Screen") {
           props?.navigation.dispatch(
             CommonActions.reset({
@@ -322,37 +253,31 @@ const AddKycInfomation = (props: any) => {
               routes: [{ name: "underReview" }],
             })
           );
-          setBtnLoading(false);
+          setBtnLoading(false)
           setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
         } else {
           props?.navigation?.goBack();
         }
+
       } else {
-        setErrorMsgs((prev: any) => ({
-          ...prev,
-          errorMsg: isErrorDispaly(res),
-        }));
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(res) }))
 
         ref?.current?.scrollTo({ y: 0, animated: true });
-        setBtnLoading(false);
+        setBtnLoading(false)
       }
-      setErrorMsgs((prev: any) => ({
-        ...prev,
-        handHoldingPhotoError: "",
-        frontPhotoIdError: "",
-      }));
-    } catch (error) {
+      setErrorMsgs((prev: any) => ({ ...prev, handHoldingPhotoError: "", frontPhotoIdError: "" }))
+    }
+    catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
-      setErrorMsgs((prev: any) => ({
-        ...prev,
-        errorMsg: isErrorDispaly(error),
-      }));
+      setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(error) }))
 
-      setBtnLoading(false);
+      setBtnLoading(false)
     }
   };
 
-  const acceptedExtensions = [".jpg", ".jpeg", ".png"];
+
+
+  const acceptedExtensions = ['.jpg', '.jpeg', '.png'];
   const verifyFileTypes = (fileList) => {
     const fileName = fileList;
     if (!hasAcceptedExtension(fileName)) {
@@ -362,17 +287,14 @@ const AddKycInfomation = (props: any) => {
     return true;
   };
   const hasAcceptedExtension = (fileName: string) => {
-    const extension = fileName
-      .substring(fileName.lastIndexOf("."))
-      .toLowerCase();
+    const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
     return acceptedExtensions.includes(extension);
   };
 
   const uploadFrontPhotoId = async () => {
+    Keyboard.dismiss();
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -386,37 +308,23 @@ const AddKycInfomation = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              frontIdPhoto:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, frontIdPhoto: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "frontIdPhoto",
-            });
+              docType: "frontIdPhoto"
+            })
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValid) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           } else if (!isValidSize) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           }
         }
@@ -424,16 +332,16 @@ const AddKycInfomation = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
-    } finally {
-      setUploading(false);
     }
+    finally {
+      setUploading(false);
+    };
   };
 
   const handleSelectSignPhoto = async () => {
+    Keyboard.dismiss();
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       setSignModelVisible(false);
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
@@ -447,37 +355,25 @@ const AddKycInfomation = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              signImage:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, signImage: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }))
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "singaturePhoto",
-            });
+              docType: "singaturePhoto"
+            })
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
+
           }
         } else {
+
           if (!isValid) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));;
             ref?.current?.scrollTo({ y: 0, animated: true });
           } else if (!isValidSize) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           }
         }
@@ -485,9 +381,11 @@ const AddKycInfomation = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
-    } finally {
-      setUploading(false);
     }
+    finally {
+      setUploading(false);
+    };
+
   };
 
   const verifyFileSize = (fileSize: any) => {
@@ -495,10 +393,9 @@ const AddKycInfomation = (props: any) => {
     return fileSize <= maxSizeInBytes;
   };
   const uploadHandHoldingPhotoID = async () => {
+    Keyboard.dismiss();
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValidType = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -512,38 +409,24 @@ const AddKycInfomation = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              handHoldingPhoto:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, handHoldingPhoto: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "handHoldingPhoto",
-            });
+              docType: "handHoldingPhoto"
+            })
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValidType) {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
           } else if (!isValidSize) {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
           }
         }
       }
@@ -552,42 +435,39 @@ const AddKycInfomation = (props: any) => {
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIdPhotoLoading(false);
-    }
+    };
   };
 
+
   const selectSignPhoto = async (event: any) => {
+    Keyboard.dismiss();
     try {
       setSignPhotoLoading(true);
       let Obj = {
-        imageBytes: event.encoded,
-      };
+        "imageBytes": event.encoded
+      }
       const uploadRes = await ProfileService.uploadSingnitureFile(Obj);
       if (uploadRes.status === 200) {
-        setUploadImgs((prev: any) => ({
-          ...prev,
-          signImage:
-            uploadRes?.data && uploadRes.data?.length > 0
-              ? uploadRes.data[0]
-              : "",
-        }));
+        setUploadImgs((prev: any) => ({ ...prev, signImage: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
         handleUpdateDocuments({
           url: uploadRes.data[0],
-          docType: "singaturePhoto",
-        });
+          docType: "singaturePhoto"
+        })
         setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
-      } else {
+
+      }
+      else {
         ref?.current?.scrollTo({ y: 0, animated: true });
-        setErrorMsgs((prev: any) => ({
-          ...prev,
-          errorMsg: isErrorDispaly(uploadRes),
-        }));
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
+
       }
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
-    } finally {
-      setSignPhotoLoading(false);
     }
+    finally {
+      setSignPhotoLoading(false);
+    };
   };
 
   useEffect(() => {
@@ -625,8 +505,9 @@ const AddKycInfomation = (props: any) => {
     } else {
       const today = moment();
       const birthDate = moment(value);
-      return today.diff(birthDate, "years") >= 18;
+      return today.diff(birthDate, 'years') >= 18;
     }
+
   };
 
   const validate = async (values: any) => {
@@ -645,7 +526,7 @@ const AddKycInfomation = (props: any) => {
     if (!date) {
       errors.dateOfBirth = PROFILE_CONSTANTS.IS_REQUIRED;
     } else if (!validateAge(date)) {
-      errors.dateOfBirth = "You must be at least 18 years old";
+      errors.dateOfBirth = 'You must be at least 18 years old';
     }
     if (!uploadImgs?.selfie) {
       ref?.current?.scrollTo({ y: 0, animated: true });
@@ -653,18 +534,18 @@ const AddKycInfomation = (props: any) => {
     }
     if (!expirydate) {
       errors.expireyDate = PROFILE_CONSTANTS.IS_REQUIRED;
-    } else if (expirydate <= newDate) {
-      errors.expireyDate =
-        CREATE_KYC_ADDRESS_CONST.EXPIRY_DATE_VALIDATION_VALIDATION;
+    }
+    else if (expirydate <= newDate) {
+      errors.expireyDate = CREATE_KYC_ADDRESS_CONST.EXPIRY_DATE_VALIDATION_VALIDATION;
     }
 
     // Update manual UI errors (if needed)
     setErrorMsgs((prev: any) => ({
       ...prev,
-      frontPhotoIdError: errors.frontIdPhoto || "",
-      handHoldingPhotoError: errors.handHoldingPhoto || "",
-      selfieError: errors.selfie || "",
-      signImageError: errors.signImage || "",
+      frontPhotoIdError: errors.frontIdPhoto || '',
+      handHoldingPhotoError: errors.handHoldingPhoto || '',
+      selfieError: errors.selfie || '',
+      signImageError: errors.signImage || '',
     }));
 
     // Scroll to top if any error exists
@@ -675,13 +556,15 @@ const AddKycInfomation = (props: any) => {
     return errors;
   };
 
+
   const handleExpiryDateModel = () => {
-    setExpiryDatePicker(!expiryDatePicker);
+    setExpiryDatePicker(!expiryDatePicker)
   };
 
   const handleDateOfBirthModel = () => {
-    setShowPicker(!showPicker);
+    setShowPicker(!showPicker)
   };
+
 
   const requestCameraPermission = async () => {
     try {
@@ -695,10 +578,7 @@ const AddKycInfomation = (props: any) => {
       if (result === RESULTS.GRANTED) {
         return true;
       } else if (result === RESULTS.DENIED) {
-        Alert.alert(
-          PROFILE_CONSTANTS.PERMISSION,
-          PROFILE_CONSTANTS.CAMERA_ACCESS_IS_NEEDED_TO_TAKE_A_SELFIE
-        );
+        Alert.alert(PROFILE_CONSTANTS.PERMISSION, PROFILE_CONSTANTS.CAMERA_ACCESS_IS_NEEDED_TO_TAKE_A_SELFIE);
         return false;
       } else if (result === RESULTS.BLOCKED) {
         Alert.alert(
@@ -712,7 +592,9 @@ const AddKycInfomation = (props: any) => {
     }
   };
 
+
   const selectSelfie = async () => {
+    Keyboard.dismiss();
     setOpenSelfiePopup(false);
     // setUploadImgs((prev: any) => ({ ...prev, selfie: "" }))
     const hasPermission = await requestCameraPermission();
@@ -720,57 +602,39 @@ const AddKycInfomation = (props: any) => {
       return;
     }
     try {
-      const result = await launchCamera({
-        mediaType: "photo",
-        cameraType: "front",
-      });
-      setOpenSelfiePopup(false);
+      const result = await launchCamera({ mediaType: 'photo', cameraType: "front" });
+      setOpenSelfiePopup(false)
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
         if (isValid && isValidSize) {
           setIsSelfieLoading(true);
           let formData = new FormData();
-          formData.append("document", {
+          formData.append('document', {
             uri: result.assets[0].uri,
             type: result.assets[0].type,
             name: result.assets[0].fileName,
           });
           const uploadRes = await ProfileService.uploadFile(formData);
 
-          setOpenSelfiePopup(false);
+          setOpenSelfiePopup(false)
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              selfie:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, selfie: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "profileImage",
-            });
+              docType: "profileImage"
+            })
           } else {
-            setOpenSelfiePopup(false);
+            setOpenSelfiePopup(false)
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValid) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           } else if (!isValidSize) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           }
         }
@@ -784,10 +648,9 @@ const AddKycInfomation = (props: any) => {
   };
 
   const selectBackPhoto = async () => {
+    Keyboard.dismiss();
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
@@ -801,38 +664,22 @@ const AddKycInfomation = (props: any) => {
           });
           const uploadRes = await ProfileService.uploadFile(formData);
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              backIdPhoto:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, backIdPhoto: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "backDocImage",
-            });
-          } else {
+              docType: "backDocImage"
+            })
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValid) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           } else if (!isValidSize) {
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(
-                PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB
-              ),
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB) }));
             ref?.current?.scrollTo({ y: 0, animated: true });
           }
         }
@@ -840,25 +687,25 @@ const AddKycInfomation = (props: any) => {
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
-    } finally {
-      setBackLoading(false);
     }
+    finally {
+      setBackLoading(false);
+    };
   };
 
   const handleVisibleSignModel = () => {
-    setSignModelVisible(!signModelVisible);
+    setSignModelVisible(!signModelVisible)
   };
 
   const handleCloseSignModel = () => {
-    setSignModelVisible(false);
+    setSignModelVisible(false)
   };
 
   const selectFacePhoto = async () => {
-    setOpenSelfiePopup(false);
+    setOpenSelfiePopup(false)
     try {
-      const result = await launchImageLibrary({
-        mediaType: PROFILE_CONSTANTS.PHOTO,
-      });
+
+      const result = await launchImageLibrary({ mediaType: PROFILE_CONSTANTS.PHOTO });
 
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValidType = verifyFileTypes(result.assets[0].fileName);
@@ -871,81 +718,62 @@ const AddKycInfomation = (props: any) => {
             type: result.assets[0].type,
             name: result.assets[0].fileName,
           });
-          setOpenSelfiePopup(false);
+          setOpenSelfiePopup(false)
           const uploadRes = await ProfileService.uploadFile(formData);
 
           if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({
-              ...prev,
-              selfie:
-                uploadRes?.data && uploadRes.data?.length > 0
-                  ? uploadRes.data[0]
-                  : "",
-            }));
+            setUploadImgs((prev: any) => ({ ...prev, selfie: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
             handleUpdateDocuments({
               url: uploadRes.data[0],
-              docType: "profileImage",
-            });
+              docType: "profileImage"
+            })
             setIsSelfieLoading(false);
-          } else {
+          }
+          else {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setOpenSelfiePopup(false);
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: isErrorDispaly(uploadRes),
-            }));
+            setOpenSelfiePopup(false)
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValidType) {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
+
           } else if (!isValidSize) {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrorMsgs((prev: any) => ({
-              ...prev,
-              errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
-            }));
+            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
+
           }
         }
       }
     } catch (err) {
-      setOpenSelfiePopup(false);
+      setOpenSelfiePopup(false)
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIsSelfieLoading(false);
-      setOpenSelfiePopup(false);
-    }
+      setOpenSelfiePopup(false)
+    };
   };
   const handleCloseError = () => {
     setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
   };
 
+
   const getListOfCountryCodeDetails = async () => {
     try {
       const response: any = await CardsModuleService.getPersonalAddressLu();
       if (response?.status === 200) {
-        setLists((prev: any) => ({
-          ...prev,
-          countryCodelist: response?.data?.PhoneCodes,
-        }));
+        setLists((prev: any) => ({ ...prev, countryCodelist: response?.data?.PhoneCodes }));
         setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
+
       } else {
         ref?.current?.scrollTo({ y: 0, animated: true });
-        setErrorMsgs((prev: any) => ({
-          ...prev,
-          errorMsg: isErrorDispaly(response),
-        }));
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(response) }));
       }
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
-      setErrorMsgs((prev: any) => ({
-        ...prev,
-        errorMsg: isErrorDispaly(error),
-      }));
+      setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(error) }));
     }
   };
 
@@ -958,6 +786,11 @@ const AddKycInfomation = (props: any) => {
     return false;
   };
 
+  const handleDocNumber = (value: any, setFieldValue: any) => {
+    const formattedText = value?.replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+    setFieldValue("documentNumber", formattedText);
+  };
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
       <ScrollView
@@ -973,55 +806,22 @@ const AddKycInfomation = (props: any) => {
           )}
           {!editDataLoading && (
             <>
-              <View
-                style={[
-                  commonStyles.dflex,
-                  commonStyles.mb43,
-                  commonStyles.alignCenter,
-                ]}
+              <View style={[commonStyles.dflex, commonStyles.mb43, commonStyles.alignCenter]}
               >
-                <TouchableOpacity
-                  style={[styles.pr16, styles.px8]}
-                  onPress={handleGoBack}
-                >
+                <TouchableOpacity style={[styles.pr16, styles.px8]} onPress={handleGoBack}>
                   <View>
                     <View>
-                      <AntDesign
-                        name={PROFILE_CONSTANTS?.ARROW_LEFT}
-                        size={s(22)}
-                        color={NEW_COLOR.TEXT_BLACK}
-                      />
+                      <AntDesign name={PROFILE_CONSTANTS?.ARROW_LEFT} size={s(22)} color={NEW_COLOR.TEXT_BLACK} />
                     </View>
                   </View>
                 </TouchableOpacity>
                 <View>
-                  <ParagraphComponent
-                    style={[
-                      commonStyles.fs16,
-                      commonStyles.textBlack,
-                      commonStyles.fw700,
-                    ]}
-                    text={
-                      isFormLocked
-                        ? PROFILE_CONSTANTS?.EDIT_KYC_INFORMATION
-                        : PROFILE_CONSTANTS?.ADD_KYC_INFORMATION
-                    }
-                  />
-                  <ParagraphComponent
-                    text={PROFILE_CONSTANTS?.NOTE_PLEASE_WRITE_IN_ENGLISH}
-                    style={[
-                      commonStyles.fs10,
-                      commonStyles.textBlack,
-                      commonStyles.fw300,
-                      { fontStyle: "italic" },
-                    ]}
-                  />
+                  <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw700]} text={isFormLocked ? PROFILE_CONSTANTS?.EDIT_KYC_INFORMATION : PROFILE_CONSTANTS?.ADD_KYC_INFORMATION} />
+                  <ParagraphComponent text={PROFILE_CONSTANTS?.NOTE_PLEASE_WRITE_IN_ENGLISH} style={[commonStyles.fs10, commonStyles.textBlack, commonStyles.fw300, { fontStyle: "italic" }]} />
                 </View>
               </View>
               {errorMsgs?.errorMsg && (
-                <ErrorComponent
-                  message={errorMsgs?.errorMsg}
-                  onClose={handleCloseError}
+                <ErrorComponent message={errorMsgs?.errorMsg} onClose={handleCloseError}
                 />
               )}
               <Formik
@@ -1033,15 +833,7 @@ const AddKycInfomation = (props: any) => {
                 enableReinitialize
               >
                 {(formik) => {
-                  const {
-                    touched,
-                    handleSubmit,
-                    errors,
-                    handleBlur,
-                    handleChange,
-                    values,
-                    setFieldValue,
-                  } = formik;
+                  const { touched, handleSubmit, errors, handleBlur, handleChange, values, setFieldValue } = formik;
                   return (
                     <>
                       <View>
@@ -1052,23 +844,13 @@ const AddKycInfomation = (props: any) => {
                           component={InputDefault}
                           error={errors.firstName}
                           editable={!isFormLocked}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
+                          Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />}
                         />
                         <View style={[commonStyles.mb24]} />
                         <Field
                           name="lastName"
                           label={USER_CONSTANTS?.LAST_NAME_LABEL}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
+                          Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />}
                           placeholder={USER_CONSTANTS?.ENTER_LAST_NAME}
                           component={InputDefault}
                           error={errors.lastName}
@@ -1090,10 +872,7 @@ const AddKycInfomation = (props: any) => {
                           component={CustomPickerAcc}
                           disable={isFormLocked && userInfo?.isSumsubKyc}
                           Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
+                            <LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />
                           }
                         />
                         <View style={[commonStyles.mb26]} />
@@ -1102,10 +881,7 @@ const AddKycInfomation = (props: any) => {
                         <Field
                           activeOpacity={0.9}
                           innerRef={doctype}
-                          style={{
-                            color: PROFILE_CONSTANTS.TRANSPARENT,
-                            backgroundColor: PROFILE_CONSTANTS.TRANSPARENT,
-                          }}
+                          style={{ color: PROFILE_CONSTANTS.TRANSPARENT, backgroundColor: PROFILE_CONSTANTS.TRANSPARENT }}
                           label={FIELD_CONSTANTS.DOCUMENT_TYPE}
                           touched={touched.documentType}
                           name={FORMIK_CONSTANTS.DOCUMENT_TYPE}
@@ -1113,22 +889,12 @@ const AddKycInfomation = (props: any) => {
                           handleBlur={handleBlur}
                           customContainerStyle={{ height: 80 }}
                           data={lists?.idTypesLookUp}
-                          placeholder={
-                            PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE
-                          }
-                          modalTitle={
-                            PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE
-                          }
+                          placeholder={PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE}
+                          modalTitle={PLACEHOLDER_CONSTANTS.SELECT_DOCUMENT_TYPE}
                           placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
                           disable={isFormLocked && userInfo?.isSumsubKyc}
                           component={CustomPickerAcc}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
-                        />
+                          Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />} />
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
@@ -1138,60 +904,24 @@ const AddKycInfomation = (props: any) => {
                           name={FORMIK_CONSTANTS.DOCUMENT_NUMBER}
                           label={FIELD_CONSTANTS.DOCUMNET_NUMBER}
                           error={errors.documentNumber}
+                          onChangeText={(value: any) => { handleDocNumber(value, setFieldValue) }}
                           handleBlur={handleBlur}
-                          autoCapitalize={"characters"}
                           customContainerStyle={{ height: 80 }}
-                          placeholder={
-                            PLACEHOLDER_CONSTANTS.ENTER_DOCUMENT_NUMBER
-                          }
+                          placeholder={PLACEHOLDER_CONSTANTS.ENTER_DOCUMENT_NUMBER}
                           component={InputDefault}
                           editable={!isFormLocked || !userInfo?.isSumsubKyc}
                           innerRef={docno}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
-                        />
+                          Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />} />
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
-                        <LabelComponent
-                          text={FIELD_CONSTANTS.DOCUMNET_EXPIRY_DATE}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
-                          style={[commonStyles.mb10]}
-                        />
-                        <View
-                          style={[
-                            styles.input,
-                            commonStyles.dflex,
-                            commonStyles.alignCenter,
-                            commonStyles.justifyContent,
-                            isFormLocked && userInfo?.isSumsubKyc
-                              ? commonStyles?.disabledBg
-                              : null,
-                          ]}
-                        >
-                          {(expirydate !== null && (
-                            <ParagraphComponent
-                              style={[
-                                commonStyles.fs14,
-                                commonStyles.textBlack,
-                              ]}
-                              text={formatDateMonth(expirydate)}
-                            />
-                          )) || (
-                            <ParagraphComponent
-                              style={[commonStyles.fs14, commonStyles.textGrey]}
-                              text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                            />
-                          )}
+                        <LabelComponent text={FIELD_CONSTANTS.DOCUMNET_EXPIRY_DATE} Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />} style={[commonStyles.mb10]} />
+                        <View style={[styles.input, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, (isFormLocked && userInfo?.isSumsubKyc) ? commonStyles?.disabledBg : null]} >
+                          {expirydate !== null && (
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack]} text={formatDateMonth(expirydate)} />
+                          ) || (
+                              <ParagraphComponent style={[commonStyles.fs14, commonStyles.textGrey]} text={PROFILE_CONSTANTS?.DD_MM_YYYY} />
+                            )}
                           {expiryDatePicker && (
                             <DatePickers
                               title={"Select Document Expiry Date"}
@@ -1209,67 +939,30 @@ const AddKycInfomation = (props: any) => {
                               theme={PROFILE_CONSTANTS.DARK}
                               minimumDate={new Date()}
                             />
+
                           )}
                           <View>
-                            <Feather
-                              name={PROFILE_CONSTANTS.CALENDER}
-                              size={22}
-                              color={PROFILE_CONSTANTS.WHITE_COLOR}
-                              onPress={handleExpiryDateModel}
-                              disabled={isFormLocked && userInfo?.isSumsubKyc}
-                            />
+                            <Feather name={PROFILE_CONSTANTS.CALENDER} size={22} color={PROFILE_CONSTANTS.WHITE_COLOR} onPress={handleExpiryDateModel} disabled={isFormLocked && userInfo?.isSumsubKyc} />
                           </View>
                         </View>
                       </View>
 
                       <View>
                         {errors.expireyDate && (
-                          <ParagraphComponent
-                            style={[
-                              commonStyles.fs12,
-                              commonStyles.fw400,
-                              commonStyles.textError,
-                              commonStyles.mt4,
-                            ]}
-                            text={errors.expireyDate}
-                          />
-                        )}
+                          <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textError, commonStyles.mt4]} text={errors.expireyDate} />)}
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
-                        <LabelComponent
-                          text={FIELD_CONSTANTS?.DATE_OF_BIRTH}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
-                          style={[commonStyles.mb10]}
-                        />
-                        <View
-                          style={[
-                            styles.input,
-                            commonStyles.dflex,
-                            commonStyles.alignCenter,
-                            commonStyles.justifyContent,
-                            isFormLocked ? commonStyles.disabledBg : null,
-                          ]}
-                        >
-                          {(date !== null && (
-                            <ParagraphComponent
-                              style={[
-                                commonStyles.fs14,
-                                commonStyles.textBlack,
-                              ]}
-                              text={formatDateMonth(date)}
-                            />
-                          )) || (
-                            <ParagraphComponent
-                              style={[commonStyles.fs14, commonStyles.textGrey]}
-                              text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                            />
-                          )}
+                        <LabelComponent text={FIELD_CONSTANTS?.DATE_OF_BIRTH} Children={<LabelComponent
+                          text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
+                          style={commonStyles.textError}
+                        />} style={[commonStyles.mb10]} />
+                        <View style={[styles.input, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, isFormLocked ? commonStyles.disabledBg : null]}>
+                          {date !== null && (
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack]} text={formatDateMonth(date)} />
+                          ) || (
+                              <ParagraphComponent style={[commonStyles.fs14, commonStyles.textGrey]} text={PROFILE_CONSTANTS?.DD_MM_YYYY} />
+                            )}
                           {showPicker && (
                             <DatePickers
                               modal
@@ -1278,7 +971,7 @@ const AddKycInfomation = (props: any) => {
                               open={showPicker}
                               date={date || new Date()}
                               onConfirm={(date) => {
-                                setShowPicker(false);
+                                setShowPicker(false)
                                 setDate(date);
                               }}
                               onCancel={() => {
@@ -1287,178 +980,74 @@ const AddKycInfomation = (props: any) => {
                               theme={PROFILE_CONSTANTS?.DARK}
                               maximumDate={new Date()}
                             />
+
                           )}
                           <View>
-                            <Feather
-                              name={PROFILE_CONSTANTS.CALENDER}
-                              size={22}
-                              color={PROFILE_CONSTANTS.WHITE_COLOR}
-                              onPress={handleDateOfBirthModel}
-                              disabled={isFormLocked}
-                            />
+                            <Feather name={PROFILE_CONSTANTS.CALENDER} size={22} color={PROFILE_CONSTANTS.WHITE_COLOR} onPress={handleDateOfBirthModel} disabled={isFormLocked} />
                           </View>
                         </View>
                       </View>
                       <View>
-                        {(errors?.dateOfBirth ||
-                          errorMsgs?.dateOfBirthError) && (
-                          <ParagraphComponent
-                            style={[
-                              commonStyles.fs12,
-                              commonStyles.fw400,
-                              commonStyles.textError,
-                              commonStyles.mt4,
-                            ]}
-                            text={
-                              errors.dateOfBirth || errorMsgs?.dateOfBirthError
-                            }
-                          />
+                        {(errors?.dateOfBirth || errorMsgs?.dateOfBirthError) && (
+                          <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textError, commonStyles.mt4]}
+                            text={errors.dateOfBirth || errorMsgs?.dateOfBirthError} />
                         )}
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
-                        <LabelComponent
-                          text={FIELD_CONSTANTS.GENDER}
-                          Children={
-                            <LabelComponent
-                              text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
-                              style={commonStyles.textError}
-                            />
-                          }
-                          style={[commonStyles.mb10]}
-                        />
+                        <LabelComponent text={FIELD_CONSTANTS.GENDER} Children={<LabelComponent
+                          text={PLACEHOLDER_CONSTANTS?.REQUIRED_STAR}
+                          style={commonStyles.textError}
+                        />} style={[commonStyles.mb10]} />
                         <RadioButton
                           options={lists?.genderLookUp}
                           selectedOption={values?.gender}
-                          onSelect={(val: any) =>
-                            setFieldValue(PLACEHOLDER_CONSTANTS.GENDER, val)
-                          }
+                          onSelect={(val: any) => setFieldValue(PLACEHOLDER_CONSTANTS.GENDER, val)}
                           nameField={FIELD_CONSTANTS?.NAME}
                           valueField={FIELD_CONSTANTS?.NAME}
-                          disabled={isFormLocked && userInfo?.isSumsubKyc}
+                          disabled={(isFormLocked && userInfo?.isSumsubKyc)}
                         />
                       </View>
                       <View>
                         {errors?.gender && (
-                          <ParagraphComponent
-                            style={[
-                              styles.ml12,
-                              commonStyles.fs12,
-                              commonStyles.fw400,
-                              commonStyles.textError,
-                              { marginLeft: 0 },
-                            ]}
-                            text={errors?.gender}
-                          />
+                          <ParagraphComponent style={[styles.ml12, commonStyles.fs12, commonStyles.fw400, commonStyles.textError, { marginLeft: 0 }]} text={errors?.gender} />
                         )}
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
-                        <TouchableOpacity
-                          onPress={uploadFrontPhotoId}
-                          activeOpacity={0.6}
-                          disabled={isFormLocked && userInfo?.isSumsubKyc}
-                        >
-                          <View>
+                        <TouchableOpacity onPress={uploadFrontPhotoId} activeOpacity={0.6} disabled={isFormLocked && userInfo?.isSumsubKyc}>
+                          <View >
                             <LabelComponent
-                              text={
-                                FIELD_CONSTANTS.UPLOAD_YOUR_FORNT_PHOTO_ID_20MB
-                              }
-                              Children={
-                                <LabelComponent
-                                  text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                                  style={commonStyles.textError}
-                                />
-                              }
-                            />
-                            <View
-                              style={[
-                                styles.SelectStyle,
-                                isFormLocked && userInfo?.isSumsubKyc
-                                  ? commonStyles.disabledBg
-                                  : null,
-                              ]}
-                            >
-                              <Ionicons
-                                name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                size={22}
-                                color={
-                                  isFormLocked && userInfo?.isSumsubKyc
-                                    ? "rgba(175, 175, 175, 0.50)"
-                                    : NEW_COLOR.TEXT_BLACK
-                                }
-                              />
-                              <ParagraphComponent
-                                style={[
-                                  commonStyles.fs16,
-                                  commonStyles.fw500,
-                                  {
-                                    color:
-                                      isFormLocked && userInfo?.isSumsubKyc
-                                        ? "rgba(175, 175, 175, 0.50)"
-                                        : NEW_COLOR.TEXT_BLACK,
-                                  },
-                                ]}
-                                text={
-                                  PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FRONT_PHOTO_ID
-                                }
-                                numberOfLines={1}
-                              />
+                              text={FIELD_CONSTANTS.UPLOAD_YOUR_FORNT_PHOTO_ID_20MB}
+                              Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />} />
+                            <View style={[styles.SelectStyle, (isFormLocked && userInfo?.isSumsubKyc) ? commonStyles.disabledBg : null]}>
+                              <Ionicons name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE} size={22} color={(isFormLocked && userInfo?.isSumsubKyc) ? 'rgba(175, 175, 175, 0.50)' : NEW_COLOR.TEXT_BLACK} />
+                              <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw500, { color: (isFormLocked && userInfo?.isSumsubKyc) ? 'rgba(175, 175, 175, 0.50)' : NEW_COLOR.TEXT_BLACK }]} text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FRONT_PHOTO_ID} numberOfLines={1} />
                             </View>
-                            {errorMsgs.frontPhotoIdError && (
-                              <ParagraphComponent
-                                style={[commonStyles.textError]}
-                                text={errorMsgs.frontPhotoIdError}
-                              />
-                            )}
+                            {errorMsgs.frontPhotoIdError && <ParagraphComponent style={[commonStyles.textError]} text={errorMsgs.frontPhotoIdError} />}
                           </View>
                         </TouchableOpacity>
                         <View style={[commonStyles.mb16]} />
-                        <View
-                          style={[
-                            commonStyles.flex1,
-                            commonStyles.justifyCenter,
-                            commonStyles.alignCenter,
-                          ]}
-                        >
+                        <View style={[commonStyles.flex1, commonStyles.justifyCenter, commonStyles.alignCenter]} >
                           {uploading && (
-                            <View
-                              style={[
-                                commonStyles.dflex,
-                                commonStyles.alignCenter,
-                                commonStyles.justifyCenter,
-                                { minHeight: 150 },
-                              ]}
-                            >
-                              <ActivityIndicator
-                                size={PROFILE_CONSTANTS.LARGE}
-                                color={NEW_COLOR.TEXT_GREY}
-                              />
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { minHeight: 150 }]}>
+                              <ActivityIndicator size={PROFILE_CONSTANTS.LARGE} color={NEW_COLOR.TEXT_GREY} />
                             </View>
                           )}
-                          {uploadImgs?.frontIdPhoto && !uploading && (
+                          {(uploadImgs?.frontIdPhoto) && !uploading && (
                             <View style={[styles.passport]}>
                               <Image
-                                style={[
-                                  commonStyles.rounded16,
-                                  commonStyles.flex1,
-                                ]}
+                                style={[commonStyles.rounded16, commonStyles.flex1]}
                                 overlayColor="#fff"
                                 resizeMode="contain"
                                 source={{ uri: uploadImgs?.frontIdPhoto }}
                               />
                             </View>
                           )}
-                          {!uploadImgs?.frontIdPhoto && !uploading && (
-                            <View
-                              style={[styles.passport, commonStyles.image_Bg]}
-                            >
+                          {(!uploadImgs?.frontIdPhoto && !uploading) && (
+                            <View style={[styles.passport, commonStyles.image_Bg]}>
                               <Image
-                                style={[
-                                  commonStyles.mxAuto,
-                                  commonStyles.rounded16,
-                                  commonStyles.flex1,
-                                ]}
+                                style={[commonStyles.mxAuto, commonStyles.rounded16, commonStyles.flex1]}
                                 overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
                                 resizeMode="contain"
                                 source={require("../../assets/images/cards/passport.png")}
@@ -1468,226 +1057,97 @@ const AddKycInfomation = (props: any) => {
                         </View>
                         <View style={[commonStyles.mb26]} />
                         <View style={[styles.bgorange]}>
-                          <View
-                            style={[
-                              commonStyles.dflex,
-                              commonStyles.gap8,
-                              commonStyles.mb8,
-                              commonStyles.mr8,
-                            ]}
-                          >
-                            <Feather
-                              name={PROFILE_CONSTANTS.INFO}
-                              size={14}
-                              style={{ marginTop: 4 }}
-                              color={NEW_COLOR.TEXT_GREY}
-                            />
+                          <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.mb8, commonStyles.mr8]}>
+                            <Feather name={PROFILE_CONSTANTS.INFO} size={14} style={{ marginTop: 4 }} color={NEW_COLOR.TEXT_GREY} />
                             <View>
-                              <ParagraphComponent
-                                style={[
-                                  commonStyles.fs12,
-                                  commonStyles.textGrey,
-                                  commonStyles.fw400,
-                                  commonStyles.mb4,
-                                ]}
-                                text={
-                                  PLACEHOLDER_CONSTANTS.PLEASE_UPLOAD_THE_A_PHOTO_OF_THE_INFORMATION_PAGE_ALONG_WITH_YOUR_PRIFILE_PICTURE
-                                }
-                              />
-                              <ParagraphComponent
-                                style={[
-                                  commonStyles.fs12,
-                                  commonStyles.textGrey,
-                                  commonStyles.fw400,
-                                ]}
-                                text={
-                                  PLACEHOLDER_CONSTANTS.ENSURE_THAT_THE_ID_FRAME_IS_FULLY_VISIBLE_THE_FRONT_IS_CLEAR_AND_THE_BRIGHTNESS_IS_UNIFORM
-                                }
-                              />
+                              <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400, commonStyles.mb4]}
+                                text={PLACEHOLDER_CONSTANTS.PLEASE_UPLOAD_THE_A_PHOTO_OF_THE_INFORMATION_PAGE_ALONG_WITH_YOUR_PRIFILE_PICTURE} />
+                              <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400]}
+                                text={PLACEHOLDER_CONSTANTS.ENSURE_THAT_THE_ID_FRAME_IS_FULLY_VISIBLE_THE_FRONT_IS_CLEAR_AND_THE_BRIGHTNESS_IS_UNIFORM} />
                             </View>
                           </View>
                         </View>
                         <View style={[commonStyles.mb26]} />
                       </View>
 
-                      {isHideField(values.backDocImage, !isFormLocked) && (
-                        <View>
-                          <TouchableOpacity
-                            onPress={selectBackPhoto}
-                            activeOpacity={0.6}
-                            disabled={false}
-                          >
-                            <View>
-                              <LabelComponent
-                                text={FIELD_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID}
-                              />
-                              <View style={[styles.SelectStyle]}>
-                                <Ionicons
-                                  name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                  size={22}
-                                  color={NEW_COLOR.TEXT_BLACK}
-                                />
-                                <ParagraphComponent
-                                  style={[
-                                    commonStyles.fs16,
-                                    commonStyles.fw500,
-                                    { color: NEW_COLOR.TEXT_BLACK },
-                                  ]}
-                                  text={
-                                    PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID
-                                  }
-                                  numberOfLines={1}
-                                />
-                              </View>
-                            </View>
-                          </TouchableOpacity>
-                          <View style={[commonStyles.mb16]} />
-                          <View
-                            style={[
-                              commonStyles.flex1,
-                              commonStyles.justifyCenter,
-                              commonStyles.alignCenter,
-                            ]}
-                          >
-                            {isBackLoading && (
-                              <View
-                                style={[
-                                  commonStyles.dflex,
-                                  commonStyles.alignCenter,
-                                  commonStyles.justifyCenter,
-                                  { minHeight: 150 },
-                                ]}
-                              >
-                                <ActivityIndicator
-                                  size={PROFILE_CONSTANTS.LARGE}
-                                  color={NEW_COLOR.TEXT_GREY}
-                                />
-                              </View>
-                            )}
-                            {uploadImgs?.backIdPhoto && !isBackLoading && (
-                              <View style={[styles.passport]}>
-                                <Image
-                                  style={[
-                                    commonStyles.rounded16,
-                                    commonStyles.flex1,
-                                  ]}
-                                  overlayColor="#fff"
-                                  resizeMode="contain"
-                                  source={{ uri: uploadImgs?.backIdPhoto }}
-                                />
-                              </View>
-                            )}
-                            {!uploadImgs?.backIdPhoto && !isBackLoading && (
-                              <View
-                                style={[styles.passport, commonStyles.image_Bg]}
-                              >
-                                <Image
-                                  style={[
-                                    commonStyles.mxAuto,
-                                    commonStyles.rounded16,
-                                    commonStyles.flex1,
-                                  ]}
-                                  overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
-                                  resizeMode="contain"
-                                  source={require("../../assets/images/cards/passport.png")}
-                                />
-                              </View>
-                            )}
-                          </View>
-                          <View style={[commonStyles.mb26]} />
-                        </View>
-                      )}
-
-                      <View>
-                        <TouchableOpacity
-                          onPress={handleOpenSelfiePopup}
-                          activeOpacity={0.6}
-                        >
-                          <View>
+                      {isHideField(values.backDocImage, !isFormLocked) && <View>
+                        <TouchableOpacity onPress={selectBackPhoto} activeOpacity={0.6} disabled={false}>
+                          <View >
                             <LabelComponent
-                              text={FIELD_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO_20MB}
-                              Children={
-                                <LabelComponent
-                                  text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                                  style={commonStyles.textError}
-                                />
-                              }
-                            />
+                              text={FIELD_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID} />
                             <View style={[styles.SelectStyle]}>
-                              <Ionicons
-                                name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                size={22}
-                                color={NEW_COLOR.TEXT_BLACK}
-                              />
-                              <ParagraphComponent
-                                style={[
-                                  commonStyles.fs16,
-                                  commonStyles.textBlack,
-                                  commonStyles.fw500,
-                                ]}
-                                text={
-                                  PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO
-                                }
-                                numberOfLines={1}
-                              />
+                              <Ionicons name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE} size={22} color={NEW_COLOR.TEXT_BLACK} />
+                              <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw500, { color: NEW_COLOR.TEXT_BLACK }]} text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_BACK_PHOTO_ID} numberOfLines={1} />
                             </View>
                           </View>
                         </TouchableOpacity>
-                        {errorMsgs.selfieError && (
-                          <ParagraphComponent
-                            style={commonStyles.textError}
-                            text={errorMsgs.selfieError}
-                          />
-                        )}
                         <View style={[commonStyles.mb16]} />
-
-                        <View
-                          style={[
-                            commonStyles.flex1,
-                            commonStyles.justifyCenter,
-                            commonStyles.alignCenter,
-                          ]}
-                        >
-                          {isSelfieLoading && (
-                            <View
-                              style={[
-                                commonStyles.dflex,
-                                commonStyles.alignCenter,
-                                commonStyles.justifyCenter,
-                                { minHeight: 150 },
-                              ]}
-                            >
-                              <ActivityIndicator
-                                size={PROFILE_CONSTANTS.LARGE}
-                                color={NEW_COLOR.TEXT_GREY}
+                        <View style={[commonStyles.flex1, commonStyles.justifyCenter, commonStyles.alignCenter]} >
+                          {isBackLoading && (
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { minHeight: 150 }]}>
+                              <ActivityIndicator size={PROFILE_CONSTANTS.LARGE} color={NEW_COLOR.TEXT_GREY} />
+                            </View>
+                          )}
+                          {uploadImgs?.backIdPhoto && !isBackLoading && (
+                            <View style={[styles.passport]}>
+                              <Image
+                                style={[commonStyles.rounded16, commonStyles.flex1]}
+                                overlayColor="#fff"
+                                resizeMode="contain"
+                                source={{ uri: uploadImgs?.backIdPhoto }}
                               />
                             </View>
                           )}
-                          {uploadImgs?.selfie && !isSelfieLoading && (
-                            <View style={[styles.passport]}>
+                          {!uploadImgs?.backIdPhoto && !isBackLoading && (
+                            <View style={[styles.passport, commonStyles.image_Bg]}>
                               <Image
-                                style={[
-                                  commonStyles.rounded16,
-                                  commonStyles.flex1,
-                                ]}
+                                style={[commonStyles.mxAuto, commonStyles.rounded16, commonStyles.flex1]}
+                                overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
+                                resizeMode="contain"
+                                source={require("../../assets/images/cards/passport.png")}
+                              />
+                            </View>
+                          )}
+                        </View>
+                        <View style={[commonStyles.mb26]} />
+                      </View>}
+
+
+                      <View>
+                        <TouchableOpacity onPress={handleOpenSelfiePopup} activeOpacity={0.6} >
+                          <View >
+                            <LabelComponent text={FIELD_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO_20MB}
+                              Children={<LabelComponent text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR} style={commonStyles.textError} />} />
+                            <View style={[styles.SelectStyle]}>
+                              <Ionicons name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE} size={22} color={NEW_COLOR.TEXT_BLACK} />
+                              <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw500]} text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO} numberOfLines={1} />
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                        {errorMsgs.selfieError && <ParagraphComponent style={commonStyles.textError} text={errorMsgs.selfieError} />}
+                        <View style={[commonStyles.mb16]} />
+
+                        <View style={[commonStyles.flex1, commonStyles.justifyCenter, commonStyles.alignCenter]}>
+                          {isSelfieLoading && (
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { minHeight: 150 }]}>
+                              <ActivityIndicator size={PROFILE_CONSTANTS.LARGE} color={NEW_COLOR.TEXT_GREY} />
+                            </View>
+                          )}
+                          {uploadImgs?.selfie && !isSelfieLoading && (
+                            <View style={[styles.passport,]}>
+                              <Image
+                                style={[commonStyles.rounded16, commonStyles.flex1]}
                                 overlayColor="#fff"
                                 resizeMode="contain"
                                 source={{ uri: uploadImgs?.selfie }}
                               />
                             </View>
                           )}
-                          {!uploadImgs?.selfie && !isSelfieLoading && (
-                            <View
-                              style={[
-                                styles.passport,
-                                { backgroundColor: "#928781" },
-                              ]}
-                            >
+                          {(!uploadImgs?.selfie && !isSelfieLoading) && (
+
+                            <View style={[styles.passport, { backgroundColor: "#928781" }]}>
                               <Image
-                                style={[
-                                  commonStyles.mxAuto,
-                                  { width: "100%", flex: 1 },
-                                ]}
+                                style={[commonStyles.mxAuto, { width: "100%", flex: 1 }]}
                                 overlayColor={PROFILE_CONSTANTS.TRANSPARENT}
                                 resizeMode="contain"
                                 source={require("../../assets/images/userface.jpg")}
@@ -1698,285 +1158,161 @@ const AddKycInfomation = (props: any) => {
                         <View style={[commonStyles.mb24]} />
                       </View>
 
-                      {isHideField(
-                        values.handHoldingIDPhoto,
-                        !isFormLocked
-                      ) && (
-                        <View>
-                          <TouchableOpacity
-                            onPress={uploadHandHoldingPhotoID}
-                            activeOpacity={0.6}
-                          >
-                            <LabelComponent
-                              text={
-                                PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB
-                              }
-                              Children={
-                                <LabelComponent
-                                  text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                                  style={commonStyles.textError}
-                                />
-                              }
-                            />
-                            <View style={[styles.SelectStyle]}>
-                              <Ionicons
-                                name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                size={22}
-                                color={NEW_COLOR.TEXT_BLACK}
-                              />
-                              <ParagraphComponent
-                                style={[
-                                  commonStyles.fs16,
-                                  commonStyles.textBlack,
-                                  commonStyles.fw500,
-                                ]}
-                                text={
-                                  FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID
-                                }
-                                numberOfLines={1}
-                              />
-                            </View>
-                          </TouchableOpacity>
-                          {errorMsgs.handHoldingPhotoError && (
-                            <ParagraphComponent
-                              style={[commonStyles.textError]}
-                              text={errorMsgs.handHoldingPhotoError}
-                            />
-                          )}
-                          <View style={[commonStyles.mb16]} />
-                          <View style={[commonStyles.mb16]} />
-                          <View
-                            style={[
-                              commonStyles.flex1,
-                              commonStyles.justifyCenter,
-                              commonStyles.alignCenter,
-                            ]}
-                          >
-                            {idPhotoLoading && (
-                              <View
-                                style={[
-                                  commonStyles.dflex,
-                                  commonStyles.alignCenter,
-                                  commonStyles.justifyCenter,
-                                  { minHeight: 150 },
-                                ]}
-                              >
-                                <ActivityIndicator
-                                  size={PROFILE_CONSTANTS.LARGE}
-                                  color={NEW_COLOR.TEXT_GREY}
-                                />
-                              </View>
-                            )}
-                            {uploadImgs?.handHoldingPhoto &&
-                              !idPhotoLoading && (
-                                <View style={[styles.passport]}>
-                                  <Image
-                                    style={[
-                                      commonStyles.rounded16,
-                                      commonStyles.flex1,
-                                    ]}
-                                    overlayColor="#fff"
-                                    resizeMode="contain"
-                                    source={{
-                                      uri: uploadImgs?.handHoldingPhoto,
-                                    }}
-                                  />
-                                </View>
-                              )}
-                            {!uploadImgs?.handHoldingPhoto &&
-                              !idPhotoLoading && (
-                                <View
-                                  style={[
-                                    styles.passport,
-                                    { backgroundColor: "#F5F8FF" },
-                                  ]}
-                                >
-                                  <Image
-                                    style={{
-                                      borderRadius: 12,
-                                      flex: 1,
-                                      width: "100%",
-                                    }}
-                                    overlayColor="#fff"
-                                    resizeMode="contain"
-                                    source={require("../../assets/images/cards/passportholding.png")}
-                                  />
-                                </View>
-                              )}
-                          </View>
-                          <View style={[commonStyles.mb24]} />
-                        </View>
-                      )}
-
-                      {isHideField(values.signature, !isFormLocked) && (
-                        <View>
-                          <TouchableOpacity
-                            onPress={handleVisibleSignModel}
-                            activeOpacity={0.6}
-                          >
-                            <View>
+                      {isHideField(values.handHoldingIDPhoto, !isFormLocked) && <View>
+                        <TouchableOpacity onPress={uploadHandHoldingPhotoID} activeOpacity={0.6}>
+                          <LabelComponent text={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB}
+                            Children={
                               <LabelComponent
-                                text={FIELD_CONSTANTS.SIGNATURE_PHOTO_20MB}
+                                text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
+                                style={commonStyles.textError}
                               />
-                              <View style={[styles.SelectStyle]}>
-                                <Ionicons
-                                  name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                  size={22}
-                                  color={NEW_COLOR.TEXT_BLACK}
-                                />
-                                <ParagraphComponent
-                                  style={[
-                                    commonStyles.fs16,
-                                    commonStyles.textBlack,
-                                    commonStyles.fw500,
-                                  ]}
-                                  text={PROFILE_CONSTANTS?.ADD_YOUR_SIGNATURE}
-                                />
-                              </View>
-                              {errorMsgs.signImageError && (
-                                <ParagraphComponent
-                                  style={[commonStyles.textError]}
-                                  text={errorMsgs.signImageError}
-                                />
-                              )}
+                            }
+                          />
+                          <View style={[styles.SelectStyle]}>
+                            <Ionicons name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE} size={22} color={NEW_COLOR.TEXT_BLACK} />
+                            <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw500]} text={FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID} numberOfLines={1} />
+                          </View>
+                        </TouchableOpacity>
+                        {errorMsgs.handHoldingPhotoError && <ParagraphComponent style={[commonStyles.textError]} text={errorMsgs.handHoldingPhotoError} />}
+                        <View style={[commonStyles.mb16]} />
+                        <View style={[commonStyles.mb16]} />
+                        <View style={[commonStyles.flex1, commonStyles.justifyCenter, commonStyles.alignCenter]}>
+                          {idPhotoLoading && (
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { minHeight: 150 }]}>
+                              <ActivityIndicator size={PROFILE_CONSTANTS.LARGE} color={NEW_COLOR.TEXT_GREY} />
                             </View>
-                          </TouchableOpacity>
-                          <View style={[commonStyles.mb16]} />
-                          <View
-                            style={[
-                              commonStyles.flex1,
-                              commonStyles.justifyCenter,
-                              commonStyles.alignCenter,
-                            ]}
-                          >
-                            {signPhotoLoading && (
-                              <View
-                                style={[
-                                  commonStyles.dflex,
-                                  commonStyles.alignCenter,
-                                  commonStyles.justifyCenter,
-                                  { minHeight: 150 },
-                                ]}
-                              >
-                                <ActivityIndicator
-                                  size={PROFILE_CONSTANTS.LARGE}
-                                  color={NEW_COLOR.TEXT_GREY}
+                          )}
+                          {(uploadImgs?.handHoldingPhoto) &&
+                            !idPhotoLoading && (
+                              <View style={[styles.passport,]}>
+                                <Image
+                                  style={[commonStyles.rounded16, commonStyles.flex1]}
+                                  overlayColor="#fff"
+                                  resizeMode="contain"
+                                  source={{ uri: uploadImgs?.handHoldingPhoto }}
                                 />
                               </View>
                             )}
-                            {uploadImgs.signImage && !signPhotoLoading && (
-                              <View
-                                style={[
-                                  styles.passport,
-                                  { backgroundColor: "#fff" },
-                                ]}
-                              >
+                          {!(uploadImgs?.handHoldingPhoto) &&
+                            !idPhotoLoading && (
+                              <View style={[styles.passport, { backgroundColor: "#F5F8FF" }]}>
                                 <Image
-                                  style={[
-                                    commonStyles.rounded16,
-                                    commonStyles.flex1,
-                                  ]}
+                                  style={{ borderRadius: 12, flex: 1, width: "100%" }}
+                                  overlayColor="#fff"
+                                  resizeMode="contain"
+                                  source={require("../../assets/images/cards/passportholding.png")}
+                                />
+                              </View>
+                            )}
+                        </View>
+                        <View style={[commonStyles.mb24]} />
+                      </View>}
+
+
+                      {isHideField(values.signature, !isFormLocked) && <View>
+                        <TouchableOpacity onPress={handleVisibleSignModel} activeOpacity={0.6} >
+                          <View>
+                            <LabelComponent text={FIELD_CONSTANTS.SIGNATURE_PHOTO_20MB} />
+                            <View style={[styles.SelectStyle]}>
+                              <Ionicons name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE} size={22} color={NEW_COLOR.TEXT_BLACK} />
+                              <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw500]} text={PROFILE_CONSTANTS?.ADD_YOUR_SIGNATURE} />
+                            </View>
+                            {errorMsgs.signImageError && <ParagraphComponent style={[commonStyles.textError]} text={errorMsgs.signImageError} />}
+                          </View>
+                        </TouchableOpacity>
+                        <View style={[commonStyles.mb16]} />
+                        <View style={[commonStyles.flex1, commonStyles.justifyCenter, commonStyles.alignCenter]} >
+                          {signPhotoLoading && (
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { minHeight: 150 }]}>
+                              <ActivityIndicator size={PROFILE_CONSTANTS.LARGE} color={NEW_COLOR.TEXT_GREY} />
+                            </View>
+                          )}
+                          {uploadImgs.signImage &&
+                            !signPhotoLoading && (
+                              <View style={[styles.passport, { backgroundColor: "#fff" }]}>
+                                <Image
+                                  style={[commonStyles.rounded16, commonStyles.flex1]}
                                   resizeMode="contain"
                                   overlayColor="#fff"
                                   source={{ uri: uploadImgs.signImage }}
                                 />
                               </View>
                             )}
-                            {!uploadImgs.signImage && !signPhotoLoading && (
-                              <View style={[styles.passport]}>
+                          {!(uploadImgs.signImage) &&
+                            !signPhotoLoading && (
+                              <View style={[styles.passport,]}>
                                 <Image
-                                  style={{
-                                    borderRadius: 16,
-                                    flex: 1,
-                                    width: "100%",
-                                  }}
+                                  style={{ borderRadius: 16, flex: 1, width: "100%" }}
                                   resizeMode="cover"
                                   source={require("../../assets/images/cards/default-sign.png")}
                                 />
                               </View>
                             )}
-                          </View>
-                          <View style={[commonStyles.mb24]} />
-                          <Modal
-                            animationType={PROFILE_CONSTANTS.SLIDE}
-                            transparent={true}
-                            visible={popupVisible}
-                            onRequestClose={togglePopup}
-                          >
-                            <View style={styles.popupContainer}>
-                              <View style={styles.popupContent}>
-                                <View
-                                  style={[
-                                    commonStyles.dflex,
-                                    commonStyles.justifyContent,
-                                    commonStyles.alignCenter,
-                                    commonStyles.mb30,
-                                  ]}
-                                >
-                                  <ParagraphComponent
-                                    text={PROFILE_CONSTANTS.SIGN_HERE}
-                                    style={[
-                                      commonStyles.textBlack,
-                                      commonStyles.fs16,
-                                      commonStyles.fw700,
-                                    ]}
-                                  />
-                                  <TouchableOpacity onPress={togglePopup}>
-                                    <AntDesign
-                                      name={PROFILE_CONSTANTS.CLOSE}
-                                      size={22}
-                                      color={NEW_COLOR.TEXT_BLACK}
-                                    />
-                                  </TouchableOpacity>
-                                </View>
-                                <View style={styles.signatureCaptureContainer}>
-                                  <SignatureCanvas
-                                    ref={signatureRef}
-                                    onOK={handleSaveSignature}
-                                    onEmpty={() => {}}
-                                    descriptionText="Sign here"
-                                    clearText="Clear"
-                                    confirmText="Save"
-                                    penColor="#000000"
-                                    backgroundColor="#ffffff"
-                                    webStyle={`
-                                        .m-signature-pad {box-shadow: none; border: none; } 
-                                        .m-signature-pad--body {border: none;}
-                                        .m-signature-pad--footer {display: none; margin: 0px;}
-                                        body,html {
-                                        width: 100%; height: 100%;}
-                                    `}
-                                  />
-                                </View>
-                                <View style={[commonStyles.mb24]} />
-
-                                <DefaultButton
-                                  title={PROFILE_CONSTANTS.SAVE}
-                                  style={undefined}
-                                  loading={btnLoading}
-                                  disable={undefined}
-                                  onPress={saveSign}
-                                />
-                                <View style={[commonStyles.mb16]} />
-                                <DefaultButton
-                                  title={PROFILE_CONSTANTS.RESET}
-                                  style={undefined}
-                                  backgroundColors={undefined}
-                                  colorful={undefined}
-                                  loading={btnLoading}
-                                  disable={undefined}
-                                  onPress={resetSign}
-                                  transparent={true}
-                                  iconArrowRight={false}
-                                  closeIcon={true}
+                        </View>
+                        <View style={[commonStyles.mb24]} />
+                        <Modal
+                          animationType={PROFILE_CONSTANTS.SLIDE}
+                          transparent={true}
+                          visible={popupVisible}
+                          onRequestClose={togglePopup}
+                        >
+                          <View style={styles.popupContainer}>
+                            <View style={styles.popupContent}>
+                              <View
+                                style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter, commonStyles.mb30]} >
+                                <ParagraphComponent text={PROFILE_CONSTANTS.SIGN_HERE} style={[commonStyles.textBlack, commonStyles.fs16, commonStyles.fw700]} />
+                                <TouchableOpacity onPress={togglePopup}>
+                                  <AntDesign name={PROFILE_CONSTANTS.CLOSE} size={22} color={NEW_COLOR.TEXT_BLACK} />
+                                </TouchableOpacity>
+                              </View>
+                              <View style={styles.signatureCaptureContainer}>
+                                <SignatureCanvas
+                                  ref={signatureRef}
+                                  onOK={handleSaveSignature}
+                                  onEmpty={() => { }}
+                                  descriptionText="Sign here"
+                                  clearText="Clear"
+                                  confirmText="Save"
+                                  penColor="#000000"
+                                  backgroundColor="#ffffff"
+                                  webStyle={`
+                    .m-signature-pad {box-shadow: none; border: none; } 
+                    .m-signature-pad--body {border: none;}
+                    .m-signature-pad--footer {display: none; margin: 0px;}
+                    body,html {
+                    width: 100%; height: 100%;}
+                `}
                                 />
                               </View>
-                            </View>
-                          </Modal>
-                        </View>
-                      )}
+                              <View style={[commonStyles.mb24]} />
 
-                      {isHideField(values?.emergencyContactName, true) && (
+                              <DefaultButton
+                                title={PROFILE_CONSTANTS.SAVE}
+                                style={undefined}
+                                loading={btnLoading}
+                                disable={undefined}
+                                onPress={saveSign}
+                              />
+                              <View style={[commonStyles.mb16]} />
+                              <DefaultButton
+                                title={PROFILE_CONSTANTS.RESET}
+                                style={undefined}
+                                backgroundColors={undefined}
+                                colorful={undefined}
+                                loading={btnLoading}
+                                disable={undefined}
+                                onPress={resetSign}
+                                transparent={true}
+                                iconArrowRight={false}
+                                closeIcon={true}
+                              />
+
+                            </View>
+                          </View>
+                        </Modal>
+                      </View>}
+
+                      {isHideField(values?.emergencyContactName, true) &&
                         <View>
                           <Field
                             touched={touched.emergencyContactName}
@@ -1984,36 +1320,19 @@ const AddKycInfomation = (props: any) => {
                             label={FIELD_CONSTANTS.EMERGENCY_CONTACT_NAME}
                             error={errors.emergencyContactName}
                             handleBlur={handleBlur}
-                            placeholder={
-                              PLACEHOLDER_CONSTANTS.ENTER_EMERGENCY_CONTACT_NAME
-                            }
+                            placeholder={PLACEHOLDER_CONSTANTS.ENTER_EMERGENCY_CONTACT_NAME}
                             component={InputDefault}
                             editable={!isFormLocked}
                           />
 
                           <View style={[commonStyles.mb32]} />
-                        </View>
-                      )}
-                      {isHideField(
-                        values?.emergencyContactPhoneNumber,
-                        true
-                      ) && (
+                        </View>}
+                      {isHideField(values?.emergencyContactPhoneNumber, true) &&
                         <View>
                           <LabelComponent
                             text={" Emergency Contact Number "}
-                            style={[
-                              commonStyles.fs12,
-                              commonStyles.fw500,
-                              NEW_COLOR.TEXT_LABEL,
-                            ]}
-                          />
-                          <View
-                            style={[
-                              commonStyles.relative,
-                              commonStyles.dflex,
-                              commonStyles.gap8,
-                            ]}
-                          >
+                            style={[commonStyles.fs12, commonStyles.fw500, NEW_COLOR.TEXT_LABEL]} />
+                          <View style={[commonStyles.relative, commonStyles.dflex, commonStyles.gap8]}>
                             <PhoneCodePicker
                               modalTitle={"Select Country Code"}
                               style={undefined}
@@ -2023,21 +1342,14 @@ const AddKycInfomation = (props: any) => {
                               placeholder="Select"
                               containerStyle={[]}
                               onChange={(item) =>
-                                setFieldValue(
-                                  "emergencyContactPhoneCode",
-                                  item.code
-                                )
+                                setFieldValue("emergencyContactPhoneCode", item.code)
                               }
                               disable={isFormLocked}
                             />
                             <TextInput
                               style={[styles.inputStyle, commonStyles.mb4]}
                               placeholder="Enter  Emergency Contact Number"
-                              onChangeText={(text) =>
-                                handleChange("emergencyContactPhoneNumber")(
-                                  text.replace(/[^0-9]/g, "")
-                                )
-                              }
+                              onChangeText={(text) => handleChange("emergencyContactPhoneNumber")(text.replace(/[^0-9]/g, ""))}
                               onBlur={handleBlur("emergencyContactPhoneNumber")}
                               value={values.emergencyContactPhoneNumber}
                               keyboardType="phone-pad"
@@ -2047,9 +1359,8 @@ const AddKycInfomation = (props: any) => {
                             />
                           </View>
                           <View style={[commonStyles.mb24]} />
-                        </View>
-                      )}
-                      {isHideField(values?.emergencyContactEmail, true) && (
+                        </View>}
+                      {isHideField(values?.emergencyContactEmail, true) &&
                         <View>
                           <Field
                             touched={touched.emergencyContactEmail}
@@ -2061,31 +1372,22 @@ const AddKycInfomation = (props: any) => {
                             placeholder={"Emergency Contact Email"}
                             component={InputDefault}
                             editable={!isFormLocked}
-                            innerRef={emergencyEmail}
-                          />
+                            innerRef={emergencyEmail} />
 
                           <View style={[commonStyles.mb32]} />
                         </View>
-                      )}
-                      {!userInfo?.isSumsubKyc && (
-                        <View
-                          style={[
-                            commonStyles.justify,
-                            commonStyles.flexColumn,
-                            commonStyles.f,
-                          ]}
-                        >
-                          <DefaultButton
-                            title={PROFILE_CONSTANTS.SAVE}
-                            style={undefined}
-                            iconArrowRight={false}
-                            iconCheck={true}
-                            loading={btnLoading}
-                            disable={undefined}
-                            onPress={handleSubmit}
-                          />
-                        </View>
-                      )}
+                      }
+                      {!userInfo?.isSumsubKyc && <View style={[commonStyles.justify, commonStyles.flexColumn, commonStyles.f]}>
+                        <DefaultButton
+                          title={PROFILE_CONSTANTS.SAVE}
+                          style={undefined}
+                          iconArrowRight={false}
+                          iconCheck={true}
+                          loading={btnLoading}
+                          disable={undefined}
+                          onPress={handleSubmit}
+                        />
+                      </View>}
                       <View style={commonStyles.mb32} />
                     </>
                   );
@@ -2121,6 +1423,7 @@ const AddKycInfomation = (props: any) => {
         windowHeight={WINDOW_HEIGHT}
       />
     </SafeAreaView>
+
   );
 };
 
@@ -2128,57 +1431,41 @@ export default AddKycInfomation;
 const styles = StyleSheet.create({
   ml12: { marginLeft: 12 },
   px8: { paddingVertical: 8 },
-  wauto: { alignSelf: "flex-start" },
+  wauto: { alignSelf: 'flex-start', },
   SelectStyle: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
+    justifyContent: "center", borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: NEW_COLOR.DASHED_BORDER_STYLE,
     marginBottom: 6,
-    gap: 9,
-    minHeight: 54,
-    backgroundColor: NEW_COLOR.BG_BLACK,
+    gap: 9, minHeight: 54, backgroundColor: NEW_COLOR.BG_BLACK,
     borderStyle: "dashed",
   },
-  bgorange: {
-    backgroundColor: NEW_COLOR.MENU_CARD_BG,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  passport: {
-    width: "100%",
-    borderRadius: 16,
-    height: 250,
-    borderWidth: 1,
-    borderColor: NEW_COLOR.BORDER_LIGHT,
-    overflow: "hidden",
-  },
-  pr16: { paddingRight: 16 },
+  bgorange: { backgroundColor: NEW_COLOR.MENU_CARD_BG, paddingHorizontal: 24, paddingVertical: 16, borderRadius: 12, },
+  passport: { width: '100%', borderRadius: 16, height: 250, borderWidth: 1, borderColor: NEW_COLOR.BORDER_LIGHT, overflow: "hidden" },
+  pr16: { paddingRight: 16, },
   popupContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   popupContent: {
     backgroundColor: NEW_COLOR.DARK_BG,
     padding: 20,
     borderRadius: 10,
-    width: "90%",
+    width: '90%',
   },
   signatureCaptureContainer: {
-    alignItems: "center",
-    borderWidth: 1,
+    alignItems: 'center', borderWidth: 1,
     borderColor: NEW_COLOR.BORDER_GREY,
     borderRadius: 0,
   },
   signatureCapture: {
-    width: "100%",
+    width: '100%',
     height: (WINDOW_HEIGHT * 50) / 100,
     borderWidth: 1,
     borderColor: NEW_COLOR.BORDER_GREY,
@@ -2191,10 +1478,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: NEW_COLOR.TEXT_WHITE,
     paddingVertical: 8,
-    paddingHorizontal: 14,
-    height: 46,
-  },
-  inputStyle: {
+    paddingHorizontal: 14, height: 46
+  }, inputStyle: {
     borderColor: NEW_COLOR.SEARCH_BORDER,
     backgroundColor: NEW_COLOR.SCREENBG_WHITE,
     borderWidth: 1,
@@ -2207,6 +1492,6 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     flex: 1,
     multiline: false,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
   },
 });

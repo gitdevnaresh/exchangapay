@@ -298,6 +298,7 @@ const QuickKYCInfo = (props: any) => {
                                                     kycReqList={kycReqList}
                                                     formData={formData}
                                                     disableFields={initialValues}
+                                                    cardId={props?.route?.params?.cardId}
                                                 />
 
                                                 <View style={[commonStyles.mb43]} />

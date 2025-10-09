@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
-import { View, Image, ActivityIndicator, ImageBackground } from "react-native";
+import { View, Image, ActivityIndicator, ImageBackground, TouchableOpacity } from "react-native";
 import {
-  useIsFocused,
   useNavigation,
   CommonActions,
 } from "@react-navigation/native";
@@ -10,21 +9,10 @@ import { Checkbox, Container } from "../components";
 import { useAuth0 } from "react-native-auth0";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/useReduxStore";
-import crashlytics from "@react-native-firebase/crashlytics";
-import {
-  isSessionExpired,
-  loginAction,
-  isLogin,
-  setUserInfo,
-} from "../redux/Actions/UserActions";
+import { isSessionExpired, loginAction, isLogin, setUserInfo } from "../redux/Actions/UserActions";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DefaultButton from "../components/DefaultButton";
-import { TouchableOpacity } from "react-native";
-import {
-  NEW_COLOR,
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
-} from "../constants/theme/variables";
+import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../constants/theme/variables";
 import ParagraphComponent from "../components/Paragraph/Paragraph";
 import { ms, s } from "../constants/theme/scale";
 import { fcmNotification } from "../utils/FCMNotification";
@@ -35,23 +23,16 @@ import useMemberLogin from "../hooks/useMemberLogin";
 import useChekBio from "../hooks/useCheckBio";
 import { storeToken } from "../utils/helpers";
 const SplashScreen = React.memo(() => {
-  const { authorize, getCredentials, user, clearSession } = useAuth0();
+  const { authorize, getCredentials, clearSession } = useAuth0();
   const [loading, setLoading] = React.useState(false);
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
   const styles = useStyleSheet(themedStyles);
   const [fcmToken, setFcmToken] = React.useState<string>("");
-  const isFocused = useIsFocused();
   const [isNewLogin, setIsNewLogin] = React.useState<boolean>(false);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
-
-  // Check persisted Redux state for login status
-  const persistedLoginState = useSelector(
-    (state: any) => state.UserReducer?.login
-  );
-  const persistedUserInfo = useSelector(
-    (state: any) => state.UserReducer?.userInfo
-  );
+  const persistedLoginState = useSelector((state: any) => state.UserReducer?.login);
+  const persistedUserInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const [isChecked, setIsChecked] = React.useState<boolean>(false);
   const [show, setShow] = React.useState<boolean>(false);
   const { memberLoader, getMemDetails, isOnboarding } = useMemberLogin();
@@ -61,40 +42,22 @@ const SplashScreen = React.memo(() => {
   useEffect(() => {
     const initializeAuth = async () => {
       if (isInitialized) return;
-
-      console.log("=== AUTH INITIALIZATION ===");
-      console.log("Persisted login state:", persistedLoginState);
-      console.log("Persisted user info:", !!persistedUserInfo);
-
       setLoading(true);
       try {
-        // First, try to get existing Auth0 credentials
         const credentials = await getCredentials();
-        console.log("Auth0 credentials:", !!credentials?.accessToken);
-
         if (credentials?.accessToken) {
-          // User has valid Auth0 session
-          console.log("Auth0 session found, restoring...");
           await restoreUserSession(credentials, false);
         } else if (persistedLoginState && persistedUserInfo) {
-          // No Auth0 session but we have persisted Redux state
-          // This means the user was logged in but Auth0 session expired
-          console.log(
-            "No Auth0 session but persisted state found, clearing..."
-          );
           await clearPersistedState();
         } else {
           // No session at all, user needs to login
           console.log("No session found, user needs to login");
         }
       } catch (error) {
-        console.log("Auth initialization error:", error);
-        // Clear any invalid state
         await clearPersistedState();
       } finally {
         setLoading(false);
         setIsInitialized(true);
-        console.log("=== AUTH INITIALIZATION COMPLETE ===");
       }
     };
 
@@ -107,8 +70,14 @@ const SplashScreen = React.memo(() => {
     isNewLogin: boolean = false
   ) => {
     try {
-      console.log("Restoring user session, isNewLogin:", isNewLogin);
-      dispatch(loginAction(credentials));
+      const safeCredentials = {
+        accessToken: credentials?.accessToken || "",
+        refreshToken: credentials?.refreshToken || "",
+        idToken: credentials?.idToken || "",
+        expiresIn: credentials?.expiresIn || 0,
+        tokenType: credentials?.tokenType || "Bearer",
+      };
+      dispatch(loginAction(safeCredentials));
       await storeToken(credentials?.accessToken, credentials?.refreshToken);
 
       const userDetails = {
@@ -131,7 +100,7 @@ const SplashScreen = React.memo(() => {
     try {
       dispatch(loginAction(""));
       dispatch(isLogin(false));
-      dispatch(setUserInfo(""));
+      dispatch(setUserInfo(null));
       await clearSession();
     } catch (error) {
       console.log("Error clearing persisted state:", error);
@@ -325,27 +294,11 @@ const SplashScreen = React.memo(() => {
                 >
                   <DefaultButton
                     title={"Login"}
-                    customTitleStyle={styles.title}
+                    customTitleStyle={styles.btnConfirmTitle}
                     icon={undefined}
                     style={undefined}
                     customButtonStyle={styles.customeBtn}
                     onPress={onPress}
-                  />
-                  <View style={[commonStyles.mb8]} />
-                  <DefaultButton
-                    title={"Temp Login (JWT)"}
-                    customTitleStyle={[styles.title, { fontSize: ms(24) }]}
-                    icon={undefined}
-                    style={undefined}
-                    customButtonStyle={[
-                      styles.customeBtn,
-                      {
-                        backgroundColor: NEW_COLOR.BG_PURPLE,
-                        borderWidth: 2,
-                        borderColor: NEW_COLOR.TEXT_WHITE,
-                      },
-                    ]}
-                    onPress={onTempLoginPress}
                   />
                   <View style={[commonStyles.mb8]} />
                   <ParagraphComponent
@@ -448,14 +401,14 @@ const SplashScreen = React.memo(() => {
               title="Biometric Authentication Failed"
               remark=""
               amount=""
-              setRemark={() => {}}
-              setAmount={() => {}}
+              setRemark={() => { }}
+              setAmount={() => { }}
               btnLoading={false}
               btndisabled={false}
               erroMsg=""
               errorAmt=""
               stateErrorMsg=""
-              setStateErrorMsg={() => {}}
+              setStateErrorMsg={() => { }}
             />
           )}
         </SafeAreaView>

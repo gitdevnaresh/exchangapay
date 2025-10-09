@@ -28,7 +28,7 @@ const CardBalance = React.memo((props: any) => {
     const [topupLoading, setTopupLoading] = useState(false);
     const [errormsg, setErrormsg] = useState<any>("");
     const [depositData, setDeposiData] = useState<any>({});
-    const [depositDataLoading, setDepositDataLoading] = useState<boolean>(false);
+    const [depositDataLoading, setDepositDataLoading] = useState<boolean>(true);
     const [topupAmount, setTopupAmount] = useState('');
     const [feeComissionLoading, setFeeComissionLoading] = useState<boolean>(false);
     const [feeComissionData, setFeeComissionData] = useState<any>({});
@@ -203,8 +203,9 @@ const CardBalance = React.memo((props: any) => {
                 "amount": topupAmount,
                 "fee": feeComissionData?.fee,
                 "estimatedAmount": feeComissionData?.estimatedAmount,
+                "concurrencyStamp": feeComissionData?.concurrencyStamp || "",
                 "receivedAmount": feeComissionData?.toTalAmount
-            }
+            };
             const res = await CardsModuleService.saveDeposit(Obj);
             if (res.status === 200) {
                 setTopupLoading(false);

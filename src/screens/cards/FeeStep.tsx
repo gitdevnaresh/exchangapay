@@ -28,6 +28,7 @@ const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const FeeStep = (props: any) => {
     const [feeCardsLoading, setFeeCardsLoading] = useState<boolean>(false);
+    const [isLoading,setIsLoading]=useState<boolean>(true);
     const [applyCardsInfo, setCardsFeeInfo] = useState<any>({});
     const [errormsg, setErrormsg] = useState<string>('');
     const [custumErrormsg, setCustumErrormsg] = useState<{ isShow: boolean, errorList: string[] }>({ isShow: false, errorList: [] });
@@ -81,6 +82,7 @@ const FeeStep = (props: any) => {
             setCoinsDataList(response?.data);
             setErrormsg("");
             getNetworkList(response?.data[0]?.walletCode);
+                        setFeeCardsLoading(false);
 
         } else {
             ref?.current?.scrollTo({ y: 0, animated: true });
@@ -114,7 +116,7 @@ const FeeStep = (props: any) => {
     }
 
     const getApplyCardDeatilsInfo = async () => {
-        setFeeCardsLoading(true);
+         setIsLoading(true);
         setErrormsg('')
         const cardId = props?.route?.params?.cardId;
         try {
@@ -123,16 +125,16 @@ const FeeStep = (props: any) => {
                 setCardsFeeInfo(response?.data);
                 setSelectedCoin(response?.data?.paymentCurrency)
                 setErrormsg('');
-                setFeeCardsLoading(false);
+                setIsLoading(false);
             } else {
                 ref?.current?.scrollTo({ y: 0, animated: true });
                 setErrormsg(isErrorDispaly(response));
-                setFeeCardsLoading(false);
+                setIsLoading(false);
             }
         } catch (error) {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(error));
-            setFeeCardsLoading(false);
+            setIsLoading(false);
         }
     };
     const handleCustomerCardsWallet = async (values?: any) => {
@@ -231,12 +233,12 @@ const FeeStep = (props: any) => {
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
             <ScrollView ref={ref}>
                 <Container style={commonStyles.container}>
-                    {feeCardsLoading && (
+                    {feeCardsLoading||isLoading && (
                         <View style={[commonStyles.flex1]}>
                             <Loadding contenthtml={ExchangeCardSkeleton} />
                         </View>
                     )}
-                    {!feeCardsLoading && (
+                    {!feeCardsLoading&&!isLoading && (
                         <View>
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mb30, commonStyles.gap16]}>
                                 <TouchableOpacity style={[]} onPress={() => handleBack()}>

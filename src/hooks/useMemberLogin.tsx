@@ -67,7 +67,6 @@ const useMemberLogin = () => {
     try {
       setLoading(true);
       const userLoginInfo: any = await AuthService.getMemberInfo();
-      console.log("userLoginInfo", userLoginInfo);
       const userDetails = userLoginInfo?.data;
       if (userLoginInfo?.status === 200) {
         await Keychain.setGenericPassword(

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, TouchableOpacity, View, BackHandler, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, TouchableOpacity, View, BackHandler, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Container } from '../../components';
 import ErrorComponent from '../../components/Error';
 import { commonStyles } from '../../components/CommonStyles';
@@ -32,7 +32,8 @@ const EmailOtpVerification = (props: any) => {
     const userprofile = useSelector((state: any) => state.UserReducer?.userInfo);
     const { encryptAES, decryptAES } = useEncryptDecrypt();
     const decryptedEmail = decryptAES(userprofile.email);
-    
+    const [isResending, setIsResending] = useState<boolean>(false);
+
     // Create a ref to hold the Formik instance
     const formikRef = useRef<FormikProps<FormValues>>(null);
     
@@ -88,10 +89,12 @@ const EmailOtpVerification = (props: any) => {
         // Just clear the form value. The child component will now handle focusing automatically.
         setFieldValue('emailOTP', '');
         setErrorMsg('');
+        setIsResending(true);
         try {
             const payeeId = props?.route?.params?.payeeId;
             if (!payeeId) {
                 setErrorMsg(isErrorDispaly("Please Provide Payee Id"));
+                 setIsResending(false);
                 return;
             }
             const body = { "id": payeeId };
@@ -103,6 +106,8 @@ const EmailOtpVerification = (props: any) => {
             }
         } catch (error) {
             setErrorMsg(isErrorDispaly(error));
+        }finally{
+            setIsResending(false);
         }
     };
 
@@ -202,15 +207,24 @@ const EmailOtpVerification = (props: any) => {
                                         containerStyle={[commonStyles.gap20, commonStyles.mt10]}
                                     />
 
-                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mt10, commonStyles.justifyCenter]}>
-                                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={'Did not get the code? '} />
-                                        {(resendTimer > 0) 
-                                            ? <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textOrange,]} text={`Resend OTP in ${formattedTimer}`} />
-                                            : (<TouchableOpacity onPress={() => handleResendOtp(setFieldValue)}>
-                                                <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange,]} text={`Resend OTP`} />
-                                            </TouchableOpacity>)
-                                        }
-                                    </View>
+                                   <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mt10, commonStyles.justifyCenter]}>
+  <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={'Did not get the code? '} />
+  {resendTimer > 0 ? (
+    <ParagraphComponent
+      style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textOrange]}
+      text={`Resend OTP in ${formattedTimer}`}
+    />
+  ) : isResending ? (
+    <ActivityIndicator size="small" color={NEW_COLOR.BG_ORANGE} style={{ marginLeft: s(5) }} />
+  ) : (
+    <TouchableOpacity onPress={() => handleResendOtp(setFieldValue)}>
+      <ParagraphComponent
+        style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange]}
+        text={`Resend OTP`}
+      />
+    </TouchableOpacity>
+  )}
+</View>
                                 </Container>
                             </ScrollView>
 

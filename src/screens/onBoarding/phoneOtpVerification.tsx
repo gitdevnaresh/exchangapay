@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, TouchableOpacity, View, SafeAreaView, Text } from 'react-native';
+import { ScrollView, TouchableOpacity, View, SafeAreaView, Text, ActivityIndicator } from 'react-native';
 import { Container } from '../../components';
 import ErrorComponent from '../../components/Error';
 import { commonStyles } from '../../components/CommonStyles';
@@ -45,7 +45,8 @@ const PhoneOtpVerification = () => {
     const { encryptAES, decryptAES } = useEncryptDecrypt();
     const { sendWebhook } = useSendUserWebhook();
     const formikRef = useRef<FormikProps<any>>(null);
-
+    const [btnlLoader, setBtnLoader] = useState<boolean>(false);
+    const [isResendLoading, setIsResendLoading] = useState(false);
     const [loaders, setLoaders] = useState<any>({
         isPhoneNoEditable: true,
         isOTPButtonDisable: false,
@@ -107,8 +108,11 @@ const PhoneOtpVerification = () => {
     };
 
     const handleConfirmAndContinue = async (values: any, isResend?: boolean, setFieldValue?: (field: string, value: any) => void) => {
-        setErrorMsg("")
+        setErrorMsg("");
+        if (!isResend) {
+            setBtnLoader(true);
 
+        }
         if (!isOtpScreen || isResend) {
             if (isResend && setFieldValue) {
                 setFieldValue('phoneOTP', '');
@@ -116,9 +120,11 @@ const PhoneOtpVerification = () => {
             const { phoneNumber, phoneCode } = values;
             if (!phoneNumber || !phoneCode) {
                 setErrorMsg(REGISTRATION_CONSTATNTS.PHONE_NUMBER_IS_REQUIRED);
+                setBtnLoader(false);
                 return;
             } else if (phoneNumber.length < 5 || phoneNumber.length > 15) {
                 setErrorMsg(REGISTRATION_CONSTATNTS.PLEASE_ENTER_A_VALID_MOBILE_NUMBER);
+                setBtnLoader(false);
                 return;
             }
             const obj = {
@@ -127,10 +133,12 @@ const PhoneOtpVerification = () => {
                 isResendOTP: true,
             };
             try {
+                if (isResend) setIsResendLoading(true); // start loader
                 const response = await AuthService.getPhoneNumberOtp(obj);
                 if (response?.ok) {
                     setResendTimer(60);
                     setIsOtpScreen(true);
+                    setBtnLoader(false);
                     setInitValues((prevState: any) => ({
                         ...prevState,
                         phoneCode,
@@ -145,16 +153,22 @@ const PhoneOtpVerification = () => {
                         isOTPButtonDisable: true,
                     }));
                 } else {
+                    setBtnLoader(false);
                     setErrorMsg(isErrorDispaly(response));
                 }
             } catch (error) {
+                setBtnLoader(false);
                 setErrorMsg(isErrorDispaly(error));
             }
         } else {
+            setIsResendLoading(false);
+            setBtnLoader(true);
             if (!values.phoneOTP || values.phoneOTP.length !== 6) {
                 setErrorMsg("Please enter a valid OTP");
+                setBtnLoader(false);
                 return;
-            }
+            };
+
             try {
                 const Obj = {
                     "code": encryptAES(values.phoneOTP),
@@ -162,15 +176,23 @@ const PhoneOtpVerification = () => {
                     "phoneNumber": encryptAES(values.phoneNumber),
                     "isChangePhoneNumber": true
                 };
+                setResendTimer(60);
                 const response = await AuthService.verifyPhoneNumberOtp(Obj);
                 if (response?.ok) {
+                    setBtnLoader(false);
+                    setLoaders((prev: any) => ({
+                        ...prev,
+                        isTimerShow: false,
+                    }));
                     getMemDetails({});
                     await sendWebhook("Update");
 
                 } else {
+                    setBtnLoader(false);
                     setErrorMsg(isErrorDispaly(response));
                 }
             } catch (error) {
+                setBtnLoader(false);
                 setErrorMsg(isErrorDispaly(error));
             }
         }
@@ -235,8 +257,8 @@ const PhoneOtpVerification = () => {
     };
 
     const handleChangePhone = (text: any, setFieldValue: any) => {
-        setErrorMsg("")
-        setFieldValue("phoneNumber", text);
+        const numericText = text?.replace(/[^0-9]/g, '');
+        setFieldValue("phoneNumber", numericText);
     };
 
     return (
@@ -247,7 +269,7 @@ const PhoneOtpVerification = () => {
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap24]}>
                             {isOtpScreen &&
                                 <TouchableOpacity onPress={handleEditPhoneNumber} >
-                                    <AntDesign name="arrowleft" size={24} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
+                                    <AntDesign name="arrowleft" size={s(24)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
                                 </TouchableOpacity>
                             }
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
@@ -321,6 +343,7 @@ const PhoneOtpVerification = () => {
                                                     keyboardType="phone-pad"
                                                     onChangeText={(value: any) => handleChangePhone(value, setFieldValue)}
                                                     editable={loaders.isPhoneNoEditable}
+                                                    maxLength={15}
 
                                                 />
                                             </View>
@@ -353,6 +376,7 @@ const PhoneOtpVerification = () => {
                                         title={'Confirm and Continue'}
                                         customTitleStyle={{ color: NEW_COLOR.TEXT_ALWAYS_WHITE }}
                                         onPress={() => handleConfirmAndContinue(values, false, setFieldValue)}
+                                        loading={btnlLoader}
                                     />
                                     {isOtpScreen && (
 
@@ -360,16 +384,24 @@ const PhoneOtpVerification = () => {
                                             <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={'Did not get the code? '} />
                                             {loaders.isTimerShow && <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textOrange,]} text={`Resend OTP in ${formattedTimer}`} />}
 
-                                            {!loaders.isTimerShow && <TouchableOpacity onPress={() => handleConfirmAndContinue(values, true, setFieldValue)}>
-                                                <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange,]} text={`Resend OTP`} />
-                                            </TouchableOpacity>}
+                                            {!loaders.isTimerShow && (isResendLoading ? (
+                                                <ActivityIndicator size="small" color={NEW_COLOR.TEXT_ORANGE} style={{ marginLeft: 8 }} />
+                                            ) : (
+                                                <TouchableOpacity onPress={() => handleConfirmAndContinue(values, true, setFieldValue)}>
+                                                    <ParagraphComponent
+                                                        style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange]}
+                                                        text={`Resend OTP`}
+                                                    />
+                                                </TouchableOpacity>
+                                            )
+                                            )}
 
                                         </View>
 
                                     )}
                                     <View style={[commonStyles.mb8]} />
                                     <View style={[commonStyles.dflex, commonStyles.justifyCenter, commonStyles.alignCenter]}>
-                                        <TouchableOpacity onPress={handleLgout} style={[commonStyles.px10]} >
+                                        <TouchableOpacity onPress={handleLgout} disabled={btnlLoader} style={[commonStyles.px10]} >
                                             <Text style={[themedStyles.resend, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text>
                                         </TouchableOpacity>
 

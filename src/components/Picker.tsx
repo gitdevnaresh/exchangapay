@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, ScrollView, Image, StyleSheet, SafeAreaView } from 'react-native';
-import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../constants/theme/variables';
-import { Container } from '../components';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { View, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
+import { NEW_COLOR } from '../constants/theme/variables';
 import { ms, s } from '../constants/theme/scale';
 import { TextInput } from 'react-native-gesture-handler';
-import { text } from '../constants/theme/mixins';
 import Icons from '../assets/icons';
 import ParagraphComponent from './Paragraph/Paragraph';
 import { commonStyles } from './CommonStyles';
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { SvgFromUri, SvgUri } from 'react-native-svg';
+import { SvgUri } from 'react-native-svg';
 
 interface PickerProps {
   changeModalVisible: any,
@@ -41,19 +38,7 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
     changeModalVisible(false);
   }
 
-  // const handleChangeSearch = (e: any) => {
-  //   let value = e
-  //   if (value) {
-  //     const filterData = data.filter((item: any) => {
-  //       return item.name?.toLowerCase().includes(e.toLowerCase())
-  //     })
-  //     const listData = filterData.map((item: any) => ({ ...item, displayName: (customBind ? customBind.map((property) => (item[property] ? item[property] : property)).join("") : item.name) }))
-  //     setCountryList([...listData]);
-  //   } else {
-  //     const listData = data.map((item: any) => ({ ...item, displayName: (customBind ? customBind.map((property) => (item[property] ? item[property] : property)).join("") : item.name) }))
-  //     setCountryList([...data]);
-  //   }
-  // };
+
   const handleChangeSearch = (e: any) => {
     let value = e;
     if (typeof value === 'string') {
@@ -102,40 +87,39 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
   return (
 
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-      <ScrollView >
-        <View style={[commonStyles.flex1, commonStyles.p24]}>
 
-          <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
-            <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
-              <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-            </TouchableOpacity>
-            <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800,]} text={`${modalTitle ? modalTitle : "Select"}`} />
-          </View>
-          <View >{SearchBoxComponent}</View>
-          <View style={[commonStyles.mb16]} />
-          <View >
-            <FlatList
-              contentContainerStyle={{ gap: 10 }}
-              data={countryList}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => onPressItem(item)}>
-                  <View style={[styles.option, commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8,]}>
-                    {item?.flag && <Image style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} source={{ uri: item?.flag }} />}
-                    {item?.logo && <SvgUri uri={item.logo} style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} />}
-                    <ParagraphComponent text={(item?.displayName || item?.name)} style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1 },]} />
-                  </View>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) => index.toString()}
-              ListEmptyComponent={() => <View style={[styles.viewNodata, styles.containerHeight]}  >
-                <Image source={Icons.emptyList} style={{ width: 44, height: 44 }} />
-                <ParagraphComponent text={"No data"} style={[styles.txtNodata, commonStyles.textBlack, commonStyles.fs16]} />
-              </View>}
-            />
-          </View>
+      <View style={[commonStyles.flex1, commonStyles.p24]}>
+
+        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
+          <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
+            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+          </TouchableOpacity>
+          <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800,]} text={`${modalTitle ? modalTitle : "Select"}`} />
         </View>
-        {/* </TouchableOpacity> */}
-      </ScrollView>
+        <View >{SearchBoxComponent}</View>
+        <View style={[commonStyles.mb16]} />
+        <View >
+          <FlatList
+            contentContainerStyle={{ gap: 10, paddingBottom: 150 }}
+            data={countryList}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => onPressItem(item)}>
+                <View style={[styles.option, commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8,]}>
+                  {item?.flag && <Image style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} source={{ uri: item?.flag }} />}
+                  {item?.logo && <SvgUri uri={item.logo} style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} />}
+                  <ParagraphComponent text={(item?.displayName || item?.name)} style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1 },]} />
+                </View>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            ListEmptyComponent={() => <View style={[styles.viewNodata, styles.containerHeight]}  >
+              <Image source={Icons.emptyList} style={{ width: 44, height: 44 }} />
+              <ParagraphComponent text={"No data"} style={[styles.txtNodata, commonStyles.textBlack, commonStyles.fs16]} />
+            </View>}
+          />
+        </View>
+      </View>
+
     </SafeAreaView>
   );
 };
