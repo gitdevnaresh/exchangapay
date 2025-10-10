@@ -185,6 +185,7 @@ const UnderReview = () => {
             loading={undefined}
             onPress={handleRejectedNav}
           />}
+          <View style={[commonStyles.mb10]} />
           {(!isLoading && !isLogout) && <DefaultButton
             title={CONSTANTS?.REFRESH}
             customTitleStyle={styles.btnConfirmTitle}

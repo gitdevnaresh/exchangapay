@@ -77,7 +77,7 @@ const ProfileService = {
     return get(`/api/v1/Security/getReferralDetails/customer`)
   },
   getAllReferrals: async (ReferralId: any, pageNo: number, pageSize: number) => {
-    return get(`/api/v1/Customer/Referrals/${ReferralId}?page=${pageNo}&pageSize=${pageSize}`)
+    return get(`api/v1/Customer/referral?referralId=${ReferralId}&page=${pageNo}&pageSize=${pageSize}`)
   }, saveCustomerKycInformation: async (body: any) => {
     return put(`/api/v1/Common/Update/CustomerProfile`, body)
   },

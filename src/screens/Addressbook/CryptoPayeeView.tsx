@@ -71,10 +71,17 @@ const PayeeDetailsView = (props: any) => {
         return true;
     }, [navigation]);
 
+
     useEffect(() => {
-        BackHandler.addEventListener("hardwareBackPress", handleGoBack);
-        return () => BackHandler.removeEventListener("hardwareBackPress", handleGoBack);
-    }, [handleGoBack]);
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            () => {
+                handleGoBack();
+                return true;
+            }
+        );
+        return () => backHandler.remove();
+    }, []);
 
     const copyToClipboard = async (text: any) => {
         try {

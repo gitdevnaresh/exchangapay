@@ -661,7 +661,7 @@ const SendCryptoDetails = React.memo((props: any) => {
           </View>
           <View style={[commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb43]}>
             <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Due To Security Reasons " />
-            <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Enable Two Factor Authentication or Face/Figureprint" />
+            <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Enable Two Factor Authentication or Face/Fingerprint" />
 
 
           </View>

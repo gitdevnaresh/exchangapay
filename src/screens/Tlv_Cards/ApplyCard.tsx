@@ -56,9 +56,9 @@ const ApplyCard = React.memo((props: any) => {
     const toggleOverlay = () => {
         if (userInfo.accountStatus === "Inactive") {
             setIsPressed(true);
-        }else{
+        } else {
             setVisible(!visible);
-        } 
+        }
     };
     const CloseOverlay = () => {
         dispatch(setPersonalInfo(""));
@@ -114,7 +114,7 @@ const ApplyCard = React.memo((props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.goBack()
+        props.navigation.navigate('Dashboard', { screen: 'Cards' });
     };
 
     const handleCloseMFAPopUp = () => {

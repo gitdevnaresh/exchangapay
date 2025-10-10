@@ -23,11 +23,12 @@ import { ms, s } from '../../constants/theme/scale';
 import { useIsFocused } from '@react-navigation/native';
 import DefaultButton from '../../components/DefaultButton';
 import AntDesign from "react-native-vector-icons/AntDesign";
-import SignatureCanvas from "react-native-signature-canvas";
+import SignatureScreen, { SignatureViewRef } from "react-native-signature-canvas";
 import { PLACEHOLDER_CONSTANTS, PROFILE_CONSTANTS } from '../Profile/constants';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import OverlayPopup from './SelectPopup';
 import { useSelector } from 'react-redux';
+import CommonOverlay from "../../components/commonOverlyPopup";
 
 const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldValue, handleChange, touched, errors, kycReqList, formData, disableFields, cardId }) => {
     const ref = useRef<any>(null);
@@ -80,6 +81,7 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
     const [issueDatePicker, setIssueDatePicker] = useState<boolean>(false);
     const [occupationList, setOccupationList] = useState<any>([]);
     const [isTownsDataLoading, setIsTownsDataLoading] = useState<boolean>(false);
+    const [signSaveLoader, setSignSaveLoader] = useState<boolean>(false)
 
     const [loadingState, setLoadingState] = useState<LoadingState>({
         profilePicFront: false,
@@ -95,7 +97,7 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
         handHoldingIDPhoto: null,
     });
 
-    const signatureRef = useRef(null);
+    const signatureRef = useRef<SignatureViewRef>(null);
     useEffect(() => {
         fetchLookUps();
         getOccupationList();
@@ -120,31 +122,78 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
 
 
 
-    const handleSaveSignature = (event: any) => {
-        const { pathName, encoded } = event;
-        if (pathName || encoded) {
-            handleDrawSign(event, FORM_DATA_CONSTANTS?.SIGNATURE)
+    const handleSaveSignature = async (event: any) => {
+        setSignSaveLoader(true);
+        if (event) {
+            await handleDrawSign(event, FORM_DATA_CONSTANTS?.SIGNATURE)
+
             togglePopup();
-        }
+        };
+        setSignSaveLoader(false);
     };
     const handleIssueDateModel = () => {
         setIssueDatePicker(!issueDatePicker);
     };
 
-    const saveSign = () => {
-        try {
-            signatureRef?.current?.saveImage();
-        } catch (error) {
-        }
+    const handleClear = () => {
+        signatureRef?.current?.clearSignature();
     };
 
-    const resetSign = () => {
-        try {
-            signatureRef?.current?.resetImage();
-        } catch (error) {
-        }
+    const handleConfirm = () => {
+        signatureRef?.current?.readSignature();
+
     };
 
+    const signatureStyle = `.m-signature-pad {box-shadow: none; border: none; } 
+                    .m-signature-pad--body {border: none;}
+                    .m-signature-pad--footer {display: none; margin: 0px;}
+                    body,html {width: 100%; height: 100%;}`;
+
+    const SignatureContext = (<View style={styles.popupContent}>
+        <View
+            style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter, commonStyles.mb30]} >
+            <ParagraphComponent text={PROFILE_CONSTANTS.SIGN_HERE} style={[commonStyles.textBlack, commonStyles.fs16, commonStyles.fw700]} />
+            <TouchableOpacity onPress={togglePopup}>
+                <AntDesign name={PROFILE_CONSTANTS.CLOSE} size={s(22)} color={NEW_COLOR.TEXT_BLACK} />
+            </TouchableOpacity>
+        </View>
+        <View style={styles.signatureCaptureContainer}>
+            <SignatureScreen
+                ref={signatureRef}
+                onOK={handleSaveSignature}
+                onEmpty={() => { }}
+                descriptionText="Sign here"
+                clearText="Clear"
+                confirmText="Save"
+                penColor="#000000"
+                backgroundColor="#ffffff"
+                webStyle={signatureStyle}
+            />
+        </View>
+        <View style={[commonStyles.mb24]} />
+
+        <DefaultButton
+            title={PROFILE_CONSTANTS.SAVE}
+            style={undefined}
+            loading={signSaveLoader}
+            disable={undefined}
+            onPress={handleConfirm}
+        />
+        <View style={[commonStyles.mb16]} />
+        <DefaultButton
+            title={PROFILE_CONSTANTS.RESET}
+            style={undefined}
+            backgroundColors={undefined}
+            colorful={undefined}
+            loading={undefined}
+            disable={undefined}
+            onPress={handleClear}
+            transparent={true}
+            iconArrowRight={false}
+            closeIcon={true}
+        />
+
+    </View>)
 
 
     const togglePopup = () => {
@@ -158,8 +207,9 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
         setLoadingState((prev) => ({ ...prev, drawSignModel: false }))
 
         try {
+            const cleanBase64 = event?.replace(/^data:image\/\w+;base64,/, "");
             let Obj = {
-                "imageBytes": event.encoded
+                "imageBytes": cleanBase64
             }
             const uploadRes: any = await ProfileService.uploadSingnitureFile(Obj);
             if (uploadRes.status === 200) {
@@ -2032,85 +2082,6 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
                 </View>
             </View>
             </ScrollView>
-            <Modal
-                animationType={FORM_DATA_CONSTANTS?.SLIDE}
-                transparent={true}
-                visible={loadingState?.signModelVisible}
-                onRequestClose={togglePopup}
-            >
-                <View style={styles.popupContainer}>
-                    <View style={styles.popupContent}>
-                        <View
-                            style={[
-                                commonStyles.dflex,
-                                commonStyles.justifyContent,
-                                commonStyles.alignCenter,
-                                commonStyles.mb30,
-                            ]}
-                        >
-                            <ParagraphComponent
-                                text={FORM_DATA_CONSTANTS?.SIGN_HERE}
-                                style={[
-                                    commonStyles.textBlack,
-                                    commonStyles.fs16,
-                                    commonStyles.fw700,
-                                ]}
-                            />
-                            <TouchableOpacity
-                                onPress={togglePopup}
-                            >
-                                <AntDesign
-                                    name={FORM_DATA_CONSTANTS?.CLOSE}
-                                    size={22}
-                                    color={NEW_COLOR.TEXT_BLACK}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <View
-                            style={styles.signatureCaptureContainer}
-                        >
-                            <SignatureCanvas
-                                ref={signatureRef}
-                                onOK={handleSaveSignature}
-                                onEmpty={() => { }}
-                                descriptionText="Sign here"
-                                clearText="Clear"
-                                confirmText="Save"
-                                penColor="#000000"
-                                backgroundColor="#ffffff"
-                                webStyle={`
-                    .m-signature-pad {box-shadow: none; border: none; } 
-                    .m-signature-pad--body {border: none;}
-                    .m-signature-pad--footer {display: none; margin: 0px;}
-                    body,html {
-                    width: 100%; height: 100%;}
-                `}
-                            />
-                        </View>
-                        <View style={[commonStyles.mb24]} />
-
-                        <DefaultButton
-                            title={FORM_DATA_CONSTANTS?.SAVE}
-                            style={undefined}
-                            disable={undefined}
-                            onPress={saveSign}
-                        />
-                        <View style={[commonStyles.mb16]} />
-                        <DefaultButton
-                            title={FORM_DATA_CONSTANTS?.RESET}
-                            style={undefined}
-                            backgroundColors={undefined}
-                            colorful={undefined}
-                            disable={undefined}
-                            onPress={resetSign}
-                            transparent={true}
-                            iconArrowRight={false}
-                            closeIcon={true}
-                        />
-
-                    </View>
-                </View>
-            </Modal>
 
 
 
@@ -2139,6 +2110,13 @@ const KycAddress: React.FC<KycAddressProps> = ({ handleBlur, values, setFieldVal
                 windowWidth={WINDOW_WIDTH}
                 windowHeight={WINDOW_HEIGHT}
             />
+            <CommonOverlay
+                isVisible={loadingState?.signModelVisible}
+                onClose={togglePopup}
+                windowWidth={WINDOW_WIDTH}
+                windowHeight={WINDOW_HEIGHT}
+                children={SignatureContext}
+            />
         </SafeAreaView>
     )
 };
@@ -2165,15 +2143,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     popupContent: {
-        backgroundColor: NEW_COLOR.DARK_BG,
-        padding: 20,
-        borderRadius: 10,
-        width: '90%',
+        // backgroundColor: NEW_COLOR.DARK_BG,
+        // padding: 20,
+        // borderRadius: 10,
+        // width: '90%',
     },
     signatureCaptureContainer: {
-        alignItems: 'center', borderWidth: 1,
+        height: (WINDOW_HEIGHT * 40) / 100,
+        borderWidth: 1,
         borderColor: NEW_COLOR.BORDER_GREY,
         borderRadius: 0,
+        overflow: 'hidden',
     },
     signatureCapture: {
         width: '100%',

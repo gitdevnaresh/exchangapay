@@ -53,24 +53,24 @@ const Dashboard = (props: any) => {
   }, [supportMessageCount, dispatch]);
 
   // Effect to sync count from keychain on app start
- useEffect(() => {
-  const syncBackgroundCount = async () => {
-    try {
-      const storedCount = await AsyncStorage.getItem('supportMessageCount');
-      const backgroundCount = storedCount ? parseInt(storedCount, 10) : 0;
-      if (backgroundCount > 0) {
-        // Add background count to the current Redux count and reset AsyncStorage
-        dispatch(updateChatCount(supportMessageCount + backgroundCount));
-        await AsyncStorage.setItem('supportMessageCount', '0');
+  useEffect(() => {
+    const syncBackgroundCount = async () => {
+      try {
+        const storedCount = await AsyncStorage.getItem('supportMessageCount');
+        const backgroundCount = storedCount ? parseInt(storedCount, 10) : 0;
+        if (backgroundCount > 0) {
+          // Add background count to the current Redux count and reset AsyncStorage
+          dispatch(updateChatCount(supportMessageCount + backgroundCount));
+          await AsyncStorage.setItem('supportMessageCount', '0');
+        }
+      } catch (error) {
       }
-    } catch (error) {
-    }
-  };
+    };
 
-  syncBackgroundCount();
-}, [dispatch]);
+    syncBackgroundCount();
+  }, [dispatch]);
 
- 
+
 
 
   useEffect(() => {
@@ -96,12 +96,12 @@ const Dashboard = (props: any) => {
       return false;
     };
 
-
-
-    BackHandler.addEventListener('hardwareBackPress', backHandler);
-
+    const backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backHandler
+    );
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', backHandler);
+      backHandlerSubscription.remove();
     };
   }, [state?.index]);
 

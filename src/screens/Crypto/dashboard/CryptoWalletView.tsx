@@ -15,6 +15,7 @@ import Loadding from '../../../components/skeleton';
 import { IconRefresh, SendReceive, Wallet } from '../../../assets/svg';
 import { s } from '../../../constants/theme/scale';
 import AccountDeactivatePopup from '../../Currencypop/actDeactivatePopup';
+import { useIsFocused } from '@react-navigation/native';
 
 const CryptoWalletView = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -24,9 +25,10 @@ const CryptoWalletView = React.memo((props: any) => {
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const sellCoinSelectLoader = sellCoinSelect(10);
   const [isPressed, setIsPressd] = useState<boolean>(false);
+  const isFocused = useIsFocused();
   useEffect(() => {
     getCryptoReceiveData()
-  }, [])
+  }, [isFocused]);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -78,7 +80,10 @@ const CryptoWalletView = React.memo((props: any) => {
 
   const handleCloseMFAPopUp = () => {
     setIsPressd(false)
-  }
+  };
+  const handleRefresh = () => {
+    getCryptoReceiveData()
+  };
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
       <ScrollView >
@@ -93,7 +98,7 @@ const CryptoWalletView = React.memo((props: any) => {
               </TouchableOpacity>
               <ParagraphComponent text={props?.route?.params?.walletCode || " "} style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
             </View>
-            <TouchableOpacity activeOpacity={0.6}>
+            <TouchableOpacity activeOpacity={0.6} onPress={handleRefresh}>
               <IconRefresh height={s(24)} width={s(24)} />
             </TouchableOpacity>
           </View>

@@ -28,7 +28,7 @@ import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 const { width } = Dimensions.get("window");
 const isPad = width > 600;
 
-const CryptoPayeesList = (props:any) => {
+const CryptoPayeesList = (props: any) => {
     const styles = useStyleSheet(themedStyles);
     const [verifiedPayees, setVerifiedPayees] = useState<CryptoPayee[]>([]);
     const [unverifiedPayees, setUnverifiedPayees] = useState<CryptoPayee[]>([]);
@@ -125,7 +125,7 @@ const CryptoPayeesList = (props:any) => {
                 payeeId: item.id,
                 isResend: true,
             });
-        } else { 
+        } else {
             navigation.navigate("payeeDetails", { payeeId: item.id });
         }
     };
@@ -182,20 +182,26 @@ const CryptoPayeesList = (props:any) => {
     );
 
     const handleBackPress = useCallback(() => {
-        if(props.route?.params?.screenName==="withdraw"){
+        if (props.route?.params?.screenName === "withdraw") {
             navigation.navigate("Dashboard")
-        }else{
+        } else {
             navigation.navigate("DrawerModal");
 
         }
         return true;
     }, [navigation]);
 
-    useEffect(() => {
-        BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-        return () => BackHandler.removeEventListener("hardwareBackPress", handleBackPress);
-    }, [handleBackPress]);
 
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            () => {
+                handleBackPress();
+                return true;
+            }
+        );
+        return () => backHandler.remove();
+    }, []);
     const handleCloseError = () => {
         setErrormsg("");
     };
