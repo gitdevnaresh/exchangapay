@@ -18,7 +18,8 @@ const persistConfig = {
   storage: keychainStorage,
   whitelist: ["auth", "UserReducer"], // Only persist these reducers
   blacklist: ["send", "sendcrypto"], // Don't persist these reducers
-  transforms: [encryptTransform],
+  // Temporarily disable encryption transform to debug redux-persist issue
+  // transforms: [encryptTransform],
 };
 
 const middlewares: any[] = [];
@@ -34,8 +35,8 @@ const reducer = combineReducers({
 // Root reducer with state reset functionality
 const rootReducer = (state: any, action: any) => {
   if (action.type === "auth/clearAuth/fulfilled" || action.type === "LOGOUT") {
-    // Clear persisted state on logout
-    state = undefined;
+    // Clear persisted state on logout - return undefined to reset state
+    return reducer(undefined, action);
   }
   return reducer(state, action);
 };
@@ -54,7 +55,20 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredActions: [
+          "persist/PERSIST",
+          "persist/REHYDRATE",
+          "persist/PAUSE",
+          "persist/PURGE",
+          "persist/REGISTER",
+        ],
+        ignoredActionsPaths: ["meta.arg", "payload.timestamp"],
+        ignoredPaths: ["_persist"],
+        warnAfter: 128,
+      },
+      immutableCheck: {
+        warnAfter: 128,
+        ignoredPaths: ["_persist"],
       },
     }).concat(middlewares),
 });

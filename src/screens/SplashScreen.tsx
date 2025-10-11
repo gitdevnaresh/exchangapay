@@ -1,18 +1,30 @@
 import React, { useEffect } from "react";
-import { View, Image, ActivityIndicator, ImageBackground, TouchableOpacity } from "react-native";
 import {
-  useNavigation,
-  CommonActions,
-} from "@react-navigation/native";
+  View,
+  Image,
+  ActivityIndicator,
+  ImageBackground,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Checkbox, Container } from "../components";
 import { useAuth0 } from "react-native-auth0";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/useReduxStore";
-import { isSessionExpired, loginAction, isLogin, setUserInfo } from "../redux/Actions/UserActions";
+import {
+  isSessionExpired,
+  loginAction,
+  isLogin,
+  setUserInfo,
+} from "../redux/Actions/UserActions";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DefaultButton from "../components/DefaultButton";
-import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../constants/theme/variables";
+import {
+  NEW_COLOR,
+  WINDOW_HEIGHT,
+  WINDOW_WIDTH,
+} from "../constants/theme/variables";
 import ParagraphComponent from "../components/Paragraph/Paragraph";
 import { ms, s } from "../constants/theme/scale";
 import { fcmNotification } from "../utils/FCMNotification";
@@ -31,8 +43,12 @@ const SplashScreen = React.memo(() => {
   const [fcmToken, setFcmToken] = React.useState<string>("");
   const [isNewLogin, setIsNewLogin] = React.useState<boolean>(false);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
-  const persistedLoginState = useSelector((state: any) => state.UserReducer?.login);
-  const persistedUserInfo = useSelector((state: any) => state.UserReducer?.userInfo);
+  const persistedLoginState = useSelector(
+    (state: any) => state.UserReducer?.login
+  );
+  const persistedUserInfo = useSelector(
+    (state: any) => state.UserReducer?.userInfo
+  );
   const [isChecked, setIsChecked] = React.useState<boolean>(false);
   const [show, setShow] = React.useState<boolean>(false);
   const { memberLoader, getMemDetails, isOnboarding } = useMemberLogin();
@@ -70,6 +86,7 @@ const SplashScreen = React.memo(() => {
     isNewLogin: boolean = false
   ) => {
     try {
+      // Create a serializable credentials object
       const safeCredentials = {
         accessToken: credentials?.accessToken || "",
         refreshToken: credentials?.refreshToken || "",
@@ -77,7 +94,9 @@ const SplashScreen = React.memo(() => {
         expiresIn: credentials?.expiresIn || 0,
         tokenType: credentials?.tokenType || "Bearer",
       };
-      dispatch(loginAction(safeCredentials));
+
+      // Ensure we're storing serializable data
+      dispatch(loginAction(JSON.parse(JSON.stringify(safeCredentials))));
       await storeToken(credentials?.accessToken, credentials?.refreshToken);
 
       const userDetails = {
@@ -87,6 +106,7 @@ const SplashScreen = React.memo(() => {
       };
 
       console.log("Calling getMemDetails with:", userDetails);
+      // Call getMemDetails separately to avoid race conditions
       await getMemDetails(userDetails, true);
       console.log("User session restored successfully");
     } catch (error) {
@@ -98,6 +118,7 @@ const SplashScreen = React.memo(() => {
   // Clear all persisted authentication state
   const clearPersistedState = async () => {
     try {
+      // Use proper serializable values
       dispatch(loginAction(""));
       dispatch(isLogin(false));
       dispatch(setUserInfo(null));
@@ -401,14 +422,14 @@ const SplashScreen = React.memo(() => {
               title="Biometric Authentication Failed"
               remark=""
               amount=""
-              setRemark={() => { }}
-              setAmount={() => { }}
+              setRemark={() => {}}
+              setAmount={() => {}}
               btnLoading={false}
               btndisabled={false}
               erroMsg=""
               errorAmt=""
               stateErrorMsg=""
-              setStateErrorMsg={() => { }}
+              setStateErrorMsg={() => {}}
             />
           )}
         </SafeAreaView>

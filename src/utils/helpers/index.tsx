@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { Platform } from "react-native";
-import { RequestStatus } from "../../constants";
 import CryptoJS from "crypto-js";
 import { jwtDecode } from "jwt-decode";
 import { decode as atob } from "base-64";
@@ -314,9 +313,9 @@ export const getNameInitials = (string: any) => {
 };
 
 export const isFetchingFirst = (status: any) =>
-  status === RequestStatus.pending || status === RequestStatus.idle;
+  status === "pending" || status === "idle";
 
-export const isLoading = (status: any) => status === RequestStatus.pending;
+export const isLoading = (status: any) => status === "pending";
 
 export const onAndroid = () => Platform.OS === "android";
 

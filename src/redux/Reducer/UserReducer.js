@@ -1,6 +1,5 @@
 import * as types from "../Actions/ActionsTypes";
 
-
 const initialState = {
   login: false,
   userDetails: "",
@@ -11,8 +10,8 @@ const initialState = {
   isMFACompleted: false,
   isCardKycComplete: false,
   supportMessgaeCount: 0,
-  isSessionExpired:false,
-  ipInfo:null
+  isSessionExpired: false,
+  ipInfo: null,
 };
 
 export default (state = initialState, action) => {
@@ -26,13 +25,17 @@ export default (state = initialState, action) => {
     case types.USER_DETAILS: {
       return {
         ...state,
-        userDetails: action.payload,
+        userDetails: action.payload
+          ? JSON.parse(JSON.stringify(action.payload))
+          : action.payload,
       };
     }
     case types.USER_INFO: {
       return {
         ...state,
-        userInfo: action.payload,
+        userInfo: action.payload
+          ? JSON.parse(JSON.stringify(action.payload))
+          : action.payload,
       };
     }
     case types.PERSONAL_INFO: {
@@ -55,7 +58,7 @@ export default (state = initialState, action) => {
     }
     case types.LOGOUT:
       return {
-        initialState,
+        ...initialState,
       };
     case types.IS_MFA_COMPLETED:
       return {
@@ -67,17 +70,17 @@ export default (state = initialState, action) => {
         ...state,
         isCardKycComplete: action.payload,
       };
-      case types.UPDATE_MESSAGE_COUNT:
-        return {
-          ...state,
-          supportMessgaeCount: action.payload,
-        };
-        case types.IS_SESSION_EXPIRED:
+    case types.UPDATE_MESSAGE_COUNT:
+      return {
+        ...state,
+        supportMessgaeCount: action.payload,
+      };
+    case types.IS_SESSION_EXPIRED:
       return {
         ...state,
         isSessionExpired: action.payload,
       };
-        case types.IS_SET_IP_INFO:
+    case types.IS_SET_IP_INFO:
       return {
         ...state,
         ipInfo: action.payload,
