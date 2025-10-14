@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView, Switch, BackHandler } from "react-native";
 import { useIsFocused } from "@react-navigation/core";
 import { Container } from '../../components';
-import { ms } from "../../constants/theme/scale";
+import { ms, s } from "../../constants/theme/scale";
 import { NEW_COLOR } from "../../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
@@ -102,6 +102,7 @@ const SecurityQuestion = (props: any) => {
         try {
             setQuestionsLoading(true);
             const response: any = await ProfileService.getSecurityQuestionsdata();
+            console.log(response)
             if (response.data && response.data.length > 0) {
                 setInitValues({
                     question1: response.data[0]?.question || null,
@@ -137,182 +138,185 @@ const SecurityQuestion = (props: any) => {
             setQuestionsLoading(false);
         }
     };
+    const handleCloseError = () => {
+        setErrormsg('');
+    };
 
     return (
-        <>
-            <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-                <ScrollView>
-                    <Container style={commonStyles.container}>
 
-                        <View style={[commonStyles.dflex, commonStyles.mb32, commonStyles.alignCenter, commonStyles.gap10]}>
-                            <TouchableOpacity style={[styles.px8]} onPress={() => handleGoBack()}><View>
-                                <View>
-                                    <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                                </View>
+        <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
+            <ScrollView>
+                <Container style={commonStyles.container}>
+
+                    <View style={[commonStyles.dflex, commonStyles.mb32, commonStyles.alignCenter, commonStyles.gap10]}>
+                        <TouchableOpacity style={[styles.px8]} onPress={handleGoBack}><View>
+                            <View>
+                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                             </View>
-                            </TouchableOpacity>
-                            <ParagraphComponent text={"Set Security Question"} style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
                         </View>
-                        {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg("")} />}
-                        {questionsLoading && <Loadding contenthtml={securityVerifySk} />}
-                        <View >
-                            <Formik
-                                initialValues={initValues}
-                                onSubmit={onSubmit}
-                                validationSchema={SecurityQuestionSchema}
-                                enableReinitialize
-                            >
-                                {(formik) => {
-                                    const { touched, handleSubmit, errors, handleChange, handleBlur, values, setFieldTouched, setFieldValue } = formik;
-                                    return (
-                                        <View >
-                                            <>
-                                                <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter]}>
-                                                    <ParagraphComponent text={"Q1"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            activeOpacity={0.9}
-                                                            touched={touched.question1}
-                                                            name="question1"
-                                                            error={errors.question1}
-                                                            handleBlur={handleBlur}
-                                                            data={myQuestionsData}
-                                                            placeholder={"Select Question"}
-                                                            placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
-                                                            component={CustomPickerAcc}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        />
-                                                    </View>
+                        </TouchableOpacity>
+                        <ParagraphComponent text={"Set Security Questions"} style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                    </View>
+                    {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
+                    {questionsLoading && <Loadding contenthtml={securityVerifySk} />}
+                    <View >
+                        <Formik
+                            initialValues={initValues}
+                            onSubmit={onSubmit}
+                            validationSchema={SecurityQuestionSchema}
+                            enableReinitialize
+                        >
+                            {(formik) => {
+                                const { touched, handleSubmit, errors, handleBlur } = formik;
+                                return (
+                                    <View >
+                                        <>
+                                            <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter]}>
+                                                <ParagraphComponent text={"Q1"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        activeOpacity={0.9}
+                                                        touched={touched.question1}
+                                                        name="question1"
+                                                        error={errors.question1}
+                                                        handleBlur={handleBlur}
+                                                        data={myQuestionsData}
+                                                        placeholder={"Select Question"}
+                                                        placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
+                                                        component={CustomPickerAcc}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    />
                                                 </View>
-                                                <View style={[commonStyles.mb14]} />
-                                                <View style={[commonStyles.dflex, commonStyles.gap8,]}>
-                                                    <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            multiline={true}
-                                                            touched={touched.answer}
-                                                            name='answer'
-                                                            error={errors.answer}
-                                                            handleBlur={handleBlur}
-                                                            customContainerStyle={{
-                                                                placeholder: styles.placeholder,
+                                            </View>
+                                            <View style={[commonStyles.mb14]} />
+                                            <View style={[commonStyles.dflex, commonStyles.gap8,]}>
+                                                <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        multiline={true}
+                                                        touched={touched.answer}
+                                                        name='answer'
+                                                        error={errors.answer}
+                                                        handleBlur={handleBlur}
+                                                        customContainerStyle={{
+                                                            placeholder: styles.placeholder,
 
-                                                            }}
-                                                            placeholder={'Enter Answer'}
-                                                            component={InputDefault}
-                                                            innerRef={nameRef}
-                                                            inputContainerStyle={{ height: 70 }}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        />
-                                                    </View>
+                                                        }}
+                                                        placeholder={'Enter Answer'}
+                                                        component={InputDefault}
+                                                        innerRef={nameRef}
+                                                        inputContainerStyle={{ height: 70 }}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    />
                                                 </View>
-                                                <View style={[commonStyles.mb24]} />
-                                                <View style={[commonStyles.mb24]} />
-
-                                                <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter]}>
-                                                    <ParagraphComponent text={"Q2"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            activeOpacity={0.9}
-                                                            style={{
-                                                                color: "#b1b1b1",
-                                                                backgroundColor: "#1A171D",
-                                                            }}
-                                                            touched={touched.question2}
-                                                            name="question2"
-                                                            error={errors.question2}
-                                                            handleBlur={handleBlur}
-                                                            data={myQuestion2Data}
-                                                            placeholder={"Select Question2"}
-                                                            placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
-                                                            component={CustomPickerAcc}
-                                                            inputContainerStyle={{ height: 70 }}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        />
-                                                    </View>
-                                                </View>
-                                                <View style={[commonStyles.mb14]} />
-                                                <View style={[commonStyles.dflex, commonStyles.gap8,]}>
-                                                    <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            touched={touched.answer2}
-                                                            name='answer2'
-                                                            error={errors.answer2}
-                                                            handleBlur={handleBlur}
-                                                            customContainerStyle={{
-                                                                placeholder: styles.placeholder,
-                                                            }}
-                                                            placeholder={'Enter Answer'}
-                                                            inputContainerStyle={{ height: 70 }}
-                                                            component={InputDefault}
-                                                            innerRef={nameRef}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        /></View>
-                                                </View>
-                                                <View style={[commonStyles.mb28]} />
-                                                <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter, commonStyles.mt16]}>
-                                                    <ParagraphComponent text={"Q3"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            activeOpacity={0.9}
-                                                            style={{
-                                                                color: "#b1b1b1",
-                                                                backgroundColor: "#1A171D",
-                                                            }}
-                                                            touched={touched.question3}
-                                                            name="question3"
-                                                            error={errors.question3}
-                                                            handleBlur={handleBlur}
-                                                            data={myQuestion3Data}
-                                                            placeholder={"Select Question"}
-                                                            placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
-                                                            component={CustomPickerAcc}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        />
-                                                    </View>
-                                                </View>
-                                                <View style={[commonStyles.mb14]} />
-                                                <View style={[commonStyles.dflex, commonStyles.gap8,]}>
-                                                    <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
-                                                    <View style={commonStyles.flex1}>
-                                                        <Field
-                                                            touched={touched.answer3}
-                                                            name='answer3'
-                                                            error={errors.answer3}
-                                                            handleBlur={handleBlur}
-                                                            customContainerStyle={{
-                                                                placeholder: styles.placeholder,
-                                                            }}
-                                                            placeholder={'Enter Answer'}
-                                                            component={InputDefault}
-                                                            inputContainerStyle={{ height: 70 }}
-                                                            innerRef={nameRef}
-                                                            Children={<LabelComponent text=" *" style={commonStyles.textError} />}
-                                                        />
-                                                    </View>
-                                                </View>
-                                            </>
-                                            <View style={[commonStyles.mb43]} />
-                                            <View style={[commonStyles.mb43]} />
-                                            <DefaultButton
-                                                title='Save'
-                                                style={undefined}
-                                                loading={questionsSaveLoading}
-                                                disable={questionsSaveLoading}
-                                                onPress={handleSubmit}
-                                            />
+                                            </View>
                                             <View style={[commonStyles.mb24]} />
-                                        </View>
-                                    );
-                                }}
-                            </Formik>
-                        </View>
+                                            <View style={[commonStyles.mb24]} />
 
-                    </Container>
-                </ScrollView>
-            </SafeAreaView>
-        </>
+                                            <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter]}>
+                                                <ParagraphComponent text={"Q2"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        activeOpacity={0.9}
+                                                        style={{
+                                                            color: "#b1b1b1",
+                                                            backgroundColor: "#1A171D",
+                                                        }}
+                                                        touched={touched.question2}
+                                                        name="question2"
+                                                        error={errors.question2}
+                                                        handleBlur={handleBlur}
+                                                        data={myQuestion2Data}
+                                                        placeholder={"Select Question2"}
+                                                        placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
+                                                        component={CustomPickerAcc}
+                                                        inputContainerStyle={{ height: 70 }}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    />
+                                                </View>
+                                            </View>
+                                            <View style={[commonStyles.mb14]} />
+                                            <View style={[commonStyles.dflex, commonStyles.gap8,]}>
+                                                <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        touched={touched.answer2}
+                                                        name='answer2'
+                                                        error={errors.answer2}
+                                                        handleBlur={handleBlur}
+                                                        customContainerStyle={{
+                                                            placeholder: styles.placeholder,
+                                                        }}
+                                                        placeholder={'Enter Answer'}
+                                                        inputContainerStyle={{ height: 70 }}
+                                                        component={InputDefault}
+                                                        innerRef={nameRef}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    /></View>
+                                            </View>
+                                            <View style={[commonStyles.mb28]} />
+                                            <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.alignCenter, commonStyles.mt16]}>
+                                                <ParagraphComponent text={"Q3"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        activeOpacity={0.9}
+                                                        style={{
+                                                            color: "#b1b1b1",
+                                                            backgroundColor: "#1A171D",
+                                                        }}
+                                                        touched={touched.question3}
+                                                        name="question3"
+                                                        error={errors.question3}
+                                                        handleBlur={handleBlur}
+                                                        data={myQuestion3Data}
+                                                        placeholder={"Select Question"}
+                                                        placeholderTextColor={NEW_COLOR.TEXT_SECONDARY}
+                                                        component={CustomPickerAcc}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    />
+                                                </View>
+                                            </View>
+                                            <View style={[commonStyles.mb14]} />
+                                            <View style={[commonStyles.dflex, commonStyles.gap8,]}>
+                                                <ParagraphComponent text={"A :"} style={[commonStyles.fs24, commonStyles.textBlack, commonStyles.fw500, styles.labelWidth]} />
+                                                <View style={commonStyles.flex1}>
+                                                    <Field
+                                                        touched={touched.answer3}
+                                                        name='answer3'
+                                                        error={errors.answer3}
+                                                        handleBlur={handleBlur}
+                                                        customContainerStyle={{
+                                                            placeholder: styles.placeholder,
+                                                        }}
+                                                        placeholder={'Enter Answer'}
+                                                        component={InputDefault}
+                                                        inputContainerStyle={{ height: 70 }}
+                                                        innerRef={nameRef}
+                                                        Children={<LabelComponent text=" *" style={commonStyles.textError} />}
+                                                    />
+                                                </View>
+                                            </View>
+                                        </>
+                                        <View style={[commonStyles.mb43]} />
+                                        <View style={[commonStyles.mb43]} />
+                                        <DefaultButton
+                                            title='Save'
+                                            style={undefined}
+                                            loading={questionsSaveLoading}
+                                            disable={questionsSaveLoading}
+                                            onPress={handleSubmit}
+                                        />
+                                        <View style={[commonStyles.mb24]} />
+                                    </View>
+                                );
+                            }}
+                        </Formik>
+                    </View>
+
+                </Container>
+            </ScrollView>
+        </SafeAreaView>
+
     );
 };
 

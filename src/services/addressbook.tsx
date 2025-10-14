@@ -1,10 +1,10 @@
 import { get, post, put } from '../utils/ApiService';
 const AddressbookService = {
   getAllCryptoPayees: async (searchQuery: any, page: any, pageSize: any) => {
-    return get(`api/v1/Common/Payees/Crypto?favoriteName=${searchQuery}&page=${page}&pageSize=${pageSize}`);
+    return get(`api/v1/Common/CryptoPayees?favoriteName=${searchQuery}&page=${page}&pageSize=${pageSize}`);
   },
   savePayee: async (body: any) => {
-    return post(`api/v1/Common/SavePayee/Crypto`, body);
+    return post(`api/v1/Common/SaveCryptoPayee`, body);
   },
   getPayeeDetails: async (id: any) => {
     return get(`api/v1/Common/Payees/Crypto/${id}`);

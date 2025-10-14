@@ -91,7 +91,6 @@ import EmailOtpVerification from "../screens/Addressbook/payeeEmailVerification"
 import CompleteKyc from "../screens/onBoarding/CompleteKyc";
 import SessionExpired from "../components/secessionExpired";
 import { isSetIpInfo } from "../redux/Actions/UserActions";
-import DeviceInfo from "react-native-device-info";
 enableScreens();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -100,7 +99,7 @@ const AppContainer = () => {
   const dispatch = useDispatch();
   const [isConnected, setIsConnected] = useState(false);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
-const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionExpired);
+  const isSessionExpired = useSelector((state: any) => state.UserReducer?.isSessionExpired);
   useEffect(() => {
     if (netInfo.isConnected != null) {
       if (!netInfo.isConnected) {
@@ -129,7 +128,7 @@ const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionE
 
 
   useEffect(() => {
-   
+
     getIpAddress();
     return notifee.onForegroundEvent(async ({ type, detail }) => {
       const notificationType = detail.notification?.data?.type;
@@ -153,10 +152,26 @@ const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionE
         }
       }
     });
-    
-  }, []);
-  
 
+  }, []);
+
+  const getAnimationForRoute = (route: any) => {
+    const { animation } = route.params || {};
+
+    switch (animation) {
+      case "slide_from_left":
+        return { animation: "slide_from_left" };
+      case "slide_from_right":
+        return { animation: "slide_from_right" };
+      case "slide_from_bottom":
+        return { animation: "slide_from_bottom" };
+      case "fade":
+        return { animation: "fade" };
+      default:
+        // Default animation
+        return {};
+    }
+  };
   return (
     <NavigationContainer ref={navigationRef}>
       <View style={[{ backgroundColor: NEW_COLOR.SCREENBG_WHITE, flex: 1, }, userInfo?.accountStatus === "Inactive" ? { paddingTop: Platform.OS === "ios" ? 50 : 24 } : null]}>
@@ -164,7 +179,13 @@ const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionE
           <View style={[{ backgroundColor: "#6b5151", width: "100%", paddingVertical: 3, position: "absolute", top: Platform.OS === "ios" ? 60 : 0, zIndex: 10 }]}>
             <ParagraphComponent text={"Account Deactivated"} style={[commonStyles.textCenter, commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500]} />
           </View>}
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{
+          headerShown: false,
+          gestureEnabled: true,
+          gestureDirection: "horizontal",
+          animation: "slide_from_right",
+          animationDuration: 300,
+        }}>
           <Stack.Screen name="SplashScreen" component={SplashScreen} />
           <Stack.Screen name="CryptoReceive" component={CryptoReceive} />
           <Stack.Screen name="SelectAsset" component={CryptoSelectAsset} />
@@ -185,7 +206,9 @@ const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionE
           <Stack.Screen name="SendCryptoSuccess" component={SendCryptoSuccess} />
           <Stack.Screen name="CardDetails" component={CardDetails} />
           <Stack.Screen name="ViewallMyCards" component={ViewallMyCards} />
-          <Stack.Screen name="ApplyCard" component={ApplyCard} />
+          <Stack.Screen name="ApplyCard" component={ApplyCard} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="AllFAQs" component={AllFaqs} />
           <Stack.Screen name="FreezeUnFreeze" component={FreezeComponent} />
           <Stack.Screen name="Authentication" component={Authentication} />
@@ -246,7 +269,7 @@ const isSessionExpired=useSelector((state: any) => state.UserReducer?.isSessionE
 
       </View>
       {isConnected && <NoInternet show={isConnected} />}
-      {isSessionExpired && <SessionExpired/>}
+      {isSessionExpired && <SessionExpired />}
     </NavigationContainer>
   );
 };
