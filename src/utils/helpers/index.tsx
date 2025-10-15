@@ -49,9 +49,8 @@ export const formatCurrency = (amount = 0, decimalPlaces = 2) => {
 export const numberWithCommas = (x: any) => {
   if (x.toString().indexOf(".") >= 0) {
     const newX = x.toString().split(".");
-    return `${newX[0].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${
-      newX[1]
-    }`;
+    return `${newX[0].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${newX[1]
+      }`;
   }
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
@@ -66,9 +65,8 @@ export const formatCoin = (amount = 0) => {
 
   const [beforeNumber, afterNumber] = result.split(".");
 
-  return `${commaSeparating(beforeNumber, 3) || 0}${
-    afterNumber !== undefined ? `.${afterNumber}` : ".00"
-  }`;
+  return `${commaSeparating(beforeNumber, 3) || 0}${afterNumber !== undefined ? `.${afterNumber}` : ".00"
+    }`;
 };
 
 export const formatCoinWithoutDoubleZero = (amount = 0) => {
@@ -76,9 +74,8 @@ export const formatCoinWithoutDoubleZero = (amount = 0) => {
 
   const [beforeNumber, afterNumber] = result.split(".");
 
-  return `${commaSeparating(beforeNumber, 3) || 0}${
-    afterNumber !== undefined ? `.${afterNumber}` : ""
-  }`;
+  return `${commaSeparating(beforeNumber, 3) || 0}${afterNumber !== undefined ? `.${afterNumber}` : ""
+    }`;
 };
 export const formatDateLocal = (transactionData: any) => {
   if (typeof transactionData === "string") {
@@ -491,7 +488,7 @@ export const storeToken = async (token: string, refresh_token: any) => {
         service: "authTokenService",
       }
     );
-  } catch (err) {}
+  } catch (err) { }
 };
 
 export function formatExpityDate(dateString: any) {
@@ -625,5 +622,24 @@ export const checkAndRefreshToken = async () => {
         // store.dispatch(isSessionExpired(true));
       }
     }
-  } catch (error) {}
+  } catch (error) { }
+};
+
+//Navigation Sliding Animations
+export const getAnimationForRoute = (route: any) => {
+  const { animation } = route.params || {};
+
+  switch (animation) {
+    case "slide_from_left":
+      return { animation: "slide_from_left" };
+    case "slide_from_right":
+      return { animation: "slide_from_right" };
+    case "slide_from_bottom":
+      return { animation: "slide_from_bottom" };
+    case "fade":
+      return { animation: "fade" };
+    default:
+      // Default animation
+      return {};
+  }
 };

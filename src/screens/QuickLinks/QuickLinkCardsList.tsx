@@ -14,6 +14,8 @@ import { sellCoinSelect } from '../Crypto/buySkeleton_views';
 import ErrorComponent from '../../components/Error';
 import CardsModuleService from '../../services/card';
 import NoDataComponent from '../../components/nodata';
+import { useIsFocused } from '@react-navigation/native';
+import { s } from '../../constants/theme/scale';
 
 const QuickCardsList = (props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -21,9 +23,10 @@ const QuickCardsList = (props: any) => {
     const [errormsg, setErrormsg] = useState("");
     const [cardsList, setMyCardsData] = useState<any>([]);
     const CardListLoader = sellCoinSelect(10);
+    const isFocused = useIsFocused();
     useEffect(() => {
         getCardsList();
-    }, []);
+    }, [isFocused]);
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
@@ -74,7 +77,7 @@ const QuickCardsList = (props: any) => {
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
                         <TouchableOpacity style={[]} onPress={handleBack} >
                             <View>
-                                <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                             </View>
                         </TouchableOpacity>
                         <ParagraphComponent text="Select Card" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />

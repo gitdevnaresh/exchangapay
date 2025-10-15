@@ -28,7 +28,7 @@ const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const FeeStep = (props: any) => {
     const [feeCardsLoading, setFeeCardsLoading] = useState<boolean>(false);
-    const [isLoading,setIsLoading]=useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [applyCardsInfo, setCardsFeeInfo] = useState<any>({});
     const [errormsg, setErrormsg] = useState<string>('');
     const [custumErrormsg, setCustumErrormsg] = useState<{ isShow: boolean, errorList: string[] }>({ isShow: false, errorList: [] });
@@ -77,19 +77,27 @@ const FeeStep = (props: any) => {
 
     const getCoinsList = async () => {
         setFeeCardsLoading(true);
-        const response: any = await SendCryptoServices.getWithdrawCryptoCoinList();
-        if (response?.status === 200) {
-            setCoinsDataList(response?.data);
-            setErrormsg("");
-            getNetworkList(response?.data[0]?.walletCode);
-                        setFeeCardsLoading(false);
+        try {
+            const response: any = await SendCryptoServices.getWithdrawCryptoCoinList();
+            if (response?.ok && response?.status === 200) {
+                setCoinsDataList(response?.data);
+                setErrormsg("");
+                getNetworkList(response?.data[0]?.walletCode);
+                setFeeCardsLoading(false);
 
-        } else {
+            } else {
+                ref?.current?.scrollTo({ y: 0, animated: true });
+                setErrormsg(isErrorDispaly(response));
+                setFeeCardsLoading(false);
+
+            }
+        } catch (error) {
             ref?.current?.scrollTo({ y: 0, animated: true });
-            setErrormsg(isErrorDispaly(response));
+            setErrormsg(isErrorDispaly(error));
             setFeeCardsLoading(false);
 
         }
+
     }
     const getNetworkList = async (coinName: string) => {
         setErrormsg("");
@@ -112,11 +120,12 @@ const FeeStep = (props: any) => {
             setErrormsg(isErrorDispaly(err));
             setFeeCardsLoading(false);
             setErrormsg("");
+
         }
     }
 
     const getApplyCardDeatilsInfo = async () => {
-         setIsLoading(true);
+        setIsLoading(true);
         setErrormsg('')
         const cardId = props?.route?.params?.cardId;
         try {
@@ -199,13 +208,13 @@ const FeeStep = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.push("ApplyExchangaCard", {
+        props.navigation.replace("ApplyExchangaCard", {
             cardId: props?.route?.params?.cardId,
             logo: props?.route?.params?.logo,
             cardType: props?.route?.params?.cardType,
-            kycFormData: props?.route?.params?.kycFormData
-
-        });
+            kycFormData: props?.route?.params?.kycFormData,
+            animation: "slide_from_left"
+        },);
     };
     const selectHaveCard = (type: any) => {
         if (type === "haveCard") {
@@ -233,12 +242,12 @@ const FeeStep = (props: any) => {
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
             <ScrollView ref={ref}>
                 <Container style={commonStyles.container}>
-                    {feeCardsLoading||isLoading && (
+                    {feeCardsLoading || isLoading && (
                         <View style={[commonStyles.flex1]}>
                             <Loadding contenthtml={ExchangeCardSkeleton} />
                         </View>
                     )}
-                    {!feeCardsLoading&&!isLoading && (
+                    {!feeCardsLoading && !isLoading && (
                         <View>
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mb30, commonStyles.gap16]}>
                                 <TouchableOpacity style={[]} onPress={() => handleBack()}>

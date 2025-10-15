@@ -231,7 +231,12 @@ const CardBalance = React.memo((props: any) => {
     }, []);
     const handleBack = () => {
         props.navigation.navigate(CONSTANTS.CARD_DETAILS,
-            { cardId: props.route.params.cardId })
+            {
+                cardId: props.route.params.cardId,
+                from: props?.route?.params?.from,
+                animation: "slide_from_left"
+            })
+
     };
 
     const selectedNetworkData = networkList.find(network => network.code === selectedNetwork);

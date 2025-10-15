@@ -17,6 +17,7 @@ import { commonStyles } from '../../../components/CommonStyles';
 import SendCryptoServices from '../../../services/sendcrypto';
 import SvgFromUrl from '../../../components/svgIcon';
 import NoDataComponent from '../../../components/nodata';
+import { useIsFocused } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const SelectCryptoAsset = React.memo((props: any) => {
@@ -25,10 +26,11 @@ const SelectCryptoAsset = React.memo((props: any) => {
     const [sendCryptoPreList, setCryptoPreList] = useState<any>([]);
     const [walletDtaLoading, setWalletDataLoading] = useState(false);
     const [errormsg, setErrormsg] = useState<any>(null);
-    const sellCoinSelectLoader = sellCoinSelect(10)
+    const sellCoinSelectLoader = sellCoinSelect(10);
+    const isFocused = useIsFocused();
     useEffect(() => {
         getCryptoWallets();
-    }, []);
+    }, [isFocused]);
 
     const SearchBoxComponent = (
         <View style={styles.searchBox}>
@@ -57,7 +59,7 @@ const SelectCryptoAsset = React.memo((props: any) => {
         const sortedData = cryptoCoinData.sort((a: any, b: any) => a.walletCode.localeCompare(b.walletCode));
         let groupedData: any = {};
 
-        sortedData.forEach(item => {
+        sortedData?.forEach(item => {
             const firstLetter = item.walletCode?.charAt(0).toUpperCase();
             if (!groupedData[firstLetter]) {
                 groupedData[firstLetter] = [];
@@ -131,7 +133,10 @@ const SelectCryptoAsset = React.memo((props: any) => {
     }, []);
 
     const handleGoBack = () => {
-        props.navigation.push("Dashboard")
+        props?.navigation?.navigate("Dashboard", {
+            screen: 'Home',
+            animation: "slide_from_left"
+        })
     };
 
     const handleBuyCryptoCoinSlct = (val: any) => {

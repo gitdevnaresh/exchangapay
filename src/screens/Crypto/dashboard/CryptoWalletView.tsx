@@ -68,6 +68,7 @@ const CryptoWalletView = React.memo((props: any) => {
       props.navigation.push("SendCryptoDetails", {
         walletCode: props?.route?.params?.walletCode,
         network: props?.route?.params?.network,
+        from: "CryptoWallet"
       })
     }
   };

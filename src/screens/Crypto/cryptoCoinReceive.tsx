@@ -44,7 +44,7 @@ const CryptoCoinReceive = React.memo((props: any) => {
     );
 
     const handleChangeSearch = (e: any) => {
-        let value = e
+        let value = e.trim()
         if (value) {
             let filterData = receiveCoinsDataoriginal.filter((item: any) => {
                 return item.walletCode?.toLowerCase().includes(e.toLowerCase())
@@ -81,7 +81,10 @@ const CryptoCoinReceive = React.memo((props: any) => {
     }, []);
 
     const handleGoBack = () => {
-        props.navigation.push("Dashboard")
+        props.navigation.navigate("Dashboard", {
+            screen: 'Home',
+            animation: "slide_from_left"
+        })
     };
 
     const handleBuyCryptoCoinSlct = (val: any) => {

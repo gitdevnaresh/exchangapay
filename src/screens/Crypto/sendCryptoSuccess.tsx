@@ -11,9 +11,9 @@ import SendCryptoServices from '../../services/sendcrypto';
 import { isErrorDispaly } from '../../utils/helpers';
 import { commonStyles } from '../../components/CommonStyles';
 import CopyCard from '../../components/CopyCard';
-import { IconRefresh } from '../../assets/svg';
 import { ActivityIndicator } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
+import { s } from '../../constants/theme/scale';
 
 const SendCryptoSuccess = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -47,10 +47,7 @@ const SendCryptoSuccess = React.memo((props: any) => {
             setErrMsg(isErrorDispaly(err))
         }
     }
-    const backToHomeCryptoHandler = () => {
-        props.navigation.navigate("CryptoCoinReceive", {
-        });
-    };
+
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(
@@ -61,11 +58,17 @@ const SendCryptoSuccess = React.memo((props: any) => {
     }, []);
 
     const handleGoBack = () => {
-        props.navigation.push("CryptoCoinReceive")
+        if (props?.route?.params?.from == "CryptoWallet") {
+            props?.navigation?.navigate("CryptoWallet", {
+                animation: "slide_from_left"
+            })
+        } else {
+            props.navigation.replace("CryptoCoinReceive", {
+                animation: "slide_from_left"
+            });
+        }
     };
-    const sendAgainButtonHandler = () => {
-        props.navigation.navigate("CryptoCoinReceive");
-    };
+
     const copyToClipboard = async (text: any) => {
         try {
             await Clipboard.setString(text);
@@ -80,8 +83,8 @@ const SendCryptoSuccess = React.memo((props: any) => {
 
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mb43, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
-                            <TouchableOpacity style={[]} onPress={() => handleGoBack()}>
-                                <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                            <TouchableOpacity style={[]} onPress={handleGoBack}>
+                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                             </TouchableOpacity>
                             <ParagraphComponent text='Withdraw Success' style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
                         </View>
@@ -103,7 +106,6 @@ const SendCryptoSuccess = React.memo((props: any) => {
                                     <View style={[{ marginTop: "auto", marginBottom: "auto" }]}>
                                         <View>
                                             <ParagraphComponent text={` ${props.route?.params?.ammount ?? ''} ${props.route?.params?.walletCode ?? ''}   Amount Sent Successfully.`} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, commonStyles.textCenter, { marginHorizontal: 24 }]} />
-                                            {/* <ParagraphComponent text={`Refresh page for Transaction Reference`} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, commonStyles.textCenter, { marginBottom: 4, }]} /> */}
                                             <TouchableOpacity activeOpacity={0.8} onPress={() => hash && Linking.openURL(hash?.explorer + hash?.transactionHash)} style={{ marginHorizontal: 24 }}>
                                                 {loading && (
                                                     <ActivityIndicator size="small" color={NEW_COLOR.TEXT_BLACK} />
@@ -133,7 +135,7 @@ const SendCryptoSuccess = React.memo((props: any) => {
                                     disable={undefined}
                                     loading={undefined}
                                     colorful={undefined}
-                                    onPress={sendAgainButtonHandler}
+                                    onPress={handleGoBack}
                                     transparent={undefined}
                                 />
                             </View>

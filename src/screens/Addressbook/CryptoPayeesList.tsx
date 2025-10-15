@@ -183,9 +183,13 @@ const CryptoPayeesList = (props: any) => {
 
     const handleBackPress = useCallback(() => {
         if (props.route?.params?.screenName === "withdraw") {
-            navigation.navigate("Dashboard")
+            navigation.navigate("Dashboard", {
+                animation: "slid_from_left"
+            })
         } else {
-            navigation.navigate("DrawerModal");
+            navigation.navigate("DrawerModal", {
+                animation: "slid_from_left"
+            });
 
         }
         return true;

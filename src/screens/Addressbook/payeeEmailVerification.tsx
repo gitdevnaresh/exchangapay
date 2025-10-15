@@ -6,7 +6,7 @@ import { commonStyles } from '../../components/CommonStyles';
 import { s } from '../../constants/theme/scale';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { isErrorDispaly } from '../../utils/helpers';
-import { Field, Formik, FormikProps } from 'formik'; 
+import { Field, Formik, FormikProps } from 'formik';
 import LabelComponent from '../../components/Paragraph/label';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import DefaultButton from '../../components/DefaultButton';
@@ -36,11 +36,11 @@ const EmailOtpVerification = (props: any) => {
 
     // Create a ref to hold the Formik instance
     const formikRef = useRef<FormikProps<FormValues>>(null);
-    
+
     const initialValues: FormValues = {
         emailOTP: ""
     };
-    
+
 
     // This effect now correctly calls handleResendOtp once Formik is ready
     useEffect(() => {
@@ -94,7 +94,7 @@ const EmailOtpVerification = (props: any) => {
             const payeeId = props?.route?.params?.payeeId;
             if (!payeeId) {
                 setErrorMsg(isErrorDispaly("Please Provide Payee Id"));
-                 setIsResending(false);
+                setIsResending(false);
                 return;
             }
             const body = { "id": payeeId };
@@ -106,7 +106,7 @@ const EmailOtpVerification = (props: any) => {
             }
         } catch (error) {
             setErrorMsg(isErrorDispaly(error));
-        }finally{
+        } finally {
             setIsResending(false);
         }
     };
@@ -140,7 +140,8 @@ const EmailOtpVerification = (props: any) => {
 
     const handleBackPress = () => {
         navigation.navigate("cryptoPayeesList", {
-            screenName: props?.route?.params.screenName || ""
+            screenName: props?.route?.params.screenName || "",
+            animation: "slide_from_left"
         });
     };
 
@@ -207,24 +208,24 @@ const EmailOtpVerification = (props: any) => {
                                         containerStyle={[commonStyles.gap20, commonStyles.mt10]}
                                     />
 
-                                   <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mt10, commonStyles.justifyCenter]}>
-  <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={'Did not get the code? '} />
-  {resendTimer > 0 ? (
-    <ParagraphComponent
-      style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textOrange]}
-      text={`Resend OTP in ${formattedTimer}`}
-    />
-  ) : isResending ? (
-    <ActivityIndicator size="small" color={NEW_COLOR.BG_ORANGE} style={{ marginLeft: s(5) }} />
-  ) : (
-    <TouchableOpacity onPress={() => handleResendOtp(setFieldValue)}>
-      <ParagraphComponent
-        style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange]}
-        text={`Resend OTP`}
-      />
-    </TouchableOpacity>
-  )}
-</View>
+                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mt10, commonStyles.justifyCenter]}>
+                                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={'Did not get the code? '} />
+                                        {resendTimer > 0 ? (
+                                            <ParagraphComponent
+                                                style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textOrange]}
+                                                text={`Resend OTP in ${formattedTimer}`}
+                                            />
+                                        ) : isResending ? (
+                                            <ActivityIndicator size="small" color={NEW_COLOR.BG_ORANGE} style={{ marginLeft: s(5) }} />
+                                        ) : (
+                                            <TouchableOpacity onPress={() => handleResendOtp(setFieldValue)}>
+                                                <ParagraphComponent
+                                                    style={[commonStyles.fs16, commonStyles.fw600, commonStyles.textOrange]}
+                                                    text={`Resend OTP`}
+                                                />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
                                 </Container>
                             </ScrollView>
 

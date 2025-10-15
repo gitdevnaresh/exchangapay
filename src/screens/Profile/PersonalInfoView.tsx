@@ -20,7 +20,7 @@ const PersonalInfoView = (props: any) => {
     const [userInfo, setUserInfo] = useState<any>({});
     const [errorMsg, setErrorMsg] = useState<any>("");
     const isFocused = useIsFocused();
-    const CardAvailableBalance = personalInfoLoader(7);
+    const CardAvailableBalance = personalInfoLoader(10);
     const [isDataloading, setIsDataLoading] = useState<boolean>(false);
     const { decryptAES } = useEncryptDecrypt();
     useEffect(() => {
@@ -41,7 +41,7 @@ const PersonalInfoView = (props: any) => {
                     ...response.data,
                     firstName: response.data.firstName ? decryptAES(response.data.firstName) : null,
                     lastName: response.data.lastName ? decryptAES(response.data.lastName) : null,
-                    mobilenumber: response.data.mobilenumber ? decryptAES(response.data.mobilenumber) : null, 
+                    mobilenumber: response.data.mobilenumber ? decryptAES(response.data.mobilenumber) : null,
                     userName: response.data.userName ? decryptAES(response.data.userName) : null,
                     email: response.data.email ? decryptAES(response.data.email) : null,
                 };

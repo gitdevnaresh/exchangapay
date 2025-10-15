@@ -91,6 +91,7 @@ import EmailOtpVerification from "../screens/Addressbook/payeeEmailVerification"
 import CompleteKyc from "../screens/onBoarding/CompleteKyc";
 import SessionExpired from "../components/secessionExpired";
 import { isSetIpInfo } from "../redux/Actions/UserActions";
+import { getAnimationForRoute } from "../utils/helpers";
 enableScreens();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -155,23 +156,7 @@ const AppContainer = () => {
 
   }, []);
 
-  const getAnimationForRoute = (route: any) => {
-    const { animation } = route.params || {};
 
-    switch (animation) {
-      case "slide_from_left":
-        return { animation: "slide_from_left" };
-      case "slide_from_right":
-        return { animation: "slide_from_right" };
-      case "slide_from_bottom":
-        return { animation: "slide_from_bottom" };
-      case "fade":
-        return { animation: "fade" };
-      default:
-        // Default animation
-        return {};
-    }
-  };
   return (
     <NavigationContainer ref={navigationRef}>
       <View style={[{ backgroundColor: NEW_COLOR.SCREENBG_WHITE, flex: 1, }, userInfo?.accountStatus === "Inactive" ? { paddingTop: Platform.OS === "ios" ? 50 : 24 } : null]}>
@@ -191,21 +176,33 @@ const AppContainer = () => {
           <Stack.Screen name="SelectAsset" component={CryptoSelectAsset} />
           <Stack.Screen name="ComingSoon" component={ComingSoon} />
           <Stack.Screen name="PdfExcelComponent" component={PdfExcelComponent} />
-          <Stack.Screen name="Dashboard" component={Dashboard} />
+          <Stack.Screen name="Dashboard" component={Dashboard} options={({ route }) => ({
+            ...getAnimationForRoute(route)
+          })} />
           <Stack.Screen name="Success" component={Success} />
           <Stack.Screen name="Crypto" component={Crypto} />
           <Stack.Screen name="Notifications" component={Notifications} />
           <Stack.Screen name="NewCard" component={NewCard} />
-          <Stack.Screen name="ExchangaCard" component={ExchangaCard} />
-          <Stack.Screen name="CryptoWallet" component={CryptoWallet} />
+          <Stack.Screen name="ExchangaCard" component={ExchangaCard} options={({ route }) => ({
+            ...getAnimationForRoute(route)
+          })} />
+          <Stack.Screen name="CryptoWallet" component={CryptoWallet}
+            options={({ route }) => ({
+              ...getAnimationForRoute(route)
+            })}
+          />
           <Stack.Screen name="CryptoWalletView" component={CryptoWalletView} />
           <Stack.Screen name="CrypoTransaction" component={CryptoCardsTransaction} />
           <Stack.Screen name="CryptoCardsTransaction" component={CryptoCardsTransaction} />
           <Stack.Screen name="EXChangaCardDownloadBill" component={EXChangaCardDownloadBill} />
           <Stack.Screen name="SendCryptoDetails" component={SendCryptoDetails} />
           <Stack.Screen name="SendCryptoSuccess" component={SendCryptoSuccess} />
-          <Stack.Screen name="CardDetails" component={CardDetails} />
-          <Stack.Screen name="ViewallMyCards" component={ViewallMyCards} />
+          <Stack.Screen name="CardDetails" component={CardDetails} options={({ route }) => ({
+            ...getAnimationForRoute(route)
+          })} />
+          <Stack.Screen name="ViewallMyCards" component={ViewallMyCards} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="ApplyCard" component={ApplyCard} options={({ route }) => ({
             ...getAnimationForRoute(route),
           })} />
@@ -217,7 +214,9 @@ const AppContainer = () => {
           <Stack.Screen name="ReplaceCard" component={ReplaceCardComponent} />
           <Stack.Screen name="ResendPin" component={ResendPinComponent} />
           <Stack.Screen name="AllNewCards" component={AllNewCards} />
-          <Stack.Screen name="CryptoCoinReceive" component={CryptoCoinReceive} />
+          <Stack.Screen name="CryptoCoinReceive" component={CryptoCoinReceive} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="CardBalance" component={CardBalance} />
           <Stack.Screen name="DepositSubmitted" component={DepositSubmitted} />
           <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
@@ -226,7 +225,9 @@ const AppContainer = () => {
           <Stack.Screen name="Sumsub" component={FillSumsub} />
           <Stack.Screen name="AccountProgress" component={AccountProgress} />
           <Stack.Screen name="PersonalInfo" component={PersonalInfo} />
-          <Stack.Screen name="DrawerModal" component={DrawerModal} />
+          <Stack.Screen name="DrawerModal" component={DrawerModal} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="Security" component={Security} />
           <Stack.Screen name="SecurityQuestion" component={SecurityQuestion} />
           <Stack.Screen name="ChangePassword" component={ChangePassword} />
@@ -234,8 +235,12 @@ const AppContainer = () => {
           <Stack.Screen name="MyReferrals" component={MyReferrals} />
           <Stack.Screen name="EditProfile" component={EditProfile} />
           <Stack.Screen name="AddPersonalInfo" component={AddPersonalInfo} />
-          <Stack.Screen name="ApplyExchangaCard" component={ApplyExchangaCard} />
-          <Stack.Screen name="FeeStep" component={FeeStep} />
+          <Stack.Screen name="ApplyExchangaCard" component={ApplyExchangaCard} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
+          <Stack.Screen name="FeeStep" component={FeeStep} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="CardSuccess" component={ToBeReviewedStep} />
           <Stack.Screen name="Feedback" component={Feedback} />
           <Stack.Screen name="HelpCenter" component={HelpCenter} />
@@ -259,11 +264,15 @@ const AppContainer = () => {
           <Stack.Screen name="addUserDetails" component={AddUserDetails} />
           <Stack.Screen name="underReview" component={UnderReview} />
           <Stack.Screen name="addressesList" component={UserAddressListScreen} />
-          <Stack.Screen name="cryptoPayeesList" component={CryptoPayees} />
+          <Stack.Screen name="cryptoPayeesList" component={CryptoPayees} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="addPayee" component={AddEditPayeeScreen} />
           <Stack.Screen name="selectCryptoCoin" component={SelectCrypto} />
           <Stack.Screen name="payeeDetails" component={PayeeDetails} />
-          <Stack.Screen name="emailOtpVerification" component={EmailOtpVerification} />
+          <Stack.Screen name="emailOtpVerification" component={EmailOtpVerification} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
         </Stack.Navigator>
 

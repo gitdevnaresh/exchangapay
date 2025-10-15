@@ -42,8 +42,6 @@ const ToBeReviewedStep = (props: any) => {
         }
     };
 
-
-
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
@@ -52,8 +50,15 @@ const ToBeReviewedStep = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.navigate("Dashboard", {
-        })
+        if (props?.params?.route?.from == "MyCards") {
+            props.navigation.push("ViewallMyCards");
+        } else {
+            props.navigation.navigate("Dashboard", {
+                screen: "Cards",
+                animation: "slide_from_left"
+            })
+        }
+
     };
 
     return (

@@ -23,6 +23,7 @@ import CradDetailsInfo from "./CardDetailsInfo";
 import CardPin, { ChiperCardPin } from "./showPin";
 import AccountDeactivatePopup from "../Currencypop/actDeactivatePopup";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
+import { handleCardDetailsBack } from "./constants";
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
@@ -94,9 +95,11 @@ const CardDetails = React.memo((props: any) => {
     );
     return () => backHandler.remove();
   }, []);
+
   const handleBack = () => {
-    props?.navigation?.goBack()
+    handleCardDetailsBack(props);
   };
+
   const handleCardRecords = () => {
     props.navigation.push("CryptoCardsTransaction", {
       cardId: props?.route?.params?.cardId,
@@ -120,6 +123,7 @@ const CardDetails = React.memo((props: any) => {
       props.navigation.navigate("CardBalance", {
         cardId: props?.route?.params?.cardId,
         cardAmount: myCardsData?.amount,
+        from: props?.route?.params?.from
       });
     }
 

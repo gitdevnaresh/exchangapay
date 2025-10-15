@@ -361,10 +361,7 @@ const ApplyExchangaCard = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.navigate("ApplyCard", {
-            cardId: props?.route?.params?.cardId,
-            logo: props?.route?.params?.logo
-        })
+        props.navigation.goBack();
     };
 
     const handleSumsub = () => {

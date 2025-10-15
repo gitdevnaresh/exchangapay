@@ -80,15 +80,16 @@ const NewCard: FC<NewCard> = React.memo((props: any) => {
         cardId: val?.id
       })
     } else {
-      props.navigation.push("CardDetails", {
+      props.navigation.navigate("CardDetails", {
         cardId: val?.id,
         isCardBlock: val?.isCardBlock,
+        from: "Dashboard"
       });
     }
   };
 
   const handleApplyCardById = (val: any) => {
-    props.navigation.push("ApplyCard", {
+    props.navigation.navigate("ApplyCard", {
       cardId: val?.id,
       logo: val?.logo,
       isCardBlock: val?.isCardBlock,

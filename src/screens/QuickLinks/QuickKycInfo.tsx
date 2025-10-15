@@ -308,9 +308,10 @@ const QuickKYCInfo = (props: any) => {
                                                     style={undefined}
                                                     disable={btnLoading}
                                                     loading={btnLoading}
-                                                    onPress={()=>{
+                                                    onPress={() => {
                                                         ref?.current?.scrollTo({ y: 0, animated: true });
-                                                        handleSubmit()}}
+                                                        handleSubmit()
+                                                    }}
                                                 />
                                             </>
                                         );

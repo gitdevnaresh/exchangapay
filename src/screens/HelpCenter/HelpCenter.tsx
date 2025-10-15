@@ -19,7 +19,7 @@ const HelpCenter = (props: any) => {
   const [htmlContent, setHtmlContent] = useState<any>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
   const isFocused = useIsFocused();
-  const CardAvailableBalance = personalInfoLoader(7);
+  const CardAvailableBalance = personalInfoLoader(10);
   const [isContentLoading, setIsContentLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const HelpCenter = (props: any) => {
     if (props?.route?.params?.isFlag === true) {
       props.navigation.navigate("NewCard");
     } else {
-      props.navigation.navigate("DrawerModal");
+      props.navigation.goBack();
     }
     return true;
   };
@@ -56,8 +56,10 @@ const HelpCenter = (props: any) => {
       setIsContentLoading(false)
       setErrorMsg(isErrorDispaly(error))
     }
-  }
-
+  };
+  const handleCloseError = () => {
+    setErrorMsg('');
+  };
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
@@ -74,7 +76,7 @@ const HelpCenter = (props: any) => {
           {errorMsg && (<>
             <ErrorComponent
               message={errorMsg}
-              onClose={() => setErrorMsg("")}
+              onClose={handleCloseError}
             />
             <View style={commonStyles.mt8} />
           </>

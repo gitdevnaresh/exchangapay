@@ -18,7 +18,6 @@ import AuthService from "../services/auth";
 import Container from "./Container";
 import { fcmNotification } from "../utils/FCMNotification";
 import DefaultButton from "./DefaultButton";
-import { remove } from "../utils/ApiService";
 import BaseCurrency from "../screens/Profile/baseCurrency";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import Cookies from '@react-native-cookies/cookies';
@@ -211,7 +210,10 @@ const DrawerModal = (props: any) => {
   };
 
   const handleNavigateHome = () => {
-    navigation.navigate(DRAWER_CONSTATNTS.DASHBOARD, { screen: DRAWER_CONSTATNTS.HOME });
+    navigation.navigate(DRAWER_CONSTATNTS.DASHBOARD, {
+      screen: DRAWER_CONSTATNTS.HOME,
+      animation: 'slide_from_left'
+    });
   };
 
   const handleNavigateProfileInfo = () => {
@@ -371,7 +373,7 @@ const DrawerModal = (props: any) => {
                 <TouchableOpacity onPress={handleEditPress}>
                   <View style={[styles.listFlex]}>
                     <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.alignCenter]}>
-                      <KycInfoIcon height={22} width={22} />
+                      <KycInfoIcon height={s(22)} width={s(22)} />
                       <ParagraphComponent text={DRAWER_CONSTATNTS.KYC_INFORMATION} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500]} />
                     </View>
                     <ChevronRight />
@@ -448,7 +450,7 @@ const DrawerModal = (props: any) => {
             <TouchableOpacity onPress={handleNavigateHelpCentre}>
               <View style={[styles.listFlex]}>
                 <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.alignCenter]}>
-                  <HeadPhones height={22} width={22} />
+                  <HeadPhones height={s(22)} width={s(22)} />
                   <ParagraphComponent text={DRAWER_CONSTATNTS.HELP_CENTER_FAQ} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500]} />
                 </View>
                 <ChevronRight />

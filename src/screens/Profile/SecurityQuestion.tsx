@@ -52,7 +52,7 @@ const SecurityQuestion = (props: any) => {
     }, []);
 
     const handleGoBack = () => {
-        props.navigation.navigate("Security")
+        props.navigation.goBack();
     };
 
     const onSubmit = async (values: any) => {

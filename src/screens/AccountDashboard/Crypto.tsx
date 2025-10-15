@@ -44,16 +44,16 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const [isPressed, setIsPressd] = useState<boolean>(false);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const [isSecurityPopupVisible, setIsSecurityPopupVisible] = useState<boolean>(false);
-  const [securityLoading,setSecurrityLoading]=useState<boolean>(true);
+  const [securityLoading, setSecurrityLoading] = useState<boolean>(true);
   const [securityInfo, setSecurityInfo] = useState<SecurityInfo>({
     percentage: 0,
-  level: "",
-  email: "",
-  phone: "",
-  isSecurityQuestionsEnabled: false,
-  isGoogleAuthEnabled: false,
-  isFaceResgEnabled: false,
-  isAuth0Enabled:false
+    level: "",
+    email: "",
+    phone: "",
+    isSecurityQuestionsEnabled: false,
+    isGoogleAuthEnabled: false,
+    isFaceResgEnabled: false,
+    isAuth0Enabled: false
   });
   const { decryptAES } = useEncryptDecrypt();
 
@@ -75,19 +75,19 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     }
   };
   const getSeccurityInfo = async () => {
-       setSecurrityLoading(true)
+    setSecurrityLoading(true)
     try {
       const response = await CryptoServices.getSecurityDetails();
       if (response?.ok) {
-        const data:SecurityInfo=response?.data;
+        const data: SecurityInfo = response?.data;
         setSecurityInfo(data);
-           setSecurrityLoading(false);
+        setSecurrityLoading(false);
       } else {
-          setSecurrityLoading(false);
+        setSecurrityLoading(false);
         setErrormsg(isErrorDispaly(response));
       }
     } catch (err) {
-        setSecurrityLoading(false);
+      setSecurrityLoading(false);
       setErrormsg(isErrorDispaly(err));
 
     }
@@ -218,10 +218,10 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
             />
             <View>
               <View>
-                {(totalBalLoading||securityLoading)  && (
+                {(totalBalLoading || securityLoading) && (
                   <Loadding contenthtml={TotalCryptobalanceLoader} />
                 )}
-                {(!totalBalLoading&&!securityLoading ) && (
+                {(!totalBalLoading && !securityLoading) && (
                   <>
                     <View style={[commonStyles.mb16]} />
                     <View style={[styles.assetsDottedBg, commonStyles.rounded24, { position: "relative", minHeight: isPad ? 180 : 114 }]}>

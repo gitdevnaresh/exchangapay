@@ -182,7 +182,7 @@ const SendCryptoDetails = React.memo((props: any) => {
         if (res?.data.length > 0) {
           fetchCryptoWithdrawData(
             props.route?.params?.walletCode,
-            res?.data[0]?.name
+            props.route?.params?.network || res?.data[0]?.name
           );
         }
       } else {
@@ -253,7 +253,6 @@ const SendCryptoDetails = React.memo((props: any) => {
       setBtnDisabled(false);
       return setErrormsg("Total received amount must be greater than zero.");
     }
-
     if (parseFloat(sendAmmount) > parseFloat(cryptoWithdrawData.amount)) {
       setSummryLoading(false);
       setBtnDisabled(false);
@@ -295,6 +294,7 @@ const SendCryptoDetails = React.memo((props: any) => {
     } else {
       setMFAPopupVisible(true)
     }
+
   };
 
   const handleAccount = async () => {
@@ -321,6 +321,7 @@ const SendCryptoDetails = React.memo((props: any) => {
           ammount: sendAmmount,
           walletCode: props.route?.params?.walletCode,
           transactionId: res.data,
+          from: props?.route?.params?.from
         });
       } else {
         setErrormsg(isErrorDispaly(res));
@@ -435,6 +436,7 @@ const SendCryptoDetails = React.memo((props: any) => {
             props.navigation.navigate("SendCryptoSuccess", {
               ammount: sendAmmount,
               walletCode: props.route?.params?.walletCode,
+              from: props?.route?.params?.from
             });
           } else {
             setErrormsg("Your withdrawal was unsuccessful , Please try again after some time.")

@@ -13,6 +13,7 @@ import { isErrorDispaly } from "../../utils/helpers";
 import ErrorComponent from "../../components/Error";
 import Loadding from "../../components/skeleton";
 import { ToBeReViewLoader } from "../cards/CardsSkeleton_views";
+import { useIsFocused } from "@react-navigation/native";
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 
@@ -21,25 +22,21 @@ const ApplicatoionReview = (props: any) => {
     const [errorMsg, setErrorMsg] = useState<string>('');
     const [statusLoading, setStatusLoading] = useState<boolean>(false);
     const ExchangeCardSkeleton = ToBeReViewLoader();
-
-
-
+    const isFocused = useIsFocused();
 
     useEffect(() => {
-
         getCardStatus();
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
             () => { handleBack(); return true; }
         );
         return () => backHandler.remove();
-    }, []);
-
+    }, [isFocused]);
 
     const handleBack = () => {
         props.navigation.navigate("Dashboard", {
             screen: 'Cards',
-
+            animation: "slide_from_left"
 
         })
     };
@@ -51,6 +48,7 @@ const ApplicatoionReview = (props: any) => {
             const response: any = await CardsModuleService?.getApplyCardStatus(cardId);
             if (response.status === 200) {
                 setStatusInfo(response?.data);
+                console.log(response?.data)
                 setStatusLoading(false)
                 setErrorMsg('');
 
@@ -112,7 +110,7 @@ const ApplicatoionReview = (props: any) => {
                                         <View>
                                             <View style={[commonStyles.relative, commonStyles.mxAuto]}>
                                                 {index !== (statusInfo.length - 1) && <View style={{ height: 1, width: isPad ? s(45) : 60, backgroundColor: item?.status ? NEW_COLOR.TEXT_GREEN : NEW_COLOR.TEXT_BLACK, position: "absolute", top: 13, left: 22, }} />}
-                                                <Ionicons name="checkmark-circle" size={24} color={item?.status ? NEW_COLOR.TEXT_GREEN : NEW_COLOR.TEXT_BLACK} />
+                                                <Ionicons name="checkmark-circle" size={s(24)} color={item?.status ? NEW_COLOR.TEXT_GREEN : NEW_COLOR.TEXT_BLACK} />
                                             </View>
                                             <ParagraphComponent text={item.action} style={[commonStyles.fs12, commonStyles.textBlack, commonStyles.fw500, commonStyles.textCenter]} />
                                         </View>

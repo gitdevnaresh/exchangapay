@@ -14,6 +14,8 @@ import ErrorComponent from '../../components/Error';
 import CardsModuleService from '../../services/card';
 import NoDataComponent from '../../components/nodata';
 import { ChevronRight } from '../../assets/svg';
+import { useIsFocused } from '@react-navigation/native';
+import { s } from '../../constants/theme/scale';
 
 const ViewallMyCards = (props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -21,9 +23,10 @@ const ViewallMyCards = (props: any) => {
     const [errormsg, setErrormsg] = useState("");
     const [myCardsData, setMyCardsData] = useState<any>([]);
     const CardListLoader = sellCoinSelect(10);
+    const isFocused = useIsFocused()
     useEffect(() => {
         fetchMyCards(pageSize);
-    }, []);
+    }, [isFocused]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(
@@ -34,7 +37,7 @@ const ViewallMyCards = (props: any) => {
     }, []);
 
     const handleBack = () => {
-        props.navigation.goBack()
+        props.navigation.navigate("Dashboard", { screen: "Cards", animation: "slide_from_left" })
     };
     const pageSize = 50;
 
@@ -61,17 +64,20 @@ const ViewallMyCards = (props: any) => {
     const handleGetCardsById = (val: any) => {
         if (val.status === 'Pending') {
             props.navigation.push("CardSuccess", {
-                cardId: val?.id
+                cardId: val?.id,
+                from: "MyCards"
             });
         } else if (val.status === 'Reviewing') {
             props.navigation.push("ApplicatoionReview", {
-                cardId: val?.id
+                cardId: val?.id,
+                from: "MyCards"
             })
         }
         else {
             props.navigation.push("CardDetails", {
                 cardId: val?.id,
                 isCardBlock: val?.isCardBlock,
+                from: "MyCards"
             });
         }
     };
@@ -102,7 +108,7 @@ const ViewallMyCards = (props: any) => {
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
                         <TouchableOpacity style={[]} onPress={handleBack} >
                             <View>
-                                <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                             </View>
                         </TouchableOpacity>
                         <ParagraphComponent text="All My Cards" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />

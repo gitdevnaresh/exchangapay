@@ -18,7 +18,6 @@ import { useIsFocused } from '@react-navigation/native';
 import { isCardKycCompleted, setPersonalInfo } from '../../redux/Actions/UserActions';
 import { useDispatch, useSelector } from 'react-redux';
 import CardsModuleService from '../../services/card';
-import MFAPopup from '../Currencypop/mfaPopup';
 import AccountDeactivatePopup from '../Currencypop/actDeactivatePopup';
 import ErrorComponent from '../../components/Error';
 import NoDataComponent from '../../components/nodata';
@@ -39,7 +38,6 @@ const ApplyCard = React.memo((props: any) => {
     const dispatch = useDispatch();
     const [expanded, setExpanded] = useState<number | null>(null);
     const [AccordionData, setAccordionData] = useState<any>([]);
-    const isMFACompleted = useSelector((state: any) => state.UserReducer?.isMFACompleted);
     const [isPressed, setIsPressed] = useState<boolean>(false);
     const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
     const toggleItem = (index: number) => {
@@ -62,7 +60,7 @@ const ApplyCard = React.memo((props: any) => {
     };
     const CloseOverlay = () => {
         dispatch(setPersonalInfo(""));
-        props.navigation.push("ApplyExchangaCard", {
+        props.navigation.navigate("ApplyExchangaCard", {
             cardId: props?.route?.params?.cardId,
             logo: props?.route?.params?.logo,
             cardType: applyCardsData?.cardType,
@@ -114,7 +112,7 @@ const ApplyCard = React.memo((props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.navigate('Dashboard', { screen: 'Cards' });
+        props.navigation.goBack();
     };
 
     const handleCloseMFAPopUp = () => {

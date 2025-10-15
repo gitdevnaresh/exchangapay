@@ -14,17 +14,19 @@ import ErrorComponent from '../../components/Error';
 import Loadding from '../../components/skeleton';
 import { sellCoinSelect } from '../Crypto/buySkeleton_views';
 import NoDataComponent from '../../components/nodata';
+import { useIsFocused } from '@react-navigation/native';
 
 const AllNewCards = (props: any) => {
     const styles = useStyleSheet(themedStyles);
     const [cardsLoading, setCardsLoading] = useState(false);
     const [errormsg, setErrormsg] = useState("");
     const [myCardsData, setMyCardsData] = useState<any>([]);
-    const CardListLoader = sellCoinSelect(10)
+    const CardListLoader = sellCoinSelect(10);
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         fetchAllTopCards(pageSize);
-    }, []);
+    }, [isFocused]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(

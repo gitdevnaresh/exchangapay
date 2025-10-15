@@ -15,52 +15,70 @@ const DepositSubmitted = React.memo((props: any) => {
     const handleBackToHome = () => {
         props?.navigation?.navigate("CardDetails", {
             cardId: props?.route?.params?.cardId,
+            animation: "slide_from_left",
+            from: props?.route?.params?.from || "",
         })
     }
     return (
-        <>
-            <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-                <ScrollView>
-                    <Container style={[commonStyles.container,]}>
-                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap20, commonStyles.justifyContent, commonStyles.mb43]}>
-                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                                <TouchableOpacity style={[]} onPress={handleBackToHome}>
-                                    <View>
-                                        <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3, }} />
-                                    </View>
-                                </TouchableOpacity>
-                                <ParagraphComponent text="Deposit Submitted" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+
+        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
+            <ScrollView>
+                <Container style={[commonStyles.container,]}>
+                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
+                        <TouchableOpacity style={[]} onPress={handleBackToHome}>
+                            <View>
+                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3, }} />
+                            </View>
+                        </TouchableOpacity>
+                        <ParagraphComponent text="Deposit Submitted" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                    </View>
+
+                    <View style={[commonStyles.mb16]} />
+                    <ImageBackground source={require("../../assets/images/cards/light-purplebg.png")} resizeMode='contain' style={[{ height: 380, }]}  >
+                        <View >
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { height: isPad ? s(232) : 232, paddingTop: 16, }]}>
+                                <View>
+                                    <Image style={commonStyles.mxAuto} source={require("../../assets/images/cards/submitted.png")} />
+                                    <View style={[commonStyles.mt16]} />
+                                    <ParagraphComponent text="Deposit Submitted" style={[commonStyles.fs20, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]} />
+                                    <ParagraphComponent text={`You will recive `} style={[commonStyles.fs14, commonStyles.fw200, commonStyles.textCenter, commonStyles.textBlack]} >
+                                        <Text style={[commonStyles.fs12, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]}>{` ${props.route.params.reciveAmount}.`}</Text>
+                                    </ParagraphComponent>
+                                </View>
+                            </View>
+                            <View style={[styles.hline,]} />
+                            <View style={[commonStyles.px16, { marginTop: 16, }]}>
+                                <ParagraphComponent text="It is expected to arrive in " style={[commonStyles.fs14, commonStyles.textGrey, commonStyles.fw400, styles.textCenter, commonStyles.mb24]}
+                                    children={<ParagraphComponent text=" 24 Hours " style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw700, styles.textCenter, commonStyles.mb24]}
+                                        children={<ParagraphComponent text=" in working days, and if ecounter holidays, it will be postponed" style={[commonStyles.fs14, commonStyles.textGrey, commonStyles.fw400, styles.textCenter, commonStyles.mb24]} />}
+                                    />}
+                                />
                             </View>
                         </View>
-                        <View style={[commonStyles.mb16]} />
-                        <ImageBackground source={require("../../assets/images/cards/light-purplebg.png")} resizeMode='contain' style={[{ height: 380, }]}  >
-                            <View >
-                                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, { height: isPad ? s(232) : 232, paddingTop: 16, }]}>
-                                    <View>
-                                        <Image style={commonStyles.mxAuto} source={require("../../assets/images/cards/submitted.png")} />
-                                        <View style={[commonStyles.mt16]} />
-                                        <ParagraphComponent text="Deposit Submitted" style={[commonStyles.fs20, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]} />
-                                        <ParagraphComponent text={`You will recive `} style={[commonStyles.fs14, commonStyles.fw200, commonStyles.textCenter, commonStyles.textBlack]} >
-                                            <Text style={[commonStyles.fs12, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]}>{` ${props.route.params.reciveAmount}.`}</Text>
-                                        </ParagraphComponent>
-                                    </View>
-                                </View>
-                                <View style={[styles.hline,]} />
-                                <View style={[commonStyles.px16, { marginTop: 16, }]}>
-                                    <ParagraphComponent text="It is expected to arrive in " style={[commonStyles.fs14, commonStyles.textGrey, commonStyles.fw400, styles.textCenter, commonStyles.mb24]}
-                                        children={<ParagraphComponent text=" 24 Hours " style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw700, styles.textCenter, commonStyles.mb24]}
-                                            children={<ParagraphComponent text=" in working days, and if ecounter holidays, it will be postponed" style={[commonStyles.fs14, commonStyles.textGrey, commonStyles.fw400, styles.textCenter, commonStyles.mb24]} />}
-                                        />}
-                                    />
-                                </View>
+                    </ImageBackground>
+                    <View style={[commonStyles.mb24]} />
+                    {Platform.OS === 'ios' ? (
+                        <View style={[]}>
+                            <View style={[{ width: "100%" }]}>
+                                <DefaultButton
+                                    customContainerStyle={{}}
+                                    title='Confirm'
+                                    style={undefined}
+
+                                    loading={undefined}
+                                    disable={undefined}
+                                    onPress={handleBackToHome}
+                                    iconCheck={true}
+                                    iconArrowRight={false}
+                                />
                             </View>
-                        </ImageBackground>
-                        <View style={[commonStyles.mb24]} />
-                        {Platform.OS === 'ios' ? (
+                        </View>
+                    ) :
+                        (
                             <View style={[]}>
-                                <View style={[{ width: "100%" }]}>
+                                <View >
                                     <DefaultButton
-                                        customContainerStyle={{}}
+                                        customContainerStyle={[]}
                                         title='Confirm'
                                         style={undefined}
 
@@ -72,28 +90,11 @@ const DepositSubmitted = React.memo((props: any) => {
                                     />
                                 </View>
                             </View>
-                        ) :
-                            (
-                                <View style={[]}>
-                                    <View >
-                                        <DefaultButton
-                                            customContainerStyle={[]}
-                                            title='Confirm'
-                                            style={undefined}
+                        )}
+                </Container>
+            </ScrollView>
+        </SafeAreaView >
 
-                                            loading={undefined}
-                                            disable={undefined}
-                                            onPress={handleBackToHome}
-                                            iconCheck={true}
-                                            iconArrowRight={false}
-                                        />
-                                    </View>
-                                </View>
-                            )}
-                    </Container>
-                </ScrollView>
-            </SafeAreaView>
-        </>
     )
 });
 

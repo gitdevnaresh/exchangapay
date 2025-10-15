@@ -1,26 +1,44 @@
-export const CONSTANTS={
-    WINDOW:'window',
-   PLEASE_ENTER_AMOUNT:" Please enter amount.",
-   PLEASE_ENTER_A_VALID_AMOUNT:"Please enter a valid amount.",
-THE_MINIMUM_AMOUNT_FOR_DEPOSIT_IS:"The minimum amount for deposit is ",
-THE_MAXIMUM_AMOUNT_FOR_DEPOSIT_IS:"The maximum amount for deposit is",
-INSUFFICIENT_BALANCE:'Insufficient balance.',
-DEPOSIT_SUBMITTED:"DepositSubmitted",
-HARDWARE_BACK_PRESS:'hardwareBackPress',
-CARD_DETAILS:"CardDetails",
-ARROW_LEFT:"arrowleft",
-DEPOSIT:"Deposit",
-BALANCE:"Balance",
-AMOUNT:"Amount",
-NUMERIC:'numeric',
-PLACEHOLDER:'0.00',
-MAXIMUM_DEPOSIT_AMOUNT_IS:"Maximum deposit amount is ",
-MINIMUM_DEPOSIT_AMOUNT_IS:"Minimum deposit amount is",
-ESTIMATED_CRYPTO_AMOUNT:'Estimated Crypto Amount',
-TOTAL_RECEIVE_CURRENCY_AMOUNT:'Total Receive Currency Amount',
-DUE_TO_CURRENCY_PRICE_FLUCTUATIONS_THERE_MAY_BE_A_SMALL_DIFFERENCE_BETWEEN_THE_FINAL_DEDUCTION_AMOUNT_AND_THE_DISPLAYED_AMOUNT:'Due to currency price fluctuations, there may be a small difference between the final deduction amount and the displayed amount',
-FEE:'Fee',
-CONFIRM:"Confirm",
-COIN:"Coin",
-NETWORK:"Network",
+export const CONSTANTS = {
+    WINDOW: 'window',
+    PLEASE_ENTER_AMOUNT: " Please enter amount.",
+    PLEASE_ENTER_A_VALID_AMOUNT: "Please enter a valid amount.",
+    THE_MINIMUM_AMOUNT_FOR_DEPOSIT_IS: "The minimum amount for deposit is ",
+    THE_MAXIMUM_AMOUNT_FOR_DEPOSIT_IS: "The maximum amount for deposit is",
+    INSUFFICIENT_BALANCE: 'Insufficient balance.',
+    DEPOSIT_SUBMITTED: "DepositSubmitted",
+    HARDWARE_BACK_PRESS: 'hardwareBackPress',
+    CARD_DETAILS: "CardDetails",
+    ARROW_LEFT: "arrowleft",
+    DEPOSIT: "Deposit",
+    BALANCE: "Balance",
+    AMOUNT: "Amount",
+    NUMERIC: 'numeric',
+    PLACEHOLDER: '0.00',
+    MAXIMUM_DEPOSIT_AMOUNT_IS: "Maximum deposit amount is ",
+    MINIMUM_DEPOSIT_AMOUNT_IS: "Minimum deposit amount is",
+    ESTIMATED_CRYPTO_AMOUNT: 'Estimated Crypto Amount',
+    TOTAL_RECEIVE_CURRENCY_AMOUNT: 'Total Receive Currency Amount',
+    DUE_TO_CURRENCY_PRICE_FLUCTUATIONS_THERE_MAY_BE_A_SMALL_DIFFERENCE_BETWEEN_THE_FINAL_DEDUCTION_AMOUNT_AND_THE_DISPLAYED_AMOUNT: 'Due to currency price fluctuations, there may be a small difference between the final deduction amount and the displayed amount',
+    FEE: 'Fee',
+    CONFIRM: "Confirm",
+    COIN: "Coin",
+    NETWORK: "Network",
 }
+
+export const handleCardDetailsBack = (props: any) => {
+    if (props?.route?.params?.from == "Dashboard") {
+        props.navigation.navigate('Dashboard', {
+            screen: 'Cards',
+            animation: "slide_from_left"
+        });
+    } else if (props?.route?.params?.from == "MyCards") {
+        props.navigation.navigate('ViewallMyCards', {
+            animation: "slide_from_left"
+        });
+    } else {
+        props.navigation.navigate('ExchangaCard', {
+            animation: "slide_from_left"
+        });
+
+    }
+};

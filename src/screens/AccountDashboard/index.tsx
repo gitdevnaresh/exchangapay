@@ -207,6 +207,9 @@ const Dashboard = (props: any) => {
           tabBarInactiveTintColor: NEW_COLOR.TEXT_LIGHTGREY,
           tabBarActiveBackgroundColor: NEW_COLOR.HOME_MENU_BG,
           tabBarInactiveBackgroundColor: NEW_COLOR.HOME_MENU_BG,
+          tabBarLabelStyle: {
+            fontSize: s(14)
+          },
           tabBarItemStyle: { paddingVertical: 4, borderEndWidth: route.name !== 'Transactions' ? 0.7 : 0, borderEndColor: route.name !== 'Transactions' ? NEW_COLOR.BG_BLACK : "transparent", marginBottom: Platform.OS === "ios" ? 0 : 10, marginTop: 10 },
           tabBarStyle: { borderTopWidth: 0, borderBottomWidth: 0, height: Platform.OS === "ios" ? 90 : 70, backgroundColor: NEW_COLOR.HOME_MENU_BG },
 
