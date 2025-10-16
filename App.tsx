@@ -34,7 +34,7 @@ import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
 import { initializeCrashlytics } from "./src/utils/ApiService";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
-
+import RNBootSplash from 'react-native-bootsplash';
 LogBox.ignoreAllLogs(false); // Enable logs for debugging
 
 console.log("App.tsx - Store imported:", typeof store);
@@ -71,7 +71,7 @@ export default function App() {
     checkVersionUpdate();
     fcmNotification.initiate(onNotificationAction);
     requestUserPermission();
-    SplashScreen.hide();
+    RNBootSplash.hide({ fade: true });
   }, []);
 
   const requestUserPermission = async () => {
@@ -87,7 +87,7 @@ export default function App() {
     }
   };
 
-  const onNotificationAction = (notificationData: any) => {};
+  const onNotificationAction = (notificationData: any) => { };
   useEffect(() => {
     checkAppVersion();
   }, [versionInfo]);
@@ -101,7 +101,7 @@ export default function App() {
           setVersionInfo(res.data.jsonVersion);
         }
       }
-    } catch (err) {}
+    } catch (err) { }
   };
   const checkAppVersion = async () => {
     try {
@@ -119,19 +119,19 @@ export default function App() {
       if (
         versionDetailsInfo &&
         versionDetailsInfo[
-          Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion"
+        Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion"
         ] > versionName
       ) {
         setIsForceUpdate(
           versionDetailsInfo[
-            Platform.OS === "ios"
-              ? "iosForceUpdateVersion"
-              : "androidForceUpdateVersion"
+          Platform.OS === "ios"
+            ? "iosForceUpdateVersion"
+            : "androidForceUpdateVersion"
           ] > versionName
         );
         setIsUpdate(true);
       }
-    } catch (error) {}
+    } catch (error) { }
   };
   const getoAuthConfig = (path: string) => {
     const envList = getAllEnvData("tst");

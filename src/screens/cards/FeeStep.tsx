@@ -208,7 +208,7 @@ const FeeStep = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.replace("ApplyExchangaCard", {
+        props.navigation.navigate("ApplyExchangaCard", {
             cardId: props?.route?.params?.cardId,
             logo: props?.route?.params?.logo,
             cardType: props?.route?.params?.cardType,

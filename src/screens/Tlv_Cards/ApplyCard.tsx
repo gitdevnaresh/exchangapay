@@ -112,7 +112,10 @@ const ApplyCard = React.memo((props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.goBack();
+        props.navigation.navigate("Dashboard", {
+            screen: 'Cards',
+            animation: "slide_from_left"
+        })
     };
 
     const handleCloseMFAPopUp = () => {

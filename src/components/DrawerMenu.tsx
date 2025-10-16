@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, Image, ActivityIndicator, SafeAreaView, ScrollView, BackHandler, Dimensions } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Image, ActivityIndicator, ScrollView, BackHandler, Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "react-native-auth0";
 import { useNavigation, CommonActions, useIsFocused } from "@react-navigation/core";
@@ -26,6 +26,7 @@ import CryptoServices from "../services/crypto";
 import * as Keychain from "react-native-keychain";
 import { isErrorDispaly } from "../utils/helpers";
 import OnBoardingService from "../services/onBoardingservice";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get('window');
 

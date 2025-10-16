@@ -341,7 +341,7 @@ const ApplyExchangaCard = (props: any) => {
 
 
 
-            props.navigation.push("FeeStep", {
+            props.navigation.navigate("FeeStep", {
                 cardId: props?.route?.params?.cardId,
                 profileId: profileInfo?.profileId,
                 logo: props?.route?.params?.logo,
@@ -361,7 +361,12 @@ const ApplyExchangaCard = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBack = () => {
-        props.navigation.goBack();
+        props.navigation.navigate("ApplyCard", {
+            cardId: props?.route?.params?.cardId,
+            animation: "slide_from_left",
+            logo: props?.route?.params?.logo,
+            cardType: props?.route?.params?.cardType,
+        });
     };
 
     const handleSumsub = () => {
