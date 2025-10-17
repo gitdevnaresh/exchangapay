@@ -1,24 +1,32 @@
-import { BackHandler, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { NEW_COLOR } from '../../constants/theme/variables';
+import {
+  BackHandler,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { NEW_COLOR } from "../../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { Container } from '../../components';
-import { commonStyles } from '../../components/CommonStyles';
-import ParagraphComponent from '../../components/Paragraph/Paragraph';
-import { Field, Formik } from 'formik';
-import DefaultButton from '../../components/DefaultButton';
-import LabelComponent from '../../components/Paragraph/label';
+import { Container } from "../../components";
+import { commonStyles } from "../../components/CommonStyles";
+import ParagraphComponent from "../../components/Paragraph/Paragraph";
+import { Field, Formik } from "formik";
+import DefaultButton from "../../components/DefaultButton";
+import LabelComponent from "../../components/Paragraph/label";
 import InputDefault from "../../components/DefaultFiat";
-import { ms } from '../../constants/theme/scale';
-import { FeedbackSchema } from './FeedbackSchma';
-import ErrorComponent from '../../components/Error';
-import { isErrorDispaly } from '../../utils/helpers';
-import CryptoServices from '../../services/crypto';
-import PhoneCodePicker from '../../components/PhoneCodeSelect';
-import CardsModuleService from '../../services/card';
-import { useIsFocused } from '@react-navigation/native';
-import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
-
+import { ms } from "../../constants/theme/scale";
+import { FeedbackSchema } from "./FeedbackSchma";
+import ErrorComponent from "../../components/Error";
+import { isErrorDispaly } from "../../utils/helpers";
+import CryptoServices from "../../services/crypto";
+import PhoneCodePicker from "../../components/PhoneCodeSelect";
+import CardsModuleService from "../../services/card";
+import { useIsFocused } from "@react-navigation/native";
+import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const Feedback = (props: any) => {
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
@@ -31,21 +39,22 @@ const Feedback = (props: any) => {
     email: "",
     phoneNumber: "",
     feedback: "",
-    phoneCode: ""
-
-
-  }
+    phoneCode: "",
+  };
   useEffect(() => {
     getListOfCountryCodeDetails();
-  }, [isFocused])
+  }, [isFocused]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => { handleBackPress(); return true; }
+      "hardwareBackPress",
+      () => {
+        handleBackPress();
+        return true;
+      }
     );
     return () => backHandler.remove();
-  }, [])
+  }, []);
 
   const handleBackPress = () => {
     props.navigation.goBack();
@@ -65,46 +74,72 @@ const Feedback = (props: any) => {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrorMsg(isErrorDispaly(error));
     }
-
   };
 
-
-
   const handleSubnit = async (values: any) => {
-    setBtnLoading(true)
+    setBtnLoading(true);
     try {
       const obj = {
-        "Email": encryptAES(values?.email),
-        "PhoneNo": encryptAES(values?.phoneNumber),
-        "State": "Submitted",
-        "Feedback": values?.feedback
-      }
+        Email: encryptAES(values?.email),
+        PhoneNo: encryptAES(values?.phoneNumber),
+        State: "Submitted",
+        Feedback: values?.feedback,
+      };
       const response = await CryptoServices.saveFeedback(obj);
       if (response.ok) {
         props.navigation.navigate("FeedbackSuccess");
       } else {
-        setErrorMsg(isErrorDispaly(response))
+        setErrorMsg(isErrorDispaly(response));
       }
 
-      setBtnLoading(false)
+      setBtnLoading(false);
     } catch (error) {
       ref?.current?.scrollTo({ y: 0, animated: true });
-      setErrorMsg(isErrorDispaly(error))
+      setErrorMsg(isErrorDispaly(error));
 
-      setBtnLoading(false)
+      setBtnLoading(false);
     }
-
-  }
+  };
 
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-      <ScrollView ref={ref}>
+      <KeyboardAwareScrollView
+        ref={ref}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        extraScrollHeight={20}
+        extraHeight={100}
+      >
         <Container style={[commonStyles.container]}>
-          <View style={[commonStyles.dflex, commonStyles.mb36, commonStyles.alignCenter, commonStyles.gap16]}>
-            <TouchableOpacity onPress={() => handleBackPress()} activeOpacity={0.8}>
-              <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+          <View
+            style={[
+              commonStyles.dflex,
+              commonStyles.mb36,
+              commonStyles.alignCenter,
+              commonStyles.gap16,
+            ]}
+          >
+            <TouchableOpacity
+              onPress={() => handleBackPress()}
+              activeOpacity={0.8}
+            >
+              <AntDesign
+                name="arrowleft"
+                size={22}
+                color={NEW_COLOR.TEXT_BLACK}
+                style={{ marginTop: 3 }}
+              />
             </TouchableOpacity>
-            <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} text='Feedback' />
+            <ParagraphComponent
+              style={[
+                commonStyles.fs16,
+                commonStyles.textBlack,
+                commonStyles.fw800,
+              ]}
+              text="Feedback"
+            />
           </View>
           {errorMsg && (
             <ErrorComponent
@@ -129,12 +164,10 @@ const Feedback = (props: any) => {
                 handleBlur,
                 setFieldValue,
                 values,
-
               } = formik;
               return (
                 <View style={[commonStyles.mb20]}>
                   <>
-
                     <Field
                       touched={touched.email}
                       name="email"
@@ -179,7 +212,6 @@ const Feedback = (props: any) => {
                           onChange={(item) =>
                             setFieldValue("phoneCode", item.code)
                           }
-
                         />
                       </View>
                       <View style={[commonStyles.flex1]}>
@@ -192,11 +224,21 @@ const Feedback = (props: any) => {
                           keyboardType="phone-pad"
                           placeholderTextColor={NEW_COLOR.PLACEHOLDER_TEXTCOLOR}
                           multiline={false}
-
                         />
                       </View>
                     </View>
-                    {((touched.phoneNumber || touched.phoneCode) && (errors.phoneNumber || errors?.phoneCode)) && <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textError, { marginTop: 4 }]} text={(errors.phoneNumber || errors?.phoneCode)} />}
+                    {(touched.phoneNumber || touched.phoneCode) &&
+                      (errors.phoneNumber || errors?.phoneCode) && (
+                        <ParagraphComponent
+                          style={[
+                            commonStyles.fs12,
+                            commonStyles.fw400,
+                            commonStyles.textError,
+                            { marginTop: 4 },
+                          ]}
+                          text={errors.phoneNumber || errors?.phoneCode}
+                        />
+                      )}
 
                     <View style={[commonStyles.mb24]} />
                     <Field
@@ -234,22 +276,18 @@ const Feedback = (props: any) => {
                 </View>
               );
             }}
-
           </Formik>
-
-
         </Container>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default Feedback
+export default Feedback;
 
 const styles = StyleSheet.create({
-  container: {
-
-  }, inputStyle: {
+  container: {},
+  inputStyle: {
     borderColor: NEW_COLOR.SEARCH_BORDER,
     backgroundColor: NEW_COLOR.SCREENBG_WHITE,
     borderWidth: 1,
@@ -262,6 +300,6 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     flex: 1,
     multiline: false,
-    textAlignVertical: 'center',
+    textAlignVertical: "center",
   },
-})
+});
