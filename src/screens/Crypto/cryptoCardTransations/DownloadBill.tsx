@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container, Content, Text } from "../../../components";
-import { View, TouchableOpacity, ScrollView, SafeAreaView, NativeModules, BackHandler, Alert, Platform } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  NativeModules,
+  BackHandler,
+  Alert,
+  Platform,
+} from "react-native";
 import ParagraphComponent from "../../../components/Paragraph/Paragraph";
 import { NEW_COLOR } from "../../../constants/theme/variables";
 import { ms, s } from "../../../constants/theme/scale";
@@ -16,19 +25,20 @@ import moment from "moment";
 import "moment-timezone";
 import notifee, { EventType } from "@notifee/react-native";
 import FileViewer from "react-native-file-viewer";
-import RNFetchBlob from "rn-fetch-blob";
+import { BlobUtil } from "react-native-blob-util";
 import SplashScreen from "react-native-splash-screen";
 import ModalPicker from "../../../components/ModalPicker";
 import ErrorComponent from "../../../components/Error";
 import DatePickers from "react-native-date-picker";
-import Share from 'react-native-share';
+import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
 
 const EXChangaCardDownloadBill = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
   const [activeTab, setActiveTab] = useState<number>(0);
   const [errormsg, setErrormsg] = useState<any>("");
-  const [downloadBillLoading, setDownloadBillLoading] = useState<boolean>(false);
+  const [downloadBillLoading, setDownloadBillLoading] =
+    useState<boolean>(false);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [selectedCard, setSelecedCard] = useState("");
@@ -45,11 +55,11 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
   const data: any = [
     {
       name: "Past Week",
-      value: "PastWeek"
+      value: "PastWeek",
     },
     {
       name: "Past Month",
-      value: "PastMonth"
+      value: "PastMonth",
     },
     {
       name: "Customize",
@@ -84,81 +94,87 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     SplashScreen.hide();
   }, []);
 
-  const downloadImage = async(path: any) => {
-     if (Platform.OS === 'android') {
-        const hasPermission = await requestAndroidPermission();
-        if (!hasPermission) {
-          Alert.alert('Permission Denied', 'Cannot download image without permission.');
-          return;
-        }}
+  const downloadImage = async (path: any) => {
+    if (Platform.OS === "android") {
+      const hasPermission = await requestAndroidPermission();
+      if (!hasPermission) {
+        Alert.alert(
+          "Permission Denied",
+          "Cannot download image without permission."
+        );
+        return;
+      }
+    }
     let date = new Date();
     let image_URL = path;
     let ext: any = getExtention(image_URL);
     ext = "." + ext[0];
-    if (Platform.OS === 'ios') {
-      downloadAndSavePDF(path, `Bill_Transaction_${Math.floor(date.getTime() + date.getSeconds() / 2)}.csv`).then((filePath) => {
+    if (Platform.OS === "ios") {
+      downloadAndSavePDF(
+        path,
+        `Bill_Transaction_${Math.floor(
+          date.getTime() + date.getSeconds() / 2
+        )}.csv`
+      ).then((filePath) => {
         if (filePath) {
           sharePDF(filePath);
         }
       });
     } else {
-      const { config, fs } = RNFetchBlob;
-      let PictureDir = fs.dirs.DownloadDir;
-      let options = {
+      const downloadDir = BlobUtil.fs.dirs.DownloadDir;
+      const fileName = `Bill_Transaction_${Math.floor(
+        date.getTime() + date.getSeconds() / 2
+      )}${ext}`;
+
+      const config = {
         fileCache: true,
         addAndroidDownloads: {
           useDownloadManager: true,
           notification: true,
-          path:
-            PictureDir +
-            "/Bill_Transaction_" +
-            Math.floor(date.getTime() + date.getSeconds() / 2) +
-            ext,
+          path: `${downloadDir}/${fileName}`,
           description: "csv",
         },
-        ios: {
-          documentDirectory: 'true',
-        },
       };
-      config(options)
-        .fetch("GET", image_URL)
-        .then((_res) => {
-          Alert.alert("Transactions Bill Downloaded Successfully.", `File saved to: ${_res.path()}`);
 
-        });
+      try {
+        const response = await BlobUtil.config(config).fetch("GET", image_URL);
+        Alert.alert(
+          "Transactions Bill Downloaded Successfully.",
+          `File saved to: ${response.path()}`
+        );
+      } catch (error) {
+        Alert.alert("Download Failed", "Failed to download the bill.");
+      }
     }
-
   };
 
   const downloadAndSavePDF = async (pdfUrl: any, pdfName: string) => {
     try {
-      const { dirs } = RNFetchBlob.fs;
-      const filePath = `${dirs.DocumentDir}/${pdfName}`;
-      const res = await RNFetchBlob.config({
+      const documentDir = BlobUtil.fs.dirs.DocumentDir;
+      const filePath = `${documentDir}/${pdfName}`;
+      const response = await BlobUtil.config({
         fileCache: true,
         path: filePath,
-      }).fetch('GET', pdfUrl);
-      return res.path();
-
+      }).fetch("GET", pdfUrl);
+      return response.path();
     } catch (error) {
-      console.error('Error saving PDF:', error);
-      Alert.alert('Error', 'Failed to save the CSV.');
+      console.error("Error saving PDF:", error);
+      Alert.alert("Error", "Failed to save the CSV.");
       return null;
     }
   };
   const sharePDF = async (pdfPath: any) => {
     try {
       const options = {
-        title: 'Transactions Bill',
+        title: "Transactions Bill",
         url: `${pdfPath}`,
-        type: 'text/csv',
+        type: "text/csv",
         saveToFiles: true,
       };
 
       await Share.open(options);
-
     } catch (error) {
-      console.error('Error sharing PDF:', error);
+      console.error("Error sharing PDF:", error);
     }
   };
 
@@ -178,19 +194,21 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     return () => backHandler.remove();
   }, []);
   const handleGoBack = () => {
-    props.navigation.goBack()
+    props.navigation.goBack();
   };
   useEffect(() => {
     const calculateDates = () => {
       const currentDate = new Date();
-      let formattedEndDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1
-        }/${currentDate.getFullYear()}`;
+      let formattedEndDate = `${currentDate.getDate()}/${
+        currentDate.getMonth() + 1
+      }/${currentDate.getFullYear()}`;
       let formattedStartDate = "";
       if (data[activeTab]?.name === "Past Week") {
         const lastWeekStartDate = new Date(currentDate);
         lastWeekStartDate.setDate(currentDate.getDate() - 7);
-        formattedStartDate = `${lastWeekStartDate.getDate()}/${lastWeekStartDate.getMonth() + 1
-          }/${lastWeekStartDate.getFullYear()}`;
+        formattedStartDate = `${lastWeekStartDate.getDate()}/${
+          lastWeekStartDate.getMonth() + 1
+        }/${lastWeekStartDate.getFullYear()}`;
       } else if (data[activeTab]?.name === "Past Month") {
         const lastMonth = new Date(
           currentDate.getFullYear(),
@@ -202,10 +220,12 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
           currentDate.getMonth(),
           0
         );
-        formattedStartDate = `${lastMonth.getDate()}/${lastMonth.getMonth() + 1
-          }/${lastMonth.getFullYear()}`;
-        formattedEndDate = `${lastDayOfLastMonth.getDate()}/${lastDayOfLastMonth.getMonth() + 1
-          }/${lastDayOfLastMonth.getFullYear()}`;
+        formattedStartDate = `${lastMonth.getDate()}/${
+          lastMonth.getMonth() + 1
+        }/${lastMonth.getFullYear()}`;
+        formattedEndDate = `${lastDayOfLastMonth.getDate()}/${
+          lastDayOfLastMonth.getMonth() + 1
+        }/${lastDayOfLastMonth.getFullYear()}`;
       }
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
@@ -217,22 +237,23 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     try {
       const response: any = await CardsModuleService.getCards();
       if (response.data && response.data.length > 0) {
-        const cardLu = response.data.map((item: any) => { return { ...item, name: item.cardName } })
+        const cardLu = response.data.map((item: any) => {
+          return { ...item, name: item.cardName };
+        });
         setCardList(cardLu);
       }
     } catch (error) {
-      setErrormsg(isErrorDispaly(error))
+      setErrormsg(isErrorDispaly(error));
     }
   };
-
 
   const fetchAllCustomerCradsCount = async () => {
     const fromDate =
       data[activeTab]?.name === "Customize" ? formattedFromDate : "";
     const toDate = data[activeTab]?.name === "Customize" ? formattedToDate : "";
     if (!selectedCardInfo && !selectedCardInfo?.id) {
-      setErrormsg('Please select a card.')
-      return
+      setErrormsg("Please select a card.");
+      return;
     }
     try {
       setDownloadBillLoading(true);
@@ -259,15 +280,15 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     return formatedDate;
   };
   const handleOpenDatePicker = () => {
-    setShowToDatePicker(!showToDatePicker)
+    setShowToDatePicker(!showToDatePicker);
   };
 
   const handleOpenFromDate = () => {
-    setShowFromDatePicker(!showFromDatePicker)
+    setShowFromDatePicker(!showFromDatePicker);
   };
 
   const handleModelPicker = (data: any) => {
-    setErrormsg("")
+    setErrormsg("");
     setSelecedCard(data?.cardName);
     setSelecedCardInfo(data);
   };
@@ -293,10 +314,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                 commonStyles.gap16,
               ]}
             >
-              <TouchableOpacity
-                onPress={handleGoBack}
-                style={[]}
-              >
+              <TouchableOpacity onPress={handleGoBack} style={[]}>
                 <View>
                   <AntDesign
                     name="arrowleft"
@@ -316,7 +334,9 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
               />
             </View>
             <View style={[commonStyles.mb43]} />
-            {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
+            {errormsg && (
+              <ErrorComponent message={errormsg} onClose={handleCloseError} />
+            )}
             <View style={[styles.notice]}>
               <Feather
                 name="info"
@@ -336,20 +356,31 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
             </View>
 
             <View style={commonStyles.mb24} />
-            <LabelComponent text="Card" Children={<LabelComponent text=" *" style={[commonStyles.textRed]} />} />
-            <ModalPicker placeholder={'Select Card'}
-              onChange={(data) => { handleModelPicker(data) }}
+            <LabelComponent
+              text="Card"
+              Children={
+                <LabelComponent text=" *" style={[commonStyles.textRed]} />
+              }
+            />
+            <ModalPicker
+              placeholder={"Select Card"}
+              onChange={(data) => {
+                handleModelPicker(data);
+              }}
               data={cardList || []}
               value={selectedCard}
-              customBind={['cardName']}
-              modalTitle={'Select Card'} />
+              customBind={["cardName"]}
+              modalTitle={"Select Card"}
+            />
             {showList && (
               <ScrollView style={{ maxHeight: 100 }}>
                 {cardList &&
                   cardList?.map((item: any, _index: any) => {
                     return (
                       <TouchableOpacity
-                        onPress={() => { handleOpenLkp(item) }}
+                        onPress={() => {
+                          handleOpenLkp(item);
+                        }}
                         style={{
                           justifyContent: "center",
                           alignItems: "center",
@@ -425,10 +456,10 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       commonStyles.gap16,
                       commonStyles.justifyCenter,
                       commonStyles.flex1,
-                      commonStyles.mt16
+                      commonStyles.mt16,
                     ]}
                   >
-                    <View >
+                    <View>
                       <ParagraphComponent
                         text={startDate}
                         style={[
@@ -441,7 +472,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       />
                     </View>
                     <ParagraphComponent
-                      text={'to'}
+                      text={"to"}
                       style={[
                         commonStyles.fs14,
                         commonStyles.fw500,
@@ -463,9 +494,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       />
                     </View>
                   </View>
-
                 </View>
-
               </View>
             )}
             {data[activeTab]?.name === "Customize" && (
@@ -493,8 +522,8 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       open={showFromDatePicker}
                       date={fromDate}
                       onConfirm={(date) => {
-                        setShowFromDatePicker(false)
-                        setFromDate(date)
+                        setShowFromDatePicker(false);
+                        setFromDate(date);
                       }}
                       onCancel={() => {
                         setShowFromDatePicker(false);
@@ -502,7 +531,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       theme="dark"
                       maximumDate={new Date()}
                     />
-
                   )}
                   <View>
                     <Feather
@@ -513,7 +541,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                     />
                   </View>
                 </View>
-
 
                 <View style={[commonStyles.mb16]} />
 
@@ -540,8 +567,8 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       open={showToDatePicker}
                       date={toDate}
                       onConfirm={(date) => {
-                        setShowToDatePicker(false)
-                        setToDate(date)
+                        setShowToDatePicker(false);
+                        setToDate(date);
                       }}
                       onCancel={() => {
                         setShowFromDatePicker(false);
@@ -549,7 +576,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                       theme="dark"
                       maximumDate={new Date()}
                     />
-
                   )}
                   <View>
                     <Feather
@@ -560,7 +586,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
                     />
                   </View>
                 </View>
-
 
                 <View style={[commonStyles.mb16]} />
                 <View style={[commonStyles.mb26]} />
@@ -740,7 +765,8 @@ const themedStyles = StyleService.create({
   container: {
     backgroundColor: NEW_COLOR.BACKGROUND_WHITE,
     padding: 24,
-  }, placeholder: {
+  },
+  placeholder: {
     fontSize: 13,
     color: "#FFF",
   },
