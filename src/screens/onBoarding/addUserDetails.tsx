@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Formik, Field } from "formik";
 import DatePickers from "react-native-date-picker";
 import InputDefault from "../../components/DefaultFiat";
@@ -98,7 +99,14 @@ const AddUserDetails = (props: any) => {
 
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={20}
+        extraHeight={100}
+        showsVerticalScrollIndicator={false}
+      >
         <Container style={commonStyles.container}>
           <View style={[commonStyles.mb24, commonStyles.mt8]}>
             <View
@@ -265,7 +273,7 @@ const AddUserDetails = (props: any) => {
             )}
           </Formik>
         </Container>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
