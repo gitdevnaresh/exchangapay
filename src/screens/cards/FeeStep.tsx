@@ -49,7 +49,6 @@ const FeeStep = (props: any) => {
     const [networkList, setNetworkList] = useState<any>([]);
     const ExchangeCardSkeleton = ExchangeCardViewLoader();
     const ref = useRef<any>();
-    let haveCard = true;
     let WalletId = "";
     const [physicalCardFormData, setPhysicalCardFormData] = useState({
         handHoldingIdPhoto: "",
@@ -84,12 +83,12 @@ const FeeStep = (props: any) => {
                 setErrormsg("");
                 getNetworkList(response?.data[0]?.walletCode);
                 setFeeCardsLoading(false);
-
+                setIsLoading(false);
             } else {
                 ref?.current?.scrollTo({ y: 0, animated: true });
                 setErrormsg(isErrorDispaly(response));
                 setFeeCardsLoading(false);
-
+                setIsLoading(false);
             }
         } catch (error) {
             ref?.current?.scrollTo({ y: 0, animated: true });
@@ -113,23 +112,26 @@ const FeeStep = (props: any) => {
                 ref?.current?.scrollTo({ y: 0, animated: true });
                 setErrormsg(isErrorDispaly(res));
                 setFeeCardsLoading(false);
+                setIsLoading(false);
                 setErrormsg("");
             }
         } catch (err) {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(err));
             setFeeCardsLoading(false);
+            setIsLoading(false);
             setErrormsg("");
 
         }
     }
 
-    const getApplyCardDeatilsInfo = async () => {
+    const getApplyCardDeatilsInfo = async (haveCardValue?: boolean) => {
         setIsLoading(true);
         setErrormsg('')
         const cardId = props?.route?.params?.cardId;
+        const cardValue = haveCardValue !== undefined ? haveCardValue : !iHaveCard.sendCard;
         try {
-            const response: any = await CardsModuleService?.getApplyCardsCustomerFeeInfo(cardId, WalletId || selectedNetwork?.id, haveCard);
+            const response: any = await CardsModuleService?.getApplyCardsCustomerFeeInfo(cardId, WalletId || selectedNetwork?.id, cardValue);
             if (response?.ok) {
                 setCardsFeeInfo(response?.data);
                 setSelectedCoin(response?.data?.paymentCurrency)
@@ -219,16 +221,14 @@ const FeeStep = (props: any) => {
     const selectHaveCard = (type: any) => {
         if (type === "haveCard") {
             if (!iHaveCard.haveCard) {
-                setIHaveCard((prev) => ({ ...prev, haveCard: true, sendCard: false, }))
-                haveCard = true;
-                getApplyCardDeatilsInfo()
+                setIHaveCard((prev) => ({ ...prev, haveCard: true, sendCard: false, }));
+                getApplyCardDeatilsInfo(true);
             }
         }
         else if (type === "sendCard") {
             if (!iHaveCard.sendCard) {
                 setIHaveCard((prev) => ({ ...prev, haveCard: false, sendCard: true, }));
-                haveCard = false;
-                getApplyCardDeatilsInfo()
+                getApplyCardDeatilsInfo(false);
             }
         }
 

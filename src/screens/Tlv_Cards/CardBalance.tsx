@@ -63,8 +63,7 @@ const CardBalance = React.memo((props: any) => {
 
     const getNetworkList = async (coinName: string) => {
         try {
-            const cardId = props?.route?.params?.cardId
-            const res: any = await CryptoServices.getCardNetworks(coinName, cardId);
+            const res: any = await CryptoServices.getCommonCryptoNetworks(coinName);
             if (res.status === 200) {
                 setSelectedNetwok(res?.data[0]?.name)
                 setNetworkList(res?.data);

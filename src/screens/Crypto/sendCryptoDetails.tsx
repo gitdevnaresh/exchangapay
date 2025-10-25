@@ -29,6 +29,7 @@ import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import AddressbookService from "../../services/addressbook";
 import DeafultList from "../../components/DeafultPicker";
 import Cookies from '@react-native-cookies/cookies';
+import { cryptoReceiveLoader } from "./buySkeleton_views";
 
 let amount;
 
@@ -65,7 +66,8 @@ const SendCryptoDetails = React.memo((props: any) => {
   const [openPayeesModel, setOpenPayeesModel] = useState<boolean>(false);
   const [selectedPayee, setSelectedPayee] = useState<any>({});
   const userName = decryptAES(userInfo?.userName);
-  const [isApitriggerd, setIsApiTriggered] = useState<boolean>(false)
+  const [isApitriggerd, setIsApiTriggered] = useState<boolean>(false);
+  const skeletonLoader = cryptoReceiveLoader();
 
   useEffect(() => {
     getSeccurityInfo();
@@ -113,7 +115,6 @@ const SendCryptoDetails = React.memo((props: any) => {
       "feeComission": fee?.fee,
       "concurrencyStamp": fee?.concurrencyStamp || "",
       "createdBy": encryptAES(userName),
-
 
     };
     try {
@@ -177,10 +178,10 @@ const SendCryptoDetails = React.memo((props: any) => {
       const res: any = await CryptoServices.getCommonCryptoNetworks(props.route?.params?.walletCode);
       if (res.status === 200) {
         setSelectedNetwok(props.route?.params?.network || res?.data[0]?.name);
-        getlAllPayees(props.route?.params?.network || res?.data[0]?.name);
+        await getlAllPayees(props.route?.params?.network || res?.data[0]?.name);
         setNetworkLu(res?.data);
         if (res?.data.length > 0) {
-          fetchCryptoWithdrawData(
+          await fetchCryptoWithdrawData(
             props.route?.params?.walletCode,
             props.route?.params?.network || res?.data[0]?.name
           );
@@ -202,10 +203,13 @@ const SendCryptoDetails = React.memo((props: any) => {
         setCryptoWithdrawData(res?.data);
         setLoading(false);
       } else {
+        setCryptoWithdrawData({});
         setLoading(false);
         setErrormsg(isErrorDispaly(res));
+
       }
     } catch (err) {
+      setCryptoWithdrawData({});
       setErrormsg(isErrorDispaly(err));
       setLoading(false);
     }
@@ -253,6 +257,7 @@ const SendCryptoDetails = React.memo((props: any) => {
       setBtnDisabled(false);
       return setErrormsg("Total received amount must be greater than zero.");
     }
+
     if (parseFloat(sendAmmount) > parseFloat(cryptoWithdrawData.amount)) {
       setSummryLoading(false);
       setBtnDisabled(false);
@@ -294,7 +299,6 @@ const SendCryptoDetails = React.memo((props: any) => {
     } else {
       setMFAPopupVisible(true)
     }
-
   };
 
   const handleAccount = async () => {
@@ -321,7 +325,6 @@ const SendCryptoDetails = React.memo((props: any) => {
           ammount: sendAmmount,
           walletCode: props.route?.params?.walletCode,
           transactionId: res.data,
-          from: props?.route?.params?.from
         });
       } else {
         setErrormsg(isErrorDispaly(res));
@@ -436,7 +439,6 @@ const SendCryptoDetails = React.memo((props: any) => {
             props.navigation.navigate("SendCryptoSuccess", {
               ammount: sendAmmount,
               walletCode: props.route?.params?.walletCode,
-              from: props?.route?.params?.from
             });
           } else {
             setErrormsg("Your withdrawal was unsuccessful , Please try again after some time.")
@@ -488,137 +490,131 @@ const SendCryptoDetails = React.memo((props: any) => {
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
       <ScrollView>
         <Container style={commonStyles.container}>
-          <View
-            style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter]} >
-            <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-              <TouchableOpacity style={[styles.pr16]} onPress={handleGoBack} >
-                <View>
-                  <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                </View>
-              </TouchableOpacity>
-              <ParagraphComponent
-                text={`Transfer ${props.route?.params?.walletCode ||
-                  cryptoWithdrawData.walletCode
-                  }`}
-                style={[commonStyles.fs16, commonStyles.textBlack]} />
+          {looading && <Loadding contenthtml={skeletonLoader} />}
+          {!looading && <View>
+            <View
+              style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter]} >
+              <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                <TouchableOpacity style={[styles.pr16]} onPress={handleGoBack} >
+                  <View>
+                    <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                  </View>
+                </TouchableOpacity>
+                <ParagraphComponent
+                  text={`Transfer ${props.route?.params?.walletCode ||
+                    cryptoWithdrawData.walletCode
+                    }`}
+                  style={[commonStyles.fs16, commonStyles.textBlack]} />
+              </View>
+
             </View>
 
-          </View>
+            <View style={[styles.mt26, commonStyles.mb32]}>
+              {errormsg && (<ErrorComponent message={errormsg} onClose={handleCloseError} />)}
 
-          <View style={[styles.mt26, commonStyles.mb32]}>
-            {errormsg && (<ErrorComponent message={errormsg} onClose={handleCloseError} />)}
-
-            <TouchableOpacity onPress={handleOpenModel}>
-              <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.justifyCenter, commonStyles.alignCenter]}>
-                <ParagraphComponent text={selectedNetwork || ""} style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]} />
-                <Image style={styles.downArrow} source={require("../../assets/images/banklocal/down-arrow.png")} />
-              </View>
-            </TouchableOpacity>
-            <ParagraphComponent text={'Chain'} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, styles.px8, commonStyles.textCenter]} />
-          </View>
-
-          <>
-            <LabelComponent text="Recipient’s Address" style={[commonStyles.fs12, commonStyles.fw400, styles.px8]}
-              Children={<LabelComponent text=" *" style={[commonStyles.textError]} />}
-            />
-            <TouchableOpacity onPress={() => setOpenPayeesModel(true)} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10]}>
-              <View style={[styles.searchContainer]}>
-                <TextInputField
-                  style={styles.inputStyle}
-                  inputStyle={[commonStyles.fs14, { borderRadius: 0 }]}
-                  placeholder={"Select Address"}
-                  onChangeText={(e) => handleAddressChange(e || "")}
-                  value={address}
-                  editable={false}
-                  numberOfLines={1}
-                />
-
-                <View style={[styles.scan]}>
+              <TouchableOpacity onPress={handleOpenModel}>
+                <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.justifyCenter, commonStyles.alignCenter]}>
+                  <ParagraphComponent text={selectedNetwork || ""} style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textCenter, commonStyles.textBlack]} />
                   <Image style={styles.downArrow} source={require("../../assets/images/banklocal/down-arrow.png")} />
                 </View>
-              </View>
-            </TouchableOpacity>
-            {/* <TouchableOpacity onPress={enableScannerModel}>
-                <View style={[styles.bgpurple]}>
-                  <Scanbar />
-                </View>
-              </TouchableOpacity> */}
-
-
-
-
-            <View style={styles.mt24}>
-              <View style={[commonStyles.relative, styles.SelectStyle, commonStyles.p16, commonStyles.rounded24, commonStyles.dflex, commonStyles.alignCenter]}>
-                <ParagraphComponent text={"Currency Amount"} style={[commonStyles.fs20, commonStyles.flex1, commonStyles.textGrey, commonStyles.fw600, { color: NEW_COLOR.INPUT_INSIDE_LABEL }]} />
-                <View style={commonStyles.flex1}>
-                  <TextInputField
-                    inputStyle={[commonStyles.fs24, commonStyles.textRight, { height: 45, paddingBottom: 0, paddingTop: 0, paddingRight: 0 }]}
-                    style={styles.depoInput}
-                    placeholder={`0.00 ${props.route?.params?.walletCode ||
-                      cryptoWithdrawData.walletCode
-                      }`}
-                    maxLength={8}
-                    keyboardType="numeric"
-                    onChangeText={(e) => handleSendAmountChange(e || "")}
-                    value={sendAmmount}
-                  />
-                </View>
-              </View>
-
-              <ParagraphComponent
-                style={[styles.balText, commonStyles.mt8, styles.px8, commonStyles.fs12, commonStyles.fw400]}  >
-                Available{" "}
-                <ParagraphComponent
-                  style={[commonStyles.fs12, commonStyles.fw700, commonStyles.textBlack]} >
-                  {formatCurrency(cryptoWithdrawData.amount || 0, 2)}{" "}
-                </ParagraphComponent>
-                {props.route?.params?.walletCode ||
-                  cryptoWithdrawData.walletCode}
-              </ParagraphComponent>
+              </TouchableOpacity>
+              <ParagraphComponent text={'Chain'} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, styles.px8, commonStyles.textCenter]} />
             </View>
-            <View style={[commonStyles.mb10]} />
-            {feeLoader &&
-              <Loadding contenthtml={EditInfoLoader} />
 
-            }
-            {!feeLoader && <View style={[commonStyles.sectionStyle]}>
-              <View style={[commonStyles.dflex, commonStyles.justify, commonStyles.alignCenter, commonStyles.gap16,]}>
-                <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400,]} text='Fee' />
-                <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500,]} text={`${formatCurrency(fee?.fee || 0, 2)}`} />
+            <>
+              <LabelComponent text="Recipient’s Address" style={[commonStyles.fs12, commonStyles.fw400, styles.px8]}
+                Children={<LabelComponent text=" *" style={[commonStyles.textError]} />}
+              />
+              <TouchableOpacity onPress={() => setOpenPayeesModel(true)} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10]}>
+                <View style={[styles.searchContainer]}>
+                  <TextInputField
+                    style={styles.inputStyle}
+                    inputStyle={[commonStyles.fs14, { borderRadius: 0 }]}
+                    placeholder={"Select Address"}
+                    onChangeText={(e) => handleAddressChange(e || "")}
+                    value={address}
+                    editable={false}
+                    numberOfLines={1}
+                  />
+
+                  <View style={[styles.scan]}>
+                    <Image style={styles.downArrow} source={require("../../assets/images/banklocal/down-arrow.png")} />
+                  </View>
+                </View>
+              </TouchableOpacity>
+              <View style={styles.mt24}>
+                <View style={[commonStyles.relative, styles.SelectStyle, commonStyles.p16, commonStyles.rounded24, commonStyles.dflex, commonStyles.alignCenter]}>
+                  <ParagraphComponent text={"Currency Amount"} style={[commonStyles.fs20, commonStyles.flex1, commonStyles.textGrey, commonStyles.fw600, { color: NEW_COLOR.INPUT_INSIDE_LABEL }]} />
+                  <View style={commonStyles.flex1}>
+                    <TextInputField
+                      inputStyle={[commonStyles.fs24, commonStyles.textRight, { height: 45, paddingBottom: 0, paddingTop: 0, paddingRight: 0 }]}
+                      style={styles.depoInput}
+                      placeholder={`0.00 ${props.route?.params?.walletCode ||
+                        cryptoWithdrawData.walletCode
+                        }`}
+                      maxLength={8}
+                      keyboardType="numeric"
+                      onChangeText={(e) => handleSendAmountChange(e || "")}
+                      value={sendAmmount}
+                    />
+                  </View>
+                </View>
+
+                <ParagraphComponent
+                  style={[styles.balText, commonStyles.mt8, styles.px8, commonStyles.fs12, commonStyles.fw400]}  >
+                  Available{" "}
+                  <ParagraphComponent
+                    style={[commonStyles.fs12, commonStyles.fw700, commonStyles.textBlack]} >
+                    {formatCurrency(cryptoWithdrawData.amount || 0, 2)}{" "}
+                  </ParagraphComponent>
+                  {props.route?.params?.walletCode ||
+                    cryptoWithdrawData.walletCode}
+                </ParagraphComponent>
               </View>
-              <View style={[commonStyles.mt8, commonStyles.mb8]} />
-              <View style={[commonStyles.dflex, commonStyles.justify, commonStyles.alignCenter, commonStyles.gap16,]}>
-                <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400,]} text='Total Receive Amount' />
-                <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500,]} text={`${formatCurrency(fee?.remainingAmount || 0, 2)}`} />
-              </View>
+              <View style={[commonStyles.mb10]} />
+              {feeLoader &&
+                <Loadding contenthtml={EditInfoLoader} />
 
-            </View>}
-          </>
-          <View style={[commonStyles.mb32]} />
-          {isOTP && <SendOTP
-            isOTP={isOTP}
-            onChangeText={handleReceiveOTP}
-            value={otp}
-            phoneNumber={userInfo?.phoneNumber}
-            onVerify={setIsOTPVerified}
-            showError={showOtpError}
-          />}
-          <View style={commonStyles.mb43} />
-          <View style={[styles.mt42]}>
-            <DefaultButton
-              title={"Send"}
-              style={undefined}
-              customButtonStyle={undefined}
-              customContainerStyle={undefined}
-              backgroundColors={undefined}
-              disable={summryLoading}
-              loading={summryLoading}
-              colorful={undefined}
-              onPress={goToTheSummarryPage}
-              transparent={undefined}
-            />
+              }
+              {!feeLoader && <View style={[commonStyles.sectionStyle]}>
+                <View style={[commonStyles.dflex, commonStyles.justify, commonStyles.alignCenter, commonStyles.gap16,]}>
+                  <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400,]} text='Fee' />
+                  <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500,]} text={`${formatCurrency(fee?.fee || 0, 2)}`} />
+                </View>
+                <View style={[commonStyles.mt8, commonStyles.mb8]} />
+                <View style={[commonStyles.dflex, commonStyles.justify, commonStyles.alignCenter, commonStyles.gap16,]}>
+                  <ParagraphComponent style={[commonStyles.fs12, commonStyles.textGrey, commonStyles.fw400,]} text='Total Receive Amount' />
+                  <ParagraphComponent style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500,]} text={`${formatCurrency(fee?.remainingAmount || 0, 2)}`} />
+                </View>
 
-          </View>
+              </View>}
+            </>
+            <View style={[commonStyles.mb32]} />
+            {isOTP && <SendOTP
+              isOTP={isOTP}
+              onChangeText={handleReceiveOTP}
+              value={otp}
+              phoneNumber={userInfo?.phoneNumber}
+              onVerify={setIsOTPVerified}
+              showError={showOtpError}
+            />}
+            <View style={commonStyles.mb43} />
+            <View style={[styles.mt42]}>
+              <DefaultButton
+                title={"Send"}
+                style={undefined}
+                customButtonStyle={undefined}
+                customContainerStyle={undefined}
+                backgroundColors={undefined}
+                disable={summryLoading}
+                loading={summryLoading}
+                colorful={undefined}
+                onPress={goToTheSummarryPage}
+                transparent={undefined}
+              />
+
+            </View>
+          </View>}
         </Container>
 
       </ScrollView>
@@ -659,11 +655,11 @@ const SendCryptoDetails = React.memo((props: any) => {
         isMFAPopupVisible && <Overlay onBackdropPress={handleCloseMFA} overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 30 }]} isVisible={isMFAPopupVisible}>
           <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb43]}>
             <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Security Alert" />
-            <AntDesign onPress={handleCloseMFA} name="close" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+            <AntDesign onPress={handleCloseMFA} name="close" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
           </View>
           <View style={[commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb43]}>
             <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Due To Security Reasons " />
-            <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Enable Two Factor Authentication or Face/Fingerprint" />
+            <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Enable Two Factor Authentication / Facial / Fingerprint" />
 
 
           </View>

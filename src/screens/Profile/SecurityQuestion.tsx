@@ -102,7 +102,6 @@ const SecurityQuestion = (props: any) => {
         try {
             setQuestionsLoading(true);
             const response: any = await ProfileService.getSecurityQuestionsdata();
-            console.log(response)
             if (response.data && response.data.length > 0) {
                 setInitValues({
                     question1: response.data[0]?.question || null,
@@ -165,6 +164,8 @@ const SecurityQuestion = (props: any) => {
                             onSubmit={onSubmit}
                             validationSchema={SecurityQuestionSchema}
                             enableReinitialize
+                            validateOnBlur={false}
+                            validateOnChange={false}
                         >
                             {(formik) => {
                                 const { touched, handleSubmit, errors, handleBlur } = formik;

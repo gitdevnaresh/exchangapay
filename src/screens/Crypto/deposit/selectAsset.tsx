@@ -39,13 +39,13 @@ const SelectCryptoAsset = React.memo((props: any) => {
                 <TextInputField inputStyle={isPad ? commonStyles.fs16 : commonStyles.fs24} style={styles.borderNone} onChangeText={(val) => handleChangeSearch(val)}
                     placeholder={'Search Asset'}
                 />
-                <View style={styles.blackCircle} ><AntDesign name="search1" size={16} color={NEW_COLOR.TEXT_WHITE} style={styles.searchIcon} /></View>
+                <View style={styles.blackCircle} ><AntDesign name="search1" size={s(16)} color={NEW_COLOR.TEXT_WHITE} style={styles.searchIcon} /></View>
             </View>
         </View>
     );
 
     const handleChangeSearch = (e: any) => {
-        let value = e
+        let value = e?.trime();
         if (value) {
             let filterData = sendCryptoPreList.filter((item: any) => {
                 return item.walletCode?.toLowerCase().includes(e.toLowerCase())

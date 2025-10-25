@@ -14,7 +14,6 @@ import { isErrorDispaly } from '../../utils/helpers';
 import { commonStyles } from '../../components/CommonStyles';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { cryptoReceiveLoader } from '../Crypto/buySkeleton_views';
-import Clipboard from "@react-native-clipboard/clipboard";
 import CopyCard from '../../components/CopyCard';
 import SvgFromUrl from '../../components/svgIcon';
 import Images from '../../assets/images';
@@ -24,13 +23,15 @@ import CommonPopup from '../../components/commonPopup';
 import DefaultButton from '../../components/DefaultButton';
 import NoDataComponent from '../../components/nodata';
 import { PayeeViewLoaders } from './constants';
+import Clipboard from '@react-native-clipboard/clipboard';
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const cryptoListImages: any = {
     BTC: Images?.coins?.coinbtc,
     ETH: Images?.coins?.coineth,
-    USDT: Images?.coins?.coineusdt,
-    USDC: Images?.coins?.coineusdc,
+    USDT: "https://prdexchangapaystorage.blob.core.windows.net/images/usdt.svg",
+    USDC: "https://prdexchangapaystorage.blob.core.windows.net/images/usdc.svg",
+
 };
 
 const PayeeDetailsView = (props: any) => {
@@ -71,17 +72,10 @@ const PayeeDetailsView = (props: any) => {
         return true;
     }, [navigation]);
 
-
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            () => {
-                handleGoBack();
-                return true;
-            }
-        );
-        return () => backHandler.remove();
-    }, []);
+    // useEffect(() => {
+    //     BackHandler.addEventListener("hardwareBackPress", handleGoBack);
+    //     return () => BackHandler.removeEventListener("hardwareBackPress", handleGoBack);
+    // }, [handleGoBack]);
 
     const copyToClipboard = async (text: any) => {
         try {
@@ -181,22 +175,17 @@ const PayeeDetailsView = (props: any) => {
                                 source={require('../../assets/images/cards/light-purplebg.png')}
                             >
                                 <View style={styles.currencyBadgePosition}>
-                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, styles.currencyBadgeInner]}>
-                                        {payeeDetails.logo && (
-                                            <SvgFromUrl
-                                                uri={payeeDetails.logo}
-                                                width={s(22)}
-                                                height={s(22)}
-                                                style={styles.currencyIconStyle}
-                                            />
-                                        ) || cryptoListImages[payeeDetails.currency?.toUpperCase()] && (
-                                            <Image
-                                                source={cryptoListImages[payeeDetails.currency.toUpperCase()]}
-                                                style={[styles.currencyIconStyle, { width: s(22), height: s(22), borderRadius: s(11) }]}
-                                            />
-                                        ) || null}
+                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, styles.currencyBadgeInner, commonStyles.gap12]}>
+
+                                        <SvgFromUrl
+                                            uri={cryptoListImages[payeeDetails.currency.toUpperCase()]}
+                                            width={s(22)}
+                                            height={s(22)}
+                                        />
+
                                         <ParagraphComponent text={payeeDetails.currency || '--'} style={[commonStyles.textAlwaysWhite, commonStyles.fs14, commonStyles.fw600]} />
                                     </View>
+
                                 </View>
                                 <View style={styles.qrContainer}>
                                     <View style={[styles.bgWhite, commonStyles.justifyCenter, commonStyles.dflex]}>

@@ -558,7 +558,7 @@ const Security = (props: any) => {
                 <View style={commonStyles.mb43} />
                 {visible && <Overlay overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 50, maxHeight: WINDOW_HEIGHT - 100 }]} isVisible={visible} onBackdropPress={toggleOverlay}>
                   <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb32]}>
-                    <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Confirm?" />
+                    <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text="Delete Account ?" />
                     <AntDesign name="close" size={28} color={NEW_COLOR.TEXT_BLACK} onPress={CloseOverlay} />
                   </View>
                   {accountDeleteErrMsg && (
@@ -570,8 +570,8 @@ const Security = (props: any) => {
                   <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textBlack, commonStyles.alignCenter]} text="Are you sure you want to delete account" />
                   <View style={[commonStyles.mb43]} />
                   <DefaultButton
-                    title={"Delete"}
-                    icon={<Feather name="check" size={22} color={NEW_COLOR.TEXT_ALWAYS_WHITE} style={{ marginRight: 8, }} />}
+                    title={"Confirm"}
+                    icon={<Feather name="check" size={s(22)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} style={{ marginRight: 8, }} />}
                     disable={accountDeleteLoader}
                     loading={accountDeleteLoader}
                     onPress={deleteAccount}

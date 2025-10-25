@@ -47,7 +47,7 @@ const CryptoServices = {
         return get(`api/v1/ExchangeWallet/DepositCrypto/${coinName}/${network}`)
     },
     getCommonCryptoNetworks: async (coin: string) => {
-        return get(`api/v1/Common/Wallets/NetWorkLU/${coin}`)
+        return get(`api/v1/Common/Wallets/NetWorksLU/${coin}`)
 
     },
     getCardNetworks: async (coinName: string, cardId: any) => {

@@ -24,6 +24,7 @@ import { s } from "../../constants/theme/scale";
 import TextInputField from "../../components/textInput";
 import { CryptoPayee } from "./constants";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
+import { IconRefresh } from "../../assets/svg";
 
 const { width } = Dimensions.get("window");
 const isPad = width > 600;
@@ -216,16 +217,25 @@ const CryptoPayeesList = (props: any) => {
     }
     if (unverifiedPayees.length > 0) {
         sections.push({ title: "Request to Email Verification", data: unverifiedPayees });
-    }
+    };
+    const handleRefresh = () => {
+        getAllPayees(1);
+    };
 
     return (
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
             <Container style={commonStyles.container}>
-                <View style={[commonStyles.dflex, commonStyles.alignCenter, { marginBottom: s(16) }]}>
-                    <TouchableOpacity onPress={handleBackPress} style={{ paddingRight: s(16) }}>
-                        <AntDesign name="arrowleft" size={s(24)} color={NEW_COLOR.TEXT_BLACK} />
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16, commonStyles.justifyContent]}>
+                    <View style={[commonStyles.dflex, commonStyles.alignCenter, { marginBottom: s(16) }]}>
+                        <TouchableOpacity onPress={handleBackPress} style={{ paddingRight: s(16) }}>
+                            <AntDesign name="arrowleft" size={s(24)} color={NEW_COLOR.TEXT_BLACK} />
+                        </TouchableOpacity>
+                        <ParagraphComponent text="Whitelist Address" style={[commonStyles.fs20, commonStyles.fw800, { color: NEW_COLOR.TEXT_BLACK }]} />
+
+                    </View>
+                    <TouchableOpacity activeOpacity={0.6} onPress={handleRefresh}>
+                        <IconRefresh height={s(24)} width={s(24)} />
                     </TouchableOpacity>
-                    <ParagraphComponent text="Whitelist Address" style={[commonStyles.fs20, commonStyles.fw800, { color: NEW_COLOR.TEXT_BLACK }]} />
                 </View>
                 <View style={styles.searchHeader}>
                     <View style={styles.searchBox}>

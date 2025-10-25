@@ -5,7 +5,7 @@ import { Container } from '../../components';
 import CopyCard from '../../components/CopyCard';
 import QRCode from 'react-native-qrcode-svg';
 import Loadding from '../../components/skeleton';
-import { cryptoReceiveLoader } from './buySkeleton_views';
+import { cryptoReceiveLoader, qrCodeSkelton } from './buySkeleton_views';
 import Images from '../../assets/images';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import Feather from "react-native-vector-icons/Feather";
@@ -13,34 +13,29 @@ import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/va
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
 import CryptoServices from '../../services/crypto';
-import { useSelector } from 'react-redux';
 import SvgFromUrl from '../../components/svgIcon';
 import { s } from '../../constants/theme/scale';
 import Clipboard from "@react-native-clipboard/clipboard";
 import { Overlay } from 'react-native-elements';
 import DefaultButton from '../../components/DefaultButton';
 import ErrorComponent from '../../components/Error';
-import { formatDateTimeAPI, isErrorDispaly } from '../../utils/helpers';
-import ProfileService from '../../services/profile';
-import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
+import { isErrorDispaly } from '../../utils/helpers';
+import NoDataComponent from '../../components/nodata';
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const CryptoReceive = React.memo((props: any) => {
     const refRBSheet = useRef();
     const styles = useStyleSheet(themedStyles);
-    const [cryptoDepositeData, setCryptoDepositeData] = useState<any>({});
-    const [coin, setCoin] = useState<any>("");
+    const [cryptoDepositeData, setCryptoDepositeData] = useState<any>(null);
     const [network, setNetwork] = useState<any>("");
-    const [walletsAddress, setWalletsAddress] = useState<any>("")
     const [commonCryptoLoading, setCommonCryptoLoading] = useState<boolean>(false);
     const [networkLu, setNetworkLu] = useState<any>([])
     const receiveCoiBalance = cryptoReceiveLoader();
     const [errorMsg, setErrorMsg] = useState<any>("");
     const [popupModelVisible, setPopupVisible] = useState<boolean>(false);
-    const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
-    const [webhookLoading, setWebhookLoading] = useState(false);
-    const { decryptAES } = useEncryptDecrypt()
+    const [isDetailsLoading, setIsDetailsLoading] = useState<boolean>(false);
+    const qrDetailsSkelton = qrCodeSkelton()
 
     useEffect(() => {
         fetchCommonCrypto();
@@ -50,21 +45,26 @@ const CryptoReceive = React.memo((props: any) => {
     }, []);
 
     const fetchCryptoDepositData = async (coinName: string, networkName: string) => {
-        setCommonCryptoLoading(true);
+        setIsDetailsLoading(true);
+        setErrorMsg("")
         try {
             const res: any = await CryptoServices.getCryptoDeposit(coinName, networkName);
             if (res.status === 200) {
                 setCryptoDepositeData(res?.data);
-                setCommonCryptoLoading(false);
                 if (res?.data?.depositMinimumamount > 0) {
                     setPopupVisible(true);
-                }
-            } else {
-                setErrorMsg(isErrorDispaly(res))
 
-                setCommonCryptoLoading(false);
+                }
+                setIsDetailsLoading(false);
+            } else {
+                setIsDetailsLoading(false);
+                setErrorMsg(isErrorDispaly(res))
+                setCryptoDepositeData(null);
+
             }
         } catch (err) {
+            setIsDetailsLoading(false)
+            setCryptoDepositeData(null);
             setErrorMsg(isErrorDispaly(err))
 
         }
@@ -72,18 +72,17 @@ const CryptoReceive = React.memo((props: any) => {
     const fetchCommonCrypto = async () => {
         setCommonCryptoLoading(true);
         try {
-
             const res: any = await CryptoServices.getCommonCryptoNetworks(props.route?.params?.cryptoCoin);
             if (res.status === 200) {
                 setNetworkLu(res?.data);
                 if (props?.route?.params?.network) {
                     setNetwork(props?.route?.params?.network);
-                    fetchCryptoDepositData(props.route?.params?.cryptoCoin, props?.route?.params?.network);
-
+                    await fetchCryptoDepositData(props.route?.params?.cryptoCoin, props?.route?.params?.network);
+                    setCommonCryptoLoading(false);
                 } else {
                     setNetwork(res?.data[0]?.name);
-                    fetchCryptoDepositData(props.route?.params?.cryptoCoin, res?.data[0]?.name);
-
+                    await fetchCryptoDepositData(props.route?.params?.cryptoCoin, res?.data[0]?.name);
+                    setCommonCryptoLoading(false);
                 }
             }
         } catch (err) {
@@ -92,9 +91,7 @@ const CryptoReceive = React.memo((props: any) => {
         }
     }
     const handleCryptoDepositCall = (val: any) => {
-        setCoin(val?.code);
         setNetwork(val?.name);
-        setWalletsAddress(val?.address)
         fetchCryptoDepositData(props.route?.params?.cryptoCoin, val?.code);
         refRBSheet?.current?.close()
     }
@@ -142,20 +139,23 @@ const CryptoReceive = React.memo((props: any) => {
 
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
             <ScrollView>
-                <Container style={commonStyles.container}>
-
-
+                <Container style={[commonStyles.container]}>
                     {commonCryptoLoading && <Loadding contenthtml={receiveCoiBalance} />}
+                    {!commonCryptoLoading &&
+                        <View>
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                                <TouchableOpacity onPress={handleGoBack} style={styles.pr16}>
+                                    <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                                </TouchableOpacity>
+                                <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800,]} text={`Deposit ${props.route?.params?.cryptoCoin}`} />
 
-                    {!commonCryptoLoading && <>
-                        <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-                            <TouchableOpacity onPress={handleGoBack} style={styles.pr16}>
-                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                            </TouchableOpacity>
-                            <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800,]} text={`Deposit ${props.route?.params?.cryptoCoin}`} />
+                            </View>
+                            {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
                         </View>
-                        {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
-                        <View style={[styles.mt42, styles.mb32]}>
+                    }
+
+                    {!commonCryptoLoading &&
+                        <View style={[commonStyles.mt30, styles.mb32]}>
                             <View style={[commonStyles.dflex, commonStyles.gap16, styles.flexWrap, commonStyles.justifyCenter, commonStyles.mb8]}>
                                 {networkLu?.length > 0 && networkLu?.map((item: any) =>
                                     <TouchableOpacity onPress={() => { handleCryptoDepositCall(item) }} style={[styles.tabStyle, { backgroundColor: network === item?.name ? NEW_COLOR.NETWORK_BLUE : "transparent", }]} activeOpacity={0.9} disabled={network === item?.name ? true : false}>
@@ -163,11 +163,13 @@ const CryptoReceive = React.memo((props: any) => {
                                     </TouchableOpacity>
                                 )}
                             </View>
-                            <ParagraphComponent text={'Chain'} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, styles.px8, commonStyles.textCenter]} />
+                            {cryptoDepositeData?.address && <ParagraphComponent text={'Chain'} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, styles.px8, commonStyles.textCenter]} />}
                             <View style={commonStyles.mb8} />
 
                         </View>
-
+                    }
+                    {isDetailsLoading && <Loadding contenthtml={qrDetailsSkelton} />}
+                    {(!commonCryptoLoading && !isDetailsLoading) && cryptoDepositeData?.address && <>
                         <ImageBackground resizeMode='contain' style={{ position: "relative", width: "100%", height: isPad ? s(380) : s(350), minHeight: s(350) }} source={require("../../assets/images/cards/light-purplebg.png")}>
                             <View style={[commonStyles.relative,]}>
                                 <TouchableOpacity activeOpacity={1} onPress={handleOpenRBSheet} style={[styles.badgePositin]}>
@@ -216,6 +218,8 @@ const CryptoReceive = React.memo((props: any) => {
                         </View>
 
                     </>}
+                    {(!commonCryptoLoading && !isDetailsLoading) && !cryptoDepositeData?.address && <NoDataComponent />}
+
 
                 </Container >
                 {(!commonCryptoLoading && (cryptoDepositeData?.address && popupModelVisible)) && <Overlay overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 30, height: WINDOW_HEIGHT / 4 }]} isVisible={popupModelVisible}>
@@ -274,7 +278,7 @@ const themedStyles = StyleService.create({
         marginLeft: 8,
     },
     mb32: {
-        marginBottom: s(32),
+        marginBottom: s(30),
     },
     bgWhite: {
         backgroundColor: NEW_COLOR.BACKGROUND_WHITE, padding: 4,

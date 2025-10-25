@@ -85,19 +85,19 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
   const closePop = () => {
     setVisible(false);
   };
-  const badgeColor = { 
-    approved: NEW_COLOR.BG_GREEN, 
+  const badgeColor = {
+    approved: NEW_COLOR.BG_GREEN,
     completed: NEW_COLOR.BG_GREEN,
-     pending: NEW_COLOR.BG_YELLOW,
-      submitted: NEW_COLOR.BG_BLUE,
-       failed: NEW_COLOR.BG_RED, 
-       fail: NEW_COLOR.BG_RED,
-        rejected: NEW_COLOR.BG_RED, 
-        finished: NEW_COLOR.BG_GREEN,
-        freezed: NEW_COLOR.TEXT_GREY, 
-        unfreezed: NEW_COLOR.BG_GREEN, 
-      cancelled: NEW_COLOR.BG_RED,
-      }
+    pending: NEW_COLOR.BG_YELLOW,
+    submitted: NEW_COLOR.BG_BLUE,
+    failed: NEW_COLOR.BG_RED,
+    fail: NEW_COLOR.BG_RED,
+    rejected: NEW_COLOR.BG_RED,
+    finished: NEW_COLOR.BG_GREEN,
+    freezed: NEW_COLOR.TEXT_GREY,
+    unfreezed: NEW_COLOR.BG_GREEN,
+    cancelled: NEW_COLOR.BG_RED,
+  }
   const getTransactionTypes = async () => {
     try {
       const response = await CardsModuleService.customerTransactionTypes();

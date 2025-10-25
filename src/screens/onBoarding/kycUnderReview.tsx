@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, Linking, Text } from 'react-native';
+import { View, ScrollView, Linking, Text } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
@@ -21,6 +21,7 @@ import Loadding from '../../components/skeleton';
 import { SvgUri } from 'react-native-svg';
 import useLogout from '../../hooks/useLogOut';
 import useMemberLogin from '../../hooks/useMemberLogin';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
@@ -46,7 +47,6 @@ const UnderReview = () => {
     setIsLoading(true)
     try {
       const response: any = await AuthService.customerNotes();
-      console.log("response", response);
       if (response?.data) {
         setHtmlContent(response?.data);
         setIsLoading(false)
@@ -89,7 +89,7 @@ const UnderReview = () => {
     setIsLogout(true)
     await logout();
     setIsLogout(false)
-  }
+  };
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
       <ScrollView>
@@ -155,11 +155,11 @@ const UnderReview = () => {
                   }
                 />
                 <TouchableOpacity
-                  onPress={() => Linking.openURL('mailto:support@exchangapay.com')}
+                  onPress={() => Linking.openURL(`mailto:${userInfo?.supportEmail || 'support@exchangapay.com'}`)}
                   activeOpacity={0.7}
                 >
                   <ParagraphComponent
-                    text="support@exchangapay.com"
+                    text={userInfo?.supportEmail || " "}
                     style={[
                       commonStyles.textCenter,
                       commonStyles.fs16,
@@ -172,19 +172,52 @@ const UnderReview = () => {
             </Container>)
           }
           <View style={[commonStyles.mb24]} />
-          {!isLoading && (userInfo.customerState === "Rejected" && (!htmlContent?.message && userInfo.isKYC)) && <DefaultButton
-            title={"Re-Sumbit KYC"}
-            customTitleStyle={styles.btnConfirmTitle}
-            icon={undefined}
-            style={undefined}
-            customButtonStyle={undefined}
-            customContainerStyle={undefined}
-            backgroundColors={undefined}
-            colorful={undefined}
-            transparent={undefined}
-            loading={undefined}
-            onPress={handleRejectedNav}
-          />}
+          {(!isLoading && userInfo.customerState?.toLowerCase() === "registered") && (!htmlContent?.message && !userInfo.isSumsubKyc) &&
+            <Container style={[commonStyles.container, commonStyles.flex1]}>
+              <View style={commonStyles.flex1}>
+
+                <ParagraphComponent
+                  text="KYC Rejected"
+                  style={[
+                    commonStyles.fs22,
+                    commonStyles.fw700,
+                    commonStyles.textCenter,
+                    commonStyles.mb16,
+                    commonStyles.textBlack,
+                    { marginTop: 24 }
+                  ]}
+                />
+
+
+                <ParagraphComponent
+                  style={[
+                    commonStyles.textCenter,
+                    commonStyles.fs16,
+                    commonStyles.mb16,
+                    commonStyles.textBlack
+                  ]}
+                  text={
+                    "Your KYC was rejected ,Please contact "
+                  }
+                />
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(`mailto:${userInfo?.supportEmail || 'support@exchangapay.com'}`)}
+                  activeOpacity={0.7}
+                >
+                  <ParagraphComponent
+                    text={userInfo?.supportEmail || 'support@exchangapay.com'}
+                    style={[
+                      commonStyles.textCenter,
+                      commonStyles.fs16,
+                      commonStyles.textBlack,
+                      { color: "#0099FF", textDecorationLine: "underline" }
+                    ]}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={[commonStyles.mb32]} />
+            </Container>
+          }
           <View style={[commonStyles.mb10]} />
           {(!isLoading && !isLogout) && <DefaultButton
             title={CONSTANTS?.REFRESH}

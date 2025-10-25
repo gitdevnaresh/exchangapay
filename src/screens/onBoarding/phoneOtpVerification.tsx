@@ -139,6 +139,7 @@ const PhoneOtpVerification = () => {
                     setResendTimer(60);
                     setIsOtpScreen(true);
                     setBtnLoader(false);
+                    setIsResendLoading(false);
                     setInitValues((prevState: any) => ({
                         ...prevState,
                         phoneCode,
@@ -253,12 +254,15 @@ const PhoneOtpVerification = () => {
 
     const onChangePhoneCode = (setFieldValue: any, values: any) => {
         setErrorMsg("")
-        setFieldValue('phoneCode', values)
+        setFieldValue('phoneCode', values);
+        setFieldValue("phoneNumber", "");
+        setErrorMsg("");
     };
 
     const handleChangePhone = (text: any, setFieldValue: any) => {
         const numericText = text?.replace(/[^0-9]/g, '');
         setFieldValue("phoneNumber", numericText);
+        setErrorMsg("");
     };
 
     return (

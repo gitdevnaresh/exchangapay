@@ -46,7 +46,6 @@ const CryptoWallet = React.memo((props: any) => {
         try {
             const response: any = await CryptoServices.getCryptoWallets();
             if (response?.status === 200) {
-                console.log(response?.data)
                 setReceiveCoinsData(response?.data);
                 setReceiveCoinsDataLoading(false);
                 setErrormsg(null);

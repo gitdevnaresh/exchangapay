@@ -30,7 +30,7 @@ export const commonStyles = StyleService.create({
     },
     rounded16: {
         borderRadius: 16,
-    }, 
+    },
     rounded8: {
         borderRadius: s(8),
     },
@@ -159,8 +159,8 @@ export const commonStyles = StyleService.create({
     dflex: {
         flexDirection: "row",
     },
-    flexColumn:{
-        flexDirection:"column"
+    flexColumn: {
+        flexDirection: "column"
     },
     alignCenter: {
         alignItems: "center",
@@ -246,7 +246,7 @@ export const commonStyles = StyleService.create({
         gap: 4
     },
     gap12: {
-        gap: 12
+        gap: s(12)
     },
     gap20: {
         gap: 20
@@ -266,7 +266,7 @@ export const commonStyles = StyleService.create({
     mt8: {
         marginTop: ms(8)
     },
-     mt4: {
+    mt4: {
         marginTop: ms(4)
     },
     mb10: {
@@ -281,7 +281,7 @@ export const commonStyles = StyleService.create({
     mr8: {
         marginRight: 8
     },
-     ml20: {
+    ml20: {
         marginLeft: 18
     },
     mr12: {
@@ -368,10 +368,10 @@ export const commonStyles = StyleService.create({
     p16: {
         padding: s(16)
     },
-     p12: {
+    p12: {
         padding: s(12)
     },
-     p12: {
+    p12: {
         padding: s(12)
     },
     pt0: {
@@ -402,8 +402,8 @@ export const commonStyles = StyleService.create({
     activeItemBg: {
         backgroundColor: "#34383E",
     },
-    image_Bg:{
-        backgroundColor:NEW_COLOR.BG_IMG
+    image_Bg: {
+        backgroundColor: NEW_COLOR.BG_IMG
     }
 });
 

@@ -355,31 +355,30 @@ const SplashScreen = React.memo(() => {
             {show && !loading && !persistedLoginState && (
               <View>
                 <View style={[commonStyles.mb43]} />
-                <View
-                  style={[
+                <View >
+                  <TouchableOpacity onPress={onChange} activeOpacity={0.7} style={[
                     commonStyles.dflex,
                     commonStyles.alignStart,
                     commonStyles.justifyContent,
                     commonStyles.gap8,
-                  ]}
-                >
-                  <TouchableOpacity onPress={onChange} activeOpacity={0.7}>
+                  ]}>
                     <Checkbox
                       size={s(32)}
                       checked={isChecked}
                       activeColor={NEW_COLOR.TEXT_BLACK}
                       color={NEW_COLOR.TEXT_BLACK}
                     />
+
+                    <ParagraphComponent
+                      style={[
+                        commonStyles.fs16,
+                        commonStyles.fw400,
+                        commonStyles.textAlwaysWhite,
+                        commonStyles.flex1,
+                      ]}
+                      text="By proceeding, I confirm that I understand and agree to the monthly subscription fee of 50 USDT, which will be charged ﻿upon account approval"
+                    />
                   </TouchableOpacity>
-                  <ParagraphComponent
-                    style={[
-                      commonStyles.fs16,
-                      commonStyles.fw400,
-                      commonStyles.textAlwaysWhite,
-                      commonStyles.flex1,
-                    ]}
-                    text="By proceeding, I confirm that I understand and agree to the monthly subscription fee of 50 USDT, which will be charged ﻿upon account approval"
-                  />
                 </View>
 
                 <View style={{ marginTop: s(32), minHeight: s(60) }}>
@@ -422,14 +421,14 @@ const SplashScreen = React.memo(() => {
               title="Biometric Authentication Failed"
               remark=""
               amount=""
-              setRemark={() => {}}
-              setAmount={() => {}}
+              setRemark={() => { }}
+              setAmount={() => { }}
               btnLoading={false}
               btndisabled={false}
               erroMsg=""
               errorAmt=""
               stateErrorMsg=""
-              setStateErrorMsg={() => {}}
+              setStateErrorMsg={() => { }}
             />
           )}
         </SafeAreaView>

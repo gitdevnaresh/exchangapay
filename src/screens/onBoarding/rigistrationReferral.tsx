@@ -107,7 +107,6 @@ const RigistrationReferral = () => {
     };
 
 
-
     const handleNavigateDashboard = async () => {
         setSaveLoading(true);
         if (referral?.isReferralMandatory && (!referralCode || referralCode.trim() === "")) {
@@ -115,7 +114,11 @@ const RigistrationReferral = () => {
             setRequiredMsg(REFERRAL_CONSTANTS.IS_REQUIRED);
             return;
         }
-        if (referralCode && referralCode.length < 10) {
+        if ((referralCode || !isValid) && referralCode?.length < 10) {
+            setSaveLoading(false);
+            setRequiredMsg(REFERRAL_CONSTANTS.PLEASE_PROVIDE_VALID_REFERRAL_CODE);
+            return;
+        } if ((referralCode && !isValid)) {
             setSaveLoading(false);
             setRequiredMsg(REFERRAL_CONSTANTS.PLEASE_PROVIDE_VALID_REFERRAL_CODE);
             return;
@@ -129,7 +132,7 @@ const RigistrationReferral = () => {
     };
 
     const updateReferralCode = async () => {
-        setSaveLoading(true);
+        setSaveLoading(false);
         const body = {
             referralCode: encryptAES(referralCode ? referralCode : "")
         }
@@ -183,7 +186,12 @@ const RigistrationReferral = () => {
             isReferralEditable: true
         }))
     };
-
+    const handleClearCode = () => {
+        setReferralCode("");
+        setIsValid(null);
+        setCustomerName("");
+        setRequiredMsg("")
+    }
     return (
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
             <ScrollView keyboardShouldPersistTaps={REFERRAL_CONSTANTS.HANDLED}>
@@ -213,8 +221,8 @@ const RigistrationReferral = () => {
                     <View style={[NEW_COLOR.SCREENBG_WHITE, commonStyles?.rounded16, commonStyles.mt16, commonStyles.px16]}>
                         <LabelComponent text={REFERRAL_CONSTANTS.REFERRAL_CODE} Children={<LabelComponent style={[commonStyles.textRed]} text={referral?.isReferralMandatory ? ' *' : " "} />} />
                         <View style={[commonStyles.relative, !referral?.isReferralEditable && commonStyles?.disabledBg, { borderRadius: s(10) }]}>
-                            {isValid === true && <AntDesign style={[styles.referralCheck]} name={REFERRAL_CONSTANTS.CHECK_CIRCLE} size={24} color={NEW_COLOR.BG_GREEN} />}
-                            {isValid === false && <AntDesign style={[styles.referralCheck]} name={REFERRAL_CONSTANTS.CLOSE_CIRCLEO} size={24} color={NEW_COLOR.TEXT_RED} />}
+                            {isValid === true && <AntDesign style={[styles.referralCheck]} name={REFERRAL_CONSTANTS.CHECK_CIRCLE} size={(s(24))} color={NEW_COLOR.BG_GREEN} />}
+                            {isValid === false && <AntDesign style={[styles.referralCheck]} name={REFERRAL_CONSTANTS.CLOSE_CIRCLEO} size={s(24)} color={NEW_COLOR.TEXT_RED} onPress={handleClearCode} />}
                             <TextInputField
                                 editable={referral?.isReferralEditable}
                                 style={{ backgroundColor: commonStyles.bgBlack, paddingRight: 46, }}
@@ -243,17 +251,11 @@ const RigistrationReferral = () => {
                         </View>
 
                     </View>
-                    <View>
-                        <View style={[commonStyles.dflex, commonStyles.gap12, commonStyles.px16, commonStyles.mt8]}>
-                            <TouchableOpacity
-                                onPress={handleReferralCheck} activeOpacity={0.7}>
-                                <Checkbox size={s(20)} checked={referral?.haveReferralCode} activeColor={NEW_COLOR.TEXT_BLACK} color={NEW_COLOR.TEXT_BLACK} />
-                            </TouchableOpacity>
-                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, styles.text, commonStyles?.textCenter]} text="I don't have referral code" />
-
-                        </View>
-
-                    </View>
+                    <TouchableOpacity style={[commonStyles.dflex, commonStyles.gap12, commonStyles.px16, commonStyles.mt8]}
+                        onPress={handleReferralCheck} activeOpacity={0.7}>
+                        <Checkbox size={s(20)} checked={referral?.haveReferralCode} activeColor={NEW_COLOR.TEXT_BLACK} color={NEW_COLOR.TEXT_BLACK} />
+                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, styles.text, commonStyles?.textCenter]} text="I don't have referral code" />
+                    </TouchableOpacity>
                     <View style={[commonStyles.mb43]} />
                 </Container>
             </ScrollView>

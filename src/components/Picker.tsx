@@ -47,7 +47,7 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
     }
     if (value && typeof value === 'string') {
       const filterData = data.filter((item: any) => {
-        return item.name?.toLowerCase().includes(value.toLowerCase());
+        return (item.name?.toLowerCase().includes(value.toLowerCase()) || item?.code?.toLowerCase().includes(value.toLowerCase()));
       });
       const listData = filterData.map((item: any) => ({
         ...item,
@@ -102,6 +102,7 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
           <FlatList
             contentContainerStyle={{ gap: 10, paddingBottom: 150 }}
             data={countryList}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <TouchableOpacity onPress={() => onPressItem(item)}>
                 <View style={[styles.option, commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8,]}>

@@ -16,6 +16,8 @@ import { IconRefresh, SendReceive, Wallet } from '../../../assets/svg';
 import { s } from '../../../constants/theme/scale';
 import AccountDeactivatePopup from '../../Currencypop/actDeactivatePopup';
 import { useIsFocused } from '@react-navigation/native';
+import CommonPopup from '../../../components/commonPopup';
+import { SecurityInfo } from '../../AccountDashboard/constants';
 
 const CryptoWalletView = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -26,8 +28,21 @@ const CryptoWalletView = React.memo((props: any) => {
   const sellCoinSelectLoader = sellCoinSelect(10);
   const [isPressed, setIsPressd] = useState<boolean>(false);
   const isFocused = useIsFocused();
+  const [securityLoading, setSecurrityLoading] = useState<boolean>(true);
+  const [isSecurityPopupVisible, setIsSecurityPopupVisible] = useState<boolean>(false);
+  const [securityInfo, setSecurityInfo] = useState<SecurityInfo>({
+    percentage: 0,
+    level: "",
+    email: "",
+    phone: "",
+    isSecurityQuestionsEnabled: false,
+    isGoogleAuthEnabled: false,
+    isFaceResgEnabled: false,
+    isAuth0Enabled: false
+  });
   useEffect(() => {
-    getCryptoReceiveData()
+    getCryptoReceiveData();
+    getSeccurityInfo();
   }, [isFocused]);
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -36,6 +51,26 @@ const CryptoWalletView = React.memo((props: any) => {
     );
     return () => backHandler.remove();
   }, []);
+
+
+  const getSeccurityInfo = async () => {
+    setSecurrityLoading(true)
+    try {
+      const response = await CryptoServices.getSecurityDetails();
+      if (response?.ok) {
+        const data: SecurityInfo = response?.data;
+        setSecurityInfo(data);
+        setSecurrityLoading(false);
+      } else {
+        setSecurrityLoading(false);
+        setErrormsg(isErrorDispaly(response));
+      }
+    } catch (err) {
+      setSecurrityLoading(false);
+      setErrormsg(isErrorDispaly(err));
+
+    }
+  };
   const handleGoBack = () => {
     props.navigation.goBack();
   };
@@ -63,6 +98,8 @@ const CryptoWalletView = React.memo((props: any) => {
   const handleBuyCryptoCoinSlct = () => {
     if (userInfo.accountStatus === "Inactive") {
       setIsPressd(true);
+    } else if ((!securityInfo.isAuth0Enabled) && (!securityInfo.isFaceResgEnabled)) {
+      setIsSecurityPopupVisible(true);
     }
     else {
       props.navigation.push("SendCryptoDetails", {
@@ -85,6 +122,13 @@ const CryptoWalletView = React.memo((props: any) => {
   const handleRefresh = () => {
     getCryptoReceiveData()
   };
+  const handleNavigateSecurity = () => {
+    props?.navigation.navigate("Security", {
+      isWithdrawScreen: true,
+    });
+    setIsSecurityPopupVisible(false)
+
+  };
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
       <ScrollView >
@@ -94,10 +138,10 @@ const CryptoWalletView = React.memo((props: any) => {
             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
               <TouchableOpacity style={[]} onPress={handleGoBack} >
                 <View>
-                  <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                  <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                 </View>
               </TouchableOpacity>
-              <ParagraphComponent text={props?.route?.params?.walletCode || " "} style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+              <ParagraphComponent text={`${props?.route?.params?.walletCode || " "}  (${props?.route?.params?.network || " "})`} style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
             </View>
             <TouchableOpacity activeOpacity={0.6} onPress={handleRefresh}>
               <IconRefresh height={s(24)} width={s(24)} />
@@ -105,10 +149,10 @@ const CryptoWalletView = React.memo((props: any) => {
           </View>
           {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
           <View style={[commonStyles.mb43]} />
-          {receiveCoinsDataLoading && <Loadding contenthtml={sellCoinSelectLoader} />}
+          {receiveCoinsDataLoading || securityLoading && <Loadding contenthtml={sellCoinSelectLoader} />}
           <View style={[commonStyles.sectionStyle, commonStyles.mb24, { marginHorizontal: s(20) }]}>
             <ParagraphComponent text={"Total Amounts"} style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textBlack, commonStyles.textCenter]} />
-            <ParagraphComponent text={`${formatCurrency(props?.route?.params?.avilable, 2)} ${props?.route?.params?.walletCode}`} style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textBlack, commonStyles.textCenter]} />
+            <ParagraphComponent text={`${formatCurrency(props?.route?.params?.avilable, 2)} ${props?.route?.params?.walletCode} `} style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textBlack, commonStyles.textCenter]} />
           </View>
           <View style={[styles.menuBlock]}>
             <TouchableOpacity
@@ -187,7 +231,35 @@ const CryptoWalletView = React.memo((props: any) => {
       </ScrollView>
       {/* {(!isMFACompleted && isPressed) && <MFAPopup isVisible={!isMFACompleted && isPressed} handleClose={handleCloseMFAPopUp} />} */}
       {((userInfo?.accountStatus === "Inactive") && isPressed) && <AccountDeactivatePopup isVisible={((userInfo?.accountStatus === "Inactive") && isPressed)} handleClose={handleCloseMFAPopUp} />}
+      {isSecurityPopupVisible && (
+        <CommonPopup
+          isVisible={isSecurityPopupVisible}
+          handleClose={() => setIsSecurityPopupVisible(false)}
+          title="Secure your account"
+          backdropStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.40)' }}
+          isBackdropPressAllowed={true}
+          content={
+            <>
+              <ParagraphComponent
+                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                text="To use this feature, you'll need to enable additional security. "
+              />
+              <ParagraphComponent
+                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                text=" Set up Two-Factor Authentication (2FA)  "
+              />
+              <ParagraphComponent
+                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                text=" to protect your account and keep your funds safe."
+              />
 
+
+            </>
+          }
+          buttonName="Enable Security"
+          onButtonPress={handleNavigateSecurity}
+        />
+      )}
     </SafeAreaView>
 
   )

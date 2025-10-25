@@ -105,7 +105,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
         <AntDesign
           onPress={closePop}
           name="close"
-          size={22}
+          size={s(22)}
           color={NEW_COLOR.TEXT_BLACK}
           style={{ marginTop: 3 }}
         />
@@ -225,7 +225,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
               ]}
             />
           </View>
-          {(transactionDetails?.action === "Withdraw" && (transactionDetails?.comission || transactionDetails?.comission == 0)) && (<View>
+          {((transactionDetails?.action?.toLowerCase() === "withdraw" || transactionDetails?.action?.toLowerCase() === "deposit crypto") && (transactionDetails?.comission || transactionDetails?.comission == 0)) && (<View>
             <View
               style={[
                 commonStyles.dashedLine,
@@ -264,7 +264,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             </View>
           </View>)}
 
-          {(transactionDetails?.action === "Withdraw" && (transactionDetails?.withdrawAmount || transactionDetails?.withdrawAmount == 0)) && <View>
+          {((transactionDetails?.action?.toLowerCase() === "withdraw" || transactionDetails?.action?.toLowerCase() === "deposit crypto") && (transactionDetails?.withdrawAmount || transactionDetails?.withdrawAmount == 0)) && <View>
             <View
               style={[
                 commonStyles.dashedLine,
