@@ -4,7 +4,16 @@ import { Container } from "../../components";
 import { NEW_COLOR, WINDOW_WIDTH } from "../../constants/theme/variables";
 import { RootStackParamList } from "../../navigation/navigation-types";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { View, ScrollView, Image, Dimensions, TouchableOpacity, SafeAreaView, RefreshControl, ImageBackground } from "react-native";
+import {
+  View,
+  ScrollView,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  SafeAreaView,
+  RefreshControl,
+  ImageBackground,
+} from "react-native";
 import { ms, s } from "../../constants/theme/scale";
 import { formatCurrency, isErrorDispaly } from "../../utils/helpers";
 import Loadding from "../../components/skeleton";
@@ -26,13 +35,12 @@ import CommonPopup from "../../components/commonPopup";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import NoDataComponent from "../../components/nodata";
 
-
 type CryptoNew = NativeStackScreenProps<RootStackParamList, "Crypto">;
 const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const isFocused = useIsFocused();
   const dispatch = useDispatch();
   const styles = useStyleSheet(themedStyles);
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const isPad = width > 600;
   const [totalBalLoading, setTotalBalLoading] = useState<boolean>(false);
   const [cryptoData, setCryptoData] = useState<any>({});
@@ -43,7 +51,8 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const [currencyData, setCurrencydata] = useState<CurrencyItem[]>([]);
   const [isPressed, setIsPressd] = useState<boolean>(false);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
-  const [isSecurityPopupVisible, setIsSecurityPopupVisible] = useState<boolean>(false);
+  const [isSecurityPopupVisible, setIsSecurityPopupVisible] =
+    useState<boolean>(false);
   const [securityLoading, setSecurrityLoading] = useState<boolean>(true);
   const [securityInfo, setSecurityInfo] = useState<SecurityInfo>({
     percentage: 0,
@@ -53,20 +62,18 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     isSecurityQuestionsEnabled: false,
     isGoogleAuthEnabled: false,
     isFaceResgEnabled: false,
-    isAuth0Enabled: false
+    isAuth0Enabled: false,
   });
   const { decryptAES } = useEncryptDecrypt();
 
   useEffect(() => {
     if (isFocused) {
       getSeccurityInfo();
-      getCurrencyData()
+      getCurrencyData();
       fetchCrypTototalBal(false);
-      getAllNotificationCount()
-    };
+      getAllNotificationCount();
+    }
   }, [isFocused]);
-
-
 
   const getAllNotificationCount = async () => {
     const res = await NotificationModuleService.getAllNotificationCount();
@@ -75,7 +82,7 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     }
   };
   const getSeccurityInfo = async () => {
-    setSecurrityLoading(true)
+    setSecurrityLoading(true);
     try {
       const response = await CryptoServices.getSecurityDetails();
       if (response?.ok) {
@@ -89,7 +96,6 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     } catch (err) {
       setSecurrityLoading(false);
       setErrormsg(isErrorDispaly(err));
-
     }
   };
   const fetchCrypTototalBal = async (isRefresh: boolean) => {
@@ -122,19 +128,16 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     } else {
       return CRYPTO_CONSTANTS.GREETING_EVENING;
     }
-  };
+  }
   const handleCryptoWallet = () => {
-
     props.navigation.navigate(CRYPTO_CONSTANTS.CRYPTO_WALLET_ROUTE, {
       totalAmount: cryptoData.cryptoValue,
-      currency: cryptoData.currency
-    })
-
+      currency: cryptoData.currency,
+    });
   };
   const setTotalAmount = (item: any) => {
     setCryptoData({ ...cryptoData, currency: item?.coin });
-    setModelvisible(!modelVisible)
-
+    setModelvisible(!modelVisible);
   };
   const getCurrencyData = async () => {
     const response = await CryptoServices.getCurrencyLookup();
@@ -143,96 +146,157 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
 
   const handleNavigateDeposit = () => {
     props.navigation.push(CRYPTO_CONSTANTS.SELECT_ASSET_ROUTE);
-
   };
 
   const handleNavigateWithdraw = () => {
     if (userInfo?.accountStatus === CRYPTO_CONSTANTS.INACTIVE) {
       setIsPressd(true);
-    } else if ((!securityInfo.isAuth0Enabled) && (!securityInfo.isFaceResgEnabled)) {
+    } else if (
+      !securityInfo.isAuth0Enabled &&
+      !securityInfo.isFaceResgEnabled
+    ) {
       setIsSecurityPopupVisible(true);
     } else {
-      props.navigation.push(CRYPTO_CONSTANTS.CRYPTO_COIN_RECEIVE)
-
+      props.navigation.push(CRYPTO_CONSTANTS.CRYPTO_COIN_RECEIVE);
     }
-
   };
 
-
   const handleNavigateCryptoWallet = () => {
-
     props.navigation.push(CRYPTO_CONSTANTS.EXCHANGA_CARD, {
       cardAmount: cryptoData.fiatValue,
-      currency: cryptoData.currency
+      currency: cryptoData.currency,
     });
-
-
   };
 
   const handleNavigateCards = () => {
-    props.navigation.navigate(CRYPTO_CONSTANTS.CARDS)
-
+    props.navigation.navigate(CRYPTO_CONSTANTS.CARDS);
   };
 
   const handleOpenCurrency = () => {
-    setModelvisible(true)
+    setModelvisible(true);
   };
 
   const handleCloseCurrency = () => {
-    setModelvisible(!modelVisible)
+    setModelvisible(!modelVisible);
   };
 
-
-
   const handleCloseMFAPopUp = () => {
-    setIsPressd(false)
+    setIsPressd(false);
   };
 
   const handleCloseError = () => {
     setErrormsg("");
   };
 
-
   const handleNavigateSecurity = () => {
     props?.navigation.navigate("Security", {
       isWithdrawScreen: true,
     });
-    setIsSecurityPopupVisible(false)
-
+    setIsSecurityPopupVisible(false);
   };
 
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <Container style={[commonStyles.container,]}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Container style={[commonStyles.container]}>
           <>
             {errormsg && (
               <View style={styles.marginTop}>
                 <ErrorComponent message={errormsg} onClose={handleCloseError} />
               </View>
             )}
-            <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, { marginBottom: -4, color: NEW_COLOR.TEXT_GREY4 }]} text={getGreeting()} />
             <ParagraphComponent
-              style={[commonStyles.fs24, commonStyles.fw600, commonStyles.textBlack, commonStyles.mb32]}
-              text={`${decryptAES(userInfo.firstName) ? decryptAES(userInfo.firstName) : " "} ${decryptAES(userInfo.lastName) ? decryptAES(userInfo.lastName) : " "}`}
+              style={[
+                commonStyles.fs14,
+                commonStyles.fw400,
+                { marginBottom: -4, color: NEW_COLOR.TEXT_GREY4 },
+              ]}
+              text={getGreeting()}
+            />
+            <ParagraphComponent
+              numberOfLines={2}
+              style={[
+                commonStyles.fs24,
+                commonStyles.fw600,
+                commonStyles.textBlack,
+                commonStyles.mb32,
+              ]}
+              text={`${
+                decryptAES(userInfo.firstName)
+                  ? decryptAES(userInfo.firstName)
+                  : " "
+              } ${
+                decryptAES(userInfo.lastName)
+                  ? decryptAES(userInfo.lastName)
+                  : " "
+              }`}
             />
             <View>
               <View>
                 {(totalBalLoading || securityLoading) && (
                   <Loadding contenthtml={TotalCryptobalanceLoader} />
                 )}
-                {(!totalBalLoading && !securityLoading) && (
+                {!totalBalLoading && !securityLoading && (
                   <>
                     <View style={[commonStyles.mb16]} />
-                    <View style={[styles.assetsDottedBg, commonStyles.rounded24, { position: "relative", minHeight: isPad ? 180 : 114 }]}>
-                      <ImageBackground style={{ position: "absolute", padding: 20, minHeight: ms(120), minWidth: (WINDOW_WIDTH * 80) / 100, left: 25, top: -30 }} resizeMode="contain" source={require("../../assets/images/cards/orangebg.png")} >
-                        <TouchableOpacity activeOpacity={0.7} onPress={handleOpenCurrency} style={[commonStyles?.dflex, commonStyles.alignCenter, { marginLeft: isPad ? "14%" : 0 }]}>
+                    <View
+                      style={[
+                        styles.assetsDottedBg,
+                        commonStyles.rounded24,
+                        { position: "relative", minHeight: isPad ? 180 : 114 },
+                      ]}
+                    >
+                      <ImageBackground
+                        style={{
+                          position: "absolute",
+                          padding: 20,
+                          minHeight: ms(120),
+                          minWidth: (WINDOW_WIDTH * 80) / 100,
+                          left: 25,
+                          top: -30,
+                        }}
+                        resizeMode="contain"
+                        source={require("../../assets/images/cards/orangebg.png")}
+                      >
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={handleOpenCurrency}
+                          style={[
+                            commonStyles?.dflex,
+                            commonStyles.alignCenter,
+                            { marginLeft: isPad ? "14%" : 0 },
+                          ]}
+                        >
                           <ParagraphComponent
-                            text={`${formatCurrency(cryptoData[cryptoData.currency?.toUpperCase()]?.totalAmount || 0)}  ${cryptoData.currency || ""}`}
-                            style={[commonStyles.fs22, commonStyles.fw600, commonStyles.textAlwaysWhite]} numberOfLines={1} />
-                          <Image style={styles.downArrow} source={require("../../assets/images/banklocal/down-arrow.png")} />
+                            text={`${formatCurrency(
+                              cryptoData[cryptoData.currency?.toUpperCase()]
+                                ?.totalAmount || 0
+                            )}  ${cryptoData.currency || ""}`}
+                            style={[
+                              commonStyles.fs22,
+                              commonStyles.fw600,
+                              commonStyles.textAlwaysWhite,
+                            ]}
+                            numberOfLines={1}
+                          />
+                          <Image
+                            style={styles.downArrow}
+                            source={require("../../assets/images/banklocal/down-arrow.png")}
+                          />
                         </TouchableOpacity>
-                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textBlack, { left: isPad ? "14%" : 0 }]} text="Total Assets" />
+                        <ParagraphComponent
+                          style={[
+                            commonStyles.fs14,
+                            commonStyles.fw400,
+                            commonStyles.textBlack,
+                            { left: isPad ? "14%" : 0 },
+                          ]}
+                          text="Total Assets"
+                        />
                       </ImageBackground>
                     </View>
                     <View style={[styles.menuBlock]}>
@@ -240,43 +304,108 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                         activeOpacity={0.8}
                         onPress={handleNavigateDeposit}
                       >
-                        <ImageBackground style={{ minWidth: (WINDOW_WIDTH * 26) / 100, height: (WINDOW_WIDTH * 24) / 100 }} resizeMode="contain" source={require("../../assets/images/cards/card-bg.png")}>
+                        <ImageBackground
+                          style={{
+                            minWidth: (WINDOW_WIDTH * 26) / 100,
+                            height: (WINDOW_WIDTH * 24) / 100,
+                          }}
+                          resizeMode="contain"
+                          source={require("../../assets/images/cards/card-bg.png")}
+                        >
                           <View style={styles.actionsList}>
-                            <View style={{ alignItems: 'center' }}>
+                            <View style={{ alignItems: "center" }}>
                               <SendReceive
-                                style={{ transform: [{ rotate: "180deg" }], margin: 'auto' }}
-                                width={s(24)} height={s(24)}
+                                style={{
+                                  transform: [{ rotate: "180deg" }],
+                                  margin: "auto",
+                                }}
+                                width={s(24)}
+                                height={s(24)}
                               />
                               <ParagraphComponent
-                                style={[commonStyles.textGrey, commonStyles.fs12, commonStyles.textCenter, commonStyles.mt8, commonStyles.fw500]} text={CRYPTO_CONSTANTS.DEPOSIT} />
+                                style={[
+                                  commonStyles.textGrey,
+                                  commonStyles.fs12,
+                                  commonStyles.textCenter,
+                                  commonStyles.mt8,
+                                  commonStyles.fw500,
+                                ]}
+                                text={CRYPTO_CONSTANTS.DEPOSIT}
+                              />
                             </View>
                           </View>
                         </ImageBackground>
                       </TouchableOpacity>
-                      <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateWithdraw} >
-                        <ImageBackground style={{ minWidth: (WINDOW_WIDTH * 26) / 100, minHeight: (WINDOW_WIDTH * 24) / 100 }} resizeMode="contain" source={require("../../assets/images/cards/card-bg.png")}>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={handleNavigateWithdraw}
+                      >
+                        <ImageBackground
+                          style={{
+                            minWidth: (WINDOW_WIDTH * 26) / 100,
+                            minHeight: (WINDOW_WIDTH * 24) / 100,
+                          }}
+                          resizeMode="contain"
+                          source={require("../../assets/images/cards/card-bg.png")}
+                        >
                           <View style={styles.actionsList}>
-                            <View style={{ alignItems: 'center' }}>
+                            <View style={{ alignItems: "center" }}>
                               <SendReceive width={s(24)} height={s(24)} />
-                              <ParagraphComponent style={[commonStyles.textGrey, commonStyles.fs12, commonStyles.textCenter, commonStyles.mt8, commonStyles.fw500]} text={CRYPTO_CONSTANTS.WITHDRAW} />
+                              <ParagraphComponent
+                                style={[
+                                  commonStyles.textGrey,
+                                  commonStyles.fs12,
+                                  commonStyles.textCenter,
+                                  commonStyles.mt8,
+                                  commonStyles.fw500,
+                                ]}
+                                text={CRYPTO_CONSTANTS.WITHDRAW}
+                              />
                             </View>
                           </View>
                         </ImageBackground>
                       </TouchableOpacity>
-                      <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateCards}>
-                        <ImageBackground style={{ minWidth: (WINDOW_WIDTH * 26) / 100, minHeight: (WINDOW_WIDTH * 24) / 100 }} resizeMode="contain" source={require("../../assets/images/cards/card-bg.png")}>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={handleNavigateCards}
+                      >
+                        <ImageBackground
+                          style={{
+                            minWidth: (WINDOW_WIDTH * 26) / 100,
+                            minHeight: (WINDOW_WIDTH * 24) / 100,
+                          }}
+                          resizeMode="contain"
+                          source={require("../../assets/images/cards/card-bg.png")}
+                        >
                           <View style={styles.actionsList}>
-                            <View style={{ alignItems: 'center' }}>
+                            <View style={{ alignItems: "center" }}>
                               <Wallet width={s(24)} height={s(24)} />
-                              <ParagraphComponent style={[commonStyles.textGrey, commonStyles.fs12, commonStyles.textCenter, commonStyles.mt8, commonStyles.fw500]} text={CRYPTO_CONSTANTS.CARDS} />
+                              <ParagraphComponent
+                                style={[
+                                  commonStyles.textGrey,
+                                  commonStyles.fs12,
+                                  commonStyles.textCenter,
+                                  commonStyles.mt8,
+                                  commonStyles.fw500,
+                                ]}
+                                text={CRYPTO_CONSTANTS.CARDS}
+                              />
                             </View>
                           </View>
                         </ImageBackground>
                       </TouchableOpacity>
                     </View>
                     <View style={[commonStyles.mb8]} />
-                    <View >
-                      <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw700, commonStyles.textBlack, commonStyles.px12]} text={CRYPTO_CONSTANTS.ASSETS} />
+                    <View>
+                      <ParagraphComponent
+                        style={[
+                          commonStyles.fs16,
+                          commonStyles.fw700,
+                          commonStyles.textBlack,
+                          commonStyles.px12,
+                        ]}
+                        text={CRYPTO_CONSTANTS.ASSETS}
+                      />
                       <View style={commonStyles.mt16} />
                       <View style={[styles.assetAllocation]}>
                         <TouchableOpacity
@@ -285,17 +414,27 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                           activeOpacity={0.8}
                         >
                           <View
-                            style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter]}>
+                            style={[
+                              commonStyles.dflex,
+                              commonStyles.justifyContent,
+                              commonStyles.alignCenter,
+                            ]}
+                          >
                             <View>
-                              <Image source={require('../../assets/images/cards/crypto-wallet.png')} style={styles.mb20} />
+                              <Image
+                                source={require("../../assets/images/cards/crypto-wallet.png")}
+                                style={styles.mb20}
+                              />
                               <ParagraphComponent
                                 style={[
                                   commonStyles.fs14,
                                   commonStyles.fw600,
                                   commonStyles.textBlack,
                                 ]}
-                                text={`${formatCurrency(cryptoData[cryptoData.currency?.toUpperCase()]?.cryptoAmount || 0)}  ${cryptoData.currency || ""}`}
-
+                                text={`${formatCurrency(
+                                  cryptoData[cryptoData.currency?.toUpperCase()]
+                                    ?.cryptoAmount || 0
+                                )}  ${cryptoData.currency || ""}`}
                               />
                               <ParagraphComponent
                                 style={[
@@ -316,7 +455,6 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                           style={styles.bgcard}
                           activeOpacity={0.8}
                         >
-
                           <View
                             style={[
                               commonStyles.dflex,
@@ -326,8 +464,8 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                           >
                             <View>
                               <Image
-                                source={require('../../assets/images/cards/card-asset.png')}
-                                style={[commonStyles.mb26,]}
+                                source={require("../../assets/images/cards/card-asset.png")}
+                                style={[commonStyles.mb26]}
                               />
                               <ParagraphComponent
                                 style={[
@@ -335,7 +473,10 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                                   commonStyles.fw600,
                                   commonStyles.textBlack,
                                 ]}
-                                text={`${formatCurrency(cryptoData[cryptoData.currency?.toUpperCase()]?.cardsAmount || 0)}  ${cryptoData.currency || " "}`}
+                                text={`${formatCurrency(
+                                  cryptoData[cryptoData.currency?.toUpperCase()]
+                                    ?.cardsAmount || 0
+                                )}  ${cryptoData.currency || " "}`}
                               />
                               <ParagraphComponent
                                 style={[
@@ -357,7 +498,6 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                     </View>
                     <View style={[commonStyles.mb43]} />
                     <View style={[commonStyles.mb43]} />
-
                   </>
                 )}
               </View>
@@ -365,96 +505,182 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
           </>
         </Container>
       </ScrollView>
-      {modelVisible && <Overlay onBackdropPress={handleCloseCurrency} overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 30, }]} isVisible={modelVisible}>
-        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb28]}>
-          <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text={CRYPTO_CONSTANTS?.SELECT_CURRENCY} />
-          <AntDesign onPress={handleCloseCurrency} name={CRYPTO_CONSTANTS?.CLOSE} size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-        </View>
-        <View style={[commonStyles.gap10]}>
-          {(currencyData && currencyData?.length > 0) && currencyData?.map((item: any) => {
-            return (
-              <TouchableOpacity key={item?.coin} activeOpacity={0.8} style={[styles.optiopStyle, { backgroundColor: cryptoData?.currency === item?.coin && NEW_COLOR.MENU_CARD_BG || "transparent", }]} onPress={() => { setTotalAmount(item) }}>
-                <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text={item?.coin} />
-              </TouchableOpacity>
-            )
-          })}
-          {(!currencyData || currencyData?.length <= 0) && <NoDataComponent />}
-        </View>
-      </Overlay>}
-      {((userInfo?.accountStatus === CRYPTO_CONSTANTS.INACTIVE) && isPressed) && <AccountDeactivatePopup isVisible={((userInfo?.accountStatus === CRYPTO_CONSTANTS.INACTIVE) && isPressed)} handleClose={handleCloseMFAPopUp} />}
+      {modelVisible && (
+        <Overlay
+          onBackdropPress={handleCloseCurrency}
+          overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 30 }]}
+          isVisible={modelVisible}
+        >
+          <View
+            style={[
+              commonStyles.dflex,
+              commonStyles.alignCenter,
+              commonStyles.gap10,
+              commonStyles.justifyContent,
+              commonStyles.mb28,
+            ]}
+          >
+            <ParagraphComponent
+              style={[
+                commonStyles.fs16,
+                commonStyles.fw800,
+                commonStyles.textBlack,
+              ]}
+              text={CRYPTO_CONSTANTS?.SELECT_CURRENCY}
+            />
+            <AntDesign
+              onPress={handleCloseCurrency}
+              name={CRYPTO_CONSTANTS?.CLOSE}
+              size={22}
+              color={NEW_COLOR.TEXT_BLACK}
+              style={{ marginTop: 3 }}
+            />
+          </View>
+          <View style={[commonStyles.gap10]}>
+            {currencyData &&
+              currencyData?.length > 0 &&
+              currencyData?.map((item: any) => {
+                return (
+                  <TouchableOpacity
+                    key={item?.coin}
+                    activeOpacity={0.8}
+                    style={[
+                      styles.optiopStyle,
+                      {
+                        backgroundColor:
+                          (cryptoData?.currency === item?.coin &&
+                            NEW_COLOR.MENU_CARD_BG) ||
+                          "transparent",
+                      },
+                    ]}
+                    onPress={() => {
+                      setTotalAmount(item);
+                    }}
+                  >
+                    <ParagraphComponent
+                      style={[
+                        commonStyles.fs16,
+                        commonStyles.fw800,
+                        commonStyles.textBlack,
+                      ]}
+                      text={item?.coin}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            {(!currencyData || currencyData?.length <= 0) && (
+              <NoDataComponent />
+            )}
+          </View>
+        </Overlay>
+      )}
+      {userInfo?.accountStatus === CRYPTO_CONSTANTS.INACTIVE && isPressed && (
+        <AccountDeactivatePopup
+          isVisible={
+            userInfo?.accountStatus === CRYPTO_CONSTANTS.INACTIVE && isPressed
+          }
+          handleClose={handleCloseMFAPopUp}
+        />
+      )}
 
       {isSecurityPopupVisible && (
         <CommonPopup
           isVisible={isSecurityPopupVisible}
           handleClose={() => setIsSecurityPopupVisible(false)}
           title="Secure your account"
-          backdropStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.40)' }}
+          backdropStyle={{ backgroundColor: "rgba(0, 0, 0, 0.40)" }}
           isBackdropPressAllowed={true}
           content={
             <>
               <ParagraphComponent
-                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw400,
+                  commonStyles.textpara,
+                  commonStyles.textCenter,
+                ]}
                 text="To use this feature, you'll need to enable additional security. "
               />
               <ParagraphComponent
-                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw400,
+                  commonStyles.textpara,
+                  commonStyles.textCenter,
+                ]}
                 text=" Set up Two-Factor Authentication (2FA)  "
               />
               <ParagraphComponent
-                style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw400,
+                  commonStyles.textpara,
+                  commonStyles.textCenter,
+                ]}
                 text=" to protect your account and keep your funds safe."
               />
-
-
             </>
           }
           buttonName="Enable Security"
           onButtonPress={handleNavigateSecurity}
         />
       )}
-    </SafeAreaView >
+    </SafeAreaView>
   );
 });
 
 export default CryptoNew;
 const themedStyles = StyleService.create({
   assetsDottedBg: {
-    flex: 1, borderWidth: 1, borderColor: NEW_COLOR.DASHED_BORDER_STYLE,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: NEW_COLOR.DASHED_BORDER_STYLE,
     backgroundColor: NEW_COLOR.BG_PURPLERDARK,
     borderStyle: "dashed",
   },
   mb20: { marginBottom: 20 },
   bgcard: {
-    backgroundColor: NEW_COLOR.MENU_CARD_BG, paddingVertical: s(20),
+    backgroundColor: NEW_COLOR.MENU_CARD_BG,
+    paddingVertical: s(20),
     borderRadius: 20,
-    paddingHorizontal: s(16), flex: 1
+    paddingHorizontal: s(16),
+    flex: 1,
   },
   assetAllocation: {
-    flexDirection: 'row', justifyContent: 'space-between', gap: s(14)
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: s(14),
   },
   menuBlock: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 20, gap: 10, marginBottom: 8
+    marginTop: 20,
+    gap: 10,
+    marginBottom: 8,
   },
   actionsList: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    textAlign: 'center'
+    textAlign: "center",
   },
   overlayContent: {
     paddingHorizontal: s(36),
     paddingVertical: s(36),
-    borderRadius: 35, backgroundColor: NEW_COLOR.POP_UP_BG,
-  }, downArrow: {
-    marginLeft: 10, marginTop: 6,
+    borderRadius: 35,
+    backgroundColor: NEW_COLOR.POP_UP_BG,
+  },
+  downArrow: {
+    marginLeft: 10,
+    marginTop: 6,
   },
   optiopStyle: {
     padding: 16,
-    borderRadius: 16, borderWidth: 1, borderColor: NEW_COLOR.DASHED_BORDER_STYLE
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: NEW_COLOR.DASHED_BORDER_STYLE,
   },
-  marginTop: { marginTop: -16 }
+  marginTop: { marginTop: -16 },
 });

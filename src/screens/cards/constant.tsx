@@ -92,7 +92,7 @@ const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\
 const SPACE_NUMBERS_REGEX = /^(?=.*\S).+$/;
 const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
     fullname: {
-        firstName: Yup.string().required('is required')
+        firstName: Yup.string().required('Is required')
             .matches(/^[a-zA-Z ]*$/, "First Name must contain only characters")
             .test('no-emojis', 'First Name cannot contain emojis.', value => {
                 if (!value) return true;
@@ -106,7 +106,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        lastName: Yup.string().required('is required')
+        lastName: Yup.string().required('Is required')
             .matches(/^[a-zA-Z ]*$/, "Last Name must contain only characters")
             .test('no-emojis', 'Last Name cannot contain emojis.', value => {
                 if (!value) return true;
@@ -120,7 +120,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        gender: Yup.string().required('is required'),
+        gender: Yup.string().required('Is required'),
         dob: Yup.date().nullable().required('Is required')
             .test('is-18-years-old', 'You must be at least 18 years old', function (value) {
                 if (!value) return false;
@@ -130,7 +130,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
             }),
     },
     fullnameonly: {
-        firstName: Yup.string().required('is required').matches(/^[a-zA-Z ]*$/, "First Name must contain only characters")
+        firstName: Yup.string().required('Is required').matches(/^[a-zA-Z ]*$/, "First Name must contain only characters")
             .test('no-emojis', 'First Name cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -143,7 +143,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        lastName: Yup.string().required('is required')
+        lastName: Yup.string().required('Is required')
             .matches(/^[a-zA-Z ]*$/, "Last Name must contain only characters")
             .test('no-emojis', 'Last Name cannot contain emojis.', value => {
                 if (!value) return true;
@@ -159,8 +159,8 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
             }),
     },
     passportonly: {
-        idType: Yup.string().required('is required'),
-        idNumber: Yup.string().required('is required')
+        idType: Yup.string().required('Is required'),
+        idNumber: Yup.string().required('Is required')
             .matches(/^[a-zA-Z0-9]*$/, "Document Number must contain only characters and numbers")
             .matches(/^(?=.*\S).+$/, "Document Number cannot contain whitespace")
             .test('no-emojis', 'Document Number cannot contain emojis.', value => {
@@ -172,13 +172,13 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 return !HTML_REGEX.test(value);
             })
             .max(20, "Document Number must be at most 20 characters"),
-        profilePicFront: Yup.string().required('is required'),
+        profilePicFront: Yup.string().required('Is required'),
     },
     passport: {
-        docExpiryDate: Yup.date().required('is required')
+        docExpiryDate: Yup.date().required('Is required')
             .min(moment().add(1, 'day').startOf('day').toDate(), 'Expiry date must be greater than current date.'),
-        idType: Yup.string().required('is required'),
-        idNumber: Yup.string().required('is required')
+        idType: Yup.string().required('Is required'),
+        idNumber: Yup.string().required('Is required')
             .matches(/^[a-zA-Z0-9]*$/, "Document Number must contain only characters and numbers")
             .matches(/^(?=.*\S).+$/, "Document Number cannot contain whitespace")
             .test('no-emojis', 'Document Number cannot contain emojis.', value => {
@@ -190,10 +190,10 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 return !HTML_REGEX.test(value);
             })
             .max(20, "Document Number must be at most 20 characters"),
-        profilePicFront: Yup.string().required('is required'),
+        profilePicFront: Yup.string().required('Is required'),
     },
     comms: {
-        mobileCode: Yup.string().required('is required'),
+        mobileCode: Yup.string().required('Is required'),
         mobile: Yup.string()
             .test('only numbers', 'Invalid phone number.', value => {
                 if (!value) return true;
@@ -202,7 +202,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
             .matches(/^\d{5,15}$/, 'Please enter a valid mobile number.'),
 
         email: Yup.string()
-            .required('is required')
+            .required('Is required')
             .test(
                 'no-html-tags',
                 'Please enter valid content',
@@ -218,17 +218,17 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
             ),
     },
     handedpassport: {
-        handHoldingIDPhoto: Yup.string().required('is required'),
+        handHoldingIDPhoto: Yup.string().required('Is required'),
     },
     face: {
-        faceImage: Yup.string().required('is required'),
+        faceImage: Yup.string().required('Is required'),
     },
     sign: {
-        signature: Yup.string().required('is required')
+        signature: Yup.string().required('Is required')
     },
 
     fulladdress: {
-        addressLine1: Yup.string().required('is required').max(100, "Address Line1 must be at most 100 characters")
+        addressLine1: Yup.string().required('Is required').max(100, "Address Line1 must be at most 100 characters")
             .test('no-emojis', 'Address Line1 cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -241,7 +241,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        city: Yup.string().required('is required').test('no-emojis', 'City cannot contain emojis.', value => {
+        city: Yup.string().required('Is required').test('no-emojis', 'City cannot contain emojis.', value => {
             if (!value) return true;
             return !EMOJI_REGEX.test(value);
         })
@@ -253,8 +253,8 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }).max(50, "City should be max 50"),
-        country: Yup.string().required('is required'),
-        state: Yup.string().required('is required')
+        country: Yup.string().required('Is required'),
+        state: Yup.string().required('Is required')
             .test('no-emojis', 'State cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -284,17 +284,17 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        town: Yup.string().required('is required'),
+        town: Yup.string().required('Is required'),
     },
     emergencycontact: {
-        emergencyContactName: Yup.string().required('is required')
+        emergencyContactName: Yup.string().required('Is required')
     },
     address: {
-        addressLine1: Yup.string().required('is required')
+        addressLine1: Yup.string().required('Is required')
     },
     financialprofile: {
         occupation: Yup.string()
-            .required('is required')
+            .required('Is required')
             .test('no-emojis', 'Occupation cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -304,11 +304,11 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 return !HTML_REGEX.test(value);
             }),
         annualSalary: Yup.number()
-            .required('is required')
+            .required('Is required')
             .typeError('Annual Salary must be a number')
             .moreThan(0, 'Annual Salary must be greater than 0.'),
         accountPurpose: Yup.string()
-            .required('is required')
+            .required('Is required')
             .test('no-emojis', 'Account Purpose cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -318,7 +318,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 return !HTML_REGEX.test(value);
             }),
         expectedMonthlyVolume: Yup.number()
-            .required('is required')
+            .required('Is required')
             .typeError('Expected Monthly Volume must be a number')
             .moreThan(0, 'Expected Monthly Volume must be greater than 0.'),
     },

@@ -120,7 +120,8 @@ const CryptoWalletView = React.memo((props: any) => {
     setIsPressd(false)
   };
   const handleRefresh = () => {
-    getCryptoReceiveData()
+    getCryptoReceiveData();
+    getSeccurityInfo();
   };
   const handleNavigateSecurity = () => {
     props?.navigation.navigate("Security", {

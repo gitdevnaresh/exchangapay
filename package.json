@@ -31,6 +31,7 @@
     "@react-navigation/native-stack": "^7.3.26",
     "@react-navigation/stack": "^7.4.8",
     "@reduxjs/toolkit": "^2.9.0",
+    "@sentry/react-native": "^7.4.0",
     "@sumsub/react-native-mobilesdk-module": "^1.37.1",
     "@ui-kitten/components": "^5.3.1",
     "@ui-kitten/eva-icons": "^5.3.1",

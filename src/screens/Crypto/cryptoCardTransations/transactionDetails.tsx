@@ -538,7 +538,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
               />
               <View style={{ marginTop: isPad ? 6 : 4 }}>
                 <CopyCard
-                  onPress={() => copyToClipboard(transactionDetails?.receiveWallet)}
+                  onPress={() => copyToClipboard(transactionDetails?.to)}
                   iconShow={true}
                   contentShow={false}
                 />

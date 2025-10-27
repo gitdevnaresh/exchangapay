@@ -22,6 +22,10 @@ const ENV = {
       clientId: "0zf1gFmgg6rp3BezUDn1jAimFY5FF3hH",
       audience: "https://ExchangaApi.net",
       scope: "openid profile email",
+      sentryEnvornment: "development",
+      sentryLoggs: false,
+      sentryDsn: 'https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720',
+
     },
     apiUrls: {
       uploadUrl: "https://api.exchangapay.com/",
@@ -38,6 +42,10 @@ const ENV = {
       clientId: "QN7NMqYHzengFUnmR0HCvenDCSOwGwNs",
       audience: "https://ExchangaTstApi.net",
       scope: "openid profile email enroll offline_access",
+      sentryEnvornment: "development",
+      sentryLoggs: false,
+      sentryDsn: 'https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720',
+
     },
     apiUrls: {
       uploadUrl: " https://tstapi.exchangapay.com/",

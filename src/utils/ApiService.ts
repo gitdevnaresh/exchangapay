@@ -4,8 +4,7 @@ import * as Keychain from "react-native-keychain";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
-import { isSessionExpired } from "../redux/Actions/UserActions";
-
+import * as Sentry from "@sentry/react-native";
 const appName = getApplicationName();
 const GetTokens = async () => {
   try {
@@ -21,6 +20,37 @@ const GetTokens = async () => {
     return null;
   }
 };
+const logApiErrorToSentry = async (error: any) => {
+  const { config, response } = error;
+  const userInfo: any = getUserInfo();
+
+  Sentry.withScope(scope => {
+    // 1. Set User
+    scope.setUser({ id: userInfo?.id ?? 'unknown_user' });
+
+    // 2. Set Tags (for filtering and searching in Sentry)
+    scope.setTag('api_endpoint', config?.url ?? 'unknown');
+    scope.setTag('api_method', config?.method?.toUpperCase() ?? 'unknown');
+    scope.setTag('api_status_code', response?.status?.toString() ?? 'no_response');
+    scope.setTag('app_name', appName);
+    scope.setTag('environment', "development");
+
+    // 3. Set Extras (for additional data, not searchable but visible in the issue)
+    scope.setExtra('Request Body', config?.data);
+    scope.setExtra('Response Data', response?.data);
+
+    // 4. Add a Breadcrumb for context within the issue timeline
+    Sentry.addBreadcrumb({
+      category: 'http.error',
+      message: `API call to ${config?.url} failed with status ${response?.status}`,
+      level: 'error',
+    });
+
+    // 5. Capture the actual exception
+    Sentry.captureException(error);
+  });
+};
+
 const getUserInfo = async (): Promise<string | null> => {
   try {
     const credentials = await Keychain.getGenericPassword({
@@ -75,6 +105,7 @@ const handleErrorCapture = () => async (error: any) => {
   if (error.stack) {
     crashlytics().log(`Stack Trace: ${error.stack}`);
   }
+  logApiErrorToSentry(error);
   crashlytics().recordError(error);
   return Promise.reject(error);
 };

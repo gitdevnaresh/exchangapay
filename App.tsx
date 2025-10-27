@@ -6,13 +6,11 @@ import {
   StatusBar,
   View,
   ActivityIndicator,
-  ErrorBoundary,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { Auth0Provider } from "react-native-auth0";
-import SplashScreen from "react-native-splash-screen";
 import AppContainer from "./src/navigation/AppContainer";
 import * as eva from "@eva-design/eva";
 import { default as darkTheme } from "./src/constants/theme/dark.json";
@@ -34,17 +32,43 @@ import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
 import { initializeCrashlytics } from "./src/utils/ApiService";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
-import RNBootSplash from 'react-native-bootsplash';
-LogBox.ignoreAllLogs(false); // Enable logs for debugging
+import RNBootSplash from "react-native-bootsplash";
 
-console.log("App.tsx - Store imported:", typeof store);
+import * as Sentry from "@sentry/react-native";
+import { version as appVersion } from './package.json';
 
+const { oAuthConfig } = getAllEnvData();
+const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getBuildNumber()}`;
+if (oAuthConfig.sentryLoggs) {
+  Sentry.init({
+    dsn: oAuthConfig.sentryDsn,
+
+    // Adds more context data to events (IP address, cookies, user, etc.)
+    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+    sendDefaultPii: oAuthConfig.sentryLoggs,
+    environment: oAuthConfig.sentryEnvornment,
+
+    // Enable Logs
+    enableLogs: oAuthConfig.sentryLoggs,
+    release: releaseName,
+    // Configure Session Replay
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1,
+    integrations: [
+      Sentry.mobileReplayIntegration(),
+      Sentry.feedbackIntegration(),
+    ],
+
+    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+    // spotlight: __DEV__,
+  });
+}
 // Safety check
 if (!store) {
   console.error("Store is undefined! This will cause the app to crash.");
 }
 
-export default function App() {
+export default Sentry.wrap(function App() {
   const [theme, setTheme] = React.useState<"light" | "dark">("dark");
   const [isUpdate, setIsUpdate] = React.useState<boolean>(false);
   const [isForceUpdate, setIsForceUpdate] = React.useState<boolean>(false);
@@ -203,4 +227,4 @@ export default function App() {
       </Provider>
     </Auth0Provider>
   );
-}
+});
