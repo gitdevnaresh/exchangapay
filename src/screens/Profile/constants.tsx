@@ -150,6 +150,10 @@ export const PERSONAL_INFORMATION = {
     EDIT_PERSONAL_INFORMATION: "Edit Personal Information",
     ADD_PERSONAL_INFORMATION: "Add Personal Information",
     NOTE_PLEASE_WRITE_IN_ENGLISH: "Note : Please Write In English",
+    STATUS: "Status",
+    DEFAULT: "Default",
+    PERSONAL_INFORMATION: "Personal Information",
+    UPDATE: "Update"
 };
 
 export const ADDRRESS_CONSTANTS = {
@@ -174,4 +178,5 @@ export const ADDRESS_TEXTS = {
     PLACEHOLDER_PINCODE: "Enter Pincode",
     SET_AS_DEFAULT: "Set as Default",
     SAVE: "Save",
+
 };

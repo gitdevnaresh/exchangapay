@@ -114,7 +114,7 @@ const RigistrationReferral = () => {
             setRequiredMsg(REFERRAL_CONSTANTS.IS_REQUIRED);
             return;
         }
-        if ((referralCode || !isValid) && referralCode?.length < 10) {
+        if ((referralCode) && referralCode?.length < 10) {
             setSaveLoading(false);
             setRequiredMsg(REFERRAL_CONSTANTS.PLEASE_PROVIDE_VALID_REFERRAL_CODE);
             return;
@@ -167,13 +167,13 @@ const RigistrationReferral = () => {
         setErrormsg("")
     };
     const handleReferralCheck = () => {
-        setErrormsg("")
+        setErrormsg("");
+        setReferralCode("");
         setReferral((prev: any) => ({
             ...prev, isReferralMandatory: !referral?.isReferralMandatory, haveReferralCode: !referral?.haveReferralCode,
             isReferralEditable: !referral?.isReferralEditable
         }))
         setRequiredMsg("");
-        setReferralCode("");
         setIsValid(null);
         setCustomerName("")
     }

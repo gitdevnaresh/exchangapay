@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  ScrollView,
-  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -33,21 +31,10 @@ import { Container } from "../../components";
 import Feather from "react-native-vector-icons/Feather";
 import AuthService from "../../services/auth";
 import useMemberLogin from "../../hooks/useMemberLogin";
-import { CommonActions } from "@react-navigation/native";
-import DeviceInfo from "react-native-device-info";
-import {
-  isLogin,
-  loginAction,
-  setUserInfo,
-} from "../../redux/Actions/UserActions";
-import { fcmNotification } from "../../utils/FCMNotification";
-import { useDispatch } from "react-redux";
-import { useAuth0 } from "react-native-auth0";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import useSendUserWebhook from "../../hooks/useSendUserWebhook";
-import OnBoardingService from "../../services/onBoardingservice";
-import * as Keychain from "react-native-keychain";
 import useLogout from "../../hooks/useLogOut";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AddUserDetails = (props: any) => {
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
@@ -56,8 +43,6 @@ const AddUserDetails = (props: any) => {
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
   const { getMemDetails } = useMemberLogin();
   const { sendWebhook } = useSendUserWebhook();
-  const dispatch = useDispatch();
-  const { clearSession } = useAuth0();
   const { encryptAES } = useEncryptDecrypt();
   const { logout, isLoggingOut } = useLogout();
   const initialValues: FormValues = {

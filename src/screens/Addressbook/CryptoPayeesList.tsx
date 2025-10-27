@@ -219,6 +219,8 @@ const CryptoPayeesList = (props: any) => {
         sections.push({ title: "Request to Email Verification", data: unverifiedPayees });
     };
     const handleRefresh = () => {
+        setVerifiedPayees([]);
+        setUnverifiedPayees([]);
         getAllPayees(1);
     };
 

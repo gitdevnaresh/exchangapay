@@ -3,7 +3,6 @@ import {
     StyleSheet,
     TouchableOpacity,
     View,
-    SafeAreaView,
     BackHandler,
     Dimensions,
     ScrollView,
@@ -25,6 +24,7 @@ import ErrorComponent from "../../components/Error";
 import { EditIcon, LocationIcon } from "../../assets/svg"; // Import EditIcon
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import { ADDRRESS_CONSTANTS, PROFILE_CONSTANTS } from "./constants";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 
@@ -83,8 +83,12 @@ const UserAddressListScreen = (props: any) => {
     const handleEditAddress = (item: any) => {
         navigation.navigate("AddPersonalInfo", { id: item.id });
     };
-
-
+    const handleNavigateView = (item: any) => {
+        navigation.navigate("addressDetails", { id: item.id });
+    };
+    const handleCloseError = () => {
+        setErrormsg("");
+    };
 
     return (
 
@@ -107,13 +111,13 @@ const UserAddressListScreen = (props: any) => {
 
                     {!personalInfoLoading && personalInfoAddress && personalInfoAddress.length > 0 && (
                         <>
-                            {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg("")} />}
+                            {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
                             <View>
                                 <View>
                                     {personalInfoAddress?.map((item: any, index: any) => (
                                         <>
                                             <View key={index} style={[commonStyles.dflex, commonStyles.justify, styles.flexcol, styles.profileEdit, commonStyles.mb16, commonStyles.relative]}>
-                                                {<TouchableOpacity activeOpacity={0.6} style={[commonStyles.flex1,]} onPress={() => handleEditAddress(item)}>
+                                                {<TouchableOpacity activeOpacity={0.6} style={[commonStyles.flex1,]} onPress={() => handleNavigateView(item)}>
                                                     <View style={[commonStyles.flex1, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16, { marginTop: index === 0 ? 16 : 0 }]}>
                                                         <View >
                                                             <View style={[styles.userBg, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter,]}>

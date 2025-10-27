@@ -139,12 +139,12 @@ const AddPersonalInfo = (props: any) => {
           props.navigation.goBack();
           setErrormsg("");
         } else {
-          ref?.current?.scrollTo({ y: 0, animated: true });
+          ref?.current?.scrollToPosition({ y: 0, animated: true });
           setErrormsg(isErrorDispaly(res));
         }
         setLoadings((prev: any) => ({ ...prev, btnLoading: false }));
       } catch (error) {
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollToPosition({ y: 0, animated: true });
         setErrormsg(isErrorDispaly(error));
         setLoadings((prev: any) => ({ ...prev, btnLoading: false }));
       }
@@ -170,12 +170,12 @@ const AddPersonalInfo = (props: any) => {
       if (res.status === 200) {
         props.navigation.goBack();
       } else {
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollToPosition({ y: 0, animated: true });
         setErrormsg(isErrorDispaly(res));
       }
       setLoadings((prev: any) => ({ ...prev, btnLoading: false }));
     } catch (error) {
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollToPosition({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(error));
       setLoadings((prev: any) => ({ ...prev, btnLoading: false }));
     }
