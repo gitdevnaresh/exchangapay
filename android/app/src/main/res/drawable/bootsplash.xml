@@ -7,12 +7,12 @@
     </item>
 
     <!-- Centered logo -->
-    <item android:gravity="center">
+    <item android:gravity="top" android:top="200dp">
         <bitmap android:src="@drawable/exchanga_logo" android:gravity="center" android:tileMode="disabled" />
     </item>
 
     <!-- Centered text below logo -->
-    <item android:gravity="center" android:top="120dp">        <!-- adjust this value for spacing -->
+    <item android:gravity="top" android:top="280dp">        <!-- adjust this value for spacing -->
         <bitmap android:src="@drawable/exchangapaylogo" android:gravity="center" android:tileMode="disabled" />
     </item>
 
