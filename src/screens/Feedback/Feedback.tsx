@@ -109,8 +109,6 @@ const Feedback = (props: any) => {
         enableAutomaticScroll={true}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        extraScrollHeight={20}
-        extraHeight={100}
       >
         <Container style={[commonStyles.container]}>
           <View

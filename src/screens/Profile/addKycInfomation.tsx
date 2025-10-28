@@ -215,8 +215,8 @@ const AddKycInfomation = (props: any) => {
           response.data?.expirationDate
         )
           ? formateExpiryValidationDate(
-            decryptAES(response.data.expirationDate)
-          )
+              decryptAES(response.data.expirationDate)
+            )
           : null;
         const apiDate = decryptedDob ? new Date(decryptedDob) : null;
         const apiExpireyDate = decryptedExpirationDate
@@ -1020,7 +1020,7 @@ const AddKycInfomation = (props: any) => {
         <SignatureScreen
           ref={signatureRef}
           onOK={handleSaveSignature}
-          onEmpty={() => { }}
+          onEmpty={() => {}}
           descriptionText="Sign here"
           clearText="Clear"
           confirmText="Save"
@@ -1062,8 +1062,6 @@ const AddKycInfomation = (props: any) => {
         ref={ref}
         enableOnAndroid={true}
         enableAutomaticScroll={true}
-        extraScrollHeight={20}
-        extraHeight={100}
       >
         <Container style={commonStyles.container}>
           {editDataLoading && (
@@ -1131,7 +1129,6 @@ const AddKycInfomation = (props: any) => {
                 validateOnBlur={false}
                 validateOnChange={false}
                 enableReinitialize
-
               >
                 {(formik) => {
                   const {
@@ -1290,11 +1287,11 @@ const AddKycInfomation = (props: any) => {
                               text={formatDateMonth(expirydate)}
                             />
                           )) || (
-                              <ParagraphComponent
-                                style={[commonStyles.fs14, commonStyles.textGrey]}
-                                text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                              />
-                            )}
+                            <ParagraphComponent
+                              style={[commonStyles.fs14, commonStyles.textGrey]}
+                              text={PROFILE_CONSTANTS?.DD_MM_YYYY}
+                            />
+                          )}
                           {expiryDatePicker && (
                             <DatePickers
                               title={"Select Document Expiry Date"}
@@ -1368,11 +1365,11 @@ const AddKycInfomation = (props: any) => {
                               text={formatDateMonth(date)}
                             />
                           )) || (
-                              <ParagraphComponent
-                                style={[commonStyles.fs14, commonStyles.textGrey]}
-                                text={PROFILE_CONSTANTS?.DD_MM_YYYY}
-                              />
-                            )}
+                            <ParagraphComponent
+                              style={[commonStyles.fs14, commonStyles.textGrey]}
+                              text={PROFILE_CONSTANTS?.DD_MM_YYYY}
+                            />
+                          )}
                           {showPicker && (
                             <DatePickers
                               modal
@@ -1405,18 +1402,18 @@ const AddKycInfomation = (props: any) => {
                       <View>
                         {(errors?.dateOfBirth ||
                           errorMsgs?.dateOfBirthError) && (
-                            <ParagraphComponent
-                              style={[
-                                commonStyles.fs12,
-                                commonStyles.fw400,
-                                commonStyles.textError,
-                                commonStyles.mt4,
-                              ]}
-                              text={
-                                errors.dateOfBirth || errorMsgs?.dateOfBirthError
-                              }
-                            />
-                          )}
+                          <ParagraphComponent
+                            style={[
+                              commonStyles.fs12,
+                              commonStyles.fw400,
+                              commonStyles.textError,
+                              commonStyles.mt4,
+                            ]}
+                            text={
+                              errors.dateOfBirth || errorMsgs?.dateOfBirthError
+                            }
+                          />
+                        )}
                         <View style={[commonStyles.mb26]} />
                       </View>
                       <View>
@@ -1805,111 +1802,111 @@ const AddKycInfomation = (props: any) => {
                         values.handHoldingIDPhoto,
                         !isFormLocked
                       ) && (
-                          <View>
-                            <TouchableOpacity
-                              onPress={uploadHandHoldingPhotoID}
-                              activeOpacity={0.6}
-                            >
-                              <LabelComponent
-                                text={
-                                  PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB
-                                }
-                                Children={
-                                  <LabelComponent
-                                    text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
-                                    style={commonStyles.textError}
-                                  />
-                                }
-                              />
-                              <View style={[styles.SelectStyle]}>
-                                <Ionicons
-                                  name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
-                                  size={22}
-                                  color={NEW_COLOR.TEXT_BLACK}
+                        <View>
+                          <TouchableOpacity
+                            onPress={uploadHandHoldingPhotoID}
+                            activeOpacity={0.6}
+                          >
+                            <LabelComponent
+                              text={
+                                PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID_20MB
+                              }
+                              Children={
+                                <LabelComponent
+                                  text={PLACEHOLDER_CONSTANTS.REQUIRED_STAR}
+                                  style={commonStyles.textError}
                                 />
-                                <ParagraphComponent
-                                  style={[
-                                    commonStyles.fs16,
-                                    commonStyles.textBlack,
-                                    commonStyles.fw500,
-                                  ]}
-                                  text={
-                                    FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID
-                                  }
-                                  numberOfLines={1}
+                              }
+                            />
+                            <View style={[styles.SelectStyle]}>
+                              <Ionicons
+                                name={PROFILE_CONSTANTS.CLOUD_UPLOAD_OUTLINE}
+                                size={22}
+                                color={NEW_COLOR.TEXT_BLACK}
+                              />
+                              <ParagraphComponent
+                                style={[
+                                  commonStyles.fs16,
+                                  commonStyles.textBlack,
+                                  commonStyles.fw500,
+                                ]}
+                                text={
+                                  FIELD_CONSTANTS.UPLOAD_YOUR_HAND_HOLDING_PHOTO_ID
+                                }
+                                numberOfLines={1}
+                              />
+                            </View>
+                          </TouchableOpacity>
+                          {errorMsgs.handHoldingPhotoError && (
+                            <ParagraphComponent
+                              style={[commonStyles.textError]}
+                              text={errorMsgs.handHoldingPhotoError}
+                            />
+                          )}
+                          <View style={[commonStyles.mb16]} />
+                          <View style={[commonStyles.mb16]} />
+                          <View
+                            style={[
+                              commonStyles.flex1,
+                              commonStyles.justifyCenter,
+                              commonStyles.alignCenter,
+                            ]}
+                          >
+                            {idPhotoLoading && (
+                              <View
+                                style={[
+                                  commonStyles.dflex,
+                                  commonStyles.alignCenter,
+                                  commonStyles.justifyCenter,
+                                  { minHeight: 150 },
+                                ]}
+                              >
+                                <ActivityIndicator
+                                  size={PROFILE_CONSTANTS.LARGE}
+                                  color={NEW_COLOR.TEXT_GREY}
                                 />
                               </View>
-                            </TouchableOpacity>
-                            {errorMsgs.handHoldingPhotoError && (
-                              <ParagraphComponent
-                                style={[commonStyles.textError]}
-                                text={errorMsgs.handHoldingPhotoError}
-                              />
                             )}
-                            <View style={[commonStyles.mb16]} />
-                            <View style={[commonStyles.mb16]} />
-                            <View
-                              style={[
-                                commonStyles.flex1,
-                                commonStyles.justifyCenter,
-                                commonStyles.alignCenter,
-                              ]}
-                            >
-                              {idPhotoLoading && (
-                                <View
-                                  style={[
-                                    commonStyles.dflex,
-                                    commonStyles.alignCenter,
-                                    commonStyles.justifyCenter,
-                                    { minHeight: 150 },
-                                  ]}
-                                >
-                                  <ActivityIndicator
-                                    size={PROFILE_CONSTANTS.LARGE}
-                                    color={NEW_COLOR.TEXT_GREY}
+                            {uploadImgs?.handHoldingPhoto &&
+                              !idPhotoLoading && (
+                                <View style={[styles.passport]}>
+                                  <Image
+                                    style={[
+                                      commonStyles.rounded16,
+                                      commonStyles.flex1,
+                                    ]}
+                                    overlayColor="#fff"
+                                    resizeMode="contain"
+                                    source={{
+                                      uri: uploadImgs?.handHoldingPhoto,
+                                    }}
                                   />
                                 </View>
                               )}
-                              {uploadImgs?.handHoldingPhoto &&
-                                !idPhotoLoading && (
-                                  <View style={[styles.passport]}>
-                                    <Image
-                                      style={[
-                                        commonStyles.rounded16,
-                                        commonStyles.flex1,
-                                      ]}
-                                      overlayColor="#fff"
-                                      resizeMode="contain"
-                                      source={{
-                                        uri: uploadImgs?.handHoldingPhoto,
-                                      }}
-                                    />
-                                  </View>
-                                )}
-                              {!uploadImgs?.handHoldingPhoto &&
-                                !idPhotoLoading && (
-                                  <View
-                                    style={[
-                                      styles.passport,
-                                      { backgroundColor: "#F5F8FF" },
-                                    ]}
-                                  >
-                                    <Image
-                                      style={{
-                                        borderRadius: 12,
-                                        flex: 1,
-                                        width: "100%",
-                                      }}
-                                      overlayColor="#fff"
-                                      resizeMode="contain"
-                                      source={require("../../assets/images/cards/passportholding.png")}
-                                    />
-                                  </View>
-                                )}
-                            </View>
-                            <View style={[commonStyles.mb24]} />
+                            {!uploadImgs?.handHoldingPhoto &&
+                              !idPhotoLoading && (
+                                <View
+                                  style={[
+                                    styles.passport,
+                                    { backgroundColor: "#F5F8FF" },
+                                  ]}
+                                >
+                                  <Image
+                                    style={{
+                                      borderRadius: 12,
+                                      flex: 1,
+                                      width: "100%",
+                                    }}
+                                    overlayColor="#fff"
+                                    resizeMode="contain"
+                                    source={require("../../assets/images/cards/passportholding.png")}
+                                  />
+                                </View>
+                              )}
                           </View>
-                        )}
+                          <View style={[commonStyles.mb24]} />
+                        </View>
+                      )}
 
                       {isHideField(values.signature, !isFormLocked) && (
                         <View>
@@ -2025,57 +2022,57 @@ const AddKycInfomation = (props: any) => {
                         values?.emergencyContactPhoneNumber,
                         true
                       ) && (
-                          <View>
-                            <LabelComponent
-                              text={" Emergency Contact Number "}
-                              style={[
-                                commonStyles.fs12,
-                                commonStyles.fw500,
-                                NEW_COLOR.TEXT_LABEL,
-                              ]}
+                        <View>
+                          <LabelComponent
+                            text={" Emergency Contact Number "}
+                            style={[
+                              commonStyles.fs12,
+                              commonStyles.fw500,
+                              NEW_COLOR.TEXT_LABEL,
+                            ]}
+                          />
+                          <View
+                            style={[
+                              commonStyles.relative,
+                              commonStyles.dflex,
+                              commonStyles.gap8,
+                            ]}
+                          >
+                            <PhoneCodePicker
+                              modalTitle={"Select Country Code"}
+                              style={undefined}
+                              customBind={["name", "(", "code", ")"]}
+                              data={lists?.countryCodelist}
+                              value={values.emergencyContactPhoneCode}
+                              placeholder="Select"
+                              containerStyle={[]}
+                              onChange={(item) =>
+                                setFieldValue(
+                                  "emergencyContactPhoneCode",
+                                  item.code
+                                )
+                              }
+                              disable={isFormLocked}
                             />
-                            <View
-                              style={[
-                                commonStyles.relative,
-                                commonStyles.dflex,
-                                commonStyles.gap8,
-                              ]}
-                            >
-                              <PhoneCodePicker
-                                modalTitle={"Select Country Code"}
-                                style={undefined}
-                                customBind={["name", "(", "code", ")"]}
-                                data={lists?.countryCodelist}
-                                value={values.emergencyContactPhoneCode}
-                                placeholder="Select"
-                                containerStyle={[]}
-                                onChange={(item) =>
-                                  setFieldValue(
-                                    "emergencyContactPhoneCode",
-                                    item.code
-                                  )
-                                }
-                                disable={isFormLocked}
-                              />
-                              <TextInput
-                                style={[styles.inputStyle, commonStyles.mb4]}
-                                placeholder="Enter  Emergency Contact Number"
-                                onChangeText={(text) =>
-                                  handleChange("emergencyContactPhoneNumber")(
-                                    text.replace(/[^0-9]/g, "")
-                                  )
-                                }
-                                onBlur={handleBlur("emergencyContactPhoneNumber")}
-                                value={values.emergencyContactPhoneNumber}
-                                keyboardType="phone-pad"
-                                placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
-                                multiline={false}
-                                editable={!isFormLocked}
-                              />
-                            </View>
-                            <View style={[commonStyles.mb24]} />
+                            <TextInput
+                              style={[styles.inputStyle, commonStyles.mb4]}
+                              placeholder="Enter  Emergency Contact Number"
+                              onChangeText={(text) =>
+                                handleChange("emergencyContactPhoneNumber")(
+                                  text.replace(/[^0-9]/g, "")
+                                )
+                              }
+                              onBlur={handleBlur("emergencyContactPhoneNumber")}
+                              value={values.emergencyContactPhoneNumber}
+                              keyboardType="phone-pad"
+                              placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
+                              multiline={false}
+                              editable={!isFormLocked}
+                            />
                           </View>
-                        )}
+                          <View style={[commonStyles.mb24]} />
+                        </View>
+                      )}
                       {isHideField(values?.emergencyContactEmail, true) && (
                         <View>
                           <Field

@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Formik, Field } from "formik";
 import DatePickers from "react-native-date-picker";
@@ -88,8 +84,6 @@ const AddUserDetails = (props: any) => {
         keyboardShouldPersistTaps="handled"
         enableOnAndroid={true}
         enableAutomaticScroll={true}
-        extraScrollHeight={20}
-        extraHeight={100}
         showsVerticalScrollIndicator={false}
       >
         <Container style={commonStyles.container}>

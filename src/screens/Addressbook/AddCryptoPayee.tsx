@@ -215,8 +215,6 @@ const AddEditPayeeScreen = (props: any) => {
         ref={ref}
         enableOnAndroid={true}
         enableAutomaticScroll={true}
-        extraScrollHeight={20}
-        extraHeight={100}
         showsVerticalScrollIndicator={false}
       >
         <Container style={commonStyles.container}>

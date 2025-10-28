@@ -197,8 +197,6 @@ const AddPersonalInfo = (props: any) => {
         ref={ref}
         enableOnAndroid={true}
         enableAutomaticScroll={true}
-        extraScrollHeight={20}
-        extraHeight={100}
       >
         <Container style={commonStyles.container}>
           {loadings?.editLoading && (
