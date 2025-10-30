@@ -75,26 +75,23 @@ const FeeStep = (props: any) => {
     };
 
     const getCoinsList = async () => {
-        setFeeCardsLoading(true);
+        setIsLoading(true);
         try {
             const response: any = await SendCryptoServices.getWithdrawCryptoCoinList();
             if (response?.ok && response?.status === 200) {
                 setCoinsDataList(response?.data);
                 setErrormsg("");
                 getNetworkList(response?.data[0]?.walletCode);
-                setFeeCardsLoading(false);
-                setIsLoading(false);
+
             } else {
                 ref?.current?.scrollTo({ y: 0, animated: true });
                 setErrormsg(isErrorDispaly(response));
-                setFeeCardsLoading(false);
                 setIsLoading(false);
             }
         } catch (error) {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(error));
-            setFeeCardsLoading(false);
-
+            setIsLoading(false);
         }
 
     }
@@ -111,14 +108,12 @@ const FeeStep = (props: any) => {
             } else {
                 ref?.current?.scrollTo({ y: 0, animated: true });
                 setErrormsg(isErrorDispaly(res));
-                setFeeCardsLoading(false);
                 setIsLoading(false);
                 setErrormsg("");
             }
         } catch (err) {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(err));
-            setFeeCardsLoading(false);
             setIsLoading(false);
             setErrormsg("");
 
@@ -242,12 +237,12 @@ const FeeStep = (props: any) => {
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
             <ScrollView ref={ref}>
                 <Container style={commonStyles.container}>
-                    {feeCardsLoading || isLoading && (
+                    {isLoading && (
                         <View style={[commonStyles.flex1]}>
                             <Loadding contenthtml={ExchangeCardSkeleton} />
                         </View>
                     )}
-                    {!feeCardsLoading && !isLoading && (
+                    {!isLoading && (
                         <View>
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mb30, commonStyles.gap16]}>
                                 <TouchableOpacity style={[]} onPress={() => handleBack()}>
@@ -332,19 +327,21 @@ const FeeStep = (props: any) => {
 
 
                                             {applyCardsInfo.cardType !== 'Virtual' && <View style={[commonStyles.sectionStyle, commonStyles.mb16]}>
-                                                {applyCardsInfo.cardType !== 'Virtual' && <><TouchableOpacity onPress={() => selectHaveCard("haveCard")} >
-                                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, commonStyles.gap16,]}>
-                                                        <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textGrey, commonStyles.flex1]} text="I have the card on hand and do not required freight" />
-                                                        <Checkbox checked={iHaveCard?.haveCard} style={[{}, commonStyles.flex1]} />
-                                                    </View>
-                                                </TouchableOpacity>
+                                                {applyCardsInfo.cardType !== 'Virtual' && <>
+                                                    <TouchableOpacity onPress={() => selectHaveCard("haveCard")} activeOpacity={1} >
+                                                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, commonStyles.gap16,]}>
+                                                            <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textGrey, commonStyles.flex1]} text="I have the card on hand and do not required freight" />
+                                                            <Checkbox checked={iHaveCard?.haveCard} style={[{}, commonStyles.flex1]} />
+                                                        </View>
+                                                    </TouchableOpacity>
                                                     <View style={[commonStyles.dashedLine, commonStyles.mt10, commonStyles.mb10, { opacity: 0.5 }]} /></>}
-                                                {applyCardsInfo.cardType !== 'Virtual' && <><TouchableOpacity onPress={() => selectHaveCard("sendCard")} >
-                                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, commonStyles.gap16,]}>
-                                                        <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textGrey, commonStyles.flex1]} text="Please send a card to me" />
-                                                        <Checkbox checked={iHaveCard?.sendCard} style={[{}, commonStyles.flex1]} />
-                                                    </View>
-                                                </TouchableOpacity>
+                                                {applyCardsInfo.cardType !== 'Virtual' && <>
+                                                    <TouchableOpacity onPress={() => selectHaveCard("sendCard")} activeOpacity={1} >
+                                                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, commonStyles.gap16,]}>
+                                                            <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw400, commonStyles.textGrey, commonStyles.flex1]} text="Please send a card to me" />
+                                                            <Checkbox checked={iHaveCard?.sendCard} style={[{}, commonStyles.flex1]} />
+                                                        </View>
+                                                    </TouchableOpacity>
                                                 </>}
 
 

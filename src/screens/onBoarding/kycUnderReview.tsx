@@ -94,7 +94,7 @@ const UnderReview = () => {
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
       <ScrollView>
         <Container style={commonStyles.container}>
-          <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
+          <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto, commonStyles.mb30]}>
             <SvgUri
               uri={REGISTRATION_CONSTATNTS.EXCHANGAPAY_LOGO}
               width={s(61)}

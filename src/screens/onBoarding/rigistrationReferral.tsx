@@ -246,7 +246,7 @@ const RigistrationReferral = () => {
 
                             </View>
                             <View>
-                                {(typeof customerName === "string" && isValid) && <ParagraphComponent text={decryptAES(customerName)} style={[commonStyles.textGreen]} />}
+                                {(typeof customerName === "string" && isValid) && <ParagraphComponent text={decryptAES(customerName)} style={{ color: NEW_COLOR.BG_GREEN }} />}
                             </View>
                         </View>
 
