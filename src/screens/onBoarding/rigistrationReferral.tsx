@@ -251,11 +251,14 @@ const RigistrationReferral = () => {
                         </View>
 
                     </View>
-                    <TouchableOpacity style={[commonStyles.dflex, commonStyles.gap12, commonStyles.px16, commonStyles.mt8]}
-                        onPress={handleReferralCheck} activeOpacity={0.7}>
-                        <Checkbox size={s(20)} checked={referral?.haveReferralCode} activeColor={NEW_COLOR.TEXT_BLACK} color={NEW_COLOR.TEXT_BLACK} />
-                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, styles.text, commonStyles?.textCenter]} text="I don't have referral code" />
-                    </TouchableOpacity>
+                    <View style={[commonStyles.dflex, commonStyles.gap12, commonStyles.px16, commonStyles.mt8]}>
+                        <TouchableOpacity onPress={handleReferralCheck} activeOpacity={0.7}>
+                            <Checkbox size={s(20)} checked={referral?.haveReferralCode} activeColor={NEW_COLOR.TEXT_BLACK} color={NEW_COLOR.TEXT_BLACK} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleReferralCheck} activeOpacity={0.7}>
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw400, styles.text, commonStyles?.textCenter]} text="I don't have referral code" />
+                        </TouchableOpacity>
+                    </View>
                     <View style={[commonStyles.mb43]} />
                 </Container>
             </ScrollView>

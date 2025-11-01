@@ -342,18 +342,18 @@ const themedStyles = StyleService.create({
     currencyBadgePosition: {
         position: "absolute",
         top: isPad ? s(-14) : s(-18),
-        left: 0,
-        right: 0,
+        left: s(0),
+        right: s(0),
         alignItems: 'center',
-        zIndex: 9,
+        // zIndex: 9,
     },
     currencyBadgeInner: {
         backgroundColor: NEW_COLOR.BG_ORANGE,
         paddingVertical: s(6),
         paddingHorizontal: s(16),
         borderRadius: s(100),
-        minWidth: (WINDOW_WIDTH * 20) / 100,
         justifyContent: 'center',
+        width: s(90)
     },
     currencyIconStyle: {
         marginRight: s(8),

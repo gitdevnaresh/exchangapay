@@ -116,7 +116,7 @@ export const USER_CONSTANTS = {
     FIRST_NAME_LABEL: "First Name",
     LAST_NAME_LABEL: "Last Name",
     DATE_OF_BIRTH_LABEL: "Date of Birth",
-    REQUIRED: "Required",
+    REQUIRED: "Is required",
     FIRST_NAME_MIN: "First Name must be at least 3 characters",
     LAST_NAME_MIN: "Last Name must be at least 3 characters",
     DATE_OF_BIRTH_REQUIRED: "Date of Birth is required",
