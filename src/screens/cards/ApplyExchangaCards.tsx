@@ -9,7 +9,11 @@ import {
   BackHandler,
   KeyboardAvoidingView,
   Dimensions,
+  Keyboard,
+  KeyboardEvent,
+  Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -96,6 +100,8 @@ const ApplyExchangaCard = (props: any) => {
   const [kycReqList, setKycReqList] = useState([]);
   const [btnLoader, setBtnLoader] = useState(false);
   const { encryptAES, decryptAES } = useEncryptDecrypt();
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const [initialValues, setIntialValues] = useState<any>({
     firstName: "",
@@ -468,6 +474,38 @@ const ApplyExchangaCard = (props: any) => {
     );
     return () => backHandler.remove();
   }, []);
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const handleKeyboardShow = (_event: KeyboardEvent) => {
+      setIsKeyboardVisible(true);
+      requestAnimationFrame(() => {
+        ref?.current?.scrollToEnd?.({ animated: true });
+      });
+    };
+
+    const handleKeyboardHide = () => {
+      setIsKeyboardVisible(false);
+    };
+
+    const keyboardShowListener = Keyboard.addListener(
+      showEvent,
+      handleKeyboardShow
+    );
+    const keyboardHideListener = Keyboard.addListener(
+      hideEvent,
+      handleKeyboardHide
+    );
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
+
   const handleBack = () => {
     props.navigation.navigate("ApplyCard", {
       cardId: props?.route?.params?.cardId,
@@ -497,12 +535,22 @@ const ApplyExchangaCard = (props: any) => {
     }
   };
   return (
-    <KeyboardAvoidingView style={[commonStyles.screenBg, commonStyles.flex1]}>
-      <SafeAreaView>
+    <SafeAreaView style={[commonStyles.screenBg, { flex: 1 }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? ms(24) : ms(-55)}
+        style={[commonStyles.screenBg, commonStyles.flex1]}
+      >
         <ScrollView
           showsVerticalScrollIndicator={false}
           ref={ref}
-          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: isKeyboardVisible
+              ? insets.bottom + ms(6)
+              : insets.bottom + ms(32),
+          }}
         >
           <Container style={commonStyles.container}>
             {applyCardsLoading && (
@@ -718,7 +766,11 @@ const ApplyExchangaCard = (props: any) => {
                               </View>
                             )}
 
-                          <View style={[commonStyles.mb24]} />
+                          <View
+                            style={{
+                              marginBottom: isKeyboardVisible ? ms(4) : ms(24),
+                            }}
+                          />
                           {(!isKycRequired ||
                             (isKycRequired && userInfo?.isKYC)) && (
                             <DefaultButton
@@ -735,7 +787,13 @@ const ApplyExchangaCard = (props: any) => {
                               }}
                             />
                           )}
-                          <View style={[commonStyles.mb24]} />
+                          <View
+                            style={{
+                              marginBottom: isKeyboardVisible
+                                ? insets.bottom
+                                : ms(24),
+                            }}
+                          />
                         </>
                       );
                     }}
@@ -745,8 +803,8 @@ const ApplyExchangaCard = (props: any) => {
             )}
           </Container>
         </ScrollView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
