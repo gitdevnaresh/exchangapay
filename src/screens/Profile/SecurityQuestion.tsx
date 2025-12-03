@@ -70,7 +70,7 @@ const SecurityQuestion = (props: any) => {
         }
         let verifedRes;
         try {
-            if (questiionsInfo && questiionsInfo.length > 0 && questiionsInfo[0]?.id) {
+            if (questiionsInfo && questiionsInfo.length > 0 && questiionsInfo[0]?.questionId) {
                 verifedRes = await ProfileService.updateSecurityQuestionsdata(obj);
             } else {
                 verifedRes = await ProfileService.saveSecurityQuestionsdata(obj);

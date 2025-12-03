@@ -16,7 +16,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import InputDefault from '../../components/DefaultFiat'
 
 
-const FeePhysicalCardApply: React.FC<FeePhysicalCardApplyProps> = ({ envelopeNoRequired, needPhotoForActiveCard, additionalDocforActiveCard, handleBlur, values, setFieldValue, handleChange, touched, errors }) => {
+const FeePhysicalCardApply: React.FC<FeePhysicalCardApplyProps> = ({ envelopeNoRequired, needPhotoForActiveCard, additionalDocforActiveCard, handleBlur, values, setFieldValue, handleChange, touched, errors, loading }) => {
     const [errormsg, setErrormsg] = useState<string>('');
     const [loadingState, setLoadingState] = useState<{ handHoldingIdPhoto: boolean }>({
         handHoldingIdPhoto: false,
@@ -97,7 +97,7 @@ const FeePhysicalCardApply: React.FC<FeePhysicalCardApplyProps> = ({ envelopeNoR
                         Children={<LabelComponent text=" *" style={commonStyles.textError} />}
                         style={[commonStyles.fs12, commonStyles.fw500, NEW_COLOR.TEXT_LABEL]} />
                     <TextInput
-                        style={[styles.inputStyle, commonStyles.flex1]}
+                        style={[styles.inputStyle, commonStyles.flex1, { backgroundColor: loading ? NEW_COLOR.DISABLED_INPUTBG : NEW_COLOR.SCREENBG_WHITE }]}
                         placeholder={"Link Card Number"}
                         onChangeText={handleChange("cardNumber")}
                         onBlur={handleBlur("cardNumber")}

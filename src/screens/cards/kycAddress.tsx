@@ -132,6 +132,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
     signModelVisible: false,
     drawSignModel: false,
     facePopup: false,
+    loadingType: ""
   });
   const [uploadValidation, setUploadValidation] = useState({
     handHoldingIDPhoto: null,
@@ -215,7 +216,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
         <SignatureScreen
           ref={signatureRef}
           onOK={handleSaveSignature}
-          onEmpty={() => {}}
+          onEmpty={() => { }}
           descriptionText="Sign here"
           clearText="Clear"
           confirmText="Save"
@@ -383,7 +384,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
     setLoadingState((prev) => ({
       ...prev,
       drawSignModel: false,
-      facePopup: false,
+      loadingType: isCamera ? 'methodOne' : 'methodTwo', // 👈 track type
     }));
 
     try {
@@ -399,21 +400,18 @@ const KycAddress: React.FC<KycAddressProps> = ({
         if (!hasPermission) {
           return;
         } else {
-          result = await launchCamera({
-            mediaType: FORM_DATA_CONSTANTS?.PHOTO,
-            cameraType: FORM_DATA_CONSTANTS?.FRONT,
-          });
-        }
+          result = await launchCamera({ mediaType: FORM_DATA_CONSTANTS?.PHOTO, cameraType: FORM_DATA_CONSTANTS?.FRONT });
+
+        };
       } else {
-        result = await launchImageLibrary({
-          mediaType: FORM_DATA_CONSTANTS?.PHOTO,
-        });
-      }
+        result = await launchImageLibrary({ mediaType: "photo" });
+
+      };
+
 
       if (!result.didCancel && result.assets && result.assets.length > 0) {
         const isValid = verifyFileTypes(result.assets[0].fileName);
         const isValidSize = verifyFileSize(result.assets[0].fileSize);
-
         if (isValid && isValidSize) {
           let formData = new FormData();
           formData.append(FORM_DATA_CONSTANTS?.DOCUMENT, {
@@ -423,39 +421,43 @@ const KycAddress: React.FC<KycAddressProps> = ({
           });
 
           const uploadRes = await ProfileService.uploadFile(formData);
-
           if (uploadRes.status === 200) {
             const imageUrl = uploadRes?.data?.[0] || "";
             setFieldValue(fieldName, imageUrl);
             setErrormsg("");
+            setLoadingState((prev) => ({ ...prev, facePopup: false }));
+
           } else {
             ref?.current?.scrollTo({ y: 0, animated: true });
             setErrormsg(isErrorDispaly(uploadRes));
+            setLoadingState((prev) => ({ ...prev, facePopup: false }));
+
           }
         } else {
           if (!isValid) {
-            setErrormsg(
-              CREATE_KYC_ADDRESS_CONST.ACCEPTS_ONLY_JPG_OR_PNG_FORMATE
-            );
+            setErrormsg(CREATE_KYC_ADDRESS_CONST.ACCEPTS_ONLY_JPG_OR_PNG_FORMATE);
           } else if (!isValidSize) {
-            setErrormsg(
-              CREATE_KYC_ADDRESS_CONST.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB
-            );
+            setErrormsg(CREATE_KYC_ADDRESS_CONST.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB);
           }
           ref?.current?.scrollTo({ y: 0, animated: true });
+
         }
       }
     } catch (err) {
       ref?.current?.scrollTo({ y: 0, animated: true });
       setErrormsg(isErrorDispaly(err));
     } finally {
+
       setLoadingState((prevState) => ({
         ...prevState,
         [fieldName]: false,
         facePopup: false,
+        loadingType: ''
       }));
     }
   };
+
+
   const handleErrorComonent = () => {
     setErrormsg("");
   };
@@ -2077,6 +2079,8 @@ const KycAddress: React.FC<KycAddressProps> = ({
         colors={NEW_COLOR}
         windowWidth={WINDOW_WIDTH}
         windowHeight={WINDOW_HEIGHT}
+        isLoading={loadingState?.faceImage} // optional boolean
+        loadingType={loadingState?.loadingType}
       />
 
       <OverlayPopup

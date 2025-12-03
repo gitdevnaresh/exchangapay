@@ -54,10 +54,7 @@ const InputFiat = forwardRef(
       onBlur,
       editable = true,
       customContainerStyle,
-      placeholderTextColor,
-      border,
       keyboardType,
-      colorValue,
       innerRef,
       labelStyle,
       Children,
@@ -72,8 +69,6 @@ const InputFiat = forwardRef(
       onChangeText,
       autoCapitalize = "none",
     }: propTypes,
-    // eslint-disable-next-line no-unused-vars
-    ref
   ) => {
     const [secureText, setSecureText] = useState(false);
 
@@ -81,7 +76,7 @@ const InputFiat = forwardRef(
       if (name?.toLowerCase().includes("password")) {
         setSecureText(true);
       }
-      return () => {};
+      return () => { };
     }, [name]);
 
     const RightIcon = ({ secureText, onPress }: funType) => (
@@ -110,20 +105,11 @@ const InputFiat = forwardRef(
         .replace(/[^0-9.]/g, "")
         .split(".");
 
-      return `${commaSeparating(beforeNumber, 3)}${
-        afterNumber !== undefined ? `.${afterNumber.substring(0, 2)}` : ""
-      }`;
+      return `${commaSeparating(beforeNumber, 3)}${afterNumber !== undefined ? `.${afterNumber.substring(0, 2)}` : ""
+        }`;
     };
 
-    const changeBorderColor = (isError: any, isBorder: any) => {
-      if (isError) {
-        return COLOR.RED_DARKEN_1;
-      }
-      if (isBorder) {
-        return COLOR.GRAY_DARKEN_1;
-      }
-      return COLOR.PURPLE_LIGHTEN_1;
-    };
+
 
     const numberMaxLength = (labelName: any) => {
       if (labelName === "zipCode") {
@@ -163,7 +149,7 @@ const InputFiat = forwardRef(
           containerStyle={{
             ...styles.container,
             ...customContainerStyle,
-            height: error ? 56 : 46,
+            height: error ? ms(56) : ms(46),
           }}
           inputContainerStyle={[
             styles.input,

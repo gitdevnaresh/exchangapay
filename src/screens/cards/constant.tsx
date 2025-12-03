@@ -71,6 +71,7 @@ export interface LoadingState {
     signModelVisible: boolean,
     drawSignModel: boolean,
     facePopup: boolean
+    loadingType?: string;
 }
 export interface KycAddressProps {
     kycReqList: any[];
@@ -480,4 +481,5 @@ export interface FeePhysicalCardApplyProps {
     envelopeNoRequired: any;
     needPhotoForActiveCard: any;
     additionalDocforActiveCard: any;
+    loading?: boolean;
 }

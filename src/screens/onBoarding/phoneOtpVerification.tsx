@@ -403,7 +403,7 @@ const PhoneOtpVerification = () => {
                                         </View>
 
                                     )}
-                                    <View style={[commonStyles.mb8]} />
+                                    <View style={[commonStyles.mb24]} />
                                     <View style={[commonStyles.dflex, commonStyles.justifyCenter, commonStyles.alignCenter]}>
                                         <TouchableOpacity onPress={handleLgout} disabled={btnlLoader} style={[commonStyles.px10]} >
                                             <Text style={[themedStyles.resend, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text>

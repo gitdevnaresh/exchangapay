@@ -103,6 +103,7 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
             contentContainerStyle={{ gap: 10, paddingBottom: 150 }}
             data={countryList}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <TouchableOpacity onPress={() => onPressItem(item)}>
                 <View style={[styles.option, commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8,]}>

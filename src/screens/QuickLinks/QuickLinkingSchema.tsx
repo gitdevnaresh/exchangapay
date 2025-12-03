@@ -16,14 +16,14 @@ export const QuickLinkSchema = Yup.object().shape({
             return !EMOJI_REGEX.test(value);
         }),
     envelopNumber: Yup.string()
-        .required("Is required").max(30, "envelope number must be at most 30 characters").min(4, "envelope number must be at least 4 characters")
-        .matches(/^[a-zA-Z0-9]*$/, "envelope number must contain only characters and numbers")
-        .matches(/^(?=.*\S).+$/, "envelope number cannot contain whitespace")
-        .test('no-emojis', 'envelope number cannot contain emojis.', value => {
+        .required("Is required").max(30, "Envelope number must be at most 30 characters").min(4, "envelope number must be at least 4 characters")
+        .matches(/^[a-zA-Z0-9]*$/, "Envelope number must contain only characters and numbers")
+        .matches(/^(?=.*\S).+$/, "Envelope number cannot contain whitespace")
+        .test('no-emojis', 'Envelope number cannot contain emojis.', value => {
             if (!value) return true;
             return !EMOJI_REGEX.test(value);
         })
-        .test('no-html', 'envelope Number cannot contain HTML tags.', value => {
+        .test('no-html', 'Envelope Number cannot contain HTML tags.', value => {
             if (!value) return true;
             return !HTML_REGEX.test(value);
         })
