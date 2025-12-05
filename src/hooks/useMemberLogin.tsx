@@ -93,6 +93,15 @@ const useMemberLogin = () => {
             })
           );
         }
+        if (userDetails?.customerState?.toLowerCase() === "suspected fraud") {
+          return (navigation.dispatch(
+            CommonActions.reset({
+              index: 1,
+              routes: [{ name: "suspectedFraud" }],
+            })
+          ));
+
+        }
         if (!userDetails?.isEmailVerified) {
           if (currentRouteName !== "VerifyEmail") {
             navigation.dispatch(

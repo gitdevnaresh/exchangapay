@@ -93,6 +93,7 @@ import SessionExpired from "../components/secessionExpired";
 import { isSetIpInfo } from "../redux/Actions/UserActions";
 import { getAnimationForRoute } from "../utils/helpers";
 import AddressDetails from "../screens/Profile/accountInformation/addressView";
+import SuspectedFraud from "../screens/onBoarding/suspectedFraud";
 enableScreens();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -276,6 +277,7 @@ const AppContainer = () => {
           })} />
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
           <Stack.Screen name="addressDetails" component={AddressDetails} />
+          <Stack.Screen name="suspectedFraud" component={SuspectedFraud} />
         </Stack.Navigator>
 
       </View>
