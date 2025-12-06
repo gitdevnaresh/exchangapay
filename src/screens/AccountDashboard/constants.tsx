@@ -121,3 +121,9 @@ export interface SecurityInfo {
   isFaceResgEnabled: boolean;
   isAuth0Enabled: boolean | null;
 }
+export interface AlertItem {
+  id: string;
+  title: string;
+  message: string;
+  typeId: string;
+}

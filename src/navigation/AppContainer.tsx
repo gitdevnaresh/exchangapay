@@ -94,6 +94,11 @@ import { isSetIpInfo } from "../redux/Actions/UserActions";
 import { getAnimationForRoute } from "../utils/helpers";
 import AddressDetails from "../screens/Profile/accountInformation/addressView";
 import SuspectedFraud from "../screens/onBoarding/suspectedFraud";
+import CaseManagement from "../screens/Profile/caseMangement";
+import SupportAllCases from "../screens/Profile/caseMangement/allcases";
+import SupportCaseView from "../screens/Profile/caseMangement/view";
+import CaseViewDetails from "../screens/Profile/caseMangement/caseViewDetails";
+import SendReplay from "../screens/Profile/caseMangement/caseViewDetails/caseReplay/sendMessage";
 enableScreens();
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -278,6 +283,12 @@ const AppContainer = () => {
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
           <Stack.Screen name="addressDetails" component={AddressDetails} />
           <Stack.Screen name="suspectedFraud" component={SuspectedFraud} />
+          <Stack.Screen name="support" component={CaseManagement} />
+          <Stack.Screen name="SupportAllCases" component={SupportAllCases} />
+          <Stack.Screen name="supportCaseView" component={SupportCaseView} />
+
+          <Stack.Screen name="CaseViewDetails" component={CaseViewDetails} />
+          <Stack.Screen name="SendReplay" component={SendReplay} />
         </Stack.Navigator>
 
       </View>

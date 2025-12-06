@@ -188,7 +188,7 @@ const ApplyExchangaCard = (props: any) => {
   useEffect(() => {
     getApplyCardDeatilsInfo();
     getMemDetails({}, undefined, true);
-    ref?.current?.scrollTo({ y: 0, animated: true });
+    // ref?.current?.scrollTo({ y: 0, animated: true });
   }, [isFocus]);
 
   const getApplyCardDeatilsInfo = async () => {
@@ -474,37 +474,37 @@ const ApplyExchangaCard = (props: any) => {
     );
     return () => backHandler.remove();
   }, []);
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+  // useEffect(() => {
+  //   const showEvent =
+  //     Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+  //   const hideEvent =
+  //     Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-    const handleKeyboardShow = (_event: KeyboardEvent) => {
-      setIsKeyboardVisible(true);
-      requestAnimationFrame(() => {
-        ref?.current?.scrollToEnd?.({ animated: true });
-      });
-    };
+  //   const handleKeyboardShow = (_event: KeyboardEvent) => {
+  //     setIsKeyboardVisible(true);
+  //     requestAnimationFrame(() => {
+  //       ref?.current?.scrollToEnd?.({ animated: true });
+  //     });
+  //   };
 
-    const handleKeyboardHide = () => {
-      setIsKeyboardVisible(false);
-    };
+  //   const handleKeyboardHide = () => {
+  //     setIsKeyboardVisible(false);
+  //   };
 
-    const keyboardShowListener = Keyboard.addListener(
-      showEvent,
-      handleKeyboardShow
-    );
-    const keyboardHideListener = Keyboard.addListener(
-      hideEvent,
-      handleKeyboardHide
-    );
+  //   const keyboardShowListener = Keyboard.addListener(
+  //     showEvent,
+  //     handleKeyboardShow
+  //   );
+  //   const keyboardHideListener = Keyboard.addListener(
+  //     hideEvent,
+  //     handleKeyboardHide
+  //   );
 
-    return () => {
-      keyboardShowListener.remove();
-      keyboardHideListener.remove();
-    };
-  }, []);
+  //   return () => {
+  //     keyboardShowListener.remove();
+  //     keyboardHideListener.remove();
+  //   };
+  // }, []);
 
   const handleBack = () => {
     props.navigation.navigate("ApplyCard", {
@@ -536,243 +536,243 @@ const ApplyExchangaCard = (props: any) => {
   };
   return (
     <SafeAreaView style={[commonStyles.screenBg, { flex: 1 }]}>
-      <KeyboardAvoidingView
+      {/* <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? ms(24) : ms(-55)}
         style={[commonStyles.screenBg, commonStyles.flex1]}
+      > */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        ref={ref}
+        keyboardShouldPersistTaps="handled"
+      // contentContainerStyle={{
+      //   flexGrow: 1,
+      //   paddingBottom: isKeyboardVisible
+      //     ? insets.bottom + ms(6)
+      //     : insets.bottom + ms(32),
+      // }}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          ref={ref}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingBottom: isKeyboardVisible
-              ? insets.bottom + ms(6)
-              : insets.bottom + ms(32),
-          }}
-        >
-          <Container style={commonStyles.container}>
-            {applyCardsLoading && (
-              <View style={[commonStyles.flex1]}>
-                <Loadding contenthtml={ExchangeCardSkeleton} />
-              </View>
-            )}
-            {!applyCardsLoading && (
-              <View>
-                <View
-                  style={[
-                    commonStyles.dflex,
-                    commonStyles.alignCenter,
-                    commonStyles.mb32,
-                    commonStyles.gap16,
-                  ]}
-                >
-                  <TouchableOpacity style={[]} onPress={() => handleBack()}>
-                    <View>
-                      <AntDesign
-                        name="arrowleft"
-                        size={s(22)}
-                        color={NEW_COLOR.TEXT_BLACK}
-                        style={{ marginTop: 3 }}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                  <ParagraphComponent
-                    text="Apply For Exchanga Pay Card"
-                    style={[
-                      commonStyles.fs16,
-                      commonStyles.textBlack,
-                      commonStyles.fw700,
-                    ]}
-                  />
-                </View>
-                {errormsg && (
-                  <>
-                    <ErrorComponent
-                      message={errormsg}
-                      onClose={() => setErrormsg("")}
+        <Container style={commonStyles.container}>
+          {applyCardsLoading && (
+            <View style={[commonStyles.flex1]}>
+              <Loadding contenthtml={ExchangeCardSkeleton} />
+            </View>
+          )}
+          {!applyCardsLoading && (
+            <View>
+              <View
+                style={[
+                  commonStyles.dflex,
+                  commonStyles.alignCenter,
+                  commonStyles.mb32,
+                  commonStyles.gap16,
+                ]}
+              >
+                <TouchableOpacity style={[]} onPress={() => handleBack()}>
+                  <View>
+                    <AntDesign
+                      name="arrowleft"
+                      size={s(22)}
+                      color={NEW_COLOR.TEXT_BLACK}
+                      style={{ marginTop: 3 }}
                     />
-                    <View style={commonStyles.mt8} />
+                  </View>
+                </TouchableOpacity>
+                <ParagraphComponent
+                  text="Apply For Exchanga Pay Card"
+                  style={[
+                    commonStyles.fs16,
+                    commonStyles.textBlack,
+                    commonStyles.fw700,
+                  ]}
+                />
+              </View>
+              {errormsg && (
+                <>
+                  <ErrorComponent
+                    message={errormsg}
+                    onClose={() => setErrormsg("")}
+                  />
+                  <View style={commonStyles.mt8} />
+                </>
+              )}
+              <View style={commonStyles.mt8} />
+              <View>
+                <StepComponent
+                  totalSteps={3}
+                  currentStep={1}
+                  stepContents={stepContents}
+                />
+              </View>
+              {isPad && <View style={[commonStyles.mb24]} />}
+              <View
+                style={[styles.darkBg, commonStyles.p16, commonStyles.mb16]}
+              >
+                {applyCardsInfo &&
+                  applyCardsInfo?.map((item: any, index: any) => (
+                    <>
+                      <View
+                        key={index}
+                        style={[
+                          commonStyles.dflex,
+                          commonStyles.alignCenter,
+                          commonStyles.justifyContent,
+                        ]}
+                      >
+                        <ParagraphComponent
+                          style={[
+                            commonStyles.fs12,
+                            commonStyles.fw400,
+                            commonStyles.textGrey,
+                            commonStyles.flex1,
+                          ]}
+                          text={`${item?.name}`}
+                        />
+                        <ParagraphComponent
+                          style={[
+                            commonStyles.fs14,
+                            commonStyles.fw500,
+                            commonStyles.textBlack,
+                            commonStyles.textRight,
+                            commonStyles.flex1,
+                          ]}
+                          text={`${item?.value}`}
+                        />
+                      </View>
+                      {index !== applyCardsInfo.length - 1 && (
+                        <View
+                          style={[
+                            commonStyles.dashedLine,
+                            commonStyles.mt10,
+                            commonStyles.mb10,
+                            { opacity: 0.5 },
+                          ]}
+                        />
+                      )}
+                    </>
+                  ))}
+                {!applyCardsLoading && applyCardsInfo.length < 1 && (
+                  <>
+                    <NoDataComponent />
+                    <View style={[commonStyles.mb16]} />
                   </>
                 )}
-                <View style={commonStyles.mt8} />
-                <View>
-                  <StepComponent
-                    totalSteps={3}
-                    currentStep={1}
-                    stepContents={stepContents}
-                  />
-                </View>
-                {isPad && <View style={[commonStyles.mb24]} />}
-                <View
-                  style={[styles.darkBg, commonStyles.p16, commonStyles.mb16]}
+              </View>
+
+              <View>
+                <Formik
+                  initialValues={formData}
+                  enableReinitialize
+                  validationSchema={generateValidationSchema(kycReqList)}
+                  onSubmit={handleRedirectToExchangeCard}
+                  validateOnBlur={true}
+                  validateOnChange={false}
                 >
-                  {applyCardsInfo &&
-                    applyCardsInfo?.map((item: any, index: any) => (
+                  {(formikProps) => {
+                    const {
+                      touched,
+                      errors,
+                      handleBlur,
+                      values,
+                      setFieldValue,
+                      handleChange,
+                      handleSubmit,
+                    } = formikProps;
+                    useEffect(() => {
+                      if (Object.keys(errors).length > 0) {
+                        ref?.current?.scrollTo({ y: 0, animated: true });
+                      }
+                    }, [errors]);
+                    return (
                       <>
-                        <View
-                          key={index}
-                          style={[
-                            commonStyles.dflex,
-                            commonStyles.alignCenter,
-                            commonStyles.justifyContent,
-                          ]}
-                        >
-                          <ParagraphComponent
-                            style={[
-                              commonStyles.fs12,
-                              commonStyles.fw400,
-                              commonStyles.textGrey,
-                              commonStyles.flex1,
-                            ]}
-                            text={`${item?.name}`}
-                          />
-                          <ParagraphComponent
-                            style={[
-                              commonStyles.fs14,
-                              commonStyles.fw500,
-                              commonStyles.textBlack,
-                              commonStyles.textRight,
-                              commonStyles.flex1,
-                            ]}
-                            text={`${item?.value}`}
-                          />
-                        </View>
-                        {index !== applyCardsInfo.length - 1 && (
-                          <View
-                            style={[
-                              commonStyles.dashedLine,
-                              commonStyles.mt10,
-                              commonStyles.mb10,
-                              { opacity: 0.5 },
-                            ]}
-                          />
+                        {isKycRequired && userInfo?.isKYC && (
+                          <>
+                            <KycAddress
+                              touched={touched}
+                              errors={errors}
+                              handleBlur={handleBlur}
+                              values={values}
+                              setFieldValue={setFieldValue}
+                              handleChange={handleChange}
+                              kycReqList={kycReqList}
+                              formData={formData}
+                              disableFields={initialValues}
+                              cardId={props?.route?.params?.cardId}
+                            />
+                            <View style={[commonStyles.mb43]} />
+                          </>
                         )}
-                      </>
-                    ))}
-                  {!applyCardsLoading && applyCardsInfo.length < 1 && (
-                    <>
-                      <NoDataComponent />
-                      <View style={[commonStyles.mb16]} />
-                    </>
-                  )}
-                </View>
 
-                <View>
-                  <Formik
-                    initialValues={formData}
-                    enableReinitialize
-                    validationSchema={generateValidationSchema(kycReqList)}
-                    onSubmit={handleRedirectToExchangeCard}
-                    validateOnBlur={true}
-                    validateOnChange={false}
-                  >
-                    {(formikProps) => {
-                      const {
-                        touched,
-                        errors,
-                        handleBlur,
-                        values,
-                        setFieldValue,
-                        handleChange,
-                        handleSubmit,
-                      } = formikProps;
-                      useEffect(() => {
-                        if (Object.keys(errors).length > 0) {
-                          ref?.current?.scrollTo({ y: 0, animated: true });
-                        }
-                      }, [errors]);
-                      return (
-                        <>
-                          {isKycRequired && userInfo?.isKYC && (
-                            <>
-                              <KycAddress
-                                touched={touched}
-                                errors={errors}
-                                handleBlur={handleBlur}
-                                values={values}
-                                setFieldValue={setFieldValue}
-                                handleChange={handleChange}
-                                kycReqList={kycReqList}
-                                formData={formData}
-                                disableFields={initialValues}
-                                cardId={props?.route?.params?.cardId}
+                        {!isKycRequired && (
+                          <>
+                            <KycAddress
+                              touched={touched}
+                              errors={errors}
+                              handleBlur={handleBlur}
+                              values={values}
+                              setFieldValue={setFieldValue}
+                              handleChange={handleChange}
+                              kycReqList={kycReqList}
+                              formData={formData}
+                              disableFields={initialValues}
+                              cardId={props?.route?.params?.cardId}
+                            />
+
+                            <View style={[commonStyles.mb43]} />
+                          </>
+                        )}
+                        {isKycRequired &&
+                          !isCardKYCCompleted &&
+                          !userInfo?.isKYC && (
+                            <View>
+                              <View style={[commonStyles.mb24]} />
+                              <DefaultButton
+                                title={"Continue to Complete KYC"}
+                                customTitleStyle={styles.mr30}
+                                disable={undefined}
+                                loading={btnLoader}
+                                onPress={handleSumsub}
                               />
-                              <View style={[commonStyles.mb43]} />
-                            </>
+                            </View>
                           )}
 
-                          {!isKycRequired && (
-                            <>
-                              <KycAddress
-                                touched={touched}
-                                errors={errors}
-                                handleBlur={handleBlur}
-                                values={values}
-                                setFieldValue={setFieldValue}
-                                handleChange={handleChange}
-                                kycReqList={kycReqList}
-                                formData={formData}
-                                disableFields={initialValues}
-                                cardId={props?.route?.params?.cardId}
+                        {isKycRequired &&
+                          isCardKYCCompleted &&
+                          !userInfo?.isKYC && (
+                            <View
+                              style={[
+                                commonStyles.bgCard,
+                                commonStyles.mt14,
+                                commonStyles.rounded16,
+                                commonStyles.p16,
+                              ]}
+                            >
+                              <ReviewImage
+                                width={80}
+                                height={80}
+                                style={{ alignSelf: "center" }}
                               />
-
-                              <View style={[commonStyles.mb43]} />
-                            </>
-                          )}
-                          {isKycRequired &&
-                            !isCardKYCCompleted &&
-                            !userInfo?.isKYC && (
-                              <View>
-                                <View style={[commonStyles.mb24]} />
-                                <DefaultButton
-                                  title={"Continue to Complete KYC"}
-                                  customTitleStyle={styles.mr30}
-                                  disable={undefined}
-                                  loading={btnLoader}
-                                  onPress={handleSumsub}
-                                />
-                              </View>
-                            )}
-
-                          {isKycRequired &&
-                            isCardKYCCompleted &&
-                            !userInfo?.isKYC && (
-                              <View
+                              <ParagraphComponent
                                 style={[
-                                  commonStyles.bgCard,
-                                  commonStyles.mt14,
-                                  commonStyles.rounded16,
-                                  commonStyles.p16,
+                                  commonStyles.textCenter,
+                                  commonStyles.textBlack,
+                                  commonStyles.fs18,
+                                  commonStyles.fw500,
+                                  commonStyles.mb16,
+                                  commonStyles.mt10,
                                 ]}
-                              >
-                                <ReviewImage
-                                  width={80}
-                                  height={80}
-                                  style={{ alignSelf: "center" }}
-                                />
-                                <ParagraphComponent
-                                  style={[
-                                    commonStyles.textCenter,
-                                    commonStyles.textBlack,
-                                    commonStyles.fs18,
-                                    commonStyles.fw500,
-                                    commonStyles.mb16,
-                                    commonStyles.mt10,
-                                  ]}
-                                  text={"Your KYC is under review."}
-                                />
-                              </View>
-                            )}
+                                text={"Your KYC is under review."}
+                              />
+                            </View>
+                          )}
 
-                          <View
-                            style={{
-                              marginBottom: isKeyboardVisible ? ms(4) : ms(24),
-                            }}
-                          />
-                          {(!isKycRequired ||
-                            (isKycRequired && userInfo?.isKYC)) && (
+                        {/* <View
+                          style={{
+                            marginBottom: isKeyboardVisible ? ms(4) : ms(24),
+                          }}
+                        /> */}
+                        {(!isKycRequired ||
+                          (isKycRequired && userInfo?.isKYC)) && (
                             <DefaultButton
                               title={"Next"}
                               style={undefined}
@@ -787,23 +787,23 @@ const ApplyExchangaCard = (props: any) => {
                               }}
                             />
                           )}
-                          <View
-                            style={{
-                              marginBottom: isKeyboardVisible
-                                ? insets.bottom
-                                : ms(24),
-                            }}
-                          />
-                        </>
-                      );
-                    }}
-                  </Formik>
-                </View>
+                        {/* <View
+                          style={{
+                            marginBottom: isKeyboardVisible
+                              ? insets.bottom
+                              : ms(24),
+                          }}
+                        /> */}
+                      </>
+                    );
+                  }}
+                </Formik>
               </View>
-            )}
-          </Container>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            </View>
+          )}
+        </Container>
+      </ScrollView>
+      {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );
 };

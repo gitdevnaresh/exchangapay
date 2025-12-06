@@ -62,7 +62,8 @@ import EnableDisable from "./enableDisable.svg";
 import ChatIcon from "./chaticon.svg";
 import SendIcon from "./send 1.svg";
 import Expiryicon from "./expiryIcon.svg"
-
+import CasesIcon from "./casesicongray.svg";
+import AttachmentIcon from "./attachment.svg"
 
 
 
@@ -130,5 +131,7 @@ export {
     EnableDisable,
     ChatIcon,
     SendIcon,
-    Expiryicon
+    Expiryicon,
+    CasesIcon,
+    AttachmentIcon
 }

@@ -30,11 +30,12 @@ import NotificationModuleService from "../../services/notification";
 import { Overlay } from "react-native-elements";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import AccountDeactivatePopup from "../Currencypop/actDeactivatePopup";
-import { CRYPTO_CONSTANTS, CurrencyItem, SecurityInfo } from "./constants";
+import { AlertItem, CRYPTO_CONSTANTS, CurrencyItem, SecurityInfo } from "./constants";
 import CommonPopup from "../../components/commonPopup";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import NoDataComponent from "../../components/nodata";
-
+import ProfileService from "../../services/profile";
+import CaseAlertsCarousel from "../../components/carousel/caseAlertCarousel";
 type CryptoNew = NativeStackScreenProps<RootStackParamList, "Crypto">;
 const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const isFocused = useIsFocused();
@@ -65,9 +66,10 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     isAuth0Enabled: false,
   });
   const { decryptAES } = useEncryptDecrypt();
-
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   useEffect(() => {
     if (isFocused) {
+      fetchAlerts();
       getSeccurityInfo();
       getCurrencyData();
       fetchCrypTototalBal(false);
@@ -194,7 +196,18 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
     });
     setIsSecurityPopupVisible(false);
   };
-
+  const fetchAlerts = async () => {
+    try {
+      const response: any = await ProfileService.getAlertCasess();
+      if (response?.ok && Array.isArray(response.data)) {
+        setAlerts(response.data);
+      } else {
+        setErrormsg(isErrorDispaly(response));
+      }
+    } catch (error) {
+      setErrormsg(isErrorDispaly(error));
+    }
+  };
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
       <ScrollView
@@ -209,6 +222,8 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                 <ErrorComponent message={errormsg} onClose={handleCloseError} />
               </View>
             )}
+            {alerts?.length > 0 && (<CaseAlertsCarousel commonStyles={commonStyles} screenName="Home" alerts={alerts} />)}
+
             <ParagraphComponent
               style={[
                 commonStyles.fs14,
@@ -225,15 +240,13 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                 commonStyles.textBlack,
                 commonStyles.mb32,
               ]}
-              text={`${
-                decryptAES(userInfo.firstName)
-                  ? decryptAES(userInfo.firstName)
-                  : " "
-              } ${
-                decryptAES(userInfo.lastName)
+              text={`${decryptAES(userInfo.firstName)
+                ? decryptAES(userInfo.firstName)
+                : " "
+                } ${decryptAES(userInfo.lastName)
                   ? decryptAES(userInfo.lastName)
                   : " "
-              }`}
+                }`}
             />
             <View>
               <View>

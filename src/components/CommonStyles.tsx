@@ -22,6 +22,21 @@ export const commonStyles = StyleService.create({
         padding: 16,
         borderRadius: 16,
     },
+    listdarkBg: {
+        backgroundColor: NEW_COLOR.MENU_CARD_BG,
+        borderRadius: 16,
+        padding: s(16),
+    },
+    listsecondarytext: {
+        fontFamily: "PlusJakartaSans-Regular",
+        color: NEW_COLOR.PARA_GREY,
+        fontSize: ms(12),
+    },
+    listprimarytext: {
+        fontFamily: "PlusJakartaSans-Medium",
+        color: NEW_COLOR.TEXT_ALWAYS_WHITE,
+        fontSize: ms(14),
+    },
     rounded20: {
         borderRadius: 20,
     },
@@ -260,6 +275,9 @@ export const commonStyles = StyleService.create({
     mb4: {
         marginBottom: 4,
     },
+    mb5: {
+        marginBottom: s(5)
+    },
     mb8: {
         marginBottom: 8,
     },
@@ -272,6 +290,7 @@ export const commonStyles = StyleService.create({
     mb10: {
         marginBottom: 10,
     },
+
     mt10: {
         marginTop: 10,
     },
@@ -308,6 +327,18 @@ export const commonStyles = StyleService.create({
     mt22: {
         marginTop: 22,
     },
+    sectiontitle: {
+        fontSize: s(16),
+        fontFamily: "PlusJakartaSans-Bold",
+        color: NEW_COLOR.TEXT_ALWAYS_WHITE
+
+    },
+    sectionlink: {
+        fontSize: s(14),
+        fontFamily: "PlusJakartaSans-Regular",
+        color: NEW_COLOR.TEXT_ORANGE,
+
+    },
     mxAuto: {
         marginLeft: "auto",
         marginRight: "auto"
@@ -324,6 +355,9 @@ export const commonStyles = StyleService.create({
     },
     mb24: {
         marginBottom: 24
+    },
+    mb42: {
+        marginBottom: s(42)
     },
     mbs24: {
         marginBottom: s(24)
@@ -371,8 +405,8 @@ export const commonStyles = StyleService.create({
     p12: {
         padding: s(12)
     },
-    p12: {
-        padding: s(12)
+    p8: {
+        padding: s(8)
     },
     pt0: {
         paddingTop: 0
@@ -404,9 +438,55 @@ export const commonStyles = StyleService.create({
     },
     image_Bg: {
         backgroundColor: NEW_COLOR.BG_IMG
+    }, sectionGap: {
+        marginBottom: s(32)
+    }, titleSectionGap: {
+        marginBottom: s(16)
+    }, textLeft: {
+        textAlign: "left"
+    }, ActiveCarousel: {
+        width: s(18),
+        height: s(5),
+        borderRadius: s(100) / 2,
+        backgroundColor: NEW_COLOR.TEXT_WHITE,
+    }, InActiveCarousel: {
+        width: s(6),
+        height: s(6),
+        borderRadius: s(100) / 2,
+        backgroundColor: NEW_COLOR.BG_GREEN,
+    },
+    kpibg: {
+        backgroundColor: NEW_COLOR.MENU_CARD_BG,
+    }, outgoingMessage: {
+        backgroundColor: NEW_COLOR.MENU_CARD_BG,
+        alignSelf: 'flex-end',
+        minWidth: s(200)
+    },
+    incomingMessage: {
+        backgroundColor: NEW_COLOR.SECTION_BG,
+        alignSelf: 'flex-start', minWidth: s(200)
+    },
+    chatuserchat: {
+        backgroundColor: NEW_COLOR.SECTION_BG,
     }
 });
 
 export const useCommonStyles = () => {
     return useStyleSheet(commonStyles);
 };
+
+export const statusColor = {
+    approved: NEW_COLOR.BG_GREEN,
+    completed: NEW_COLOR.BG_GREEN,
+    pending: NEW_COLOR.BG_YELLOW,
+    submitted: NEW_COLOR.BG_BLUE,
+    failed: NEW_COLOR.BG_RED,
+    fail: NEW_COLOR.BG_RED,
+    rejected: NEW_COLOR.BG_RED,
+    finished: NEW_COLOR.BG_GREEN,
+    freezed: NEW_COLOR.TEXT_GREY,
+    unfreezed: NEW_COLOR.BG_GREEN,
+    cancelled: NEW_COLOR.BG_RED,
+    requested: NEW_COLOR.BG_YELLOW,
+    reopened: NEW_COLOR.BG_ORANGE
+}

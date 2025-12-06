@@ -38,6 +38,7 @@ import {
   ViewIcon,
   PersonalInfoIcon,
   KycInfoIcon,
+  CasesIcon,
 } from "../assets/svg";
 import ProfileService from "../services/profile";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -162,7 +163,7 @@ const DrawerModal = (props: any) => {
       if (userLoginInfo?.status == 200) {
         dispatch(setUserInfo(userLoginInfo.data));
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleEditPress = () => {
@@ -209,7 +210,7 @@ const DrawerModal = (props: any) => {
       .then((userLoginInfo: any) => {
         dispatch(setUserInfo(userLoginInfo.data));
       })
-      .catch((error) => {});
+      .catch((error) => { });
   };
   const scoreColorPannel: any = {
     good: commonStyles.textGoodStatus,
@@ -280,7 +281,9 @@ const DrawerModal = (props: any) => {
   const handleNavigatePayees = () => {
     navigation.navigate("cryptoPayeesList");
   };
-
+  const handleNavigateCases = () => {
+    props?.navigation?.navigate("support")
+  };
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
       <ScrollView>
@@ -376,9 +379,8 @@ const DrawerModal = (props: any) => {
               <View style={[commonStyles.flex1]}>
                 <View>
                   <ParagraphComponent
-                    text={`${decryptAES(userInfo?.firstName) || ""} ${
-                      decryptAES(userInfo?.lastName) || ""
-                    }`}
+                    text={`${decryptAES(userInfo?.firstName) || ""} ${decryptAES(userInfo?.lastName) || ""
+                      }`}
                     style={[
                       commonStyles.fs16,
                       commonStyles.textBlack,
@@ -464,7 +466,7 @@ const DrawerModal = (props: any) => {
                         text={securityInfo?.level ? securityInfo.level : "Poor"}
                         style={[
                           scoreColorPannel[
-                            securityInfo?.level?.toLowerCase() || "poor"
+                          securityInfo?.level?.toLowerCase() || "poor"
                           ],
                           commonStyles.fs12,
                           commonStyles.fw600,
@@ -616,6 +618,19 @@ const DrawerModal = (props: any) => {
                 </View>
               </TouchableOpacity>
               <View style={[commonStyles.hLine, styles.py16]} />
+            </View>
+            <View>
+              <TouchableOpacity onPress={handleNavigateCases}>
+                <View style={[styles.listFlex]}>
+                  <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.alignCenter]}>
+                    <CasesIcon height={18} width={18} />
+                    <ParagraphComponent text="Cases" style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500]} />
+                  </View>
+                  <ChevronRight />
+                </View>
+              </TouchableOpacity>
+              <View style={[commonStyles.hLine, styles.py16]} />
+
             </View>
             <TouchableOpacity onPress={handlePriceCurrenyModel}>
               <View style={[styles.listFlex]}>
