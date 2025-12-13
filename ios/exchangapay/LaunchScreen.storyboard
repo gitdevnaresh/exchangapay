@@ -5,51 +5,43 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Launch Screen-->
+        <!--View Controller-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-
-                            <!-- Full Background Image -->
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" image="LaunchBackground" translatesAutoresizingMaskIntoConstraints="NO" id="bgImageView">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
-
-                            <!-- Logo -->
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logoImageView">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logoImageView">
+                                <rect key="frame" x="126" y="48" width="117" height="112"/>
                             </imageView>
-
-                            <!-- App Text -->
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="titleImageView">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="titleImageView">
+                                <rect key="frame" x="106" y="136" width="162" height="122"/>
                             </imageView>
-
                         </subviews>
-
+                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <constraints>
-                            <!-- Background fills entire screen -->
-                            <constraint firstItem="bgImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bgTop"/>
-                            <constraint firstItem="bgImageView" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="bgLeading"/>
-                            <constraint firstAttribute="trailing" secondItem="bgImageView" secondAttribute="trailing" id="bgTrailing"/>
                             <constraint firstAttribute="bottom" secondItem="bgImageView" secondAttribute="bottom" id="bgBottom"/>
-
-                            <!-- Center logo -->
+                            <constraint firstItem="bgImageView" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="bgLeading"/>
+                            <constraint firstItem="bgImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bgTop"/>
+                            <constraint firstAttribute="trailing" secondItem="bgImageView" secondAttribute="trailing" id="bgTrailing"/>
                             <constraint firstItem="logoImageView" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="logoCenterX"/>
                             <constraint firstItem="logoImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="120" id="logoTop"/>
-
-                            <!-- Position text below logo -->
                             <constraint firstItem="titleImageView" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="titleCenterX"/>
                             <constraint firstItem="titleImageView" firstAttribute="top" secondItem="logoImageView" secondAttribute="bottom" constant="30" id="titleTop"/>
                         </constraints>
-
-                        <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="129.98500749625188"/>
         </scene>
     </scenes>
     <resources>

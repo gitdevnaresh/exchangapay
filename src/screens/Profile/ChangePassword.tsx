@@ -32,7 +32,7 @@ const ChangePassword = (props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleGoBack = () => {
-        props.navigation.navigate("Security")
+        props.navigation.navigate("Security", { animation: "slide_from_left" })
     };
 
     const CreateAccSchema = Yup.object().shape({

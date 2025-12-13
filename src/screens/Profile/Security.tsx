@@ -194,7 +194,14 @@ const Security = (props: any) => {
     return () => backHandler.remove();
   }, []);
   const handleGoBack = () => {
-    props.navigation.goBack();
+    if (props.route?.params?.isFromPasswerdSuccess) {
+      props.navigation.navigate("DrawerModal", {
+        animation: "slide_from_left"
+      })
+    } else {
+      props.navigation.goBack();
+
+    }
   };
   const toggleOverlay = () => {
     setVisible(!visible);

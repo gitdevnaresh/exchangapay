@@ -23,7 +23,7 @@ const ChangePasswordSuccess = React.memo((props: any) => {
         return () => backHandler.remove();
     }, []);
     const handleBackToHome = () => {
-        props?.navigation?.navigate("Security")
+        props?.navigation?.navigate("Security", { isFromPasswerdSuccess: true, animation: "slide_from_left" })
     }
     return (
 
@@ -67,7 +67,7 @@ const ChangePasswordSuccess = React.memo((props: any) => {
                         </View>
                     </ImageBackground>
                     {Platform.OS === 'ios' ? (
-                        <View style={[]}>
+                        <View style={[commonStyles.mt22]}>
                             <View style={[styles.px44, { position: "absolute", bottom: -40, width: "100%" }]}>
                                 <DefaultButton
                                     customContainerStyle={{}}
@@ -86,7 +86,7 @@ const ChangePasswordSuccess = React.memo((props: any) => {
                         </View>
                     ) :
                         (
-                            <View style={commonStyles.mt16}>
+                            <View style={[commonStyles.mt16]}>
                                 <View>
                                     <DefaultButton
                                         title='Back'

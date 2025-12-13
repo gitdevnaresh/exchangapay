@@ -235,7 +235,9 @@ const AppContainer = () => {
           <Stack.Screen name="DrawerModal" component={DrawerModal} options={({ route }) => ({
             ...getAnimationForRoute(route),
           })} />
-          <Stack.Screen name="Security" component={Security} />
+          <Stack.Screen name="Security" component={Security} options={({ route }) => ({
+            ...getAnimationForRoute(route),
+          })} />
           <Stack.Screen name="SecurityQuestion" component={SecurityQuestion} />
           <Stack.Screen name="ChangePassword" component={ChangePassword} />
           <Stack.Screen name="ChangePasswordSucess" component={ChangePasswordSuccess} />
@@ -283,12 +285,12 @@ const AppContainer = () => {
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
           <Stack.Screen name="addressDetails" component={AddressDetails} />
           <Stack.Screen name="suspectedFraud" component={SuspectedFraud} />
-          <Stack.Screen name="support" component={CaseManagement} />
-          <Stack.Screen name="SupportAllCases" component={SupportAllCases} />
-          <Stack.Screen name="supportCaseView" component={SupportCaseView} />
+          <Stack.Screen name="support" component={CaseManagement} options={({ route }) => ({ ...getAnimationForRoute(route), })} />
+          <Stack.Screen name="SupportAllCases" component={SupportAllCases} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
+          <Stack.Screen name="supportCaseView" component={SupportCaseView} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
 
-          <Stack.Screen name="CaseViewDetails" component={CaseViewDetails} />
-          <Stack.Screen name="SendReplay" component={SendReplay} />
+          <Stack.Screen name="CaseViewDetails" component={CaseViewDetails} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
+          <Stack.Screen name="SendReplay" component={SendReplay} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
         </Stack.Navigator>
 
       </View>

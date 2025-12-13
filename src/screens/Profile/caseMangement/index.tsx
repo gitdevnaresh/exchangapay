@@ -96,7 +96,7 @@ const CaseManagement = (props: any) => {
   };
 
   const backArrowButtonHandler = () => {
-    navigation.navigate('DrawerModal');
+    navigation.navigate('DrawerModal', { animation: "slide_from_left" });
   };
 
 
