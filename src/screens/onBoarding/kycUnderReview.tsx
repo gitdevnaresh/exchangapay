@@ -263,8 +263,7 @@ const UnderReview = () => {
                   <TouchableOpacity
                     onPress={() =>
                       Linking.openURL(
-                        `mailto:${
-                          userInfo?.supportEmail || "support@exchangapay.com"
+                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
                         }`
                       )
                     }
@@ -314,8 +313,7 @@ const UnderReview = () => {
                   <TouchableOpacity
                     onPress={() =>
                       Linking.openURL(
-                        `mailto:${
-                          userInfo?.supportEmail || "support@exchangapay.com"
+                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
                         }`
                       )
                     }
@@ -335,7 +333,7 @@ const UnderReview = () => {
                 <View style={[commonStyles.mb32]} />
               </Container>
             )}
-          <View style={[commonStyles.mb10]} />
+          <View style={[commonStyles.mb4]} />
           {!isLoading && !isLogout && (
             <DefaultButton
               title={CONSTANTS?.REFRESH}
