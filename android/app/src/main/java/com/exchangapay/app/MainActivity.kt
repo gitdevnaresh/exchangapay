@@ -1,4 +1,4 @@
-package com.exchangapay.app
+package com.exchangapay.tst
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { SafeAreaView, ScrollView, View, Switch, TouchableOpacity } from "react-native";
+import { ScrollView, View, Switch, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Formik, Field } from "formik";
 import * as Yup from "yup";
-import Container from "../../components/Container"; 
-import InputDefault from "../../components/DefaultFiat"; 
+import Container from "../../components/Container";
+import InputDefault from "../../components/DefaultFiat";
 import DefaultButton from "../../components/DefaultButton";
 import ErrorComponent from "../../components/Error";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
@@ -16,6 +16,7 @@ import CardsModuleService from "../../services/card";
 import { isErrorDispaly, trimValues } from "../../utils/helpers";
 import { personalInfoLoader } from "./skeleton_views";
 import Loadding from "../../components/skeleton";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type RootStackParamList = {
     AddEditAddress: { id?: string };
@@ -153,6 +154,7 @@ const AddEditAddress: React.FC = () => {
                             {({ handleSubmit, handleBlur, errors, touched, setFieldValue }) => (
                                 <View style={{ marginBottom: s(20) }}>
                                     <Field
+
                                         name="addressLine1"
                                         component={InputDefault}
                                         label="Address Line 1"

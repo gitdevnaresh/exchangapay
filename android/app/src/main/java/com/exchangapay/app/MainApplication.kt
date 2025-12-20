@@ -1,4 +1,4 @@
-package com.exchangapay.app
+package com.exchangapay.tst
 
 import android.app.Application
 import com.facebook.react.PackageList
