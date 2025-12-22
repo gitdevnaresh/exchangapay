@@ -20,10 +20,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logoImageView">
-                                <rect key="frame" x="126" y="48" width="117" height="112"/>
-                            </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="titleImageView">
-                                <rect key="frame" x="106" y="136" width="162" height="122"/>
+                                <rect key="frame" x="108" y="0.0" width="157" height="185"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
@@ -34,8 +31,6 @@
                             <constraint firstAttribute="trailing" secondItem="bgImageView" secondAttribute="trailing" id="bgTrailing"/>
                             <constraint firstItem="logoImageView" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="logoCenterX"/>
                             <constraint firstItem="logoImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="120" id="logoTop"/>
-                            <constraint firstItem="titleImageView" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="titleCenterX"/>
-                            <constraint firstItem="titleImageView" firstAttribute="top" secondItem="logoImageView" secondAttribute="bottom" constant="30" id="titleTop"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -46,7 +41,6 @@
     </scenes>
     <resources>
         <image name="LaunchBackground" width="215" height="466"/>
-        <image name="LaunchImage" width="89.5" height="14"/>
-        <image name="LaunchLogo" width="30.5" height="28"/>
+        <image name="LaunchLogo" width="30" height="28"/>
     </resources>
 </document>

@@ -81,9 +81,9 @@ android {
     buildToolsVersion "35.0.0"
     compileSdk 35
 
-    namespace "com.exchangapay.app"
+    namespace "com.exchangapay.tst"
     defaultConfig {
-        applicationId "com.exchangapay.app"
+        applicationId "com.exchangapay.tst"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion 35
         versionCode 1

@@ -7,6 +7,9 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+# Import permissions setup
+require_relative '../node_modules/react-native-permissions/scripts/setup'
+
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 use_frameworks! :linkage => :static
@@ -19,6 +22,28 @@ end
 
 target 'exchangapay' do
   config = use_native_modules!
+
+  # Permissions
+  setup_permissions([
+    # 'AppTrackingTransparency',
+    # 'Bluetooth',
+    # 'Calendars',
+    'Camera',
+    # 'Contacts',
+    # 'FaceID',
+    # 'LocationAccuracy',
+    # 'LocationAlways',
+    # 'LocationWhenInUse',
+    # 'MediaLibrary',
+    # 'Microphone',
+    # 'Motion',
+    # 'Notifications',
+    'PhotoLibrary',
+    # 'Reminders',
+    # 'Siri',
+    # 'SpeechRecognition',
+    # 'StoreKit',
+  ])
 
   use_react_native!(
     :path => config[:reactNativePath],

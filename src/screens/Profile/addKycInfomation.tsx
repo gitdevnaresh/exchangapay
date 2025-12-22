@@ -173,7 +173,7 @@ const AddKycInfomation = (props: any) => {
       }));
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
     } catch (error) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({
         ...prev,
         errorMsg: isErrorDispaly(error),
@@ -279,9 +279,9 @@ const AddKycInfomation = (props: any) => {
         setInitValues(intialValue);
         setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
         setEditDataLoading(false);
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
       } else {
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
         setErrorMsgs((prev: any) => ({
           ...prev,
           errorMsg: isErrorDispaly(response),
@@ -289,7 +289,7 @@ const AddKycInfomation = (props: any) => {
         setEditDataLoading(false);
       }
     } catch (error) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({
         ...prev,
         errorMsg: isErrorDispaly(error),
@@ -343,7 +343,7 @@ const AddKycInfomation = (props: any) => {
           props?.navigation?.goBack();
         }
       } else {
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
         setErrorMsgs((prev: any) => ({
           ...prev,
           errorMsg: isErrorDispaly(res),
@@ -357,7 +357,7 @@ const AddKycInfomation = (props: any) => {
         frontPhotoIdError: "",
       }));
     } catch (error) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({
         ...prev,
         errorMsg: isErrorDispaly(error),
@@ -415,7 +415,7 @@ const AddKycInfomation = (props: any) => {
             });
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
           } else {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: isErrorDispaly(uploadRes),
@@ -427,18 +427,18 @@ const AddKycInfomation = (props: any) => {
               ...prev,
               errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           } else if (!isValidSize) {
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           }
         }
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setUploading(false);
@@ -477,7 +477,7 @@ const AddKycInfomation = (props: any) => {
             });
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
           } else {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: isErrorDispaly(uploadRes),
@@ -489,18 +489,18 @@ const AddKycInfomation = (props: any) => {
               ...prev,
               errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           } else if (!isValidSize) {
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           }
         }
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setUploading(false);
@@ -543,7 +543,7 @@ const AddKycInfomation = (props: any) => {
             });
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
           } else {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: isErrorDispaly(uploadRes),
@@ -551,13 +551,13 @@ const AddKycInfomation = (props: any) => {
           }
         } else {
           if (!isValidType) {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
             }));
           } else if (!isValidSize) {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB,
@@ -566,7 +566,7 @@ const AddKycInfomation = (props: any) => {
         }
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIdPhotoLoading(false);
@@ -596,14 +596,14 @@ const AddKycInfomation = (props: any) => {
         });
         setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
       } else {
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
         setErrorMsgs((prev: any) => ({
           ...prev,
           errorMsg: isErrorDispaly(uploadRes),
         }));
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setSignPhotoLoading(false);
@@ -668,7 +668,7 @@ const AddKycInfomation = (props: any) => {
       errors.dateOfBirth = "You must be at least 18 years old";
     }
     if (!uploadImgs?.selfie) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       errors.selfie = PROFILE_CONSTANTS.IS_REQUIRED;
     }
     if (!expirydate) {
@@ -690,7 +690,7 @@ const AddKycInfomation = (props: any) => {
     // Scroll to top if any error exists
     if (Object.keys(errors).length > 0) {
       setTimeout(() => {
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
       }, 100);
     }
 
@@ -771,21 +771,21 @@ const AddKycInfomation = (props: any) => {
 
           } else {
             setOpenSelfiePopup(false);
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValid) {
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           } else if (!isValidSize) {
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           }
         }
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIsSelfieLoading(false);
@@ -824,7 +824,7 @@ const AddKycInfomation = (props: any) => {
               docType: "backDocImage",
             });
           } else {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({
               ...prev,
               errorMsg: isErrorDispaly(uploadRes),
@@ -836,7 +836,7 @@ const AddKycInfomation = (props: any) => {
               ...prev,
               errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT,
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           } else if (!isValidSize) {
             setErrorMsgs((prev: any) => ({
               ...prev,
@@ -844,12 +844,12 @@ const AddKycInfomation = (props: any) => {
                 PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB
               ),
             }));
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
           }
         }
       }
     } catch (err) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setBackLoading(false);
@@ -894,17 +894,17 @@ const AddKycInfomation = (props: any) => {
             setIsSelfieLoading(false);
           }
           else {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setOpenSelfiePopup(false)
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
           }
         } else {
           if (!isValidType) {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
 
           } else if (!isValidSize) {
-            ref?.current?.scrollTo(0, 0, true);
+            ref?.current?.scrollToPosition(0, 0, true);
             setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
 
           }
@@ -912,7 +912,7 @@ const AddKycInfomation = (props: any) => {
       }
     } catch (err) {
       setOpenSelfiePopup(false)
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIsSelfieLoading(false);
@@ -935,14 +935,14 @@ const AddKycInfomation = (props: any) => {
         }));
         setErrorMsgs((prev: any) => ({ ...prev, errorMsg: "" }));
       } else {
-        ref?.current?.scrollTo(0, 0, true);
+        ref?.current?.scrollToPosition(0, 0, true);
         setErrorMsgs((prev: any) => ({
           ...prev,
           errorMsg: isErrorDispaly(response),
         }));
       }
     } catch (error) {
-      ref?.current?.scrollTo(0, 0, true);
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({
         ...prev,
         errorMsg: isErrorDispaly(error),

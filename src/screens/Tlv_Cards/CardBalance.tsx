@@ -182,12 +182,12 @@ const CardBalance = React.memo((props: any) => {
     setTopupLoading(true);
     if (!topupAmount) {
       setTopupLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(`${CONSTANTS.PLEASE_ENTER_AMOUNT}`);
     }
     if (topupAmount && /^[0-9]\d*(\.\d+)?$/.test(topupAmount) == false) {
       setTopupLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(`${CONSTANTS.PLEASE_ENTER_A_VALID_AMOUNT}`);
     }
     if (
@@ -199,7 +199,7 @@ const CardBalance = React.memo((props: any) => {
         ))
     ) {
       setTopupLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(
         `${
           CONSTANTS.THE_MINIMUM_AMOUNT_FOR_DEPOSIT_IS
@@ -217,7 +217,7 @@ const CardBalance = React.memo((props: any) => {
         ))
     ) {
       setTopupLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(
         `${
           CONSTANTS.THE_MAXIMUM_AMOUNT_FOR_DEPOSIT_IS
@@ -228,7 +228,7 @@ const CardBalance = React.memo((props: any) => {
     }
     if (parseFloat(topupAmount) > parseFloat(amount)) {
       setTopupLoading(false);
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(CONSTANTS.INSUFFICIENT_BALANCE);
     }
     setErrormsg("");
@@ -256,12 +256,12 @@ const CardBalance = React.memo((props: any) => {
           )} ${depositData?.fiatCurrency}`,
         });
       } else {
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollTo(0, 0, true);
         setErrormsg(isErrorDispaly(res));
         setTopupLoading(false);
       }
     } catch (error) {
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       setErrormsg(isErrorDispaly(error));
       setTopupLoading(false);
     }

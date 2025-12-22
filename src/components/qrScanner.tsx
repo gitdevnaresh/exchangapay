@@ -89,7 +89,7 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
 
   if (device == null) {
     return (
-      <View style={styles.container}>
+      <View style={[commonStyles.flex1, commonStyles.screenBg, commonStyles.container]}>
         <ParagraphComponent
           text={"No camera device found"}
           style={[
@@ -97,6 +97,7 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
             commonStyles.fw700,
             commonStyles.textBlack,
             commonStyles.flex1,
+            commonStyles.alignCenter
           ]}
         />
       </View>

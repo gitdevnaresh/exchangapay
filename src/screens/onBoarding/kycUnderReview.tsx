@@ -25,6 +25,7 @@ import { SvgUri } from "react-native-svg";
 import useLogout from "../../hooks/useLogOut";
 import useMemberLogin from "../../hooks/useMemberLogin";
 import { SafeAreaView } from "react-native-safe-area-context";
+import RenderHTML from "react-native-render-html";
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
@@ -40,76 +41,7 @@ const UnderReview = () => {
   const isFocused = useIsFocused();
   const skeltons = progressSkeltons();
   const { getMemDetails } = useMemberLogin();
-  const injectedJavaScript = `
-    (function() {
-      function applyStyles() {
-        var body = document.body;
-        if (body) {
-          body.style.color = "${NEW_COLOR.TEXT_BLACK}";
-          body.style.backgroundColor = "transparent";
-          body.style.margin = "0px";
-          body.style.padding = "0px";
-          body.style.paddingTop = "16px";
-          body.style.paddingBottom = "24px";
-          body.style.width = "100%";
-        }
-        var html = document.documentElement;
-        if (html) {
-          html.style.backgroundColor = "transparent";
-          html.style.margin = "0px";
-          html.style.padding = "0px";
-          html.style.width = "100%";
-        }
-        var links = document.getElementsByTagName('a');
-        for (var i = 0; i < links.length; i++) {
-          var href = links[i].getAttribute('href') || '';
-          if (href.startsWith('mailto:')) {
-            links[i].style.backgroundColor = "transparent";
-            links[i].style.display = "inline";
-            links[i].style.padding = "0px";
-            links[i].style.margin = "0px";
-            links[i].style.color = "#0099FF";
-            links[i].style.textDecoration = "underline";
-            links[i].style.fontWeight = "600";
-            links[i].style.borderRadius = "0px";
-          } else {
-            links[i].style.display = "block";
-            links[i].style.width = "100%";
-            links[i].style.boxSizing = "border-box";
-            links[i].style.backgroundColor = "${NEW_COLOR.BG_ORANGE}";
-            links[i].style.color = "${NEW_COLOR.TEXT_ALWAYS_WHITE}";
-            links[i].style.textDecoration = "none";
-            links[i].style.textAlign = "center";
-            links[i].style.padding = "20px";
-            links[i].style.borderRadius = "999px";
-            links[i].style.border = "none";
-            links[i].style.outline = "none";
-            links[i].style.fontWeight = "700";
-            links[i].style.fontFamily = "PlusJakartaSans-SemiBold, sans-serif";
-            links[i].style.margin = "24px auto 0";
-            links[i].style.maxWidth = "100%";
-            links[i].style.letterSpacing = "0.5px";
-          }
-        }
-      }
-      function postHeight() {
-        if (!document.body || !document.documentElement) {
-          return;
-        }
-        var height = Math.max(
-          document.body.scrollHeight,
-          document.documentElement.scrollHeight
-        );
-        window.ReactNativeWebView.postMessage(height.toString());
-      }
-      applyStyles();
-      setTimeout(function() {
-        applyStyles();
-        postHeight();
-      }, 100);
-    })();
-    true;
-  `;
+
   useEffect(() => {
     handleGetCustomerNotes();
   }, [isFocused]);
@@ -134,12 +66,7 @@ const UnderReview = () => {
       setIsLoading(false);
     }
   };
-  const handleWebViewMessage = (event: any) => {
-    const height = Number(event?.nativeEvent?.data);
-    if (!Number.isNaN(height) && height > 0) {
-      setWebViewHeight(height);
-    }
-  };
+
   const handleLinkPress = (href: any) => {
     if (href.startsWith("mailto:")) {
       Linking.openURL(href).catch((err) =>
@@ -154,11 +81,7 @@ const UnderReview = () => {
   const handleCloseError = () => {
     setErrorMsg(null);
   };
-  const handleRejectedNav = () => {
-    navigation.navigate("addKycInfomation", {
-      screenName: "resumit",
-    });
-  };
+
   const handleRefresh = async () => {
     setSaveLoading(true);
     await getMemDetails({});
@@ -170,9 +93,11 @@ const UnderReview = () => {
     await logout();
     setIsLogout(false);
   };
+
+
   return (
     <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <Container style={commonStyles.container}>
           <View
             style={[
@@ -204,7 +129,7 @@ const UnderReview = () => {
 
           {!isLoading && htmlContent?.message && (
             <View style={[commonStyles.flex1, styles.webViewContainer]}>
-              <WebView
+              {/* <WebView
                 originWhitelist={["*"]}
                 source={{ html: htmlContent?.message }}
                 style={{
@@ -226,6 +151,37 @@ const UnderReview = () => {
                   }
                   return true;
                 }}
+              /> */}
+              <RenderHTML
+                contentWidth={WINDOW_WIDTH}
+                source={{ html: htmlContent?.message }}
+                tagsStyles={{
+                  body: { color: NEW_COLOR.TEXT_BLACK },
+
+                }}
+                classesStyles={{
+                  "email-link": {
+                    color: "#0099FF",
+                    textDecorationLine: "none",
+                  },
+                  "cta-btn": {
+                    backgroundColor: NEW_COLOR.BG_ORANGE,
+                    paddingVertical: 16,
+                    borderRadius: 999,
+                    textAlign: "center",
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 18,
+                    marginTop: 24,
+                  },
+                }}
+                renderersProps={{
+                  a: {
+                    onPress: (event, href) => handleLinkPress(href),
+                  },
+                }}
+
+                enableExperimentalMarginCollapsing={true}
               />
             </View>
           )}
@@ -263,8 +219,7 @@ const UnderReview = () => {
                   <TouchableOpacity
                     onPress={() =>
                       Linking.openURL(
-                        `mailto:${
-                          userInfo?.supportEmail || "support@exchangapay.com"
+                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
                         }`
                       )
                     }
@@ -283,7 +238,7 @@ const UnderReview = () => {
                 </View>
               </Container>
             )}
-          <View style={[commonStyles.mb24]} />
+          {/* <View style={[commonStyles.mb24]} /> */}
           {!isLoading &&
             userInfo.customerState?.toLowerCase() === "registered" &&
             !htmlContent?.message &&
@@ -314,8 +269,7 @@ const UnderReview = () => {
                   <TouchableOpacity
                     onPress={() =>
                       Linking.openURL(
-                        `mailto:${
-                          userInfo?.supportEmail || "support@exchangapay.com"
+                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
                         }`
                       )
                     }
@@ -335,7 +289,7 @@ const UnderReview = () => {
                 <View style={[commonStyles.mb32]} />
               </Container>
             )}
-          <View style={[commonStyles.mb10]} />
+          {/* <View style={[commonStyles.mb10]} /> */}
           {!isLoading && !isLogout && (
             <DefaultButton
               title={CONSTANTS?.REFRESH}

@@ -323,33 +323,38 @@ const PhoneOtpVerification = () => {
                                                 text={REGISTRATION_CONSTATNTS.PHONE_NUMBER}
                                                 Children={<LabelComponent style={[commonStyles.textError]} text={REGISTRATION_CONSTATNTS.REQUIRED_STAR} />}
                                             />
-                                            <View style={[commonStyles.flex1, commonStyles.relative, commonStyles.dflex, commonStyles.gap8, commonStyles.mb36]}>
-                                                <PhoneCodePicker
-                                                    containerStyle={{
-                                                        backgroundColor: loaders.isPhoneNoEditable
-                                                            ? NEW_COLOR.SCREENBG_WHITE
-                                                            : NEW_COLOR.DISABLED_INPUTBG,
-                                                    }}
-                                                    customBind={['name', '(', 'code', ')']}
-                                                    data={countryCodelist}
-                                                    value={values.phoneCode}
-                                                    modalTitle={"Pick Your Country Code"}
-                                                    placeholder="Select"
-                                                    onChange={(item) => onChangePhoneCode(setFieldValue, item.code)}
-                                                    disable={!loaders.isPhoneNoEditable}
-                                                />
-                                                <Field
-                                                    name="phoneNumber"
-                                                    label={''}
-                                                    customContainerStyle={{ flex: 1 }}
-                                                    placeholder={REGISTRATION_CONSTATNTS.ENTER_PHONE_NUMBER}
-                                                    component={InputDefault}
-                                                    keyboardType="phone-pad"
-                                                    onChangeText={(value: any) => handleChangePhone(value, setFieldValue)}
-                                                    editable={loaders.isPhoneNoEditable}
-                                                    maxLength={15}
+                                            <View style={[commonStyles.dflex, commonStyles.gap8, commonStyles.mb36]}>
+                                                <View>
 
-                                                />
+                                                    <PhoneCodePicker
+                                                        containerStyle={{
+                                                            backgroundColor: loaders.isPhoneNoEditable
+                                                                ? NEW_COLOR.SCREENBG_WHITE
+                                                                : NEW_COLOR.DISABLED_INPUTBG,
+                                                        }}
+                                                        customBind={['name', '(', 'code', ')']}
+                                                        data={countryCodelist}
+                                                        value={values.phoneCode}
+                                                        modalTitle={"Pick Your Country Code"}
+                                                        placeholder="Select"
+                                                        onChange={(item) => onChangePhoneCode(setFieldValue, item.code)}
+                                                        disable={!loaders.isPhoneNoEditable}
+                                                    />
+                                                </View>
+                                                <View style={[commonStyles.flex1]}>
+                                                    <Field
+                                                        name="phoneNumber"
+                                                        label={''}
+
+                                                        placeholder={REGISTRATION_CONSTATNTS.ENTER_PHONE_NUMBER}
+                                                        component={InputDefault}
+                                                        keyboardType="phone-pad"
+                                                        onChangeText={(value: any) => handleChangePhone(value, setFieldValue)}
+                                                        editable={loaders.isPhoneNoEditable}
+                                                        maxLength={15}
+
+                                                    />
+                                                </View>
                                             </View>
                                         </>
                                     )}

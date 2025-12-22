@@ -67,11 +67,11 @@ const Feedback = (props: any) => {
         setCountryCodelist(response?.data?.PhoneCodes);
         setErrorMsg("");
       } else {
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollTo(0, 0, true);
         setErrorMsg(isErrorDispaly(response));
       }
     } catch (error) {
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       setErrorMsg(isErrorDispaly(error));
     }
   };
@@ -94,7 +94,7 @@ const Feedback = (props: any) => {
 
       setBtnLoading(false);
     } catch (error) {
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollTo(0, 0, true);
       setErrorMsg(isErrorDispaly(error));
 
       setBtnLoading(false);

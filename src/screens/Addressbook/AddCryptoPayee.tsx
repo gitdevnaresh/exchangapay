@@ -189,11 +189,11 @@ const AddEditPayeeScreen = (props: any) => {
         });
         setErrormsg("");
       } else {
-        ref?.current?.scrollTo({ y: 0, animated: true });
+        ref?.current?.scrollToPosition(0, 0, true);
         setErrormsg(isErrorDispaly(res));
       }
     } catch (error) {
-      ref?.current?.scrollTo({ y: 0, animated: true });
+      ref?.current?.scrollToPosition(0, 0, true);
       setErrormsg(isErrorDispaly(error));
     }
     setBtnLoading(false);
