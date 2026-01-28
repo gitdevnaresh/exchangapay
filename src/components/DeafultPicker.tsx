@@ -73,12 +73,12 @@ const DeafultList: React.FC<DeafultListProps> = ({ changeModalVisible, data = []
 
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <KeyboardAvoidingView 
-                style={commonStyles.flex1} 
+            <KeyboardAvoidingView
+                style={commonStyles.flex1}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
-                <ScrollView 
+                <ScrollView
                     contentContainerStyle={{ flexGrow: 1 }}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
@@ -235,23 +235,4 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48
     }
-});ginTop: 80
-    }, userBg: {
-        backgroundColor: NEW_COLOR.USER_ICON_BG,
-        height: s(42),
-        width: s(42),
-        borderRadius: s(42) / 2,
-        justifyContent: "center",
-        alignItems: "center",
-    }, addIconContainer: {
-        backgroundColor: NEW_COLOR.BG_BLACK,
-        borderRadius: s(108),
-        height: s(48),
-        width: s(48),
-        marginLeft: s(12),
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: NEW_COLOR.SEARCH_BORDER,
-    },
 });
