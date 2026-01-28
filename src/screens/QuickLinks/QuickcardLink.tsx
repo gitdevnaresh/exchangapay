@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useRef, useState } from 'react';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import AntDesign from "react-native-vector-icons/AntDesign";

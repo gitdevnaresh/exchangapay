@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, ScrollView, BackHandler, Image } from 'react-native';
+import { View, TouchableOpacity, ScrollView, BackHandler, Image } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { isErrorDispaly } from '../../utils/helpers';
 import { Container } from '../../components';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';

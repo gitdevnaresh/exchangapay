@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Image, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container, Text } from "../../components";
 import DefaultButton from '../../components/DefaultButton';
 import { useNavigation } from '@react-navigation/native';

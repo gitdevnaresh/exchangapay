@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, ImageBackground, BackHandler } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, TextInput, ImageBackground, BackHandler } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container, Content } from '../../components';
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';

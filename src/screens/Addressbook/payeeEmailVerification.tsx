@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, TouchableOpacity, View, BackHandler, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { ScrollView, TouchableOpacity, View, BackHandler, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import ErrorComponent from '../../components/Error';
 import { commonStyles } from '../../components/CommonStyles';

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, Platform, BackHandler, Dimensions } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, Platform, BackHandler, Dimensions } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from '../../../components';
 import { text } from '../../../constants/theme/mixins';
 import { isErrorDispaly } from '../../../utils/helpers';

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react"
 import ProfileService from "../../../services/profile"
 import { formatDateLocal, isErrorDispaly } from "../../../utils/helpers";
 import { ApiResponse } from "apisauce";
-import { View, FlatList, BackHandler, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl } from "react-native";
+import { View, FlatList, BackHandler, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from "../../../components";
 import PageHeader from "../../../components/pageHeader/pageHeader";
 import ErrorComponent from "../../../components/Error";

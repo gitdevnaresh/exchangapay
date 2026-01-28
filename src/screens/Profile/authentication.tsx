@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, BackHandler, Modal } from 'react-native';
+import { View, ScrollView, TouchableOpacity, BackHandler, Modal } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import Feather from "react-native-vector-icons/Feather";
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';

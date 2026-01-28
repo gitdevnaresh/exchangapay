@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
-import { StyleSheet, TouchableOpacity, View, Image, ScrollView, SafeAreaView, Switch, BackHandler, Dimensions } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Image, ScrollView, Switch, BackHandler, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Checkbox, Container } from '../../components';
 import DefaultButton from "../../components/DefaultButton";
 import AntDesign from "react-native-vector-icons/AntDesign";

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, ScrollView, Image, StyleSheet, SafeAreaView, TextInput } from 'react-native';
+import { View, FlatList, TouchableOpacity, ScrollView, Image, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NEW_COLOR } from '../constants/theme/variables';
 import { ms, s } from '../constants/theme/scale';
 import Icons from '../assets/icons';
@@ -72,92 +73,104 @@ const DeafultList: React.FC<DeafultListProps> = ({ changeModalVisible, data = []
 
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView>
-                <View style={[commonStyles.flex1, commonStyles.p24]}>
-                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
-                        <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
-                            <AntDesign
-                                name="arrowleft"
-                                size={22}
-                                color={NEW_COLOR.TEXT_BLACK}
-                                style={{ marginTop: 3 }}
-                            />
-                        </TouchableOpacity>
-                        <ParagraphComponent
-                            style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]}
-                            text={modalTitle ? modalTitle : "Select"}
-                        />
-                    </View>
-                    <View style={isPayeeAdd && [commonStyles.dflex, commonStyles.alignCenter]}>
-                        <View style={styles.searchContainer}>
-                            <TextInput
-                                style={styles.searchInput}
-                                onChangeText={handleChangeSearch}
-                                placeholder="Search"
-                                placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
-                            />
-                            <TouchableOpacity onPress={() => handleChangeSearch(searchKey)} style={styles.searchIconBg} activeOpacity={0.8}>
-                                <AntDesign name="search1" size={16} style={styles.searchIcon} />
+            <KeyboardAvoidingView 
+                style={commonStyles.flex1} 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
+                <ScrollView 
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={[commonStyles.flex1, commonStyles.p24]}>
+                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
+                            <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
+                                <AntDesign
+                                    name="arrowleft"
+                                    size={22}
+                                    color={NEW_COLOR.TEXT_BLACK}
+                                    style={{ marginTop: 3 }}
+                                />
                             </TouchableOpacity>
+                            <ParagraphComponent
+                                style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]}
+                                text={modalTitle ? modalTitle : "Select"}
+                            />
                         </View>
-                        {isPayeeAdd &&
-                            <View >
-                                <TouchableOpacity style={styles.addIconContainer} onPress={onPressAddPayee}>
-                                    <AntDesign name="plus" size={s(24)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
+                        <View style={isPayeeAdd && [commonStyles.dflex, commonStyles.alignCenter]}>
+                            <View style={styles.searchContainer}>
+                                <TextInput
+                                    style={styles.searchInput}
+                                    onChangeText={handleChangeSearch}
+                                    placeholder="Search"
+                                    placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
+                                />
+                                <TouchableOpacity onPress={() => handleChangeSearch(searchKey)} style={styles.searchIconBg} activeOpacity={0.8}>
+                                    <AntDesign name="search1" size={16} style={styles.searchIcon} />
                                 </TouchableOpacity>
+                            </View>
+                            {isPayeeAdd &&
+                                <View >
+                                    <TouchableOpacity style={styles.addIconContainer} onPress={onPressAddPayee}>
+                                        <AntDesign name="plus" size={s(24)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
+                                    </TouchableOpacity>
 
-                            </View>}
-                    </View>
-                    <View style={commonStyles.mb16} />
-                    <View>
-                        <FlatList
-                            contentContainerStyle={{ gap: 10 }}
-                            data={listData}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => onPressItem(item)}>
-                                    <View style={[commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
+                                </View>}
+                        </View>
+                        <View style={commonStyles.mb16} />
+                        <View style={{ flex: 1 }}>
+                            <FlatList
+                                contentContainerStyle={{ gap: 10, paddingBottom: 100 }}
+                                data={listData}
+                                keyboardShouldPersistTaps="handled"
+                                showsVerticalScrollIndicator={false}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity onPress={() => onPressItem(item)}>
+                                        <View style={[commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
 
-                                        <View style={styles.userBg}>
-                                            <AntDesign name="user" size={s(24)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: s(2) }} />
+                                            <View style={styles.userBg}>
+                                                <AntDesign name="user" size={s(24)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: s(2) }} />
+                                            </View>
+                                            <View>
+                                                <ParagraphComponent
+                                                    text={decryptAES(item.favoriteName)}
+                                                    style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1 }]}
+                                                />
+                                                <ParagraphComponent
+                                                    text={`${item.currency || ""} - ${item.network || ""}`}
+                                                    style={[commonStyles.fs12, commonStyles.textGrey, { marginTop: s(4) }]}
+                                                    numberOfLines={1}
+                                                />
+
+                                                <ParagraphComponent
+                                                    text={`${item.displayName?.length > 20
+                                                        ? `${item.displayName.slice(0, 8)}...${item.displayName.slice(-8)}`
+                                                        : item.displayName || '--'
+
+                                                        }`}
+                                                    style={[commonStyles.textGrey, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1, }]} numberOfLines={1}
+                                                />
+                                            </View>
+
                                         </View>
-                                        <View>
-                                            <ParagraphComponent
-                                                text={decryptAES(item.favoriteName)}
-                                                style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1 }]}
-                                            />
-                                            <ParagraphComponent
-                                                text={`${item.currency || ""} - ${item.network || ""}`}
-                                                style={[commonStyles.fs12, commonStyles.textGrey, { marginTop: s(4) }]}
-                                                numberOfLines={1}
-                                            />
-
-                                            <ParagraphComponent
-                                                text={`${item.displayName?.length > 20
-                                                    ? `${item.displayName.slice(0, 8)}...${item.displayName.slice(-8)}`
-                                                    : item.displayName || '--'
-
-                                                    }`}
-                                                style={[commonStyles.textGrey, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1, }]} numberOfLines={1}
-                                            />
-                                        </View>
-
+                                    </TouchableOpacity>
+                                )}
+                                keyExtractor={(item, index) => index.toString()}
+                                ListEmptyComponent={() => (
+                                    <View style={[styles.viewNodata, styles.containerHeight]}>
+                                        <Image source={Icons.emptyList} style={{ width: 44, height: 44 }} />
+                                        <ParagraphComponent
+                                            text="No data"
+                                            style={[styles.txtNodata, commonStyles.textBlack, commonStyles.fs16]}
+                                        />
                                     </View>
-                                </TouchableOpacity>
-                            )}
-                            keyExtractor={(item, index) => index.toString()}
-                            ListEmptyComponent={() => (
-                                <View style={[styles.viewNodata, styles.containerHeight]}>
-                                    <Image source={Icons.emptyList} style={{ width: 44, height: 44 }} />
-                                    <ParagraphComponent
-                                        text="No data"
-                                        style={[styles.txtNodata, commonStyles.textBlack, commonStyles.fs16]}
-                                    />
-                                </View>
-                            )}
-                        />
+                                )}
+                            />
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -210,7 +223,19 @@ const styles = StyleSheet.create({
     containerHeight: {
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 80
+        marginTop: 50
+    },
+    addIconContainer: {
+        backgroundColor: NEW_COLOR.PRIMARY,
+        borderRadius: 8,
+        padding: 12,
+        marginLeft: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 48,
+        height: 48
+    }
+});ginTop: 80
     }, userBg: {
         backgroundColor: NEW_COLOR.USER_ICON_BG,
         height: s(42),

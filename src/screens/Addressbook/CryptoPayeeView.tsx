@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { SafeAreaView, ScrollView, View, TouchableOpacity, ImageBackground, Switch, Image, Dimensions, Alert, Share, BackHandler } from 'react-native';
+import { ScrollView, View, TouchableOpacity, ImageBackground, Switch, Image, Dimensions, Alert, Share, BackHandler } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
 import QRCode from 'react-native-qrcode-svg';

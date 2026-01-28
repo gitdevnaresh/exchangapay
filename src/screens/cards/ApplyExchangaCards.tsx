@@ -5,15 +5,11 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  SafeAreaView,
   BackHandler,
-  KeyboardAvoidingView,
   Dimensions,
-  Keyboard,
-  KeyboardEvent,
-  Platform,
+
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -536,11 +532,6 @@ const ApplyExchangaCard = (props: any) => {
   };
   return (
     <SafeAreaView style={[commonStyles.screenBg, { flex: 1 }]}>
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? ms(24) : ms(-55)}
-        style={[commonStyles.screenBg, commonStyles.flex1]}
-      > */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         ref={ref}

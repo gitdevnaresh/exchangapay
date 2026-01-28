@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, BackHandler } from 'react-native';
+import { View, ScrollView, BackHandler } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";

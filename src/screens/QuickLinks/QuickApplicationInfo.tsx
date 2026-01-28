@@ -1,4 +1,5 @@
-import { BackHandler, Dimensions, TouchableOpacity, View, SafeAreaView, ScrollView } from 'react-native'
+import { BackHandler, Dimensions, TouchableOpacity, View, ScrollView } from 'react-native'
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from 'react'
 import { useIsFocused } from '@react-navigation/native';
 import { ExchangeCardViewLoader } from '../cards/CardsSkeleton_views';

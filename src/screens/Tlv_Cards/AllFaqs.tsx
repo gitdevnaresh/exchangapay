@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, ScrollView, LayoutAnimation } from 'react-native';
+import { View, TouchableOpacity, ScrollView, LayoutAnimation } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import AntDesign from "react-native-vector-icons/AntDesign";

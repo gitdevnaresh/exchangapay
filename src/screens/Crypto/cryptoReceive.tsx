@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, Alert, ImageBackground, BackHandler, Dimensions } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, Alert, ImageBackground, BackHandler, Dimensions } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import CopyCard from '../../components/CopyCard';
 import QRCode from 'react-native-qrcode-svg';

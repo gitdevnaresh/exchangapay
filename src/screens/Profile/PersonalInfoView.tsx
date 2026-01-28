@@ -1,4 +1,5 @@
-import { BackHandler, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { BackHandler, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useState } from 'react'
 import { commonStyles } from '../../components/CommonStyles'
 import { Container } from '../../components'

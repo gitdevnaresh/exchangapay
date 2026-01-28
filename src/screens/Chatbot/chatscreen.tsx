@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Keychain from 'react-native-keychain';

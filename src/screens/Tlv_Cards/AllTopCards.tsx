@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, Image, ScrollView, BackHandler } from 'react-native';
+import { View, TouchableOpacity, Image, ScrollView, BackHandler } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getAllTopCards } from '../../store/card/thunk';
 import { isErrorDispaly } from '../../utils/helpers';
 import { Container } from '../../components';

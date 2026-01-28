@@ -69,7 +69,7 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   useEffect(() => {
     if (isFocused) {
-      fetchAlerts();
+      // fetchAlerts();
       getSeccurityInfo();
       getCurrencyData();
       fetchCrypTototalBal(false);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NEW_COLOR } from '../constants/theme/variables';
 import { ms, s } from '../constants/theme/scale';
 import { TextInput } from 'react-native-gesture-handler';

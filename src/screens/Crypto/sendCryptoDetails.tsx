@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Modal, Platform, Image, BackHandler, ActivityIndicator, Alert, ViewComponent } from "react-native";
+import { View, ScrollView, TouchableOpacity, Modal, Platform, Image, BackHandler, ActivityIndicator, Alert, ViewComponent } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import { formatCurrency, isErrorDispaly, validateCryptoAddress } from "../../utils/helpers";
 import { ms, s, screenHeight } from "../../constants/theme/scale";

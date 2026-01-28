@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
-import { View, ScrollView, TouchableOpacity, Clipboard, Alert, ImageBackground, SafeAreaView, BackHandler, Linking } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Clipboard, Alert, ImageBackground, BackHandler, Linking } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from 'react-native';
 import DefaultButton from '../../components/DefaultButton';
 import AntDesign from "react-native-vector-icons/AntDesign";

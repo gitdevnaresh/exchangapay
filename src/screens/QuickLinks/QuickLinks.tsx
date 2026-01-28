@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import React from 'react';
 import RenderHtml from 'react-native-render-html';
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';

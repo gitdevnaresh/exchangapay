@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container, } from '../../components';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, BackHandler, Linking } from 'react-native';
+import { View, ScrollView, TouchableOpacity, BackHandler, Linking } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/variables';
 import { commonStyles } from '../../components/CommonStyles';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';

@@ -1,7 +1,8 @@
 import SNSMobileSDK from '@sumsub/react-native-mobilesdk-module';
 import OnBoardingService from '../services/onBoardingservice';
 import { useDispatch, useSelector } from 'react-redux';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { CommonActions, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useEffect, useRef, useState } from 'react';
 import Container from './Container';

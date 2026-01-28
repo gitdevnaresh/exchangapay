@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, Image, ImageBackground, Platform, Dimensions } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Image, ImageBackground, Platform, Dimensions } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container, Text } from '../../components';
 import { NEW_COLOR } from '../../constants/theme/variables';

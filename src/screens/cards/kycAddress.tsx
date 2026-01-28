@@ -204,7 +204,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
             commonStyles.fw700,
           ]}
         />
-        <TouchableOpacity onPress={togglePopup}>
+        <TouchableOpacity onPress={() => togglePopup()}>
           <AntDesign
             name={PROFILE_CONSTANTS.CLOSE}
             size={s(22)}
