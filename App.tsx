@@ -1,230 +1,52 @@
 import React, { useEffect } from "react";
 import {
-  LogBox,
-  PermissionsAndroid,
-  Platform,
   StatusBar,
-  View,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-import { Auth0Provider } from "react-native-auth0";
 import AppContainer from "./src/navigation/AppContainer";
-import * as eva from "@eva-design/eva";
-import { default as darkTheme } from "./src/constants/theme/dark.json";
-import { default as lightTheme } from "./src/constants/theme/light.json";
-import { default as customTheme } from "./src/constants/theme/appTheme.json";
 import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
 import { default as customMapping } from "./src/constants/theme/mapping.json";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import AssetsIconsPack from "./src/assets/AssetsIconsPack";
-import DeviceInfo from "react-native-device-info";
-import store, { persistor } from "./src/store";
-import OnBoardingService from "./src/services/onBoardingservice";
-import crashlytics from "@react-native-firebase/crashlytics";
-import messaging from "@react-native-firebase/messaging";
-import ForceUpdate from "./src/screens/UpdateScreens/ForceUpdate";
-import { fcmNotification } from "./src/utils/FCMNotification";
-import { getAllEnvData } from "./Environment";
-import { initializeCrashlytics } from "./src/utils/ApiService";
-import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 import RNBootSplash from "react-native-bootsplash";
+import { store } from "./src/redux/store";
 
-import * as Sentry from "@sentry/react-native";
-import { version as appVersion } from './package.json';
-
-const { oAuthConfig } = getAllEnvData();
-const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getBuildNumber()}`;
-if (oAuthConfig.sentryLoggs) {
-  Sentry.init({
-    dsn: oAuthConfig.sentryDsn,
-
-    // Adds more context data to events (IP address, cookies, user, etc.)
-    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-    sendDefaultPii: oAuthConfig.sentryLoggs,
-    environment: oAuthConfig.sentryEnvornment,
-
-    // Enable Logs
-    enableLogs: oAuthConfig.sentryLoggs,
-    release: releaseName,
-    // Configure Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1,
-    integrations: [
-      Sentry.mobileReplayIntegration(),
-      Sentry.feedbackIntegration(),
-    ],
-
-    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-    // spotlight: __DEV__,
-  });
-}
-// Safety check
-if (!store) {
-  console.error("Store is undefined! This will cause the app to crash.");
-}
-
-export default Sentry.wrap(function App() {
-  const [theme, setTheme] = React.useState<"light" | "dark">("dark");
-  const [isUpdate, setIsUpdate] = React.useState<boolean>(false);
-  const [isForceUpdate, setIsForceUpdate] = React.useState<boolean>(false);
-  const [versionInfo, setVersionInfo] = React.useState<any>();
-
-  useTokenRefresh();
-  React.useEffect(() => {
-    try {
-      crashlytics().log("App mounted.");
-      AsyncStorage.getItem("theme")
-        .then((value) => {
-          if (value === "light" || value === "dark") setTheme(value);
-        })
-        .catch((error) => {
-          console.log("Error getting theme:", error);
-        });
-      initializeCrashlytics();
-    } catch (error) {
-      console.log("Error in app initialization:", error);
-    }
-  }, []);
+export default function App() {
 
   useEffect(() => {
-    checkVersionUpdate();
-    fcmNotification.initiate(onNotificationAction);
-    requestUserPermission();
     RNBootSplash.hide({ fade: true });
   }, []);
 
-  const requestUserPermission = async () => {
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-    );
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-    }
-  };
-
-  const onNotificationAction = (notificationData: any) => { };
-  useEffect(() => {
-    checkAppVersion();
-  }, [versionInfo]);
-  const checkVersionUpdate = async () => {
-    try {
-      const res: any = await OnBoardingService.neoMobileVersioncheck();
-      if (res.status === 200 && res.data?.jsonVersion) {
-        if (typeof res.data.jsonVersion === "string") {
-          setVersionInfo(JSON.parse(res.data.jsonVersion));
-        } else if (typeof res.data.jsonVersion == "object") {
-          setVersionInfo(res.data.jsonVersion);
-        }
-      }
-    } catch (err) { }
-  };
-  const checkAppVersion = async () => {
-    try {
-      const versionName = DeviceInfo.getBuildNumber();
-      const applicationId = DeviceInfo.getBundleId();
-      let versionDetailsInfo = versionInfo;
-      if (versionDetailsInfo?.Info && versionDetailsInfo?.Info?.length > 0) {
-        const filterApplicant = versionDetailsInfo.Info?.filter(
-          (applicant: any) => applicant.applicationId === applicationId
-        );
-        if (filterApplicant && filterApplicant.length > 0) {
-          versionDetailsInfo = filterApplicant[0].applicationInfo;
-        }
-      }
-      if (
-        versionDetailsInfo &&
-        versionDetailsInfo[
-        Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion"
-        ] > versionName
-      ) {
-        setIsForceUpdate(
-          versionDetailsInfo[
-          Platform.OS === "ios"
-            ? "iosForceUpdateVersion"
-            : "androidForceUpdateVersion"
-          ] > versionName
-        );
-        setIsUpdate(true);
-      }
-    } catch (error) { }
-  };
-  const getoAuthConfig = (path: string) => {
-    const envList = getAllEnvData("tst");
-    return (envList.oAuthConfig as any)[path];
-  };
-  // Don't render if store is not available
-  if (!store) {
-    console.error("Cannot render app: store is undefined");
-    return null;
-  }
-
-  // Loading component for PersistGate
-  const LoadingComponent = () => (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#000",
-      }}
-    >
-      <ActivityIndicator size="large" color="#fff" />
-    </View>
-  );
 
   return (
-    <Auth0Provider
-      domain={getoAuthConfig("issuer")}
-      clientId={getoAuthConfig("clientId")}
-    >
-      <Provider store={store}>
-        <PersistGate loading={<LoadingComponent />} persistor={persistor}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
+
+    <Provider store={store}>
+      {/* <PersistGate loading={<LoadingComponent />} persistor={persistor}> */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <IconRegistry icons={[EvaIconsPack]} />
+          <ApplicationProvider
+            customMapping={customMapping}
+          >
             <SafeAreaProvider>
-              <IconRegistry icons={[EvaIconsPack, AssetsIconsPack]} />
-              <ApplicationProvider
-                {...eva}
-                theme={
-                  theme === "light"
-                    ? { ...eva.light, ...customTheme, ...lightTheme }
-                    : { ...eva.dark, ...customTheme, ...darkTheme }
+              <StatusBar
+                barStyle={
+                  // theme === "dark" ? "light-content" : "dark-content"
+                  // "dark-content"
+                  "light-content"
                 }
-                /* @ts-ignore */
-                customMapping={customMapping}
-              >
-                <SafeAreaProvider>
-                  <StatusBar
-                    barStyle={
-                      // theme === "dark" ? "light-content" : "dark-content"
-                      // "dark-content"
-                      "light-content"
-                    }
-                    translucent={false}
-                    backgroundColor={"#000"}
-                  />
-                  <AppContainer />
-                  {isUpdate && (
-                    <ForceUpdate
-                      show={isUpdate}
-                      forceUpdate={isForceUpdate}
-                      updateLatter={() => setIsUpdate(false)}
-                    />
-                  )}
-                </SafeAreaProvider>
-              </ApplicationProvider>
+                translucent={false}
+                backgroundColor={"#000"}
+              />
+              <AppContainer />
+
             </SafeAreaProvider>
-          </GestureHandlerRootView>
-        </PersistGate>
-      </Provider>
-    </Auth0Provider>
+          </ApplicationProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+      {/* </PersistGate> */}
+    </Provider>
+
   );
-});
+};
