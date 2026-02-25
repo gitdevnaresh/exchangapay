@@ -12,7 +12,7 @@ export const RequestStatus = {
   fulfilled: 'fulfilled',
   rejected: 'rejected',
 };
-export const CurrencySymbols = {
+export const CurrencySymbols:any = {
   USD: '$', // US Dollar
   EUR: '€', // Euro
   CRC: '₡', // Costa Rican Colón

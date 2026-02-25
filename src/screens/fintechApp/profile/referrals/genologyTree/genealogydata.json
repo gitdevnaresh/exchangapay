@@ -1,0 +1,330 @@
+{
+    "id": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+    "image": null,
+    "userName": "MONEY741",
+    "name": "Swamy botla",
+    "createdDate": "2025-04-25T08:59:03.3844701",
+    "parentId": null,
+    "membersCount": 13,
+    "memberShipType": "Free",
+    "genealogies": [
+      {
+        "id": "3af0e841-ffd9-44eb-98dd-14d994d46ecf",
+        "image": null,
+        "userName": "ajaraiah",
+        "name": "Ajay midde",
+        "createdDate": "2025-06-06T11:54:12.5782196",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 2,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+            "image": "https://samaratstoragespace.blob.core.windows.net/prdimages/0bcd1752-f72f-4e7d-911c-4741991d67db.jpeg",
+            "userName": "Paluvadha",
+            "name": "Paluvadhan Gondipalli",
+            "createdDate": "2025-05-05T06:35:25.7188416",
+            "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+            "membersCount": 1,
+            "memberShipType": "Free",
+            "genealogies": [
+              {
+                "id": "2d619e70-defa-48e1-b88c-6cbff58a1f2c",
+                "image": null,
+                "userName": "Vinaykumar098",
+                "name": "vinay Kumar",
+                "createdDate": "2025-05-05T06:56:45.2539323",
+                "parentId": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+                "membersCount": 3,
+                "memberShipType": "Free",
+                "genealogies": [
+                          {
+                            "id": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+                            "image": null,
+                            "userName": "Naseershaik",
+                            "name": "Shaik Mohammad Naseer",
+                            "createdDate": "2025-04-30T12:52:00.1232653",
+                            "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+                            "membersCount": 3,
+                            "memberShipType": "Free",
+                            "genealogies": [
+                              {
+                                "id": "1366392d-93cc-472b-b09b-30eb6ba2e07e",
+                                "image": null,
+                                "userName": "Ahmedshaik",
+                                "name": "shaik Ahmed basha",
+                                "createdDate": "2025-05-01T04:18:49.0393613",
+                                "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+                                "membersCount": 0,
+                                "memberShipType": "Free",
+                                "genealogies": []
+                              },
+                              {
+                                "id": "d3845a5b-84da-488f-857a-6c43c69fee71",
+                                "image": null,
+                                "userName": "Mansur",
+                                "name": "mansur ahammad",
+                                "createdDate": "2025-04-30T13:13:49.4754314",
+                                "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+                                "membersCount": 0,
+                                "memberShipType": "Free",
+                                "genealogies": []
+                              },
+                              {
+                                "id": "56314169-e2d7-4436-9169-9639f35ba2c6",
+                                "image": null,
+                                "userName": "Akram",
+                                "name": "Akram shaik",
+                                "createdDate": "2025-05-17T05:52:35.1295351",
+                                "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+                                "membersCount": 2,
+                                "memberShipType": "Free",
+                                "genealogies": []
+                              }
+                            ]
+                          }
+                        ]
+              }
+            ]
+          },
+          {
+            "id": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+            "image": "https://samaratstoragespace.blob.core.windows.net/prdimages/0bcd1752-f72f-4e7d-911c-4741991d67db.jpeg",
+            "userName": "Paluvadha",
+            "name": "Paluvadhan Gondipalli",
+            "createdDate": "2025-05-05T06:35:25.7188416",
+            "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+            "membersCount": 1,
+            "memberShipType": "Free",
+            "genealogies": [
+              {
+                "id": "2d619e70-defa-48e1-b88c-6cbff58a1f2c",
+                "image": null,
+                "userName": "Vinaykumar098",
+                "name": "vinay Kumar",
+                "createdDate": "2025-05-05T06:56:45.2539323",
+                "parentId": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+                "membersCount": 0,
+                "memberShipType": "Free",
+                "genealogies": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "705f760a-72b6-44dc-8a25-165645220dd4",
+        "image": "https://samaratstoragespace.blob.core.windows.net/prdimages/6c95bc04-c6ee-46dc-8c43-46192ef34bfc.jpeg",
+        "userName": "Sankar",
+        "name": "SANKAR MUTALA SANKAR",
+        "createdDate": "2025-05-17T04:49:43.1265548",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 1,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "d115f80a-f020-4515-b541-32f82b730c58",
+            "image": null,
+            "userName": "Dasaratha",
+            "name": "Dasaratha bonala",
+            "createdDate": "2025-05-28T10:23:15.0139636",
+            "parentId": "705f760a-72b6-44dc-8a25-165645220dd4",
+            "membersCount": 0,
+            "memberShipType": "Free",
+            "genealogies": []
+          }
+        ]
+      },
+      {
+        "id": "bf2f0ed3-9b11-42af-8019-1b2228c9b138",
+        "image": null,
+        "userName": "Narasimha",
+        "name": "Narasimhulu Adiandhra",
+        "createdDate": "2025-06-11T13:54:11.4216472",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "dc17aa27-1750-4eac-bac2-251532add50d",
+        "image": null,
+        "userName": "Subbareddy",
+        "name": "C Subbareddy",
+        "createdDate": "2025-05-28T14:20:24.3866751",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 1,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "fa603b28-5a0b-4be6-8572-556fcece1adc",
+            "image": null,
+            "userName": "Venkat",
+            "name": "Venkata Subbaiah Kotte",
+            "createdDate": "2025-06-12T05:48:33.0230481",
+            "parentId": "dc17aa27-1750-4eac-bac2-251532add50d",
+            "membersCount": 2,
+            "memberShipType": "Free",
+            "genealogies": []
+          }
+        ]
+      },
+      {
+        "id": "17c96033-e16b-4e47-9504-44fd42dce1ef",
+        "image": null,
+        "userName": "K.MuraliMohan",
+        "name": "Murali Mohan",
+        "createdDate": "2025-05-19T06:31:40.2324901",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "b49b2fa9-e15e-4e45-b02b-80a13b4e00a4",
+        "image": null,
+        "userName": "Venkysaru",
+        "name": "CHILAKALA VENKATESH",
+        "createdDate": "2025-04-30T13:58:13.9144587",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "6bf399a9-3cda-4da4-8b1d-86437f53c34a",
+        "image": "https://samaratstoragespace.blob.core.windows.net/prdimages/807c2344-a092-471c-b4bc-9e8e2b7ff7a7.jpeg",
+        "userName": "Bhaskar",
+        "name": "Bhaskar babu",
+        "createdDate": "2025-05-01T06:41:16.3976673",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "448fc9b7-2d5d-4c0a-a3e0-ab0a754e4736",
+        "image": null,
+        "userName": "sudharshanreddy",
+        "name": "sudharshanreddy pottenagari",
+        "createdDate": "2025-05-01T13:09:00.362827",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "94c7c9a0-9d07-4ba9-ae77-aecea3d5d0ab",
+        "image": null,
+        "userName": "Narendra",
+        "name": "NARENDRA CHOWDAPPAGARI",
+        "createdDate": "2025-04-29T11:35:24.1725393",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "7c7d853d-2b16-43d0-a537-c11e93e25f1d",
+        "image": null,
+        "userName": "Sairam123",
+        "name": "Sairam123 Sairam123",
+        "createdDate": "2025-06-18T13:16:35.529472",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 0,
+        "memberShipType": "Free",
+        "genealogies": []
+      },
+      {
+        "id": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+        "image": "https://samaratstoragespace.blob.core.windows.net/prdimages/0bcd1752-f72f-4e7d-911c-4741991d67db.jpeg",
+        "userName": "Paluvadha",
+        "name": "Paluvadhan Gondipalli",
+        "createdDate": "2025-05-05T06:35:25.7188416",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 1,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "2d619e70-defa-48e1-b88c-6cbff58a1f2c",
+            "image": null,
+            "userName": "Vinaykumar098",
+            "name": "vinay Kumar",
+            "createdDate": "2025-05-05T06:56:45.2539323",
+            "parentId": "a2971d06-76ba-4eb1-bcc1-c388fc5daa7d",
+            "membersCount": 0,
+            "memberShipType": "Free",
+            "genealogies": []
+          }
+        ]
+      },
+      {
+        "id": "2813497a-4e3b-4b11-903a-c94c0fc05c41",
+        "image": null,
+        "userName": "Emmu",
+        "name": "Ramesh babu Birusu",
+        "createdDate": "2025-05-01T06:06:09.5832341",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 1,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "faa3b37b-d67c-4264-ab25-d546fbad6c7e",
+            "image": null,
+            "userName": "Rajaramesh",
+            "name": "Raja ramesh",
+            "createdDate": "2025-06-24T12:35:17.1780106",
+            "parentId": "2813497a-4e3b-4b11-903a-c94c0fc05c41",
+            "membersCount": 1,
+            "memberShipType": "Free",
+            "genealogies": []
+          }
+        ]
+      },
+      {
+        "id": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+        "image": null,
+        "userName": "Naseershaik",
+        "name": "Shaik Mohammad Naseer",
+        "createdDate": "2025-04-30T12:52:00.1232653",
+        "parentId": "5fdb3611-3bc5-49dc-9537-be939dce2c1b",
+        "membersCount": 3,
+        "memberShipType": "Free",
+        "genealogies": [
+          {
+            "id": "1366392d-93cc-472b-b09b-30eb6ba2e07e",
+            "image": null,
+            "userName": "Ahmedshaik",
+            "name": "shaik Ahmed basha",
+            "createdDate": "2025-05-01T04:18:49.0393613",
+            "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+            "membersCount": 0,
+            "memberShipType": "Free",
+            "genealogies": []
+          },
+          {
+            "id": "d3845a5b-84da-488f-857a-6c43c69fee71",
+            "image": null,
+            "userName": "Mansur",
+            "name": "mansur ahammad",
+            "createdDate": "2025-04-30T13:13:49.4754314",
+            "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+            "membersCount": 0,
+            "memberShipType": "Free",
+            "genealogies": []
+          },
+          {
+            "id": "56314169-e2d7-4436-9169-9639f35ba2c6",
+            "image": null,
+            "userName": "Akram",
+            "name": "Akram shaik",
+            "createdDate": "2025-05-17T05:52:35.1295351",
+            "parentId": "aec3eb3c-0685-40e1-b2b8-d2fd8224f9fe",
+            "membersCount": 2,
+            "memberShipType": "Free",
+            "genealogies": []
+          }
+        ]
+      }
+    ]
+  }
