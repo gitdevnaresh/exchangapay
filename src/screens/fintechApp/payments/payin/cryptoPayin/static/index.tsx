@@ -5,7 +5,6 @@ import { formatCurrency, formatDateTimeForAPI, isErrorDispaly, toLocalStringWith
 import { useSelector } from 'react-redux';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import PaymentService from '../../../../../../apiServices/payments';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
 import { useHardwareBackHandler } from '../../../../../../hooks/backHandleHook';
 import { useThemeColors } from '../../../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../../../components/CommonStyles';
@@ -26,6 +25,7 @@ import { s } from '../../../../../../components/theme/scale';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { logEvent } from '../../../../../../hooks/loggingHook';
 import ParagraphComponent from '../../../../../../components/textComponets/paragraphText/paragraph';
+import { getTabsConfigation } from '../../../../../../../configuration';
 
 const CreateStaticPayment = (props: any) => {
     const [localState, localDispatch] = useReducer(CreatePaymentReducer, formState);

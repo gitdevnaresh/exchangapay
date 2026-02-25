@@ -14,7 +14,7 @@ import ParagraphComponent from "../../../../../components/textComponets/paragrap
 import { s } from "../../../../../constants/styels/scale";
 import PayOutCoins from "../crypto/vaultLists";
 import FiatCoinLIst from "../fiat/fiatCoinsLIst";
-import { getTabsConfigation } from "../../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../../configuration';
 import { useSelector } from "react-redux";
 import CustomTabView, { SceneMap } from "../../../../../components/customTabView/customTabView";
 

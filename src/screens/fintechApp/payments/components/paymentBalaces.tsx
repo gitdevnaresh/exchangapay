@@ -5,7 +5,7 @@ import AutoSlideCarousel from "../../../commonScreens/autoSliderCarousal/content
 import { DashboardGraph, } from "../../../../assets/svg";
 import { s } from "../../../../constants/styels/scale";
 import TextMultiLanguage from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";
-import { isDecimalSmall } from '../../../../../cofiguration';
+import { isDecimalSmall } from '../../../../../configuration';
 
 
 interface CommonStyles {

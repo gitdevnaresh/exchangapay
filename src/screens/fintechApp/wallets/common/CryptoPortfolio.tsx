@@ -8,7 +8,7 @@ import { homeServices } from '../../../../apiServices/homeDashboard';
 import TextMultiLangauge from '../../../../components/textComponets/multiLanguageText/textMultiLangauge';
 
 import SelectVault from '../../../commonScreens/vaults/selectVaults';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../configuration';
 import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../components/view/view';
 import WalletsService from '../../../../apiServices/wallets';

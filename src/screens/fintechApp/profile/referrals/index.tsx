@@ -30,8 +30,8 @@ import ParagraphComponent from "../../../../components/textComponets/paragraphTe
 import { ReferralsBannerImage } from "../../../../assets/svg";
 import LabelComponent from "../../../../components/textComponets/lableComponent/lable";
 import { Referral } from "./interFaces";
-import { getTabsConfigation } from "../../../../../cofiguration";
 import { getAllEnvData } from "../../../../../Environment";
+import { getTabsConfigation } from "../../../../../configuration";
 
 interface MembersDashBoardProps {
     navigation: NavigationProp<ParamListBase>;

@@ -6,7 +6,7 @@ import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import Container from '../../../../../components/container/container';
 import ErrorComponent from '../../../../../components/errorDisplay/errorDisplay';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../../configuration';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import CommonTouchableOpacity from '../../../../../components/touchableComponents/touchableOpacity';
 import ScrollViewComponent from '../../../../../components/scrollView/scrollView';

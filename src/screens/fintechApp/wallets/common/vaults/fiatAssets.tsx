@@ -17,7 +17,7 @@ import WithdrawIcon from '../../../../../components/svgIcons/mainmenuicons/dashb
 import DeposistIcon from '../../../../../components/svgIcons/mainmenuicons/dashboarddeposist';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import SafeAreaViewComponent from '../../../../../components/safeArea/safeArea';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../../configuration';
 import { useSelector } from 'react-redux';
 import { logEvent } from '../../../../../hooks/loggingHook';
 import KycVerifyPopup from '../../../../commonScreens/kycVerify';

@@ -17,7 +17,7 @@ import ParagraphComponent from '../../../../components/textComponets/paragraphTe
 import ConfirmLogout from '../../../commonScreens/logout/comfirmLogout';
 import { useSumsubSDK } from '../../../../hooks/sumsubHooks/useSumsubSDK';
 import { t } from 'i18next';
-import { supportMail } from '../../../../../cofiguration';
+import { supportMail } from '../../../../../configuration';
 import useLogout from '../../../../hooks/logout/useLogout';
 import { store } from '../../../../redux/reducers';
 import { RootState } from '../interface';

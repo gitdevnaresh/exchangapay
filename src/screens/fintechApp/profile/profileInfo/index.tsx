@@ -45,7 +45,7 @@ import ParagraphComponent from "../../../../components/textComponets/paragraphTe
 import useLogout from "../../../../hooks/logout/useLogout";
 import ScrollViewComponent from "../../../../components/scrollView/scrollView";
 import { Logger } from '../../../../utils/Logger';
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 // File-level variable to store previousTab
 let cachedPreviousTab: string | undefined;

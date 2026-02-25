@@ -14,7 +14,7 @@ import PhoneCodePicker from '../../../../../../components/phonePicker/phonePicke
 import { s } from '../../../../../../constants/styels/scale';
 import { KYC_FORM_FIELDS } from './constants';
 import { PersonalKycFormFieldsProps } from './interface';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../../configuration';
 import { FORM_FIELD } from '../../../../onboarding/kyb/constants';
 
 

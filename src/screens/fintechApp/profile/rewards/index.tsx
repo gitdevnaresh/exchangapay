@@ -23,7 +23,7 @@ import CommonTouchableOpacity from "../../../../components/touchableComponents/t
 import { s } from "../../../../constants/styels/scale";
 import Foundation from '@expo/vector-icons/Foundation';
 import PageHeader from "../../../../components/pageHeader/pageHeader";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from "../../../../../configuration";
 
 const RewardsDashboard: React.FC<any> = () => {
     const [kpiData, setKpiData] = useState<KpiItem[]>([]);

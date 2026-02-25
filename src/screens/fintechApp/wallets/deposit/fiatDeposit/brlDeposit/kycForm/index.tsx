@@ -44,7 +44,7 @@ import {
 } from "./interface";
 import PayoutAddressForm from "../../../../../payments/payout/crypto/kycKybRequirements/PayoutAddressForm";
 import { createPersonalKycValidationSchema } from "./validationSchema";
-import { getTabsConfigation } from '../../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../../../configuration';
 
 interface ReactNativeFile {
     uri: string;

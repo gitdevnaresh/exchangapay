@@ -18,7 +18,7 @@ import ProfileFeeIconImage from "../../../../components/svgIcons/mainmenuicons/p
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import { useSelector } from "react-redux";
 import { PROFILE_CONSTANTS } from "./constants";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from "../../../../../configuration";
 interface ProfileMenuItemsProps {
     navigation: NativeStackNavigationProp<MainStackParamList>;
     commonStyles: any;

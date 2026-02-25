@@ -27,7 +27,7 @@ import { FormattedDateText } from "../../../../../../../components/textComponets
 import { useHardwareBackHandler } from "../../../../../../../hooks/backHandleHook";
 import AddIcon from "../../../../../../../components/addCommonIcon/addCommonIcon";
 import ImageUri from "../../../../../../../components/imageComponents/image";
-import { isDecimalSmall } from "../../../../../../../../cofiguration";
+import { isDecimalSmall } from '../../../../../../../../configuration';
 
 const FiatPayinsList = (props: any) => {
     const { payInsList, isLoading, error: propError, onRefresh, onBackPress } = props;

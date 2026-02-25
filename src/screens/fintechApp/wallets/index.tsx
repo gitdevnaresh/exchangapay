@@ -40,7 +40,7 @@ import { showAppToast } from "../../../components/toasterMessages/ShowMessage";
 import { useScreenPerfLogger } from "../../../hooks/performance/performanceHook";
 import EnableProtectionModel from '../../commonScreens/protection';
 import SuccessBottomSheet from "../../commonScreens/successBottomSheet/successBottomSheet";
-import { getTabsConfigation, walletsTabsNavigation } from "../../../../cofiguration";
+import { getTabsConfigation, walletsTabsNavigation } from "../../../../configuration";
 
 const WalletsHome = React.memo(() => {
     const [grphDetails, setgraphDetails] = useState<any>([]);

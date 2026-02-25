@@ -15,7 +15,7 @@ import ParagraphComponent from "../../../../../../../components/textComponets/pa
 import { Ionicons } from '@expo/vector-icons'
 import { TouchableOpacity, Linking } from 'react-native'
 import { useLngTranslation } from "../../../../../../../hooks/languagesHook/useLngTranslation"
-import { supportMail, getTabsConfigation, walletsTabsNavigation } from "../../../../../../../../cofiguration"
+import { supportMail, getTabsConfigation, walletsTabsNavigation } from '../../../../../../../../configuration'
 
 const PaymentPending = (props: any) => {
     const NEW_COLOR = useThemeColors();

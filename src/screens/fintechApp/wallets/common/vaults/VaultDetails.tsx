@@ -5,7 +5,7 @@ import { getThemedCommonStyles } from '../../../../../components/CommonStyles';
 import SvgFromUrl from '../../../../../components/svgIcon';
 import RecentTransactions from '../../../../commonScreens/transactions/recentTransactions';
 import { useSelector } from 'react-redux';
-import { getTabsConfigation } from '../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 import { useHardwareBackHandler } from '../../../../../hooks/backHandleHook';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../../components/view/view';

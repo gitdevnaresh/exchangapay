@@ -11,7 +11,7 @@ import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../../components/view/view';
 import DashboardLoader from "../../../../../components/loader";
 import AssetsSection from '../../../Dashboard/components/AssetsSection';
-import { getTabsConfigation } from '../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 
 import ScrollViewComponent from '../../../../../components/scrollView/scrollView';
 import WalletsService from '../../../../../apiServices/wallets';

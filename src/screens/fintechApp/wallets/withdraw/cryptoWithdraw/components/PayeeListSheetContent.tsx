@@ -6,7 +6,7 @@ import NoDataComponent from '../../../../../../components/noData/noData';
 import { Payee } from '../interface';
 import PayeeListItem from './PayeeListItem';
 import ButtonComponent from '../../../../../../components/buttons/button';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../../configuration';
 
 interface PayeeListSheetContentProps {
   dataLoading: boolean;

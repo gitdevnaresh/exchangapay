@@ -29,7 +29,7 @@ import DashboardLoader from "../../../../../components/loader";
 import SafeAreaViewComponent from "../../../../../components/safeArea/safeArea";
 import SendAuthenticatonOTP from "../../../../../components/authenticatorOtp/authenticatorCode"
 import { logEvent } from "../../../../../hooks/loggingHook"
-import { walletsTabsNavigation } from "../../../../../../cofiguration"
+import { walletsTabsNavigation } from '../../../../../../configuration'
 import { getVerificationData } from "../../../../../apiServices/common/countryService"
 
 const FiatWithdrawSummary: React.FC = (props: any) => {

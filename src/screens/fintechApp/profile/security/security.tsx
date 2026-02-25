@@ -32,7 +32,7 @@ import SendVerification from "../../../../components/svgIcons/security/sendverif
 import VerificationPhoneIcon from "../../../../components/svgIcons/security/phone";
 import EmailIcon from "../../../../components/svgIcons/security/email";
 import { clearVerificationCache, getVerificationData } from "../../../../apiServices/common/countryService";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from "../../../../../configuration";
 const Security = () => {
     const userInfo = useSelector((state: any) => state.userReducer?.userDetails);
     const navigation = useNavigation();

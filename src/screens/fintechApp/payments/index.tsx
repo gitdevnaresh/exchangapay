@@ -41,7 +41,7 @@ import { setPaymentsDashboard, setScreenPermissions } from "../../../redux/actio
 import { useScreenPerfLogger } from '../../../hooks/performance/performanceHook';
 import { getVerificationData } from '../../../apiServices/common/countryService';
 import EnableProtectionModel from "../../commonScreens/protection";
-import { getTabsConfigation } from '../../../../cofiguration';
+import { getTabsConfigation } from '../../../../configuration';
 
 const PaymentsDashboard = React.memo((props: any) => {
     const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);

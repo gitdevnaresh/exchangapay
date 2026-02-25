@@ -9,7 +9,7 @@ import DeviceInfo from "react-native-device-info";
 import ConfirmLogout from '../../../commonScreens/logout/comfirmLogout';
 import Container from '../../../../components/container/container';
 import SafeAreaViewComponent from '../../../../components/safeArea/safeArea';
-import { getTabsConfigation } from '../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../configuration';
 import ScrollViewComponent from '../../../../components/scrollView/scrollView';
 import { WINDOW_WIDTH } from '../../../../constants/styels/variables';
 import { getThemedCommonStyles } from '../../../../components/CommonStyles';

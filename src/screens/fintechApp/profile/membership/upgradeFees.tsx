@@ -17,7 +17,7 @@ import SafeAreaViewComponent from '../../../../components/safeArea/safeArea';
 import ViewComponent from '../../../../components/view/view';
 import { useHardwareBackHandler } from '../../../../hooks/backHandleHook';
 import PageHeader from '../../../../components/pageHeader/pageHeader';
-import { getTabsConfigation } from '../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../configuration';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import { useSelector } from 'react-redux';
 import ScrollViewComponent from '../../../../components/scrollView/scrollView';

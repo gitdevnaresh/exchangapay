@@ -28,7 +28,7 @@ import { getVerificationData } from '../../../../../../apiServices/common/countr
 import useEncryptDecrypt from '../../../../../../hooks/encDecHook';
 import { logEvent } from '../../../../../../hooks/loggingHook';
 import CopyCard from '../../../../../../components/copyIcon/CopyCard';
-import { walletsTabsNavigation } from '../../../../../../../cofiguration';
+import { walletsTabsNavigation } from '../../../../../../../configuration';
 import WalletsService from '../../../../../../apiServices/wallets';
 
 const CryptoWithdrawSummary: React.FC = (props: any) => {

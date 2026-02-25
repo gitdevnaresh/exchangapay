@@ -21,7 +21,7 @@ import AppreanceIcon from "../../../../components/svgIcons/mainmenuicons/apprean
 import { showAppToast } from "../../../../components/toasterMessages/ShowMessage";
 import { useHardwareBackHandler } from "../../../../hooks/backHandleHook";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
-import { getLanguageConfiguration } from "../../../../../cofiguration";
+import { getLanguageConfiguration } from '../../../../../configuration';
 
 const Settings = (props: any) => {
   const refRBSheet = useRef<any>(null);

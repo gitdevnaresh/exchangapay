@@ -19,7 +19,7 @@ import TextMultiLanguage from "../../../../../components/textComponets/multiLang
 import ButtonComponent from "../../../../../components/buttons/button";
 import { PAYMENT_LINK_CONSTENTS } from "../../constants";
 import AddIcon from "../../../../../components/addCommonIcon/addCommonIcon";
-import { getTabsConfigation } from "../../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../../configuration';
 import CustomTabView from "../../../../../components/customTabView/customTabView";
 
 

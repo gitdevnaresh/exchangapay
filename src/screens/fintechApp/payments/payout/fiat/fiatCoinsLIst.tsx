@@ -17,7 +17,7 @@ import ParagraphComponent from '../../../../../components/textComponets/paragrap
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import FlatListComponent from '../../../../../components/flatList/flatList';
 import SearchComponent from '../../../../../components/searchComponents/searchComponent';
-import { isDecimalSmall } from "../../../../../../cofiguration";
+import { isDecimalSmall } from '../../../../../../configuration';
 import ComingSoon from '../../../../commonScreens/commingSoon/comingSoon';
 
 

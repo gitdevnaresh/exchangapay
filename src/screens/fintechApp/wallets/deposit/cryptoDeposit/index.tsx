@@ -31,7 +31,7 @@ import Feather from '@expo/vector-icons/Feather';
 import CopyCard from "../../../../../components/copyIcon/CopyCard";
 import CommonDropdown from '../../../../../components/dropDown';
 import ButtonComponent from "../../../../../components/buttons/button";
-import { getTabsConfigation, isDecimalSmall, supportMail } from "../../../../../../cofiguration";
+import { getTabsConfigation, isDecimalSmall, supportMail } from '../../../../../../configuration';
 import { useSelector } from "react-redux";
 import ImageUri from "../../../../../components/imageComponents/image";
 import { getAllEnvData } from "../../../../../../Environment";

@@ -26,7 +26,7 @@ import AddIcon from "../../../../components/addCommonIcon/addCommonIcon";
 import ComingSoon from "../../../commonScreens/commingSoon/comingSoon";
 import PageHeader from "../../../../components/pageHeader/pageHeader";
 import AddressbookFiat from "./fiatPayee/addressbookFiat";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 const Addressbook = (props: any) => {
     const dispatch = useDispatch<any>();
     const isFocused = useIsFocused();
