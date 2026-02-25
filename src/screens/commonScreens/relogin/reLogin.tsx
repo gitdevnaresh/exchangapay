@@ -10,7 +10,7 @@ import Container from "../../../components/container/container";
 import ViewComponent from "../../../components/view/view";
 import TextMultiLanguage from "../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import ButtonComponent from "../../../components/buttons/button";
-import { getTabsConfigation } from "../../../../cofiguration";
+import { getTabsConfigation } from '../../../../configuration';
 const RelogIn = (props: any) => {
   const NEW_COLOR = useThemeColors();
   const commonStyles = getThemedCommonStyles(NEW_COLOR);

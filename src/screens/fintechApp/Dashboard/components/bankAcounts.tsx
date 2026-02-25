@@ -7,7 +7,7 @@ import { s } from "../../../../components/theme/scale";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import TextMultiLanguage from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import { CurrencyText } from "../../../../components/textComponets/currencyText/currencyText";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 
 interface BankAccount {

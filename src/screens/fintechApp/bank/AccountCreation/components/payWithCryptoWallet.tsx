@@ -12,7 +12,7 @@ import NoDataComponent from "../../../../../components/noData/noData";
 import DashboardLoader from "../../../../../components/loader";
 import AssetsSection from "../../../Dashboard/components/AssetsSection";
 import SearchComponent from "../../../../../components/searchComponents/searchComponent";
-import { getTabsConfigation } from "../../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../../configuration';
 import { useLngTranslation } from "../../../../../hooks/languagesHook/useLngTranslation";
 import { useThemeColors } from "../../../../../hooks/themedHook/useThemeColors";
 

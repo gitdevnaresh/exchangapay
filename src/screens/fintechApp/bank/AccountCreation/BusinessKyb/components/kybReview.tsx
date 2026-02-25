@@ -42,7 +42,7 @@ import Loadding from '../../../../../../components/skelton/skeltons';
 import { useThemeColors } from '../../../../../../hooks/themedHook/useThemeColors';
 import { allTransactionList } from '../../../../../../skeletons/skeltonViews';
 import { useLngTranslation } from '../../../../../../hooks/languagesHook/useLngTranslation';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../../configuration';
 
 // Required Label Component
 const RequiredLabel = ({ text, style }: { text: string, style?: any, multiLanguageAllows?: boolean }) => {

@@ -11,7 +11,7 @@ import ParagraphComponent from "../../../../components/textComponets/paragraphTe
 import { setNavigationSource } from "../../../../redux/actions/actions";
 import { useDispatch } from "react-redux";
 import { s } from "../../../../components/theme/scale";
-import { walletsTabsNavigation } from "../../../../../cofiguration";
+import { walletsTabsNavigation } from '../../../../../configuration';
 
 interface CommonStyles {
     sectionGap: object;

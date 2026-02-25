@@ -35,7 +35,7 @@ import FlatListComponent from "../../../../components/flatList/flatList";
 import SvgFromUrl from "../../../../components/svgIcon";
 import { CurrencyText } from "../../../../components/textComponets/currencyText/currencyText";
 import { s } from "../../../../components/theme/scale";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 type ExchangeDashboardProps = NativeStackScreenProps<RootStackParamList, "Exchange">;
 

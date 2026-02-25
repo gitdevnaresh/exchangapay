@@ -13,7 +13,7 @@ import Loadding from "../../../../components/skelton/skeltons";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import { LinearGradient } from "expo-linear-gradient";
 import { DayLookupItem, GraphDetailItem, SpendingChartSectionProps } from "../interface";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 
 

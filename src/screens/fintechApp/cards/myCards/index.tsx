@@ -47,7 +47,7 @@ import WithdrawIcon from "../../../../components/svgIcons/mainmenuicons/dashboar
 import { useLngTranslation } from "../../../../hooks/languagesHook/useLngTranslation";
 import ErrorComponent from "../../../../components/errorDisplay/errorDisplay";
 import { showAppToast } from "../../../../components/toasterMessages/ShowMessage";
-import { getTabsConfigation, isDecimalSmall } from "../../../../../cofiguration";
+import { getTabsConfigation, isDecimalSmall } from '../../../../../configuration';
 
 const TARGET_CAROUSEL_ITEM_HEIGHT = s(210);
 const SPACE_FOR_DOTS = s(24);

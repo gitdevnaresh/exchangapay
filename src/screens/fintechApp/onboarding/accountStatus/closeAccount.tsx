@@ -13,7 +13,7 @@ import AlertsCarousel from '../../Dashboard/components/allertCases';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import SafeAreaViewComponent from '../../../../components/safeArea/safeArea';
 import CommonTouchableOpacity from '../../../../components/touchableComponents/touchableOpacity';
-import { getTabsConfigation, supportMail } from '../../../../../cofiguration';
+import { getTabsConfigation, supportMail } from '../../../../../configuration';
 import useLogout from '../../../../hooks/logout/useLogout';
 import { RootState } from '../interface';
 const CloseAccount = () => {

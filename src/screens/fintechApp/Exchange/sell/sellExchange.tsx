@@ -28,7 +28,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import DashboardLoader from '../../../../components/loader';
 import { AvilableLoader, MinMAxLoader } from "../utils/skeltons";
 import AmountInput from "../../../../components/amountInput/amountInput";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 
 const SellExchange = React.memo((props: CryptoExchangeProps) => {

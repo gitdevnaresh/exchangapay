@@ -47,7 +47,7 @@ import SecurityIcon from "../../../components/svgIcons/mainmenuicons/securityico
 import EditPersonalInfo from "../../fintechApp/profile/personalInformation";
 import CustomEditIcon from "../../../components/svgIcons/mainmenuicons/edit";
 import CustomeditLink from "../../../components/svgIcons/mainmenuicons/linkedit";
-import { getTabsConfigation, isDecimalSmall } from "../../../../cofiguration";
+import { getTabsConfigation, isDecimalSmall } from '../../../../configuration';
 
 interface TransactionDetailsProps {
   modalVisible: boolean;

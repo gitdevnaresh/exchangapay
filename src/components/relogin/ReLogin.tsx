@@ -10,7 +10,7 @@ import ViewComponent from "../view/view";
 import { useIsDarkTheme } from "../../hooks/themedHook";
 import TextMultiLanguage from "../textComponets/multiLanguageText/textMultiLangauge";
 import useLogout from "../../hooks/logout/useLogout";
-import { getTabsConfigation } from "../../../configuration";
+import { getTabsConfigation } from '../../../configuration';
 const RelogIn = (props: any) => {
   const NEW_COLOR = useThemeColors();
   const commonStyles = getThemedCommonStyles(NEW_COLOR);

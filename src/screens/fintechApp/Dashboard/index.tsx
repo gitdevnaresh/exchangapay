@@ -59,7 +59,7 @@ import { KpiItem } from "../profile/teams";
 import WalletsService from "../../../apiServices/wallets";
 import { ProfilePrimaryServices } from "../../../apiServices/profile/primary";
 import { accountDasboardBalance } from "../../../skeletons/skeleton_views";
-import { getTabsConfigation, walletsTabsNavigation } from "../../../../cofiguration";
+import { getTabsConfigation, walletsTabsNavigation } from '../../../../configuration';
 
 const Home = React.memo((props: HomeProps) => {
   const [dashboardLoading, setDashboardLoading] = useState(true);

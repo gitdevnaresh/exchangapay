@@ -9,7 +9,6 @@ import { s } from '../../../../../components/theme/scale';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import Container from '../../../../../components/container/container';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import ButtonComponent from '../../../../../components/buttons/button';
 import AmountInput from '../../../../../components/amountInput/amountInput';
@@ -25,6 +24,7 @@ import ImageUri from '../../../../../components/imageComponents/image';
 import { EditImage } from '../../../../../assets/svg';
 import { showAppToast } from '../../../../../components/toasterMessages/ShowMessage';
 import { t } from 'i18next';
+import { getTabsConfigation } from '../../../../../../configuration';
 
 const SetLimits: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
     const NEW_COLOR = useThemeColors();

@@ -9,7 +9,7 @@ import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
 import { getThemedCommonStyles } from "../../../components/CommonStyles";
 import { LinearGradient } from "expo-linear-gradient";
 import { Logger } from '../../../utils/Logger';
-import { getTabsConfigation } from "../../../../cofiguration";
+import { getTabsConfigation } from '../../../../configuration';
 
 interface AutoCarouselProps {
   data: any[];

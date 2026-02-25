@@ -17,7 +17,7 @@ import TextMultiLanguage from '../../../../../../components/textComponets/multiL
 import { useDispatch, useSelector } from 'react-redux';
 import useEncryptDecrypt from '../../../../../../hooks/encDecHook';
 import useMemberLogin from '../../../../../../hooks/userInfoHook';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../../configuration';
 import ProfileService from '../../../../../../apiServices/profile';
 import ButtonComponent from '../../../../../../components/buttons/button';
 import CommonSuccess from '../../../../../commonScreens/successPage/commonSucces';

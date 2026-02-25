@@ -13,7 +13,7 @@ import { useIsFocused } from "@react-navigation/native";
 import ProfileService from "../../../../apiServices/profile";
 import { setScreenPermissions } from "../../../../redux/actions/actions";
 import { CRYPTO_CONSTANTS } from "../../payments/constants";
-import { isDecimalSmall } from "../../../../../cofiguration";
+import { isDecimalSmall } from '../../../../../configuration';
 interface CommonStyles {
     fs24: object; // Replace 'object' with a more specific style type if available
     fs28: object;

@@ -10,7 +10,7 @@ import RecentTransactions from "../../../commonScreens/transactions/recentTransa
 import { setAccountInfo, setScreenPermissions, setBankDashboardDetails } from "../../../../redux/actions/actions";
 import KycVerifyPopup from "../../../commonScreens/kycVerify";
 import { BANK_CONST, ACCOUNTDASH_CONSTANTS } from "../constants";
-import { getTabsConfigation } from "../../../../../configuration";
+import { getTabsConfigation } from '../../../../../configuration';
 import SpendingChartSection from "../../Dashboard/components/SpendingChartSection";
 import DashboardLoader from "../../../../components/loader";
 import ScrollViewComponent from "../../../../components/scrollView/scrollView";

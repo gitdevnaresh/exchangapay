@@ -21,7 +21,7 @@ import ActionButton from '../../../components/gradianttext/gradiantbg';
 import DeposistIcon from '../../../components/svgIcons/mainmenuicons/dashboarddeposist';
 import WithdrawIcon from '../../../components/svgIcons/mainmenuicons/dashboardwithdraw';
 import CustomRBSheet from '../../../components/models/commonBottomSheet';
-import { getTabsConfigation, isDecimalSmall } from '../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../configuration';
 import SafeAreaViewComponent from '../../../components/safeArea/safeArea';
 import { useHardwareBackHandler } from '../../../hooks/backHandleHook';
 import { useLngTranslation } from '../../../hooks/languagesHook/useLngTranslation';

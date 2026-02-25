@@ -56,7 +56,7 @@ import { commonStyles } from "../../../components/theme/commonStyles";
 import { Logger } from '../../../utils/Logger';
 import { useNoticesManager } from "../../../hooks/notifications/useNoticesManager";
 import ExchangeDashboard from "../../fintechApp/Exchange/dashboard/ExchangeDashboard";
-import { getTabsConfigation } from "../../../../cofiguration";
+import { getTabsConfigation } from '../../../../configuration';
 
 const Tab = createBottomTabNavigator();
 const COMPONENT_MAP: Record<string, React.FC> = {

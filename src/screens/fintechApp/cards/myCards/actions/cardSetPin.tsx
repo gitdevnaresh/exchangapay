@@ -13,7 +13,7 @@ import CardsModuleService from '../../../../../apiServices/cards';
 import { isErrorDispaly } from '../../../../../utils/helpers';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 import ButtonComponent from '../../../../../components/buttons/button';
 import FileUpload from '../../../../../components/fileUpload/fileUpload';
 import SignatureDrawer from '../../../../../components/signature/signature';

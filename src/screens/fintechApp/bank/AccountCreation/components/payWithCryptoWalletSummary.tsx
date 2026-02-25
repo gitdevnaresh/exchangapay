@@ -23,7 +23,7 @@ import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 import { getVerificationData } from '../../../../../apiServices/common/countryService';
-import { getTabsConfigation, walletsTabsNavigation } from '../../../../../../cofiguration';
+import { getTabsConfigation, walletsTabsNavigation } from '../../../../../../configuration';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 
 const PayWithCryptoWalletSummery = React.memo((props: any) => {

@@ -12,7 +12,7 @@ import CommonTouchableOpacity from '../../../components/touchableComponents/touc
 import ViewComponent from '../../../components/view/view';
 import ImageUri from '../../../components/imageComponents/image';
 import { CurrencyText } from '../../../components/textComponets/currencyText/currencyText';
-import { getTabsConfigation } from '../../../../cofiguration';
+import { getTabsConfigation } from '../../../../configuration';
 import { useSelector } from 'react-redux';
 import ParagraphComponent from '../../../components/textComponets/paragraphText/paragraph';
 import NoDataComponent from '../../../components/noData/noData';

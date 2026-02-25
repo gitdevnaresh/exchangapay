@@ -9,7 +9,7 @@ import TextMultiLanguage from '../../../../../components/textComponets/multiLang
 import CardLogoComponent from '../../../../../components/arthacardlogo/cardlogo';
 import { RegisterSuccessfull, } from '../../../../../assets/svg';
 import useLogout from '../../../../../hooks/logout/useLogout';
-import { getTabsConfigation } from '../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 
 const RegistrationSuccess = React.memo(() => {
     const [loading, setLoading] = useState(false);

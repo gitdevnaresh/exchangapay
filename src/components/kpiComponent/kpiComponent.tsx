@@ -8,7 +8,7 @@ import { kpisSkelton } from "../../skeletons/skeltonViews";
 import ParagraphComponent from "../textComponets/paragraphText/paragraph";
 import { CurrencyText } from "../textComponets/currencyText/currencyText";
 import { useSelector } from "react-redux";
-import { getTabsConfigation } from "../../../configuration";
+import { getTabsConfigation } from '../../../configuration';
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
 import NoDataComponent from "../noData/noData";
 import { useThemeColors } from "../../hooks/themedHook/useThemeColors";

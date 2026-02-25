@@ -22,7 +22,7 @@ import AlertsCarousel from '../../Dashboard/components/allertCases';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import LabelComponent from '../../../../components/textComponets/lableComponent/lable';
 import ConfirmLogout from '../../../commonScreens/logout/comfirmLogout';
-import { supportMail } from '../../../../../cofiguration';
+import { supportMail } from '../../../../../configuration';
 import ScrollViewComponent from '../../../../components/scrollView/scrollView';
 import useLogout from '../../../../hooks/logout/useLogout';
 import { store } from '../../../../redux/reducers';

@@ -10,7 +10,7 @@ import Container from '../../../../components/container/container';
 import ErrorComponent from '../../../../components/errorDisplay/errorDisplay';
 import RecentTransactions from '../../../commonScreens/transactions/recentTransactions';
 import KycVerifyPopup from '../../../commonScreens/kycVerify';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../configuration';
 import CommonTouchableOpacity from '../../../../components/touchableComponents/touchableOpacity';
 import ScrollViewComponent from '../../../../components/scrollView/scrollView';
 import ViewComponent from '../../../../components/view/view';

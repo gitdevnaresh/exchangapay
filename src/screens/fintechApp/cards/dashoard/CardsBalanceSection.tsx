@@ -7,7 +7,7 @@ import ViewComponent from '../../../../components/view/view';
 import { Feather } from '@expo/vector-icons';
 import { WalletGraph } from '../../../../assets/svg';
 import { formatCurrency } from '../../../../utils/helpers';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../configuration';
 import { useSelector } from 'react-redux';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 interface CardBalance {

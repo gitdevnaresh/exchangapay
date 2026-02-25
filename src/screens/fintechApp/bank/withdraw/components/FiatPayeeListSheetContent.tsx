@@ -12,7 +12,7 @@ import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import { useNavigation } from '@react-navigation/native';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import { s } from '../../../../../components/theme/scale';
-import { getTabsConfigation } from '../../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 
 interface FiatPayee {
   id: string;

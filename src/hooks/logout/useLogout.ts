@@ -2,7 +2,7 @@ import { SecureStorage } from '../../utils/secureStorage';
 import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 import { getAllEnvData } from "../../../Environment";
-import { getTabsConfigation } from "../../../configuration";
+import { getTabsConfigation } from '../../../configuration';
 import { useAuth0 } from "react-native-auth0";
 import { useDispatch } from "react-redux";
 import { clearCardsDashboard, clearExchangeDashboard, clearWalletsDashboard, isLogin, loginAction, setAllBalanceInfo, setBankDashboardDetails, setDeleteScreenPermissions, setHomeDashboardCards, setHomeWallets, setNotificationShown, setPaymentsDashboard, setUserInfo, setUserProfileDetails, setNoticesShownThisSession } from "../../redux/actions/actions";

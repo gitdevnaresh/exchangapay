@@ -38,7 +38,7 @@ import { s } from "../../../../constants/styels/scale";
 import { useScreenPerfLogger } from "../../../../hooks/performance/performanceHook";
 import { getVerificationData } from "../../../../apiServices/common/countryService";
 import SmartCardCarousel from "../../../commonScreens/smartCardCarousal/smartCardCarousel";
-import { getTabsConfigation } from "../../../../../cofiguration";
+import { getTabsConfigation } from '../../../../../configuration';
 
 interface CardBalance {
   defaultCurrency?: string;

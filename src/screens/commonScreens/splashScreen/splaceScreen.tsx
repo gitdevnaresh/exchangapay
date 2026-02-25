@@ -21,7 +21,7 @@ import { s } from "../../../constants/styels/scale";
 import useNotifications from "../../../hooks/notifications/useNotification";
 import ProfileService from "../../../apiServices/profile";
 import { Logger } from '../../../utils/Logger';
-import { getTabsConfigation } from "../../../../cofiguration";
+import { getTabsConfigation } from '../../../../configuration';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 

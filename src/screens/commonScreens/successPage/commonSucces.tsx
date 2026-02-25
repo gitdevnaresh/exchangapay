@@ -13,7 +13,7 @@ import { useThemeColors } from '../../../hooks/themedHook/useThemeColors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SvgUri } from 'react-native-svg';
 import { useSelector } from 'react-redux';
-import { isDecimalSmall } from '../../../../cofiguration';
+import { isDecimalSmall } from '../../../../configuration';
 
 
 interface CommonSuccessProps {

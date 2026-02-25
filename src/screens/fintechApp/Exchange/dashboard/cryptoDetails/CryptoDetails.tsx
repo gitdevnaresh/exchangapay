@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
-import { getTabsConfigation, isDecimalSmall } from '../../../../../../../cofiguration';
+import { getTabsConfigation, isDecimalSmall } from '../../../../../../configuration';
 import { getThemedCommonStyles } from '../../../../../components/CommonStyles';
 import { CRYPTO_CONSTANTS, RootState } from '../../constants/constants';
 import ViewComponent from '../../../../../components/view/view';

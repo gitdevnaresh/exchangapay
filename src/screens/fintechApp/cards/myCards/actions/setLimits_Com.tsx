@@ -9,7 +9,7 @@ import { s } from '../../../../../constants/styels/scale';
 import { CurrencyText } from '../../../../../components/textComponets/currencyText/currencyText';
 import Container from '../../../../../components/container/container';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
-import { getTabsConfigation } from '../../../../../../cofiguration';
+import { getTabsConfigation } from '../../../../../../configuration';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import ButtonComponent from '../../../../../components/buttons/button';
 import AmountInput from '../../../../../components/amountInput/amountInput';

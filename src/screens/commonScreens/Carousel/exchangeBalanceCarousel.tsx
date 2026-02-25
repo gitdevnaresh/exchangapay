@@ -11,7 +11,7 @@ import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
 import { CoinImages, getThemedCommonStyles, WalletsfiatLogos, cryptoLogos } from "../../../components/CommonStyles";
 import { RootState } from "../../fintechApp/Exchange/constants/constants";
 import { BalanceCarouselProps } from "../../fintechApp/Exchange/interfaces/exchangeInterfaces";
-import { getTabsConfigation, isDecimalSmall } from "../../../../cofiguration";
+import { getTabsConfigation, isDecimalSmall } from '../../../../configuration';
 
 
 

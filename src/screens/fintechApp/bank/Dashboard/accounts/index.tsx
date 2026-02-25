@@ -11,7 +11,7 @@ import { s } from "../../../../../constants/styels/scale"
 import SvgFromUrl from "../../../../../components/svgIcon"
 import { useNavigation } from "@react-navigation/native"
 import { BANK_CONST } from "../../constants"
-import { getTabsConfigation } from "../../../../../../cofiguration"
+import { getTabsConfigation } from '../../../../../../configuration'
 import { useThemeColors } from "../../../../../hooks/themedHook/useThemeColors"
 import ViewComponent from "../../../../../components/view/view"
 import CommonTouchableOpacity from "../../../../../components/touchableComponents/touchableOpacity"

@@ -3,7 +3,7 @@ import CreateAccountForm from "./createAccountForm"
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { BackHandler } from "react-native";
-import { walletsTabsNavigation } from "../../../../../../cofiguration";
+import { walletsTabsNavigation } from '../../../../../../configuration';
 import { Logger } from "../../../../../utils/Logger";
 
 const BankCreationForm = (props: any) => {

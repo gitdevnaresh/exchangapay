@@ -14,7 +14,7 @@ import { isErrorDispaly } from "../../../../../utils/helpers"
 import ErrorComponent from "../../../../../components/errorDisplay/errorDisplay"
 import CreateAccountService from "../../../../../apiServices/bank/createAccount"
 import ProfileService from "../../../../../apiServices/profile"
-import { walletsTabsNavigation } from "../../../../../../cofiguration"
+import { walletsTabsNavigation } from '../../../../../../configuration'
 import { getVerificationData } from "../../../../../apiServices/common/countryService"
 import { useThemeColors } from "../../../../../hooks/themedHook/useThemeColors"
 import { useLngTranslation } from "../../../../../hooks/languagesHook/useLngTranslation"

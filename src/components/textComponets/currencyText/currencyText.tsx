@@ -3,7 +3,7 @@ import ParagraphComponent from "../paragraphText/paragraph";
 import GradientText from "../../gradianttext/gradianttext";
 import { StyleProp, StyleSheet, TextStyle } from 'react-native';
 import { useThemeColors } from '../../../hooks/themedHook/useThemeColors';
-import { getTabsConfigation } from '../../../../cofiguration';
+import { getTabsConfigation } from '../../../../configuration';
 import { getThemedCommonStyles } from '../../CommonStyles';
 
 interface FormattedNumberProps {

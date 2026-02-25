@@ -7,7 +7,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { AntDesign } from '@expo/vector-icons';
 import Container from "../container/container";
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
-import RNFetchBlob from "rn-fetch-blob";
+import ReactNativeBlobUtil from "react-native-blob-util";
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import CustomRBSheet from "../models/commonBottomSheet";
@@ -26,7 +26,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import ProfileService from "../../apiServices/profile";
 import { isErrorDispaly } from "../../utils/helpers";
 import FileUploadIcon from "../../components/svgIcons/mainmenuicons/fileupload";
-import { getTabsConfigation } from "../../../configuration";
+import { getTabsConfigation } from '../../../configuration';
 import { LinearGradient } from "expo-linear-gradient";
 
 /* 
@@ -256,8 +256,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           ToastAndroid.show("Download failed.", ToastAndroid.LONG);
         }
       } else {
-        const { config, fs } = RNFetchBlob;
-        const downloadDir = fs.dirs.DownloadDir;
+        const downloadDir = ReactNativeBlobUtil.fs.dirs.DownloadDir;
         const rnFetchBlobOptions = {
           fileCache: true,
           addAndroidDownloads: {
@@ -271,7 +270,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           },
         };
         ToastAndroid.show(t("GLOBAL_CONSTANTS.DOWNLOAD_START") || "Download started", ToastAndroid.SHORT);
-        await config(rnFetchBlobOptions).fetch('GET', url);
+        await ReactNativeBlobUtil.config(rnFetchBlobOptions).fetch('GET', url);
         ToastAndroid.show(t("GLOBAL_CONSTANTS.DOWNLOAD_COMPLETE") || "Download complete", ToastAndroid.SHORT);
       }
     } catch (err: any) {

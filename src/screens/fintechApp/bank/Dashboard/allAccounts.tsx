@@ -22,7 +22,7 @@ import { CurrencyText } from "../../../../components/textComponets/currencyText/
 import FlatListComponent from "../../../../components/flatList/flatList"
 import SvgFromUrl from "../../../../components/svgIcon"
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph"
-import { getTabsConfigation } from "../../../../../cofiguration"
+import { getTabsConfigation } from '../../../../../configuration'
 
 const AllAccounts = React.memo((props: any) => {
     const [createAccListLoading, setCreateAccListLoading] = useState(false);

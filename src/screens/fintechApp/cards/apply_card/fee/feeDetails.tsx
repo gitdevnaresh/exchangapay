@@ -20,7 +20,7 @@ import { CurrencyText } from "../../../../../components/textComponets/currencyTe
 import { CoinImages, getThemedCommonStyles } from "../../../../../components/CommonStyles";
 import ImageUri from "../../../../../components/imageComponents/image";
 import { useThemeColors } from "../../../../../hooks/themedHook/useThemeColors";
-import { isDecimalSmall } from "../../../../../../cofiguration";
+import { isDecimalSmall } from '../../../../../../configuration';
 import CustomPicker from "../../../../../components/customPicker/CustomPicker";
 import LabelComponent from "../../../../../components/textComponets/lableComponent/lable";
 import CustomeditLink from "../../../../../components/svgIcons/mainmenuicons/linkedit";
