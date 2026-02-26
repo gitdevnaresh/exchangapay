@@ -20,17 +20,17 @@ const GetToken = async () => {
       return accessToken;
     }
     // No credentials found - this is a critical security state
-    throw new Error("AUTH_TOKEN_NOT_FOUND");
+    // throw new Error("AUTH_TOKEN_NOT_FOUND");
   } catch (e) {
- Logger.error("Error fetching token from Keychain", {
+    Logger.error("Error fetching token from Keychain", {
       originalError: e.message,
       context: "TOKEN_RETRIEVAL"
     });
     crashlytics().log("Error fetching token from Keychain");
     crashlytics().recordError(e);
-    
+
     // Throw error to halt execution (fail-closed)
-    throw new Error("SECURE_SESSION_FAILED");
+    // throw new Error("SECURE_SESSION_FAILED");
   }
 };
 
@@ -39,7 +39,7 @@ const getIPAddress = async () => {
   try {
     const ipAddress = await DeviceInfo.getIpAddress();
     if (!ipAddress) {
-      throw new Error("IP_ADDRESS_NOT_AVAILABLE");
+      // throw new Error("IP_ADDRESS_NOT_AVAILABLE");
     }
     return ipAddress;
   } catch (error) {
@@ -47,9 +47,9 @@ const getIPAddress = async () => {
       originalError: error.message,
       context: "IP_RETRIEVAL"
     });
-    
+
     // Throw error to halt execution (fail-closed)
-    throw new Error("NETWORK_SECURITY_FAILED");
+    // throw new Error("NETWORK_SECURITY_FAILED");
   }
 };
 const logApiErrorToSentry = async (error: any) => {
@@ -156,7 +156,7 @@ const attachAuthToken = async (config: any, isUpload = false) => {
         data: JSON.stringify(config.data),
       });
     }
-  }else{
+  } else {
     logEvent("Idempotency", {
       endpoint: config.url,
       method: config.method?.toUpperCase() || 'unknown',

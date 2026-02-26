@@ -31,6 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Logger } from '../../../../utils/Logger';
 import type { store } from '../../../../redux/reducers/index';
 import { ErrorWithParsedData, LoginBody, ParsedSigninData, SigninResponse } from '../interface';
+import SafeAreaViewComponent from '../../../../components/safeArea/safeArea';
 type AppDispatch = typeof store.dispatch;
 
 const Auth0Signin = () => {
@@ -83,6 +84,7 @@ const Auth0Signin = () => {
         password: encryptAES(values?.password),
       };
       const response = await ProfileService.signin(body) as SigninResponse;
+      console.log(response)
       const parsedData: ParsedSigninData = JSON.parse(response?.data);
       if (response?.status === 200) {
         if (parsedData.error && parsedData.error === 'mfa_required') {
@@ -95,6 +97,7 @@ const Auth0Signin = () => {
           MenuPermission();
         }
         else if (parsedData.error) {
+          console.log("Error during signin:", parsedData.error_description);
           setErrorMsg(isErrorDispaly(parsedData?.error_description));
           logApiErrorToSentry({
             url: `/api/v1/Token`,
@@ -119,6 +122,7 @@ const Auth0Signin = () => {
     } catch (error: unknown) {
       setLoading(false);
       const auth0ErrorDetails = (error as ErrorWithParsedData).parsedData;
+      console.log("Error during signin:", auth0ErrorDetails);
       if (auth0ErrorDetails && (auth0ErrorDetails.error === "access_denied" || auth0ErrorDetails.error === "invalid_grant")) {
         setErrorMsg(t("GLOBAL_CONSTANTS.INCORRECT_CREDENTIALS") || t("GLOBAL_CONSTANTS.INCORRECT_EMAIL_ADDRESS_USERNAME_OR_PASSWORD"));
         setFieldValue('password', '');
@@ -157,7 +161,8 @@ const Auth0Signin = () => {
   }, [navigation, loading]);
 
   return (
-   
+    <SafeAreaViewComponent style={[commonStyles.flex1, commonStyles.screenBg]}>
+
       <ViewComponent style={[commonStyles.flex1, commonStyles.px24,]}>
         <Formik
           initialValues={initialValues}
@@ -272,6 +277,7 @@ const Auth0Signin = () => {
           )}
         </Formik>
       </ViewComponent>
+    </SafeAreaViewComponent>
   );
 };
 

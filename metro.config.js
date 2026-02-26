@@ -1,4 +1,5 @@
 const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
+const path = require("path");
 
 const { withSentryConfig } = require("@sentry/react-native/metro");
 
@@ -13,6 +14,14 @@ const config = {
     ...defaultConfig.resolver,
     assetExts: defaultConfig.resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...defaultConfig.resolver.sourceExts, "svg"],
+    extraNodeModules: {
+      events: path.resolve(__dirname, "shims/events.js"),
+      "node:events": path.resolve(__dirname, "shims/events.js"),
+      "react-native-reanimated-carousel": path.resolve(
+        __dirname,
+        "shims/reactNativeReanimatedCarousel.js"
+      ),
+    },
   },
 };
 

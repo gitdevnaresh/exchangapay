@@ -32,6 +32,7 @@ import { enableScreens } from "react-native-screens";
 import { Logger } from './utils/Logger';
 import { SecureErrorBoundary } from './components/errorBoundary';
 import { validateSecureRandom } from './utils/secureRandom';
+import RNBootSplash from "react-native-bootsplash";
 
 const { oAuthConfig } = getAllEnvData();
 if (oAuthConfig.sentryLoggs) {
@@ -61,6 +62,7 @@ export default Sentry.wrap(function App() {
   // --- Start App Launch Trace immediately ---
   useEffect(() => {
     startAppLaunchTrace();
+    RNBootSplash.hide({ fade: true });
   }, []);
   let appStartTrace: any;
   const startAppLaunchTrace = async () => {
