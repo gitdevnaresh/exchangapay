@@ -1,0 +1,10 @@
+<svg width="24" height="20" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="24" height="20" fill="#2C2C2C"/>
+<g id="Profile">
+<rect x="-36" y="-750" width="430" height="1128" rx="50" fill="#101014"/>
+<g id="Group 1171275913">
+<rect id="Rectangle 44" x="-19.5" y="-20.5" width="397" height="63" rx="4.5" stroke="#1E232A"/>
+</g>
+<path id="Vector" d="M21.6 0H2.4C1.068 0 0.012 1.068 0.012 2.4L0 16.8C0 18.132 1.068 19.2 2.4 19.2H21.6C22.932 19.2 24 18.132 24 16.8V2.4C24 1.068 22.932 0 21.6 0ZM21.6 16.8H2.4V9.6H21.6V16.8ZM21.6 4.8H2.4V2.4H21.6V4.8Z" fill="#B0B4BA"/>
+</g>
+</svg>

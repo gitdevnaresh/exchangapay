@@ -3,7 +3,7 @@
  */
 
 import { AppRegistry } from "react-native";
-import App from "./App";
+import App from "./src/App";
 import { name as appName } from "./app.json";
 import messaging from "@react-native-firebase/messaging";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -18,7 +18,7 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       }
       const newCount = currentCount + 1;
       await AsyncStorage.setItem("supportMessageCount", newCount.toString());
-    } catch (e) {}
+    } catch (e) { }
   }
 });
 AppRegistry.registerComponent(appName, () => App);

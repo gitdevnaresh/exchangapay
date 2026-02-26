@@ -13,7 +13,7 @@ module.exports = {
       platforms: {
         android: {
           sourceDir: '../node_modules/react-native-permissions/android',
-          packageImportPath: 'import io.github.zoontek.rnpermissions.RNPermissionsPackage;',
+          packageImportPath: 'import com.zoontek.rnpermissions.RNPermissionsPackage;',
         },
       },
     },

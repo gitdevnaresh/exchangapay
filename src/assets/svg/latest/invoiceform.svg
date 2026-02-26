@@ -1,0 +1,18 @@
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="30" height="30" fill="#2C2C2C"/>
+<g clip-path="url(#clip0_0_1)">
+<rect x="-247" y="-485" width="430" height="1303" rx="50" fill="#101014"/>
+<rect x="-247" y="-485" width="430" height="1340" fill="black" fill-opacity="0.74"/>
+<rect x="-231" y="-358" width="398" height="1086" rx="2" fill="#101014"/>
+<ellipse cx="15" cy="14.777" rx="15" ry="14.777" fill="url(#pattern0_0_1)"/>
+</g>
+<defs>
+<pattern id="pattern0_0_1" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image0_0_1" transform="matrix(0.02 0 0 0.0203019 0 -0.00754717)"/>
+</pattern>
+<clipPath id="clip0_0_1">
+<rect x="-247" y="-485" width="430" height="1303" rx="50" fill="white"/>
+</clipPath>
+<image id="image0_0_1" width="50" height="50" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAA5ElEQVRYCe2ZQQqAMBADe/CBnvoK/+nRL3neESJpESkEegm73cZsWiu27diHx9kvMYbLbsfeZiYLTme/ZiqHluOWNdWCe2AXRAF1MqKAL2pZK1nJ4AEYWvWQgzyAa6qFh4B7LIhSGr6ohckWDySjlIah9d0pj75YUHcN0TQxTVS3UzgP7tEw3oq34i2xR7C5LCjKPkPciVgJE3TUStalQqseEFHL0eNDtVBaQ2tDTFle80A0tOoXKeQBjFpRq9xVtCHgHg11KURzQDjvAKoFMf+CoVWbqPsQtaLW+N+1eMtxz5Jq3YwxN774V5BvAAAAAElFTkSuQmCC"/>
+</defs>
+</svg>
