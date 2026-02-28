@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "1071996900250",
-    "project_id": "exchangapay-tst",
-    "storage_bucket": "exchangapay-tst.firebasestorage.app"
+    "project_number": "732414204544",
+    "project_id": "rapidz-money-live",
+    "storage_bucket": "rapidz-money-live.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1071996900250:android:3ff30b44e424c7939e6023",
+        "mobilesdk_app_id": "1:732414204544:android:92f36e27179d74a8f6e465",
         "android_client_info": {
-          "package_name": "com.exchangapay.tst"
+          "package_name": "money.rapidz.rapidzmoney"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBfLoyZakpj6MQarsNCnfeiWD7BOVF7nmY"
+          "current_key": "AIzaSyCuwOuQQGKia9gDRzPYO3AoyOR10pjl348"
         }
       ],
       "services": {

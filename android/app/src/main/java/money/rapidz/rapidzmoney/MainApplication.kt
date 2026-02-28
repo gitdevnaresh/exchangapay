@@ -1,4 +1,4 @@
-package com.exchangapay.tst
+package money.rapidz.rapidzmoney
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -86,14 +86,14 @@ android {
     buildToolsVersion "35.0.0"
     compileSdk 36
 
-    namespace "com.exchangapay.tst"
+    namespace "money.rapidz.rapidzmoney"
     defaultConfig {
-        applicationId "com.exchangapay.tst"
+        applicationId "money.rapidz.rapidzmoney"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion 36
         versionCode 1
         versionName "1.0"
-        manifestPlaceholders = [auth0Domain: "exchangapay-tst.eu.auth0.com", auth0Scheme: "${applicationId}.auth0"] 
+        manifestPlaceholders = [auth0Domain: "money.rapidz.rapidzmoney", auth0Scheme: "${applicationId}.auth0"] 
     }
     signingConfigs {
         debug {
