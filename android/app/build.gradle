@@ -80,7 +80,11 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
-apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
+if (System.getenv('SENTRY_DISABLE_AUTO_UPLOAD') != 'true') {
+    apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
+} else {
+    println "Sentry auto upload disabled via SENTRY_DISABLE_AUTO_UPLOAD env var"
+}
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion "35.0.0"
