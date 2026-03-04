@@ -5,7 +5,7 @@ import { s } from '../../../../constants/styels/scale';
 import CommonTouchableOpacity from '../../../../components/touchableComponents/touchableOpacity';
 import ViewComponent from '../../../../components/view/view';
 // import { CardsArthaMoney } from '../../../../assets/svg';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { t } from 'i18next';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import { ApplyCardImage } from '../../../../assets/svg';

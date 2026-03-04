@@ -19,7 +19,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import DashboardLoader from '../../../../../components/loader';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 import LabelComponent from '../../../../../components/textComponets/lableComponent/lable';

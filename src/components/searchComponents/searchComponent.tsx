@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TextInput } from 'react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ViewComponent from '../view/view';
 import { ms, s } from '../../constants/styels/scale';

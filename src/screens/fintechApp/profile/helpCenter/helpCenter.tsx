@@ -96,17 +96,20 @@ const HelpCenter = (props: any) => {
             {errorMsg && (
               <ErrorComponent message={errorMsg} onClose={handleCloseError} />
             )}
-            {htmlContent && (
-              <RenderHTML
-                contentWidth={WINDOW_WIDTH}
-                source={{ html: htmlContent }}
-              />
-            )}
-          </ScrollViewComponent>
-        </Container>
-      )}
-    </ViewComponent>
+           {htmlContent && ( <RenderHTML
+            contentWidth={WINDOW_WIDTH}
+            source={{ html: htmlContent }}
+            tagsStyles={{
+              body: { textAlign: "center", color: NEW_COLOR.TEXT_GREY },
+              p: { textAlign: "center", color: NEW_COLOR.TEXT_GREY },
+              td: { textAlign: "center", color: NEW_COLOR.TEXT_GREY },
+              a: { textAlign: "center", color: NEW_COLOR.TEXT_PRIMARY },
+              span: { textAlign: "center", color: NEW_COLOR.SUBMIT_TEXTCOLOR },
+            }}
+          />)}
+        </ScrollViewComponent>
+      </Container>)} 
+   </ViewComponent>
   );
 };
 export default HelpCenter;
-

@@ -37,6 +37,17 @@ const CardActionsSheetCardDetails: React.FC<CardActionsSheetCardDetailsProps> = 
   const NEW_COLOR = useThemeColors();
   const commonStyles = getThemedCommonStyles(NEW_COLOR);
   const [isWebViewLoading, setIsWebViewLoading] = useState(false);
+
+  const safeDecryptValue = (value?: string) => {
+    if (!value || typeof value !== "string") return "";
+    try {
+      return decryptAES(value);
+    } catch {
+      // Some providers can return plain-text/masked values instead of encrypted payload.
+      return value;
+    }
+  };
+
   const copyToClipboard = async (text: any) => {
     try {
       await Clipboard.setString(String(text));
@@ -47,7 +58,7 @@ const CardActionsSheetCardDetails: React.FC<CardActionsSheetCardDetailsProps> = 
   };
 
   const detailItem = (labelKey: string, rawValue: string | undefined, isSensitive: boolean = false) => {
-    const decryptedOrRawValue = isSensitive && typeof rawValue === 'string' && rawValue ? decryptAES(rawValue) : rawValue;
+    const decryptedOrRawValue = isSensitive ? safeDecryptValue(rawValue) : rawValue;
 
     const displayValue = (labelKey === "GLOBAL_CONSTANTS.CARD_NUMBER" && decryptedOrRawValue)
       ? decryptedOrRawValue.replace(/\d{4}(?=.)/g, "$& ") // Add spaces for card number

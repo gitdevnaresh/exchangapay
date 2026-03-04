@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { ms } from '../../constants/styels/scale';
 import ViewComponent from '../view/view';
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";

@@ -16,7 +16,7 @@ import CustomRBSheet from "../../../../components/models/commonBottomSheet";
 import RecentTransactions from "../../../commonScreens/transactions/recentTransactions";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import ImageUri from "../../../../components/imageComponents/image";
-import AntDesignExpo from '@expo/vector-icons/AntDesign';
+import AntDesignExpo from 'react-native-vector-icons/AntDesign';
 import TopUpIcon from "../../../../components/svgIcons/cardsicons/topUpIcon";
 import CardActionsSheetContent from "./actions/cardSheetDetails";
 import ButtonComponent from "../../../../components/buttons/button";

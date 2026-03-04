@@ -300,7 +300,7 @@ const NewProfile = (props: NewProfileScreenProps) => {
 
     useEffect(() => {
         if (isFocused) {
-            handleClose();
+            // handleClose();
             const currentTabTitle = props?.route?.params?.currentTabTitle;
             if (currentTabTitle) {
                 cachedPreviousTab = currentTabTitle;
