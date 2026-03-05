@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, ActivityIndicator, Image, Modal, StyleProp, ViewStyle, TextStyle, StyleSheet, SafeAreaView, Alert, Platform, ToastAndroid, Share, Keyboard } from "react-native";
+import { View, TouchableOpacity, ActivityIndicator, Image, Modal, StyleProp, ViewStyle, TextStyle, StyleSheet, SafeAreaView, Alert, Platform, ToastAndroid, Share, Keyboard, PermissionsAndroid } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { s } from "react-native-size-matters";
 import { getThemedCommonStyles } from "../CommonStyles";
@@ -8,7 +8,6 @@ import { AntDesign } from '@expo/vector-icons';
 import Container from "../container/container";
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
 import ReactNativeBlobUtil from "react-native-blob-util";
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import CustomRBSheet from "../models/commonBottomSheet";
 import ButtonComponent from "../buttons/button";
@@ -211,12 +210,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const requestStoragePermissionForAndroid = async (): Promise<boolean> => {
     try {
-      const permission = Number(Platform.Version) >= 33
-        ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
-        : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+      if (Platform.OS !== 'android') return true;
+      if (Number(Platform.Version) >= 33) return true;
 
-      const result = await request(permission);
-      if (result === RESULTS.GRANTED) return true;
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+      if (result === PermissionsAndroid.RESULTS.GRANTED) return true;
 
       ToastAndroid.show("Storage permission denied.", ToastAndroid.LONG);
       return false;
@@ -692,4 +692,3 @@ const screenStyles = (NEW_COLOR: any) => StyleSheet.create({
     borderRadius: s(12), marginTop: s(4)
   }
 });
-

@@ -9,6 +9,7 @@ import {
   ToastAndroid,
   Share,
   Text,
+  PermissionsAndroid,
 } from "react-native";
 import { s } from "react-native-size-matters";
 import { getThemedCommonStyles } from "../CommonStyles";
@@ -18,7 +19,6 @@ import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
 import LabelComponent from "../textComponets/lableComponent/lable";
 import ImageUri from "../imageComponents/image";
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import ButtonComponent from "../buttons/button";
 import { useThemeColors } from "../../hooks/themedHook/useThemeColors";
@@ -75,13 +75,6 @@ const FilePreview: React.FC<FilePreviewProps> = ({
     if (!url) return;
 
     try {
-      if (Platform.OS === 'android') {
-        const permission = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
-        if (permission !== RESULTS.GRANTED) {
-          showCustomToast({ message: 'Permission denied', type: ToastType.ERROR, duration: ToastAndroid.LONG });
-          return;
-        }
-      }
       const { name: actualFileName } = getFileDetails(url);
       const folderPath = `${RNFS.DownloadDirectoryPath}/MyApp`;
       await RNFS?.mkdir(folderPath);
@@ -117,8 +110,10 @@ const FilePreview: React.FC<FilePreviewProps> = ({
       }
       // Android < 13
       try {
-        const storageResult = await request(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
-        if (storageResult !== RESULTS.GRANTED) {
+        const storageResult = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        if (storageResult !== PermissionsAndroid.RESULTS.GRANTED) {
           showCustomToast({ message: t("GLOBAL_CONSTANTS.STORAGE_DENIED_DOWNLOAD"), type: ToastType.ERROR, duration: ToastAndroid.LONG });
           return;
         }

@@ -7,7 +7,7 @@ import InputDefault from '../../../../../components/textInputComponents/DefaultF
 import FlatListComponent from '../../../../../components/flatList/flatList';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../../components/CommonStyles';
-import { BankKybService } from '../../../../../apiServices/bank';
+import CreateAccountService from '../../../../../apiServices/bank/createAccount';
 
 interface DynamicField {
   label: string;
@@ -24,8 +24,6 @@ interface DynamicFieldsProps {
   errors: any;
   setFieldValue: (field: string, value: any) => void;
   handleBlur: (e: any) => void;
-  selectedCurrency: { currency: string; id: string } | null;
-  selectedPayee: { id: string; favoriteName?: string } | null;
 }
 
 const DynamicFieldRenderer: React.FC<DynamicFieldsProps> = ({
@@ -35,21 +33,24 @@ const DynamicFieldRenderer: React.FC<DynamicFieldsProps> = ({
   errors,
   setFieldValue,
   handleBlur,
-  selectedCurrency,
-  selectedPayee
 }) => {
   const NEW_COLOR = useThemeColors();
   const commonStyles = getThemedCommonStyles(NEW_COLOR);
   const [fieldData, setFieldData] = useState<any>({});
   const [loadingFields, setLoadingFields] = useState<any>({});
-  const fetchDropdownData = async (currency: string, selectedPayeeId: string,fieldKey: string) => {
+
+  const fetchDropdownData = async (url: string, fieldKey: string) => {
+    if (fieldData[fieldKey]) {
+      return;
+    }
+
     setLoadingFields((prev: any) => ({ ...prev, [fieldKey]: true }));
-    
+
     try {
-      const response = await BankKybService.getDynamicpaymentSchemeLookup(currency,selectedPayeeId);
-      
+      const response = await CreateAccountService.getDynamicLookup(url);
+
       if (response?.ok) {
-        setFieldData((prev: any) => ({ ...prev, [fieldKey]: response.data?.supportedPayments }));
+        setFieldData((prev: any) => ({ ...prev, [fieldKey]: response.data }));
       }
     } catch (error) {
       // Handle error silently
@@ -59,30 +60,22 @@ const DynamicFieldRenderer: React.FC<DynamicFieldsProps> = ({
   };
 
   useEffect(() => {
-    if (!selectedCurrency?.currency || !selectedPayee?.id) {
-      setFieldData({});
-      return;
-    }
-    
-    setFieldData({});
-    
     fields.forEach(field => {
-      if (field.fieldType === 'dropdown' && field.url) {
-        fetchDropdownData(selectedCurrency?.currency, selectedPayee?.id, field.key);
+      if (field.fieldType === 'dropdown' && field.url && !fieldData[field.key]) {
+        fetchDropdownData(field.url, field.key);
       }
     });
-  }, [fields, selectedCurrency?.currency, selectedPayee?.id]);
+  }, [fields]);
 
   const renderField = ({ item: field }: { item: DynamicField }) => {
     const fieldKey = field.key;
+
     const isDropdown = field.fieldType === 'dropdown';
-    const dropdownData = fieldData[fieldKey] || [];
+    const rawData = fieldData[fieldKey];
+    const dropdownData = rawData?.BankPaymentSchemes || [];
     const shouldShowPicker = isDropdown && Array.isArray(dropdownData) && dropdownData.length > 0;
-    
-    // Only render dropdown fields if data is available
-    if (isDropdown && dropdownData.length === 0) {
-      return null;
-    }
+
+
 
     return (
       <ViewComponent>
@@ -116,10 +109,6 @@ const DynamicFieldRenderer: React.FC<DynamicFieldsProps> = ({
       </ViewComponent>
     );
   };
-  
-  if (!selectedCurrency?.currency || !selectedPayee?.id) {
-    return null;
-  }
 
   return (
     <FlatListComponent

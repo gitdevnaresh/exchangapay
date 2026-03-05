@@ -32,7 +32,6 @@ import DynamicFieldRenderer from './DynamicFieldRenderer';
 import FiatPayeeListSheetContent from './FiatPayeeListSheetContent';
 import { createDynamicValidationSchema } from '../schemas/SendFiatSchema';
 import { Logger } from '../../../../../utils/Logger';
-import { logEvent } from '../../../../../hooks/loggingHook';
 
 
 const SendAmount = React.memo((props: any) => {
@@ -273,7 +272,6 @@ const SendAmount = React.memo((props: any) => {
 
             if (response?.ok) {
                 const targetScreen = props?.route?.params?.screenName === "WalletsAllCoinsList" ? "WalletsWithDrawSummary" : "SummeryDetails"
-                logEvent("Action Name", { action: "Bank Withdraw Post Call Success", currentScreen: "Bank Withdraw Amount", nextScreen: targetScreen });
                 props.navigation.navigate(targetScreen, {
                     ...response.data,
                     ...props?.route?.params,
@@ -454,7 +452,7 @@ const SendAmount = React.memo((props: any) => {
         return null;
     };
 
-     return (
+    return (
         <ViewComponent style={[commonStyles.flex1, commonStyles.screenBg]}>
             {loader && (
                 <SafeAreaViewComponent style={[commonStyles.flex1, commonStyles.alignCenter, commonStyles.justifyCenter]} >
@@ -613,15 +611,23 @@ const SendAmount = React.memo((props: any) => {
                                             topupBalanceInfo={{ currency: selectedCurrency?.currency || "" }}
                                             decimals={2}
                                         />
+                                        {dynamicFields.length > 0 && <ViewComponent style={[commonStyles.formItemSpace]} />}
 
-                                       
-                                      
+                                        {/* Dynamic Fields */}
+                                        <DynamicFieldRenderer
+                                            fields={dynamicFields}
+                                            values={values}
+                                            touched={touched}
+                                            errors={errors}
+                                            setFieldValue={setFieldValue}
+                                            handleBlur={formik.handleBlur}
+                                        />
 
                                         {/* Payee Field (Fiat) - mimic crypto withdraw design exactly */}
-                                            <LabelComponent style={[commonStyles.payeeLabel,]}
-                                                text="GLOBAL_CONSTANTS.PAYEE">
-                                                <LabelComponent text=" *" style={[commonStyles.textRed]} />
-                                            </LabelComponent>
+                                        <LabelComponent style={[commonStyles.payeeLabel,]}
+                                            text="GLOBAL_CONSTANTS.PAYEE">
+                                            <LabelComponent text=" *" style={[commonStyles.textRed]} />
+                                        </LabelComponent>
                                         <CommonTouchableOpacity onPress={handlePayeeFieldPress} disabled={!selectedCurrency}>
                                             <ViewComponent
                                                 style={[
@@ -665,23 +671,9 @@ const SendAmount = React.memo((props: any) => {
                                                 <Feather name="chevron-down" size={s(24)} color={!selectedCurrency ? NEW_COLOR.TEXT_DISABLED : NEW_COLOR.TEXT_WHITE} />
                                             </ViewComponent>
                                         </CommonTouchableOpacity>
-
-                                         {validateBeneficiary() && (
+                                        {validateBeneficiary() && (
                                             <TextMultiLanguage text={validateBeneficiary()} style={[commonStyles.mt4, commonStyles.fs14, commonStyles.fw400, commonStyles.textRed]} />
                                         )}
-
-                                          {dynamicFields.length > 0 &&(<><ViewComponent style={[commonStyles.formItemSpace]} />
-                                          {/* Dynamic Fields */}
-                                        <DynamicFieldRenderer
-                                            fields={dynamicFields}
-                                            values={values}
-                                            touched={touched}
-                                            errors={errors}
-                                            setFieldValue={setFieldValue}
-                                            handleBlur={formik.handleBlur}
-                                            selectedCurrency={selectedCurrency}
-                                            selectedPayee={selectedPayee}
-                                        /></>)}                                      
                                         {/* RBSheet for Payee Selection - using new FiatPayeeListSheetContent */}
                                         <CustomRBSheet
                                             refRBSheet={payeeSheetRef}

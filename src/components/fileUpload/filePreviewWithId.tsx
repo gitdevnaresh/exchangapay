@@ -8,6 +8,7 @@ import {
   Platform,
   Share,
   ActivityIndicator,
+  PermissionsAndroid,
 } from "react-native";
 import { s } from "react-native-size-matters";
 import { getThemedCommonStyles } from "../CommonStyles";
@@ -16,7 +17,6 @@ import Container from "../container/container";
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
 import LabelComponent from "../textComponets/lableComponent/lable";
 import ImageUri from "../imageComponents/image";
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import ButtonComponent from "../buttons/button";
@@ -168,12 +168,13 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
 
   const requestStoragePermissionForAndroid = async (): Promise<boolean> => {
     try {
-      const permission = Platform.Version >= 33
-        ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
-        : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+      if (Platform.OS !== 'android') return true;
+      if (Platform.Version >= 33) return true;
 
-      const result = await request(permission);
-      if (result === RESULTS.GRANTED) return true;
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+      if (result === PermissionsAndroid.RESULTS.GRANTED) return true;
 
       showCustomToast({ message: "Storage permission denied.", type: ToastType.ERROR });
       return false;
@@ -290,4 +291,3 @@ const screenStyeles = (NEW_COLOR: any) => StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
