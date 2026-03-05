@@ -27,7 +27,7 @@ import KycVerifyPopup from "../../../commonScreens/kycVerify";
 import { useDispatch, useSelector } from "react-redux";
 import useMemberLogin from "../../../../hooks/userInfoHook";
 import TextMultiLanguage from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";
-import { AntDesign } from "@expo/vector-icons";
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import AddIcon from "../../../../components/addCommonIcon/addCommonIcon";
 import ProfileService from "../../../../apiServices/profile";

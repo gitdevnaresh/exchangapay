@@ -20,7 +20,8 @@ const userPersistConfig = {
     "acceptedTerms",
     "shouldShowNotices",
     "personalInfo",
-    "accountInfo"
+    "accountInfo",
+    "isOnboardingSteps"
   ],
   transforms: [encryptTransform],
   writeFailHandler: (error) => {

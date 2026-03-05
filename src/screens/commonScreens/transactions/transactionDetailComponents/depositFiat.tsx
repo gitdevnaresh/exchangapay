@@ -50,7 +50,8 @@ const DepositFiat = (props: any) => {
           ? "GLOBAL_CONSTANTS.CARD_WALLET_NAME"
           : "",
         transactionIdList?.name || ""
-      )}      {renderFieldIfExists?.("GLOBAL_CONSTANTS.NETWORK", transactionIdList?.network)}
+      )}
+      {renderFieldIfExists?.("GLOBAL_CONSTANTS.NETWORK", transactionIdList?.network)}
 
       {transactionIdList?.hashId && renderTransactionField?.("GLOBAL_CONSTANTS.HASH", transactionIdList?.hashId || "--",
         <ViewComponent style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8, commonStyles.flex1,]} >

@@ -58,15 +58,12 @@ const DownloadFile: React.FC<DownloadFileProps> = ({
     const commonStyles = getThemedCommonStyles(NEW_COLOR);
     useEffect(() => {
         if (autoStartDownload && imageURL && !loading) {
-            if (onDownloadAttempt) {
-                onDownloadAttempt();
-            }
-            newCheckPermission();
+            void triggerDownload();
             if (onAutoStartProcessed) {
                 onAutoStartProcessed();
             }
         }
-    }, [autoStartDownload, imageURL, loading, onAutoStartProcessed, onDownloadAttempt]);
+    }, [autoStartDownload, imageURL, loading, onAutoStartProcessed]);
 
 
     const onDownloadError = () => {
@@ -267,19 +264,31 @@ const DownloadFile: React.FC<DownloadFileProps> = ({
             await handleLegacyAndroidDownload();
         }
 
-        setLoading(false);
     };
+
+    const triggerDownload = async () => {
+        if (loading) return;
+        setLoading(true);
+        try {
+            await newCheckPermission();
+        } catch (error) {
+            onDownloadError();
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <View>
             {!isDownloadInvoice && loading ? (
                 <ActivityIndicator size={s(20)} color={NEW_COLOR.TEXT_BLUE} />
             ) : (
-                !isDownloadInvoice && <CommonTouchableOpacity activeOpacity={0.7} onPress={newCheckPermission} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, commonStyles]}>
+                !isDownloadInvoice && <CommonTouchableOpacity activeOpacity={0.7} onPress={() => { void triggerDownload(); }} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
                     <MaterialCommunityIcons name="tray-arrow-down" size={s(20)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
                 </CommonTouchableOpacity>
             )}
             {isDownloadInvoice &&
-                <CommonTouchableOpacity activeOpacity={0.7} onPress={newCheckPermission} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
+                <CommonTouchableOpacity activeOpacity={0.7} onPress={() => { void triggerDownload(); }} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
                     <MaterialCommunityIcons name="tray-arrow-down" size={s(24)} color={NEW_COLOR.TEXT_WHITE} /></CommonTouchableOpacity>
             }
         </View>

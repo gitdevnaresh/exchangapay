@@ -64,7 +64,7 @@ const PaymentScreen = ({ paymentData }: any) => {
                         commonStyles.sectionGap
                     ]}
                 />
-                <ViewComponent style={[]}>{paymentData?.orderID}
+                <ViewComponent style={[]}>
                     <ViewComponent style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyContent, commonStyles.listitemGap]}>
                         <ParagraphComponent text={`${paymentData?.paymentType || t("GLOBAL_CONSTANTS.STATIC_PAYMENT_LINK")}`} style={[commonStyles.listsecondarytext]} />
                         <ParagraphComponent text={paymentData?.invoiceNumber} style={[commonStyles.listprimarytext]} />

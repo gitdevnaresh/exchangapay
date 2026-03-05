@@ -12,7 +12,7 @@ import ImageBackgroundWrapper from "../../../components/imageComponents/ImageBac
 import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
 import { useLngTranslation } from "../../../hooks/languagesHook/useLngTranslation";
 import CommonTouchableOpacity from "../../../components/touchableComponents/touchableOpacity";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { statusIconMap } from "../../fintechApp/cards/dashoard/constants";
 import KycVerifyPopup from "../kycVerify";
 import { useDispatch,useSelector } from "react-redux";

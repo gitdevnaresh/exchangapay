@@ -91,7 +91,7 @@ const AssetsSection: React.FC<AssetsSectionProps> = ({ commonStyles, GraphConfig
             {(assets && assets.length > 0) ? (
                 <ViewComponent>
                     {(assets || []).slice(0, 5).map((item: Asset, index: number) => (
-                        <ViewComponent key={item?.code ?? index} style={[commonStyles.cardsbannerbg, commonStyles.transactionsListGap]}>
+                        <ViewComponent key={item?.code ?? index} style={[commonStyles.cardsbannerbg]}>
                             <CommonTouchableOpacity activeOpacity={0.5} onPress={() => handleNavigate(item, vaultsLists?.vaultsList?.[0])}>
                                 <ViewComponent style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
                                     <ViewComponent style={{ width: s(36), height: s(36) }}><ImageUri uri={CoinImages[item?.code?.toLowerCase()] || item?.image} /></ViewComponent>

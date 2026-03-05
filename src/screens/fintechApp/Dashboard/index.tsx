@@ -37,7 +37,7 @@ import TextMultiLanguage from "../../../components/textComponets/multiLanguageTe
 import { setAccountInfo, setAllBalanceInfo, setHomeDashboardCards, setHomeWallets, setNavigationSource, setWalletActionFilter } from "../../../redux/actions/actions";
 import PaymentService from "../../../apiServices/payments";
 import { BankImage } from "../../../assets/svg";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import useEncryptDecrypt from "../../../hooks/encDecHook";
 import AlertsCarousel from "./components/allertCases";
 import { ApiCallsCompletedState, Asset, HomeProps, VerificationField, Configuration, GraphConfiguration, CommonConfiguration, Balance, ApiResponse, TransactionData, VaultsList, VaultCoinsList, PaymentKpiItem, RootState, MenuItem } from "./interface";

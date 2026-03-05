@@ -135,7 +135,11 @@ const AddressbookFiatView = React.memo((props: any) => {
     }, [getAddressbookSumarryDetails]);
     return (
         <View style={[commonStyles.flex1, commonStyles.screenBg]}>
-            {loadingData && <SafeAreaViewComponent> <DashboardLoader /> </SafeAreaViewComponent>}
+            {loadingData && (
+                <SafeAreaViewComponent>
+                    <DashboardLoader />
+                </SafeAreaViewComponent>
+            )}
             {!loadingData && <Container style={commonStyles.container}>
                 <PageHeader title={"GLOBAL_CONSTANTS.FIAT_VIEW"} onBackPress={handleBackArrowAddressView} />
                 <ScrollViewComponent showsVerticalScrollIndicator={false} refreshing={refresh} onRefresh={onRefresh} >
