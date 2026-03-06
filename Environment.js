@@ -131,7 +131,7 @@ const ENV = {
   },
 };
 export const getAllEnvData = () => {
-  return ENV['tst'];
+  return ENV['staging'];
 };
 export const getEnvVars = () => {
   return __DEV__ ? ENV.local : ENV.prod;

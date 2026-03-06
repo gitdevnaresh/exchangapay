@@ -18,8 +18,8 @@ export const supportMail = 'support@rapidz.money'
 
 const CONFIGURATION = {
     IDENITY_CONFIG: {
-        AUTH0: true,// Set to true if Auth0 manual screen is used for authentication
-        AUTH0_SDK_LOGIN: false,// Set to true if Auth0 SDK is used for authentication
+        AUTH0: false,// Set to true if Auth0 manual screen is used for authentication
+        AUTH0_SDK_LOGIN: true,// Set to true if Auth0 SDK is used for authentication
         ID_SERVER: false
     },
     TABS: [

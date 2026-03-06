@@ -50,7 +50,7 @@
     "expo-camera": "^16.0.10",
     "expo-document-picker": "^13.0.3",
     "expo-file-system": "^18.0.7",
-    "expo-font": "^13.0.1",
+    "expo-font": "~14.0.11",
     "expo-image-picker": "^16.0.5",
     "expo-linear-gradient": "^14.0.1",
     "expo-linking": "^7.0.4",
@@ -108,7 +108,6 @@
     "react-native-signature-capture": "^0.4.12",
     "react-native-size-matters": "^0.4.2",
     "react-native-skeleton-placeholder": "^5.2.4",
-    "react-native-splash-screen": "^3.3.0",
     "react-native-svg": "^15.13.0",
     "react-native-svg-transformer": "^1.5.1",
     "react-native-tab-view": "^4.1.3",
@@ -128,7 +127,8 @@
     "rn-swipe-button": "^1.3.8",
     "uuid": "^11.0.5",
     "victory-native": "^36.6.8",
-    "yup": "^1.7.0"
+    "yup": "^1.7.0",
+    "expo-asset": "~12.0.12"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

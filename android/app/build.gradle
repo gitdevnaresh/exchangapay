@@ -5,6 +5,8 @@ apply plugin: 'com.google.gms.google-services' // <- Add this line
 apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
+import java.util.Properties
+
 // React Native Permissions - Add specific permission modules
 project.ext {
     reactNativePermissionsVersion = "5.4.0"
@@ -85,6 +87,18 @@ if (System.getenv('SENTRY_DISABLE_AUTO_UPLOAD') != 'true') {
 } else {
     println "Sentry auto upload disabled via SENTRY_DISABLE_AUTO_UPLOAD env var"
 }
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def cleanSigningValue(value) {
+    if (value == null) return null
+    def normalized = value.toString().trim()
+    return (normalized.isEmpty() || normalized == "CHANGE_ME") ? null : normalized
+}
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion "35.0.0"
@@ -95,9 +109,9 @@ android {
         applicationId "money.rapidz.rapidzmoney"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion 36
-        versionCode 1
-        versionName "1.0"
-        manifestPlaceholders = [auth0Domain: "money.rapidz.rapidzmoney", auth0Scheme: "${applicationId}.auth0"] 
+        versionCode 11
+        versionName "1.0.11"
+        manifestPlaceholders = [auth0Domain: "rapidz-stg.us.auth0.com", auth0Scheme: "${applicationId}.auth0"] 
     }
     signingConfigs {
         debug {
@@ -106,15 +120,37 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            // Priority: key.properties -> env vars -> legacy gradle.properties (MYAPP_RELEASE_*)
+            def storeFilePath = cleanSigningValue(keystoreProperties['storeFile']) ?:
+                    System.getenv('ANDROID_UPLOAD_STORE_FILE') ?:
+                    project.findProperty('MYAPP_RELEASE_STORE_FILE')
+            def storePasswordValue = cleanSigningValue(keystoreProperties['storePassword']) ?:
+                    System.getenv('ANDROID_UPLOAD_STORE_PASSWORD') ?:
+                    project.findProperty('MYAPP_RELEASE_STORE_PASSWORD')
+            def keyAliasValue = cleanSigningValue(keystoreProperties['keyAlias']) ?:
+                    System.getenv('ANDROID_UPLOAD_KEY_ALIAS') ?:
+                    project.findProperty('MYAPP_RELEASE_KEY_ALIAS')
+            def keyPasswordValue = cleanSigningValue(keystoreProperties['keyPassword']) ?:
+                    System.getenv('ANDROID_UPLOAD_KEY_PASSWORD') ?:
+                    project.findProperty('MYAPP_RELEASE_KEY_PASSWORD')
+
+            if (storeFilePath && storePasswordValue && keyAliasValue && keyPasswordValue) {
+                storeFile file(storeFilePath)
+                storePassword storePasswordValue
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+            } else {
+                println("Release signing config is incomplete. Set android/key.properties or ANDROID_UPLOAD_* environment variables.")
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
