@@ -35,12 +35,3 @@ export interface MemberShip {
   export interface TransactionData {
     data: Transaction[];
   }
-
-  export interface TransactionComponents {
-  withdrawcrypto?: JSX.Element;
-  withdrawfiat?: JSX.Element;
-  depositfiat?: JSX.Element;
-  depositcrypto?: JSX.Element;
-  payincrypto?: JSX.Element;
-  [key: string]: JSX.Element | undefined; // allows flexibility for future types
-}

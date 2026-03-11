@@ -20,7 +20,7 @@ import StarIcon from './star.svg';
 import ExportIcon from './export.svg';
 import CryptoGraph from './ac_crypto_graph.svg';
 import Crypto from './crypto.svg';
-import Card from './cards.svg';
+import Cards from './cards.svg';
 import Wallet from './wallet.svg';
 import Graph1 from './graph1.svg';
 import Graph2 from './graph2.svg';
@@ -99,11 +99,10 @@ import MlmPackagesActiveMenuIcon from "./latest/mlm_packagesactive_icon.svg";
 import MlmWalletsMenuIcon from "./latest/mlm_wallets_icon.svg";
 import MlmWalletsActiveMenuIcon from "./latest/mlm_walletsactive_icon.svg";
 
-import LanguageArabicIcon from "./latest/language-arabic-icon.svg";
 // import LanguageEngIcon from "./latest/language-eng-icon.svg";
-import LanguageEngIcon from "./latest/english.svg";
-import LanguageGerIcon from "./latest/german.svg";
-import LanguageTeluguTcon from "./latest/melayu.svg";
+// import LanguageEngIcon from "./latest/english.svg";
+// import LanguageGerIcon from "./latest/german.svg";
+// import LanguageTeluguTcon from "./latest/melayu.svg";
 import SettingsAppearanceIcon from "./latest/settings-appearance-icon.svg";
 import SettingsLanguageIcon from "./latest/settings-language-icon.svg";
 import SideMenuCouponsIcon from "./latest/sidemenu-couponsIcon.svg";
@@ -135,7 +134,7 @@ import KycImage from "./latest/identity.svg";
 import InviteImage from "./latest/invite.svg";
 import GpayImage from "./latest/gpay.svg";
 import PhonePay from "./latest/phonepay.svg";
-import AmazonPay from "./latest/amazon.svg";
+import AmazonPay from "./latest/amazonpay.svg";
 import AliaPay from "./latest/aliapay.svg";
 import AppleImage from "./latest/apple.svg";
 import ShopeeImage from "./latest/shopee.svg";
@@ -149,7 +148,7 @@ import ProfileAddressImage from "./latest/profileaddress.svg";
 import CardsImage from "./latest/cards.svg";
 import SplashScreenImg from "./latest/splashscreenimg.svg";
 import VerifyImg from "./latest/verifybannerimg.svg";
-import rapidzlogo from "./latest/arhacardslogo.svg";
+import ArthaCardslogo from "./latest/arhacardslogo.svg";
 import AddPayeeImage from "./latest/addpayee.svg";
 import ProfileTransactionImage from "./latest/profiletransaction.svg";
 import DashboardDeposistImage from "./latest/dashboarddeposist.svg";
@@ -168,9 +167,9 @@ import TransactionDownload from "./latest/transactiondownload.svg";
 import CompleteKyc from "./latest/complete kyc.svg";
 import CanceledIcon from "./latest/cancelled.svg";
 import PendingIcon from "./latest/pending.svg";
-import Transactionwithdraw from "./latest/transactionwithdraw.svg";
+import Transactionwithdraw from "./latest/transactionwithdra.svg";
 import TransactionDeposist from "./latest/transactiondeposist.svg";
-import ApplyCardImage from "./latest/rapidzcards.svg";
+import ApplyCardImage from "./latest/applycardimg.svg";
 import TetherImage from "./latest/tether.svg";
 import FreezeCardImage from "./latest/freezecard.svg";
 import Arthalogo from "./latest/arthalogo.svg";
@@ -185,13 +184,12 @@ import UnCkeckedBox from "./latest/unchechkedbox.svg";
 import CheckedBox from "./latest/checkedbox.svg";
 import GraphImage from "./latest/graph.svg";
 import GradiantArrow from "./latest/grdiantarrow.svg";
-import EditIconImage from "./latest/editicon.svg";
-import EditImage from "./latest/linkedit.svg";
-import UsdImage from "./latest/editicon.svg";
+// import EditIconImage from "./latest/editicon.svg";
+// import UsdImage from "./latest/editicon.svg";
 import ProfileimageDrawer from "./latest/profileimage.svg";
 import WalletGraph from "./latest/walletsdashboard.svg";
 import DeposistCopy from "./latest/copyicondeposist.svg";
-import DashboardGraph from "./latest/dashboardgraphs.svg";
+import DashboardGraph from "./latest/dashboardgraph.svg";
 import CheckIcon from "./latest/checkicon.svg";
 import BannerImage from "./latest/bannerImage.svg";
 import ReferralHUb from "./latest/referralHub.svg";
@@ -218,103 +216,26 @@ import CopyIconImage from "./latest/copyiconimage.svg";
 import KycCompleteImage from "./latest/kyccomplete.svg";
 import UpArrow from "./latest/uparrow.svg";
 import DownArrow from "./latest/downarrow.svg";
-import SplashCards from "./latest/registerimage.svg";
+import SplashCards from "./latest/splashscreencards.svg";
 import VerifyEmailIcon from "./latest/verifyemail.svg";
 import ReferralsNewImage from "./latest/referralsimage.svg";
-import WentWrongDarkImage from "./latest/somethingdark.svg";
+import WentWrongDarkImage from "./latest/somethingwentwrong.svg";
 import CommingDarkImage from "./latest/comingsoon.svg";
-import NoInternet from "./latest/nointernetdark.svg";
+import NoInternet from "./latest/nointernet.svg";
 import NotificationImage from "./latest/notification.svg";
-import SessionImage from "./latest/sessionexpiredark.svg";
-import SomethingWrongLightImage from "./latest/somethinglight.svg";
-import SessionLightImge from "./latest/sessionexpire.svg";
-import NoInternetLightImage from "./latest/networklight.svg";
-import NotificationLightImage from "./latest/nonotificationlight.svg";
-import CommingLightImage from "./latest/commingsoonlight.svg";
-import KycKybImages from "./latest/kyckybimage.svg";
-import ReceivedImages from "./latest/deposisticon.svg";
-import RapidLogo from "./latest/rapidlogo.svg";
-import Steps1Image from "./latest/step1image.svg";
-import Steps2Image from "./latest/step2image.svg";
-import BankImage from "./latest/bankimg.svg"
-import LeftIcon from "./latest/left.svg"
-import RightIcon from "./latest/right.svg"
-import OnBoardingPayIn from "./latest/onboardingpayins.svg"
-import OnBoardingWallets from "./latest/onboardingwallets.svg"
-import OnBoardingLightWallets from "./latest/Oonboardinglightwallets.svg"
-import DarkNoInternet from "./latest/darknointernet.svg"
-import LightNoInternet from "./latest/lightnointernet.svg"
-import DarkNoNotification from "./latest/darknonotification.svg"
-import LightNoNotification from "./latest/lightnonotification.svg"
-import DarkSessionExpire from "./latest/darksessionexpire.svg"
-import LightSessionExpire from "./latest/lightsessionexpire.svg"
-import LightRegister from "./latest/lightsessionexpire.svg"
-import DarkRegister from "./latest/lightsessionexpire.svg"
-import AdminGiftBox from "./latest/adminrewards.svg"
-import MysteryBoxIcon from "./latest/mysteryboximg.svg"
-import PointsCollect from "./latest/pointcollectimg.svg"
-import XPPoints from "./latest/xppoints.svg"
-import InvoiceImage from "./latest/invoiceimg.svg"
-import CircleBg from "./latest/circlebg.svg"
-import RegistraionSuccess from "./latest/registrationsuccess.svg"
-import PendingPayments from "./latest/pendingpayments.svg"
-import KYCKybRequirements from "./latest/kybkycenable.svg"
-import NOWifi from "./latest/nowifi.svg"
-import ExpiredTime from "./latest/expiredtime.svg"
-import RocketComming from "./latest/rocketcommingsoon.svg"
-import SomeTimesWentWrong from "./latest/sometimeswentwrong.svg"
-import RegisterSuccessfull from "./latest/registersuccessfully.svg"
-import BusinessRegisterSuccessfull from "./latest/businessregistersuccessful.svg"
-import AppUpdateImg from "./latest/updatedscreen.svg"
-import AppUpdateImglight from "./latest/updatedscreen.svg";
-import UserLogin from "./latest/userlogin.svg"
-import LightCircle from "./latest/lightcircle.svg"
-import ReferralsBannerImage from "./latest/refferral.svg"
-import GetStartedImage from "./latest/getImage.svg"
-import FasstDarkImage from "./latest/fastdark.svg"
-import AltertNotificationImage from "./latest/notificationbannerimage.svg";
-import FaceSecurityImage from "./latest/faceicon.svg";
-import ProtectionIcon from "./latest/protection.svg";
-import RocketCommingDark from "./latest/protection.svg";
-import UnderReview from "./latest/underReview.svg";
-import AccessDinied from "./latest/accessdenied.svg"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import SessionImage from "./latest/sessionsover.svg";
+import SwakipayLogo from "./latest/swakipayLogo.svg";
+import Google from "./latest/google.svg";
+import SwokipayLight from "./latest/Swokipay_light.svg";
+import SwokipayLogo from "./latest/swokipaylogo.svg";
+import User from "./latest/user.svg";
+import Bullswipe from "./latest/bullswipe.svg"
+import LeftIcon from "./latest/left.svg";
+import RightIcon from "./latest/right.svg";
+import MAsterIcon from "./latest/master-logo.svg";
+import FaceIcon from "./latest/faceIcon.svg";
+import FaceScanner from "./latest/facescanner.svg";
+import Success from "./latest/success.svg";
 
 
 
@@ -395,10 +316,10 @@ export {
     MlmProductsMenuIcon,
     MlmProductsActiveMenuIcon,
     SideMenuCouponsIcon,
-    LanguageArabicIcon,
-    LanguageEngIcon,
-    LanguageGerIcon,
-    LanguageTeluguTcon,
+    // LanguageArabicIcon,
+    // LanguageEngIcon,
+    // LanguageGerIcon,
+    // LanguageTeluguTcon,
     SettingsAppearanceIcon,
     SettingsLanguageIcon,
     MlmCardsMenuIcon,
@@ -472,7 +393,7 @@ export {
     Girl,
     CryptoGraph, StarIcon, ExportIcon,
     Crypto,
-    Card,
+    Cards,
     Wallet,
     Graph1,
     Graph2,
@@ -516,7 +437,7 @@ export {
     CardsImage,
     SplashScreenImg,
     VerifyImg,
-    rapidzlogo,
+    ArthaCardslogo,
     AddPayeeImage,
     ProfileTransactionImage,
     DashboardDeposistImage,
@@ -550,9 +471,8 @@ export {
     GraphImage,
     GradiantArrow,
     CopyIcon,
-    EditIconImage,
-    EditImage,
-    UsdImage,
+    // EditIconImage,
+    // UsdImage,
     ProfileimageDrawer,
     CheckedBox,
     WalletGraph,
@@ -592,59 +512,18 @@ export {
     NoInternet,
     NotificationImage,
     SessionImage,
-    SomethingWrongLightImage,
-    SessionLightImge,
-    NoInternetLightImage,
-    NotificationLightImage,
-    CommingLightImage,
-    KycKybImages,
-    ReceivedImages,
-    RapidLogo,
-    Steps1Image,
-    Steps2Image,
-    BankImage,
+    SwakipayLogo,
+    Google,
+    SwokipayLight,
+    SwokipayLogo,
+    User,
+    Bullswipe,
     LeftIcon,
     RightIcon,
-    OnBoardingPayIn,
-    OnBoardingWallets,
-    DarkNoInternet,
-    LightNoInternet,
-    DarkNoNotification,
-    LightNoNotification,
-    DarkSessionExpire,
-    LightSessionExpire,
-    LightRegister,
-    DarkRegister,
-    AdminGiftBox,
-    MysteryBoxIcon,
-    PointsCollect,
-    XPPoints,
-    InvoiceImage,
-    CircleBg,
-    RegistraionSuccess,
-    PendingPayments,
-    KYCKybRequirements,
-    NOWifi,
-    ExpiredTime,
-    RocketComming,
-    SomeTimesWentWrong,
-    RegisterSuccessfull,
-    BusinessRegisterSuccessfull,
-    AppUpdateImg,
-    AppUpdateImglight,
-    UserLogin,
-    LightCircle,
-    OnBoardingLightWallets,
-    ReferralsBannerImage,
-    FasstDarkImage,
-    GetStartedImage,
-    AltertNotificationImage,
-    FaceSecurityImage,
-    ProtectionIcon,
-    RocketCommingDark,
-    UnderReview,
-    AccessDinied
-    
+    MAsterIcon,
+    FaceIcon,
+    FaceScanner,
+    Success
 };
 
 
