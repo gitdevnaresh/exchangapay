@@ -50,7 +50,7 @@ interface DialogflowDetectIntentResponse {
   };
 }
 
-const serviceAccount = require('../../../android/app/src/main/assets/web3bank-460713-ed4d31f7657f 1.json');
+const serviceAccount = require('../../../android/app/src/main/assets/web3bank-460713-ed4d31f7657f.json');
 
 // Cache for access token to avoid repeated requests
 let cachedToken: { token: string; expires: number } | null = null;
