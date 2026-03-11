@@ -1,43 +1,43 @@
-import * as Sentry from '@sentry/react-native';
-import { Logger } from '../../utils/Logger';
+import analytics from '@react-native-firebase/analytics';
 
-interface LogMetadata {
-  action?: string;
-  nextScreen?: string;
-  currentScreen?: string;
-  [key: string]: any;
+/**
+ * Interface for structured action logging parameters.
+ * This helps ensure consistency and type safety for your analytics events.
+ */
+export interface ActionLogParams {
+  screename: string;
+  actionName: string;
+  actionType: string;
+  nextScreenName?: string; // Optional: The name of the next screen after this action
+  actionObj?: { // Optional: Object containing additional details about the action
+    apiUrl?: string; // Optional: API URL related to the action
+    postObj?: { // Optional: Data sent in a POST request, be cautious with sensitive data here
+      [key: string]: any; // Allows for other properties in postObj, but filter sensitive data
+    };
+    // Allow for an error object or other dynamic data
+    [key: string]: any;
+  };
 }
 
 /**
- * Logs a custom user event into Sentry.
- * - Attaches action / screen context as tags.
- * - Adds breadcrumb for navigation history.
- * - Captures as a custom event.
+ * A custom hook to provide Firebase Analytics logging functions.
+ * It centralizes analytics calls and provides simple, typed methods for logging.
  */
-export const logEvent = (eventName: string, metaData: LogMetadata = {}) => {
-  try {
-    // Add contextual tags
-    if (metaData.action) Sentry.setTag('action', metaData.action);
-    if (metaData.nextScreen) Sentry.setTag('nextScreen', metaData.nextScreen);
-    if (metaData.currentScreen) Sentry.setTag('currentScreen', metaData.currentScreen);
+export const useActionLogging = () => {
 
-    const { sanitizeData } = require('../../utils/Logger');
-    // Breadcrumb for timeline
-    Sentry.addBreadcrumb({
-      category: 'user.action',
-      message: eventName,
-      level: 'info',
-      data: sanitizeData(metaData),
-    });
+  /**
+   * Logs a custom event with optional parameters.
+   * @param eventName - The name of the event (e.g., 'button_press', 'share').
+   * @param params - An object of key-value pairs to send with the event.
+   */
+  const logEvent = async (eventName: string, params: { [key: string]: any } = {}) => {
+    try {
+        // console.log( params);
+    //   await analytics().logEvent(eventName, params); // IMPORTANT: This line was commented out and has been re-enabled.
+    } catch (error) {
+      console.error(`Firebase Analytics: Error logging event "${eventName}".`, error);
+    }
+  };
 
-    // Capture custom message
-    Sentry.captureMessage(`User Event: ${eventName}`, 'info');
-  } catch (err) {
-    Logger.warn('Failed to log event to Sentry:', err);
-  } finally {
-    // Clean up tags so they don’t leak to next events
-    Sentry.setTag('action', null as any);
-    Sentry.setTag('nextScreen', null as any);
-    Sentry.setTag('currentScreen', null as any);
-  }
+  return { logEvent };
 };

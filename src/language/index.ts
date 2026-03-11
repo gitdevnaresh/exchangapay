@@ -5,8 +5,7 @@ import malay from "./locales/malay/malay.json"
 import arabic from "./locales/arabic/arabic.json"
 import german from "./locales/german/german.json"
 import {initReactI18next} from 'react-i18next'
-import { SecureStorage } from '../utils/secureStorage';
-import { Logger } from '../utils/Logger';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const locales = {
@@ -33,19 +32,19 @@ const languageDetector = {
   async: true,
   detect: async (callback: (lang: string) => void) => {
     try {
-      const storedLang = await SecureStorage.getSecureItem('user-language');
+      const storedLang = await AsyncStorage.getItem('user-language');
       callback(storedLang || 'en');
     } catch (error) {
-      Logger.error('Error loading language:', error);
+      console.error('Error loading language:', error);
       callback('en');
     }
   },
   init: () => {},
   cacheUserLanguage: async (lng: string) => {
     try {
-      await SecureStorage.setSecureItem('user-language', lng);
+      await AsyncStorage.setItem('user-language', lng);
     } catch (error) {
-      Logger.error('Error saving language:', error);
+      console.error('Error saving language:', error);
     }
   },
 };

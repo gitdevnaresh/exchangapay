@@ -1,15 +1,12 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, TouchableOpacity, View, Text } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 import RenderHTML from "react-native-render-html";
-import { s } from "../../../constants/styels/scale";
-import NoDataComponent from "../../../components/noData/noData";
-import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
-import { getThemedCommonStyles } from "../../../components/CommonStyles";
-import { LinearGradient } from "expo-linear-gradient";
-import { Logger } from '../../../utils/Logger';
-import { getTabsConfigation } from '../../../../configuration';
+import { s } from "../../../constants/theme/scale";
+import NoDataComponent from "../../../newComponents/noData/noData";
+import { useThemeColors } from "../../../hooks/useThemeColors";
+import { getThemedCommonStyles } from "../../../assets/styles/CommonStyles";
 
 interface AutoCarouselProps {
   data: any[];
@@ -18,44 +15,54 @@ interface AutoCarouselProps {
   height?: number;
   loop?: boolean;
   scrollAnimationDuration?: number;
+  /** if you want to render html from a key in each object pass the key.
+   *  Pass undefined/null when you pass React elements directly. */
   contentKey?: string;
   style?: any;
   isCustomestyle?: boolean;
+  isLoopDotsDisply?: boolean;
+  onIndexChange?: (index: number) => void;
 }
 
 const AutoSlideCarousel: React.FC<AutoCarouselProps> = ({
   data,
   duration,
-  width = Dimensions.get("window").width * 0.90,
-  height = s(250),
+  width = Dimensions.get("window").width * 0.87,
+  height = s(200),
   loop = true,
   scrollAnimationDuration = 500,
-  contentKey = "templateContent",
+  contentKey,
   style,
-  isCustomestyle = false
+  isCustomestyle = false,
+  isLoopDotsDisply = false,
+  onIndexChange
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const sharedValue = useSharedValue(0);
   const carouselRef = useRef<ICarouselInstance>(null);
-  const commonComponentConfig = getTabsConfigation('COMMON_COMPONENTS');
-  const handleSnapToItem = (index: number) => {
-    setActiveIndex(index);
-  };
   const NEW_COLOR = useThemeColors();
   const commonStyles = getThemedCommonStyles(NEW_COLOR);
+
+  const handleSnapToItem = (index: number) => {
+    setActiveIndex(index);
+    if (onIndexChange) onIndexChange(index);
+  };
+
   const handleDotPress = (index: number) => {
     setActiveIndex(index);
-    carouselRef.current?.scrollTo({ index: index, animated: true });
+    carouselRef.current?.scrollTo({ index, animated: true });
   };
 
   useEffect(() => {
     sharedValue.value = activeIndex;
   }, [activeIndex]);
-  if (!data || data?.length == 0) {
+
+  if (!data || data.length === 0) {
     return <NoDataComponent />;
   }
+
   return (
-    <View >
+    <View>
       <Carousel
         ref={carouselRef}
         width={width}
@@ -68,73 +75,74 @@ const AutoSlideCarousel: React.FC<AutoCarouselProps> = ({
         scrollAnimationDuration={scrollAnimationDuration}
         pagingEnabled
         renderItem={({ item }: { item: any }) => {
-          const slideStyle = [
-            {
-              width: width,
-              height: height,
-              justifyContent: 'center', // Default, can be overridden by item's own styles
-              // alignItems: 'center', // Default, can be overridden by item's own styles
-            },
-          ];
+          const slideStyle = {
+            width,
+            height: s(187),
+            justifyContent: "center"
+          };
 
-          // Check if item is an object and has the contentKey for HTML rendering
+          // ✅ If you passed objects with HTML string
           if (
-            typeof item === 'object' &&
+            contentKey &&
+            typeof item === "object" &&
             item !== null &&
             !React.isValidElement(item) &&
-            contentKey &&
-            typeof item[contentKey] === 'string'
+            typeof item[contentKey] === "string"
           ) {
             return (
               <View style={slideStyle}>
-                <RenderHTML contentWidth={width * 0.9} source={{ html: item[contentKey] }} />
+                <RenderHTML
+                  contentWidth={width * 0.9}
+                  source={{ html: item[contentKey] }}
+                />
               </View>
             );
-          } else if (React.isValidElement(item)) {
-            // If item is a React element, render it directly
-            return <View style={slideStyle}>{item}</View>;
           }
-          // Fallback for invalid item structure
-          Logger.warn("AutoSlideCarousel: Invalid item format in data array.", item);
-          return <View style={slideStyle}><Text>Invalid Slide Content</Text></View>;
+
+          // ✅ If you passed React elements directly
+          if (React.isValidElement(item)) {
+            return item; // render the element exactly as given
+          }
+
+          // Fallback
+          console.warn("AutoSlideCarousel: Invalid item format", item);
+          return (
+            <View style={slideStyle}>
+              <Text>Invalid Slide Content</Text>
+            </View>
+          );
         }}
       />
 
-      <View style={isCustomestyle ? style : [
-        commonStyles.dflex,
-        commonStyles.justifyCenter,
-        commonStyles.alignCenter,
-        commonStyles.gap5,
-        commonStyles.mt10,
-        commonStyles.contentcarousel
-      ]}>
-        {data.map((_, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handleDotPress(index)}
-            activeOpacity={0.7}
-          >
-            {activeIndex === index ? (
-              (commonComponentConfig.isLinearGradientApply &&
-                <LinearGradient
-                  colors={["#CEFF1C", "#E5FF84", "#CEFF1C"]}
-                  locations={[0.085, 0.4784, 0.8589]}
-                  start={{ x: 0.3, y: 0.0 }}
-                  end={{ x: 0.7, y: 1.0 }}
-                  style={commonStyles.ActiveCarousel}
-                /> ||
-                <View
-
-                  style={[commonStyles.ActiveCarousel]}
-                />
-              )
-            ) : (
-              <View style={[commonStyles.InActiveCarousel]} />
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
-
+      {isLoopDotsDisply && (
+        <View
+          style={
+            isCustomestyle
+              ? style
+              : [
+                  commonStyles.dflex,
+                  commonStyles.justifyCenter,
+                  commonStyles.alignCenter,
+                  commonStyles.gap5,
+                  commonStyles.mt16
+                ]
+          }
+        >
+          {data.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleDotPress(index)}
+              activeOpacity={0.7}
+            >
+              {activeIndex === index ? (
+                <View style={[commonStyles.ActiveCarousel]} />
+              ) : (
+                <View style={[commonStyles.InActiveCarousel]} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 };

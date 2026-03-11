@@ -1,1 +1,0 @@
-export { default as SecureErrorBoundary } from './SecureErrorBoundary';

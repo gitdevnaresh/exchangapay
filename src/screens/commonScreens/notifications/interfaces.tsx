@@ -5,7 +5,9 @@ export interface Notification {
     message: string;
     notificationType: string | null;
     date: string;
-    transactionId: string | number
+    transactionId: string | number;
+    actionBy: string;
+    notifiedDate: string;
 }
 export const CONSTS = {
     DASHBOARD: "Dashboard",
@@ -14,4 +16,12 @@ export const CONSTS = {
     NOTIFICATIONS: "Notifications",
     DATE: "Date:",
     NO_DATA_AVAILABLE: "No data available",
+};
+
+export interface Icons {
+    name: string;
+    flag: string | null;
+    length: number;
+    logo: string | null;
+    recorder: number;
 }

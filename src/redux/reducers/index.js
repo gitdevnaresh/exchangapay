@@ -2,43 +2,23 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import encryptTransform from "../../utils/encryptionTransfor";
 import userReducer from "./userReducer";
+import cardsReducer from "./cardReducer";
+import sendReducer from "./sendReducer";
+import withdrawReducer from "./withdrawReducer";
 import { createKeychainStorage } from "redux-persist-keychain-storage";
-import { Logger } from "../../utils/Logger";
-
 const keychainStorage = createKeychainStorage();
-
-const userPersistConfig = {
-  key: "userReducer",
-  storage: keychainStorage,
-  whitelist: [
-    "login",
-    "userDetails",
-    "userInfo",
-    "showBiometricPrompt",
-    "appTheme",
-    "referralCode",
-    "acceptedTerms",
-    "shouldShowNotices",
-    "personalInfo",
-    "accountInfo",
-    "isOnboardingSteps"
-  ],
-  transforms: [encryptTransform],
-  writeFailHandler: (error) => {
-    Logger.error('Redux persist write failed', { error: error.message });
-  }
-};
-
-const rootReducer = combineReducers({
-  userReducer: persistReducer(userPersistConfig, userReducer),
-});
-
 const persistConfig = {
   key: "root",
-  storage: keychainStorage,
-  whitelist: [],
+  storage:keychainStorage, 
+  whitelist: ["userReducer", "cardsReducer","sendReducer","withdrawReducer"], 
+  transforms: [encryptTransform],
 };
-
+const rootReducer = combineReducers({
+  userReducer,
+  cardsReducer,
+  sendReducer,
+  withdrawReducer
+});
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = configureStore({
   reducer: persistedReducer,

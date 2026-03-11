@@ -963,10 +963,7 @@
       "SELECT_ADDRESS": "اختر العنوان",
       "BIND_NOW": "اربط الآن",
       "PLEASE_VERIFY_THE_CODE":"يرجى التحقق من الرمز",
-      "HELLO_I_WOULD_LIKE_TO_INVITE_ARTHA_CARDS":"مرحبًا، أود دعوتك للانضمام إلى Rapidz. استخدم رمز الإحالة الخاص بي للتسجيل:",
-      "INCORRECT_EMAIL_ADDRESS_USERNAME_OR_PASSWORD": "بريد إلكتروني أو اسم مستخدم أو كلمة مرور غير صحيحة.",
-      "PASSWORD_IS_TOO_WEAK_PLEASE_CHOOSE_A_STRONGER_PASSWORD":"كلمة المرور ضعيفة جدًا. يرجى اختيار كلمة مرور أقوى.",
-       "LAST_UPDATED":"آخر تحديث: 05/02/2025"
+      "HELLO_I_WOULD_LIKE_TO_INVITE_ARTHA_CARDS":"مرحبًا، أود دعوتك للانضمام إلى Arthacards. استخدم رمز الإحالة الخاص بي للتسجيل:"
      
   },
   "Referrals Count":"عدد الإحالات",

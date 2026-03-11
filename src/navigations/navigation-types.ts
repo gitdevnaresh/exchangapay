@@ -94,6 +94,7 @@ export type RootStackParamList = {
   CardToBeReviewed: undefined;
   AllCardsList: { type: string };
   CardsInfo: { cardId: string; cardType?: string };
+  PayeeDetails: { payee: any };
 };
 
 export type FinanceStackParamList = {

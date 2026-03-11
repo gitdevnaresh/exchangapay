@@ -1,93 +1,97 @@
 import { jwtDecode } from "jwt-decode";
-import { getAllEnvData } from "../../../Environment";
-import axios from "axios";
 import Keychain from "react-native-keychain";
-import { storeToken } from "../../apiServices/onBoarding/auth0Service";
-import { Logger } from '../../utils/Logger';
+import OnboardingService from "../../services/onboarding";
+import { storeToken } from "../../services/auth0Service";
+import { showAppToast } from "../../newComponents/ToasterMessages/ShowMessage";
+
+let shouldStopRetry = false;
+let failedAttempts = 0;
+const maxFailedAttempts = 3;
 
 export const getDecodedTokenExpiry = async (): Promise<number | null> => {
-    try {
-      const credentials = await Keychain.getGenericPassword({ service: "authTokens" });
-      if (!credentials) {
-        throw new Error("TOKEN_CREDENTIALS_NOT_FOUND");
-      }
-      
-      let accessToken;
-      try {
-        const parsedCredentials = JSON.parse(credentials.password);
-        accessToken = parsedCredentials.accessToken;
-      } catch (parseError) {
-        throw new Error("TOKEN_PARSE_FAILED");
-      }
+  try {
+    const credentials = await Keychain.getGenericPassword({ service: "authTokens" });
+    if (!credentials) return null;
+    
+    const parsedCredentials = JSON.parse(credentials.password);
+    const accessToken = parsedCredentials.accessToken;
+    if (!accessToken) return null;
 
-      if (!accessToken) {
-        throw new Error("ACCESS_TOKEN_MISSING");
+    const decodedToken: any = jwtDecode(accessToken);
+    return decodedToken?.exp;
+  } catch (error) {
+    return null;
+  }
+};
+export const checkAndRefreshToken = async () => {
+  try {
+    const credentials = await Keychain.getGenericPassword({service:"authTokens"});
+    if (!credentials) {
+      failedAttempts++;
+      if (failedAttempts >= maxFailedAttempts) {
+        shouldStopRetry = true;
       }
-
-      const decodedToken: any = jwtDecode(accessToken);
-      const expiryTime = decodedToken?.exp;
-      
-      if (!expiryTime) {
-        throw new Error("TOKEN_EXPIRY_MISSING");
-      }
-      
-      return expiryTime;
-    } catch (error) {
-      Logger.error("Error decoding token expiry", {
-        originalError: error.message,
-        context: "TOKEN_DECODE_EXPIRY"
-      });
-      
-      // Throw error to halt execution (fail-closed)
-      throw new Error("SECURE_SESSION_FAILED");
+      return;
     }
-  };
-  export const checkAndRefreshToken = async () => {
-    try {
-      const credentials = await Keychain.getGenericPassword({service:"authTokens"});
-      if (!credentials) {
-        throw new Error("AUTH_TOKEN_CREDENTIALS_NOT_FOUND");
+    
+    const parsedCredentials = JSON.parse(credentials.password);
+    const refreshToken = parsedCredentials.refreshToken;
+    if (!refreshToken) {
+      failedAttempts++;
+      if (failedAttempts >= maxFailedAttempts) {
+        shouldStopRetry = true;
       }
-      let refreshToken;
-      try {
-        const parsedCredentials = JSON.parse(credentials.password);
-        refreshToken = parsedCredentials.refreshToken;
-      } catch (parseError) {
-        throw parseError; // Propagate error
-      }
+      return;
+    }
 
-      if (!refreshToken) {
-        // This is a state where re-authentication is needed.
-        // Throwing an error will stop the refresh loop.
-        throw new Error("REFRESH_TOKEN_MISSING");
+    const body = { refreshId: refreshToken };
+
+    const response = await OnboardingService.refreshToken(body);
+    
+    if (response?.status === 200) {
+      let responseData: any = response.data;
+      if (typeof responseData === 'string') {
+        responseData = JSON.parse(responseData);
       }
-      const { oAuthConfig } = getAllEnvData();
-      if (!oAuthConfig?.issuer || !oAuthConfig?.clientId) {
-        // Logger.error("checkAndRefreshToken: Auth0 configuration (issuer or clientId) is missing.");
-        throw new Error("AUTH0_CONFIG_MISSING");
-      }
-      const tokenEndpoint = `https://${oAuthConfig.issuer}/oauth/token`;
-      const response = await axios.post(tokenEndpoint, {
-        grant_type: "refresh_token",
-        client_id: oAuthConfig.clientId,
-        refresh_token: refreshToken,
-      });
-      const { access_token: newAccessToken, refresh_token: newRefreshToken } = response.data;
-      // Auth0 may return a new refresh token (token rotation). It's best practice to store it.
-      await storeToken(newAccessToken, newRefreshToken || refreshToken);
-    } catch (error) {
-      if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-        // Unauthorized or Forbidden. The refresh token is likely invalid or revoked.
-        // This is a critical failure. Clear the tokens to force a re-login.
-        Logger.error("Refresh token failed, clearing stored tokens:", error.response?.data);
-        await Keychain.resetGenericPassword({ service: "authTokens" });
-      } else if (axios.isAxiosError(error)) {
-        Logger.error("checkAndRefreshToken: Axios error during token refresh:", error.response?.data || error.message);
+      
+      if (responseData?.auth) {
+        const { auth } = responseData;
+        await storeToken(auth.accessToken, auth.refreshToken);
+        shouldStopRetry = false;
+        failedAttempts = 0;
       } else {
-        Logger.error("checkAndRefreshToken: General error during token refresh:", error);
+        failedAttempts++;
+        if (failedAttempts >= maxFailedAttempts) {
+          shouldStopRetry = true;
+        }
+        
+        if (responseData?.statusCode === 401 && 
+            (responseData?.message?.errorCode === 'ER-01019' || 
+             responseData?.message?.errors?.includes('Refresh token is not found'))) {
+          showAppToast('Refresh token not found', 'error');
+        } else {
+          showAppToast('Auth object missing in response', 'error');
+        }
+        return;
       }
-      // Re-throwing the error is crucial. It allows the calling function (`useTokenRefresh`)
-      // to catch it and stop the refresh loop, preventing an infinite loop on persistent failure.
-      throw error;
+    } else {
+      failedAttempts++;
+      if (failedAttempts >= maxFailedAttempts) {
+        shouldStopRetry = true;
+      }
+      return;
     }
-  };
+  } catch (error:any) {
+    failedAttempts++;
+    if (failedAttempts >= maxFailedAttempts) {
+      shouldStopRetry = true;
+    }
+    throw error;
+  }
+};
+
+export const getShouldStopRetry = () => shouldStopRetry;
+export const resetStopRetry = () => { 
+  shouldStopRetry = false; 
+  failedAttempts = 0;
+};

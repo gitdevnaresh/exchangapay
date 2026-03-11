@@ -3,11 +3,11 @@ import { Dimensions, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 import RenderHTML from "react-native-render-html";
-import { NEW_COLOR } from "../../../constants/styels/variables";
-import { s } from "../../../constants/styels/scale";
-import NoDataComponent from "../../../components/noData/noData";
-import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
-import { getThemedCommonStyles } from "../../../components/CommonStyles";
+import { NEW_COLOR } from "../../../constants/theme/variables";
+import { s } from "../../../constants/theme/scale";
+import NoDataComponent from "../../../newComponents/noData/noData";
+import { useThemeColors } from "../../../hooks/useThemeColors";
+import { getThemedCommonStyles } from "../../../assets/styles/CommonStyles";
 
 interface AutoCarouselProps {
   data: [];
@@ -16,7 +16,7 @@ interface AutoCarouselProps {
   height?: number;
   loop?: boolean;
   scrollAnimationDuration?: number;
-  contentKey?: string
+  contentKey?:string
 }
 
 const ImageAutoSlideCarousel: React.FC<AutoCarouselProps> = ({
@@ -26,7 +26,7 @@ const ImageAutoSlideCarousel: React.FC<AutoCarouselProps> = ({
   height = s(250),
   loop = true,
   scrollAnimationDuration = 500,
-  contentKey = "templateContent"
+  contentKey="templateContent"
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const sharedValue = useSharedValue(0);
@@ -43,9 +43,9 @@ const ImageAutoSlideCarousel: React.FC<AutoCarouselProps> = ({
 
   useEffect(() => {
     sharedValue.value = activeIndex;
-  }, [activeIndex]);
-  if (!data || data?.length == 0) {
-    return <NoDataComponent />;
+  }, [activeIndex]);  
+  if (!data||data?.length==0) {
+    return <NoDataComponent/>;
   }
   return (
     <View >
@@ -62,15 +62,15 @@ const ImageAutoSlideCarousel: React.FC<AutoCarouselProps> = ({
         pagingEnabled
         renderItem={({ item }) => (
           <View style={[commonStyles.sectionStyle]}>
-            <RenderHTML contentWidth={width * 0.9} source={{ html: item[contentKey] }} />
+            <RenderHTML contentWidth={width*0.9} source={{ html: item[contentKey] }} />
           </View>
         )}
       />
 
       <View style={styles.dotsContainer}>
-        {data.map((_, index) => (
-          <TouchableOpacity
-            key={index}
+      {data.map((_, index) => (
+          <TouchableOpacity 
+            key={index} 
             onPress={() => handleDotPress(index)}
             activeOpacity={0.7}
           >
