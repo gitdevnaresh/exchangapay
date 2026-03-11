@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import TextMultiLanguage from '../../../../components/textComponets/multiLanguageText/textMultiLangauge';
 import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../components/CommonStyles';
-import { Foundation } from '@expo/vector-icons';
+import Foundation from 'react-native-vector-icons/Foundation';
 import AutoSlideCarousel from '../../../../screens/commonScreens/autoSliderCarousal/contentCarousel';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import ViewComponent from '../../../../components/view/view';

@@ -7,7 +7,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import ViewComponent from '../../../components/view/view';
 import TextMultiLanguage from '../../../components/textComponets/multiLanguageText/textMultiLangauge';
 import ButtonComponent from '../../../components/buttons/button';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { s } from '../../../constants/styels/scale';
 import useBiometricAuth from '../biometricAuthentication/biometricAuth';
 import { getThemedCommonStyles } from '../../../components/CommonStyles';

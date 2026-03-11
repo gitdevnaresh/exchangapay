@@ -24,7 +24,7 @@ import ButtonComponent from "../../../../../../components/buttons/button";
 import { useHardwareBackHandler } from "../../../../../../hooks/backHandleHook";
 import DownloadFile from "../../../../../../components/downloadFile";
 import CommonTouchableOpacity from "../../../../../../components/touchableComponents/touchableOpacity";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { s } from "../../../../../../components/theme/scale";
 import { logEvent } from "../../../../../../hooks/loggingHook";
 

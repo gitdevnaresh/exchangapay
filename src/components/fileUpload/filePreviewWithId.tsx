@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { s } from "react-native-size-matters";
 import { getThemedCommonStyles } from "../CommonStyles";
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Container from "../container/container";
 import { useLngTranslation } from "../../hooks/languagesHook/useLngTranslation";
 import LabelComponent from "../textComponets/lableComponent/lable";

@@ -4,7 +4,7 @@ import { ToastConfig } from 'react-native-toast-message';
 import { s } from '../../constants/styels/scale';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../CommonStyles';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
 const ToastComponent: React.FC<{ text1?: string; type: 'success' | 'error' | 'info' | 'warning'; id?: string }> = ({ text1, type, id }) => {

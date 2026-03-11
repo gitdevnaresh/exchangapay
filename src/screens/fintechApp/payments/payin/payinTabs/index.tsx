@@ -12,7 +12,7 @@ import ViewComponent from "../../../../../components/view/view";
 import CommonTouchableOpacity from "../../../../../components/touchableComponents/touchableOpacity";
 import FiatPayin from "../fiatPayin";
 import CustomRBSheet from "../../../../../components/models/commonBottomSheet";
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from 'react-native-vector-icons/Entypo';
 import CreateStaticIcon from '../../../../../components/svgIcons/mainmenuicons/staticPayinIcon';
 import CreateInvoiceIcon from '../../../../../components/svgIcons/mainmenuicons/invoiceAddIcon';
 import TextMultiLanguage from "../../../../../components/textComponets/multiLanguageText/textMultiLangauge";

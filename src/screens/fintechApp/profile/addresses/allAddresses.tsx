@@ -8,7 +8,7 @@ import { ProfilePrimaryServices } from "../../../../apiServices/profile/primary"
 import { isErrorDispaly } from "../../../../utils/helpers";
 import Container from "../../../../components/container/container";
 import TextMultiLangauge from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from 'react-native-vector-icons/Entypo';
 import ButtonComponent from "../../../../components/buttons/button";
 import { ProfileAddressImage } from "../../../../assets/svg";
 import { useThemeColors } from "../../../../hooks/themedHook/useThemeColors";

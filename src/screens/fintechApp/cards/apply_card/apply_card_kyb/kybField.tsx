@@ -26,8 +26,8 @@ import { PersonalDetails, UboDirectorItem, ReduxState, Sector, Type, StateList, 
 import { AddressValidationSchema } from './constant'
 import { useLngTranslation } from '../../../../../hooks/languagesHook/useLngTranslation';
 import TextMultiLanguage from '../../../../../components/textComponets/multiLanguageText/textMultiLangauge';
-import Entypo from '@expo/vector-icons/Entypo';
-import { MaterialIcons } from '@expo/vector-icons';
+import Entypo from 'react-native-vector-icons/Entypo';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import CommonSuccess from '../../../../commonScreens/successPage/commonSucces';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';

@@ -13,7 +13,8 @@ import { getFileExtension } from '../../screens/fintechApp/onboarding/constants'
 import { profileImageSkelton } from '../../skeletons/skeleton_views';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import GalleryIcon from '../svgIcons/mainmenuicons/galleryicon';
-import { Feather, SimpleLineIcons } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 import ViewComponent from '../view/view';
 import TextMultiLanguage from '../textComponets/multiLanguageText/textMultiLangauge';

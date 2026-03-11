@@ -10,7 +10,7 @@ import CommonTouchableOpacity from "../../../../../../components/touchableCompon
 import { s } from "../../../../../../components/theme/scale";
 import TextMultiLanguage from "../../../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import ButtonComponent from "../../../../../../components/buttons/button";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const ReApplyPayoutKyb = (props: any) => {
     const NEW_COLOR = useThemeColors();

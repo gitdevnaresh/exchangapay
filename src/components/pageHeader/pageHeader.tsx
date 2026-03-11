@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, StyleProp, ViewStyle, TextStyle } from "react-native";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { s } from "../../constants/styels/scale";
 import ImageUri from "../imageComponents/image";
 import ParagraphComponent from "../textComponets/paragraphText/paragraph";

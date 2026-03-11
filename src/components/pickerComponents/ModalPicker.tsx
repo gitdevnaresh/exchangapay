@@ -2,7 +2,7 @@ import React, { useRef, ReactNode } from 'react';
 import { View, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { Picker } from './Picker';
 import { getThemedCommonStyles } from '../CommonStyles';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import { ms, s } from '../../constants/styels/scale';
 import CustomRBSheet from '../models/commonBottomSheet'; // Adjusted path
 import ImageUri from '../imageComponents/image';

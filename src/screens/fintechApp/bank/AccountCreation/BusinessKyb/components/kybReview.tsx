@@ -6,8 +6,8 @@ import { BankAccountService, BankCommonService } from "../../../../../../apiServ
 import { useSelector, useDispatch } from 'react-redux';
 import { Formik, Field } from 'formik';
 import { FORM_FIELD } from './constants';
-import Entypo from '@expo/vector-icons/Entypo';
-import { MaterialIcons } from '@expo/vector-icons';
+import Entypo from 'react-native-vector-icons/Entypo';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getThemedCommonStyles } from '../../../../../../components/CommonStyles';
 import ViewComponent from '../../../../../../components/view/view';
 import TextMultiLanguage from '../../../../../../components/textComponets/multiLanguageText/textMultiLangauge';

@@ -1,5 +1,5 @@
 import { getThemedCommonStyles } from "../../../../../../components/CommonStyles";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from "react-redux";
 import React from "react";
 import CommonTouchableOpacity from "../../../../../../components/touchableComponents/touchableOpacity";
@@ -46,4 +46,4 @@ const PaymentNotAvailable = React.memo(({ onBackPress }: { onBackPress: () => vo
     );
 });
 
-export default PaymentNotAvailable; 
+export default PaymentNotAvailable;

@@ -3,13 +3,13 @@ import { View, Alert, StyleSheet, TouchableOpacity, StyleProp, TextStyle } from 
 import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { getThemedCommonStyles } from '../CommonStyles';
 import { s } from '../../constants/styels/scale';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'; // For default draw icon
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // For default draw icon
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import ButtonComponent from '../buttons/button';
 import CustomRBSheet from '../models/commonBottomSheet'; // Changed from CustomOverlay for selection
 import GalleryIcon from '../svgIcons/mainmenuicons/galleryicon';
 import ViewComponent from '../view/view';
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from 'react-native-vector-icons/Entypo';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 interface SignatureDrawerProps {
     isVisible: boolean;
@@ -273,4 +273,3 @@ const styles = StyleSheet.create({
     },
 });
 export default SignatureDrawer;
-

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { useField } from 'formik';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ViewComponent from '../../view/view';
 import TextMultiLangauge from '../../textComponets/multiLanguageText/textMultiLangauge';
 import { s } from '../../../constants/styels/scale';

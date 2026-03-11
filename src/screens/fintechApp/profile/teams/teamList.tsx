@@ -29,7 +29,7 @@ import { allTransactionList } from '../../../../skeletons/skeltonViews';
 import Loadding from '../../../../components/skelton/skeltons';
 import { useLngTranslation } from '../../../../hooks/languagesHook/useLngTranslation';
 import { TeamsLuResponse, TeamsListResponse, TeamMember, StatusLookup } from './utils/interfaces';
-import { SimpleLineIcons } from "@expo/vector-icons";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import TeamMembersIcon from '../../../../components/svgIcons/mainmenuicons/teamamembers';
 import { STATUS, SCREENS, PAGINATION, UI } from './constants';
 import ImageUri from '../../../../components/imageComponents/image';

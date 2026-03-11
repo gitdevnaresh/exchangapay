@@ -19,11 +19,11 @@ import UploadDeleteIcon from '../../../../../components/svgIcons/mainmenuicons/d
 import { EditImage } from '../../../../../assets/svg';
 import DashboardLoader from '../../../../../components/loader';
 import { SelectedRecordType } from '../interface';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import FlatListComponent from '../../../../../components/flatList/flatList';
 import { FormattedDateText } from '../../../../../components/textComponets/dateTimeText/dateTimeText';
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 

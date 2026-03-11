@@ -12,7 +12,7 @@ import { getThemedCommonStyles } from '../../../../components/CommonStyles';
 import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import { useLngTranslation } from '../../../../hooks/languagesHook/useLngTranslation';
 import ButtonComponent from '../../../../components/buttons/button';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import LabelComponent from '../../../../components/textComponets/lableComponent/lable';
 import DatePickerComponent from '../../../../components/datePickers/formik/datePicker';

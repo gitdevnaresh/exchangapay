@@ -24,7 +24,7 @@ import GraphIconImage from "../../../../../components/svgIcons/mainmenuicons/gra
 import CardPurchaseIconImage from "../../../../../components/svgIcons/mainmenuicons/cardpurchase";
 import RewardsDeposistIconImage from "../../../../../components/svgIcons/mainmenuicons/rewardsdeposist";
 import CoinHandsIconImage from "../../../../../components/svgIcons/mainmenuicons/nandcoins";
-import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import { AdminGiftBox } from "../../../../../assets/svg";
 import PageHeader from "../../../../../components/pageHeader/pageHeader";
 

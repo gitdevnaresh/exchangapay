@@ -11,7 +11,7 @@ import TextMultiLangauge from "../../../../../components/textComponets/multiLang
 import { s } from "../../../../../components/theme/scale";
 import { isErrorDispaly } from "../../../../../utils/helpers";
 import { ProfilePrimaryServices } from "../../../../../apiServices/profile/primary";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import DashboardLoader from "../../../../../components/loader";
 import useEncryptDecrypt from "../../../../../hooks/encDecHook";
 import { FlatList } from "react-native";

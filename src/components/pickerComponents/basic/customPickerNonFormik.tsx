@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import ParagraphComponent from '../../textComponets/paragraphText/paragraph';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import ViewComponent from '../../view/view';
 import ScrollViewComponent from '../../scrollView/scrollView';
 import SearchComponent from '../../searchComponents/searchComponent';

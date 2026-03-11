@@ -10,7 +10,7 @@ import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../components/view/view';
 import useMemberLogin from '../../../../hooks/userInfoHook';
 import TextMultiLanguage from '../../../../components/textComponets/multiLanguageText/textMultiLangauge';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ScrollViewComponent from '../../../../components/scrollView/scrollView';
 import AlertsCarousel from '../../Dashboard/components/allertCases';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';

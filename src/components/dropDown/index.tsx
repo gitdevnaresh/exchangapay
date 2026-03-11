@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { CoinImages, getThemedCommonStyles } from '../CommonStyles';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';

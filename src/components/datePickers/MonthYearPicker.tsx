@@ -7,7 +7,7 @@ import LabelComponent from '../textComponets/lableComponent/lable';
 import { getThemedCommonStyles } from '../CommonStyles';
 import ButtonComponent from '../buttons/button';
 import CommonTouchableOpacity from '../touchableComponents/touchableOpacity';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import { s } from '../../constants/styels/scale';
 
 interface MonthYearPickerProps {

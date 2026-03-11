@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getThemedCommonStyles } from '../../CommonStyles';
 import ParagraphComponent from '../../textComponets/paragraphText/paragraph';
 import { s } from '../../../constants/styels/scale';

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { MaterialIcons, Feather } from "@expo/vector-icons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import Feather from "react-native-vector-icons/Feather";
 
 type QrScannerProps = {
   onCaptureCode: (code: string) => void;

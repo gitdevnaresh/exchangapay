@@ -1,6 +1,6 @@
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from 'react-native-vector-icons/Entypo';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { s } from '../../constants/styels/scale';
 

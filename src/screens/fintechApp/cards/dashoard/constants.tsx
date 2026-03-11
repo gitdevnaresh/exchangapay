@@ -3,7 +3,7 @@ import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../components/CommonStyles';
 import { View } from 'react-native';
 import { ms, s } from '../../../../components/theme/scale';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { NEW_COLOR } from '../../../../constants/styels/variables';
 
 export const CARDS_CONSTANTS_DATA = {

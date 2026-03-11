@@ -9,7 +9,7 @@ import axios from 'axios';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../CommonStyles';
 import { showCustomToast, ToastType } from '../toasterMessages';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Logger } from '../../utils/Logger';
 interface DownloadFileProps {
     imageURL: string;

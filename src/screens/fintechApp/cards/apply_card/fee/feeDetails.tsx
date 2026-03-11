@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Formik, Field } from "formik";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { View, TouchableOpacity, Text, useWindowDimensions, Platform } from "react-native";
 import * as Yup from "yup";
 import moment from "moment";

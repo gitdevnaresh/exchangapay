@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, BackHandler, Text } from 'react-native';
 import { CommonActions, useIsFocused, useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { FORM_FIELD } from '../../BusinessKyb/components/constants';
 import { getThemedCommonStyles } from '../../../../../../components/CommonStyles';
 import ViewComponent from '../../../../../../components/view/view';

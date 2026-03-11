@@ -6,7 +6,7 @@ import { s } from '../../constants/styels/scale';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { useSelector } from 'react-redux';
 import CommonTouchableOpacity from '../touchableComponents/touchableOpacity';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { getTabsConfigation } from '../../../configuration';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 

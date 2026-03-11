@@ -1,5 +1,5 @@
 import React from "react";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { ViewStyle } from 'react-native';
 import ViewComponent from '../view/view';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

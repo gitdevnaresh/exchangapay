@@ -21,7 +21,7 @@ import { getThemedCommonStyles } from '../../../../../components/CommonStyles';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import ViewComponent from '../../../../../components/view/view';
 import UploadDeleteIcon from '../../../../../components/svgIcons/mainmenuicons/deleteicon';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 
 type KybStackParamList = {

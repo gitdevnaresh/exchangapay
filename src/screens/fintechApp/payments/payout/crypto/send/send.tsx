@@ -16,7 +16,7 @@ import Loadding from '../../../../../../components/skelton/skeltons';
 import { allAddressList } from '../../../../../../skeletons/cardsSkeletons';
 import PageHeader from '../../../../../../components/pageHeader/pageHeader';
 import { s } from '../../../../../../constants/styels/scale';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ButtonComponent from '../../../../../../components/buttons/button';
 import ViewComponent from '../../../../../../components/view/view';
 import { CoinImages, getThemedCommonStyles } from '../../../../../../components/CommonStyles';

@@ -4,7 +4,7 @@ import ViewComponent from '../../../../../components/view/view'
 import TextMultiLanguage from '../../../../../components/textComponets/multiLanguageText/textMultiLangauge'
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors'
 import { getThemedCommonStyles } from '../../../../../components/CommonStyles'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { s } from '../../../../../components/theme/scale'
 const BindCardNote = () => {
     const NEW_COLOR = useThemeColors();

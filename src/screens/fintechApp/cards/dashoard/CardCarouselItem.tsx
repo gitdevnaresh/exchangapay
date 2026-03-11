@@ -6,7 +6,7 @@ import ViewComponent from "../../../../components/view/view";
 import TextMultiLangauge from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";
 import ImageUri from "../../../../components/imageComponents/image";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useThemeColors } from "../../../../hooks/themedHook/useThemeColors";
 import { CardList } from "../interface";
 import { hideDigitBeforLast } from '../../../../utils/helpers';

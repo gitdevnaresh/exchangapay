@@ -30,7 +30,7 @@ import { CARD_URIS } from '../../../../../../components/CommonStyles';
 import { WINDOW_WIDTH } from '../../../../../../constants/styels/variables';
 import { hideDigitBeforLast } from '../../../../../../utils/helpers';
 import { AliaPay, PhonePay, ShopeeImage } from '../../../../../../assets/svg';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ImageUri from '../../../../../../components/imageComponents/image';
 import { PAGINATION, UI, CARD_TYPES, STATUS, DECIMAL_PLACES, CURRENCY_TYPES, PLATFORMS, ANIMATION_VALUES } from '../../constants';
 import KeyboardAvoidingWrapper from '../../../../../../components/keyboard/keyBoardAvoidingView';

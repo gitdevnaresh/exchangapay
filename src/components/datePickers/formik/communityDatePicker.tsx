@@ -4,7 +4,7 @@ import { Text, Datepicker } from "@ui-kitten/components";
 import { useFormikContext } from "formik";
 import { DATE_PICKER_CONST } from "./DatePickerConstants";
 import { useLngTranslation } from "../../../hooks/languagesHook/useLngTranslation";
-import Feather from "@expo/vector-icons/Feather";
+import Feather from "react-native-vector-icons/Feather";
 import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
 import { getThemedCommonStyles } from "../../CommonStyles";
 import LabelComponent from "../../textComponets/lableComponent/lable";

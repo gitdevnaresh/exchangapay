@@ -15,7 +15,7 @@ import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 import ImageUri from '../imageComponents/image';
 import NoDataComponent from '../noData/noData';
 import ViewComponent from '../view/view';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ButtonComponent from '../buttons/button';
 import CustomPicker from '../pickerComponents/basic/customPickerNonFormik';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

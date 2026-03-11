@@ -19,7 +19,7 @@ import ButtonComponent from '../../../../../components/buttons/button';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../../components/view/view';
 import UploadDeleteIcon from '../../../../../components/svgIcons/mainmenuicons/deleteicon';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
 

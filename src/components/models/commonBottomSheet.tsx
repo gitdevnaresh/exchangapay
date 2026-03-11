@@ -5,7 +5,7 @@ import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../CommonStyles';
 import { s } from '../../constants/styels/scale';
 import { useLngTranslation } from '../../hooks/languagesHook/useLngTranslation';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ErrorComponent from '../errorDisplay/errorDisplay';
 
 interface CustomRBSheetProps {

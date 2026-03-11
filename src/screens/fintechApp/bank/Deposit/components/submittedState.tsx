@@ -1,6 +1,6 @@
 import React from "react";
 import { Linking } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector } from 'react-redux';
 import ViewComponent from "../../../../../components/view/view";
 import Container from "../../../../../components/container/container";

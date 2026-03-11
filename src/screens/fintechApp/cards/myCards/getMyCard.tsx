@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from "react-redux";
 import useEncryptDecrypt from "../../../../hooks/encDecHook";
 import RenderHTML from 'react-native-render-html';

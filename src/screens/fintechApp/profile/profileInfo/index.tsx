@@ -10,7 +10,7 @@ import { CommonActions, useIsFocused, useNavigation } from "@react-navigation/na
 import { isErrorDispaly } from "../../../../utils/helpers";
 import ErrorComponent from "../../../../components/errorDisplay/errorDisplay";
 import { Image, StyleSheet, FlatList } from "react-native";
-import Ionicons from '@expo/vector-icons/Ionicons'; // Keep if used elsewhere, or remove if only for old avatar sheet
+import Ionicons from 'react-native-vector-icons/Ionicons'; // Keep if used elsewhere, or remove if only for old avatar sheet
 import ConfirmLogout from "../../../commonScreens/logout/comfirmLogout";
 import { loginAction, setUserProfileDetails } from "../../../../redux/actions/actions";
 import AuthService from "../../../../apiServices/onBoarding/auth";
@@ -23,7 +23,7 @@ import useEncryptDecrypt from "../../../../hooks/encDecHook";
 import DeviceInfo from "react-native-device-info";
 import { useThemeColors } from "../../../../hooks/themedHook/useThemeColors";
 import { getThemedCommonStyles } from "../../../../components/CommonStyles";
-import { SimpleLineIcons } from "@expo/vector-icons";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import CopyCard from "../../../../components/copyIcon/CopyCard";
 import Clipboard from "@react-native-clipboard/clipboard";
 import ProfileService from "../../../../apiServices/profile";

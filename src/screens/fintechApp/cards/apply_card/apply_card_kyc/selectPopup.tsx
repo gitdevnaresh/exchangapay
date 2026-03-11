@@ -1,8 +1,8 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { AntDesign } from '@expo/vector-icons';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getThemedCommonStyles } from '../../../../../components/CommonStyles';
 import { s } from '../../../../../constants/styels/scale';
 import { useLngTranslation } from '../../../../../hooks/languagesHook/useLngTranslation';

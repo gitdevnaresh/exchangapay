@@ -4,7 +4,7 @@ import { getThemedCommonStyles } from '../../../../components/CommonStyles';
 import { s } from '../../../../constants/styels/scale';
 import { CurrencyText } from '../../../../components/textComponets/currencyText/currencyText';
 import ViewComponent from '../../../../components/view/view';
-import { Feather } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
 import { WalletGraph } from '../../../../assets/svg';
 import { formatCurrency } from '../../../../utils/helpers';
 import { getTabsConfigation, isDecimalSmall } from '../../../../../configuration';

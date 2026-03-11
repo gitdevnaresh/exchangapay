@@ -28,7 +28,7 @@ import ImageUri from '../../../../../../components/imageComponents/image';
 import { WINDOW_WIDTH } from '../../../../../../constants/styels/variables';
 import { hideDigitBeforLast } from '../../../../../../utils/helpers';
 import { AliaPay, PhonePay, ShopeeImage } from '../../../../../../assets/svg';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PAGINATION, UI } from '../../constants';
 import KeyboardAvoidingWrapper from '../../../../../../components/keyboard/keyBoardAvoidingView';
 

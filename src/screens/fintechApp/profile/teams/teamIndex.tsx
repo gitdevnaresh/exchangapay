@@ -25,7 +25,8 @@ import TextMultiLanguage from '../../../../components/textComponets/multiLanguag
 import KpiComponent from '../../../../components/kpiComponent/kpiComponent';
 import Feather from 'react-native-vector-icons/Feather';
 import NoDataComponent from '../../../../components/noData/noData';
-import { MaterialIcons, SimpleLineIcons } from "@expo/vector-icons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import TeamMembersIcon from '../../../../components/svgIcons/mainmenuicons/teamamembers';
 import { TeamMember, KpiItem, TeamsListResponse, TeamsKpisResponse } from './utils';
 import { STATUS, SCREENS, PAGINATION, UI, MEMBER_ACTIONS } from './constants';

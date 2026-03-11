@@ -24,7 +24,7 @@ import ViewComponent from '../../../../../components/view/view';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import DashboardLoader from '../../../../../components/loader';
 import PhoneCodePicker from '../../../../../components/phonePicker/phonePicker';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CustomRBSheet from '../../../../../components/models/commonDrawer';
 import { useHardwareBackHandler } from '../../../../../hooks/backHandleHook';

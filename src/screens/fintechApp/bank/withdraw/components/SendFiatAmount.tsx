@@ -21,7 +21,7 @@ import { s } from '../../../../../components/theme/scale';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import ImageUri from '../../../../../components/imageComponents/image';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LabelComponent from '../../../../../components/textComponets/lableComponent/lable';
 import SafeAreaViewComponent from '../../../../../components/safeArea/safeArea';
 import DashboardLoader from '../../../../../components/loader';

@@ -17,7 +17,7 @@ import { CurrencyText } from "../../../../../../../components/textComponets/curr
 import ScrollViewComponent from "../../../../../../../components/scrollView/scrollView";
 import TextMultiLanguage from "../../../../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import { Linking, Modal, Platform, RefreshControl } from "react-native";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import NoDataComponent from "../../../../../../../components/noData/noData";
 import CopyCard from "../../../../../../../components/copyIcon/CopyCard";
 import { copyToClipboard } from "../../../../../../../components/copyToClipBoard/copy ToClopBoard";

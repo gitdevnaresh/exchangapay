@@ -21,7 +21,7 @@ import AddToWalletModal from "./rewardsDashboard/addToWalletModel";
 import QuestsSection from "./rewardsDashboard/questTabsSection";
 import CommonTouchableOpacity from "../../../../components/touchableComponents/touchableOpacity";
 import { s } from "../../../../constants/styels/scale";
-import Foundation from '@expo/vector-icons/Foundation';
+import Foundation from 'react-native-vector-icons/Foundation';
 import PageHeader from "../../../../components/pageHeader/pageHeader";
 import { getTabsConfigation } from "../../../../../configuration";
 

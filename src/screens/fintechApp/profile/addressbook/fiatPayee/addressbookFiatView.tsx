@@ -13,7 +13,7 @@ import useEncryptDecrypt from '../../../../../hooks/encDecHook';
 import { ms, s } from '../../../../../components/theme/scale';
 import FilePreview from '../../../../../components/fileUpload/filePreview';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { t } from 'i18next';
 import ViewComponent from '../../../../../components/view/view';
 import TextMultiLanguage from '../../../../../components/textComponets/multiLanguageText/textMultiLangauge';

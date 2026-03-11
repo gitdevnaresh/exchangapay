@@ -20,14 +20,14 @@ import TextMultiLangauge from "../../../../../components/textComponets/multiLang
 import ErrorComponent from "../../../../../components/errorDisplay/errorDisplay";
 import { CurrencyText } from "../../../../../components/textComponets/currencyText/currencyText";
 import { isErrorDispaly } from "../../../../../utils/helpers";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { WalletsDepositLoader } from "../../../../../skeletons/cardsSkeletons";
 import { useThemeColors } from "../../../../../hooks/themedHook/useThemeColors";
 import NoDataComponent from "../../../../../components/noData/noData";
 import Container from "../../../../../components/container/container";
 import DashboardLoader from "../../../../../components/loader";
 import { CRYPTO_CONSTANTS } from "../../constant";
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import CopyCard from "../../../../../components/copyIcon/CopyCard";
 import CommonDropdown from '../../../../../components/dropDown';
 import ButtonComponent from "../../../../../components/buttons/button";

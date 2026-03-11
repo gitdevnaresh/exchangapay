@@ -5,9 +5,9 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { s } from '../../constants/styels/scale';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

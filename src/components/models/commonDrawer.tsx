@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, TouchableOpacity, Text, Dimensions, StyleSheet, ScrollView } from 'react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLngTranslation } from '../../hooks/languagesHook/useLngTranslation';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../CommonStyles';

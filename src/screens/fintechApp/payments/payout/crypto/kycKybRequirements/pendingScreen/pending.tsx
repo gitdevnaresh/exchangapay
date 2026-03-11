@@ -12,7 +12,7 @@ import { useHardwareBackHandler } from "../../../../../../../hooks/backHandleHoo
 import PageHeader from "../../../../../../../components/pageHeader/pageHeader"
 import { useSelector } from "react-redux"
 import ParagraphComponent from "../../../../../../../components/textComponets/paragraphText/paragraph"
-import { Ionicons } from '@expo/vector-icons'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { TouchableOpacity, Linking } from 'react-native'
 import { useLngTranslation } from "../../../../../../../hooks/languagesHook/useLngTranslation"
 import { supportMail, getTabsConfigation, walletsTabsNavigation } from '../../../../../../../../configuration'

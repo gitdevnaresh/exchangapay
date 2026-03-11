@@ -7,7 +7,7 @@ import ImageUri from '../../../../../../components/imageComponents/image';
 import CommonTouchableOpacity from '../../../../../../components/touchableComponents/touchableOpacity';
 import ViewComponent from '../../../../../../components/view/view';
 import ParagraphComponent from '../../../../../../components/textComponets/paragraphText/paragraph';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 
 interface CurrencySelectorProps {
   currencyList: SelectedAsset[];

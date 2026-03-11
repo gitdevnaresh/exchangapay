@@ -10,7 +10,7 @@ import ViewComponent from '../../../../../../components/view/view';
 import { useThemeColors } from '../../../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles, statusColor } from '../../../../../../components/CommonStyles';
 import ButtonComponent from '../../../../../../components/buttons/button';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import { CurrencyText } from '../../../../../../components/textComponets/currencyText/currencyText';
 import ParagraphComponent from '../../../../../../components/textComponets/paragraphText/paragraph';
 import { dateFormates, isErrorDispaly } from '../../../../../../utils/helpers';
@@ -18,7 +18,7 @@ import { showAppToast } from '../../../../../../components/toasterMessages/ShowM
 import TextMultiLanguage from '../../../../../../components/textComponets/multiLanguageText/textMultiLangauge';
 import { useLngTranslation } from '../../../../../../hooks/languagesHook/useLngTranslation';
 import { FormattedDateText } from '../../../../../../components/textComponets/dateTimeText/dateTimeText';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CommonTouchableOpacity from '../../../../../../components/touchableComponents/touchableOpacity';
 import CopyCard from '../../../../../../components/copyIcon/CopyCard';
 import { copyToClipboard } from '../../../../../../components/copyToClipBoard/copy ToClopBoard';

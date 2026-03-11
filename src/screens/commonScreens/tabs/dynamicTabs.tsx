@@ -18,7 +18,7 @@ import WalletsInactiveIcon from "../../../components/svgIcons/mainmenuicons/wall
 import CardInactiveIcon from "../../../components/svgIcons/mainmenuicons/cardInactiveIcon";
 import ProfileInactive from "../../../components/svgIcons/mainmenuicons/profileInactiveIcon";
 import AuthService from "../../../apiServices/onBoarding/auth";
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import Cards from "../../fintechApp/cards/dashoard";
 import HomeactiveIcon from "../../../components/svgIcons/mainmenuicons/homeactiveicon";
 import WalletsactiveIcon from "../../../components/svgIcons/mainmenuicons/walletsactiveicon";
@@ -46,7 +46,7 @@ import { useLngTranslation } from "../../../hooks/languagesHook/useLngTranslatio
 import ParagraphComponent from "../../../components/textComponets/paragraphText/paragraph";
 import CreateAccountService from "../../../apiServices/bank/createAccount";
 import WalletsHome from "../../fintechApp/wallets";
-import { Octicons } from "@expo/vector-icons";
+import Octicons from "react-native-vector-icons/Octicons";
 import TextMultiLanguage from "../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import PermissionModel from "../permissionPopup";
 import NotifyAlerts from "../../../components/notices/NotifyAlerts";

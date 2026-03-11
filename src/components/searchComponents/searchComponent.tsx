@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ViewComponent from '../view/view';
 import { ms, s } from '../../constants/styels/scale';
 import { getThemedCommonStyles } from '../CommonStyles';

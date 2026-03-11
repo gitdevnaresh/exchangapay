@@ -18,7 +18,7 @@ import { RefreshControl } from "react-native-gesture-handler";
 import CommonTouchableOpacity from "../../../../../../components/touchableComponents/touchableOpacity";
 import DownloadFile from "../../../../../../components/downloadFile";
 import { showAppToast } from "../../../../../../components/toasterMessages/ShowMessage";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { s } from "../../../../../../constants/styels/scale";
 
 

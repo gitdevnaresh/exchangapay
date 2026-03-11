@@ -11,7 +11,7 @@ import { useRef, useState } from "react"
 import CustomRBSheet from "../../../../../../components/models/commonBottomSheet"
 import { s } from "../../../../../../components/theme/scale"
 import CommonTouchableOpacity from "../../../../../../components/touchableComponents/touchableOpacity"
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { KYCKybRequirements } from "../../../../../../assets/svg"
 import ParagraphComponent from "../../../../../../components/textComponets/paragraphText/paragraph"
 import { useSelector } from "react-redux"

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { FormikProps } from 'formik';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import ViewComponent from '../../../../../../components/view/view';
 import AmountInput from '../../../../../../components/amountInput/amountInput';
 import ButtonComponent from '../../../../../../components/buttons/button';

@@ -21,7 +21,7 @@ import ParagraphComponent from '../../../../../../components/textComponets/parag
 import { CurrencyText } from '../../../../../../components/textComponets/currencyText/currencyText';
 import TextMultiLangauge from "../../../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import ButtonComponent from '../../../../../../components/buttons/button';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import { useLngTranslation } from '../../../../../../hooks/languagesHook/useLngTranslation';
 import { useSelector } from 'react-redux';
 import CommonTouchableOpacity from '../../../../../../components/touchableComponents/touchableOpacity';

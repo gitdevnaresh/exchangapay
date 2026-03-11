@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import ViewComponent from "../../../../components/view/view";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph"
 import TextMultiLanguage from '../../../../components/textComponets/multiLanguageText/textMultiLangauge';

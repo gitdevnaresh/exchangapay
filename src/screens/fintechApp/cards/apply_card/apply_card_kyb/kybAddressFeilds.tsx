@@ -12,7 +12,7 @@ import ParagraphComponent from '../../../../../components/textComponets/paragrap
 import LabelComponent from '../../../../../components/textComponets/lableComponent/lable';
 import { ms, s } from '../../../../../constants/styels/scale';
 import CustomeditLink from "../../../../../components/svgIcons/mainmenuicons/linkedit";
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import ButtonComponent from '../../../../../components/buttons/button';
 import { useFormikContext } from 'formik'

@@ -27,9 +27,10 @@ import SafeAreaViewComponent from "../../../../../../components/safeArea/safeAre
 import { CreatePaymentReducer, formState } from "./componetns/createPaymentReducer";
 import Clipboard from "@react-native-clipboard/clipboard";
 import ActionButton from "../../../../../../components/gradianttext/gradiantbg";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import Feather from "react-native-vector-icons/Feather";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import StateChanageIcon from "../../../../../../components/svgIcons/mainmenuicons/statechange";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { logEvent } from "../../../../../../hooks/loggingHook";
 import { FormattedDateText } from "../../../../../../components/textComponets/dateTimeText/dateTimeText";
 import { useHardwareBackHandler } from "../../../../../../hooks/backHandleHook";

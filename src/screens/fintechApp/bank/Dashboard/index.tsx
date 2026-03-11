@@ -22,7 +22,7 @@ import ViewComponent from "../../../../components/view/view";
 import WithdrawIcon from "../../../../components/svgIcons/mainmenuicons/dashboardwithdraw";
 import ActionButton from "../../../../components/gradianttext/gradiantbg";
 import BankDeposistIcon from "../../../../components/svgIcons/mainmenuicons/bankdeposist";
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { BankAccount, ReduxState } from "../interface";
 import { showAppToast } from "../../../../components/toasterMessages/ShowMessage";
 import TextMultiLanguage from "../../../../components/textComponets/multiLanguageText/textMultiLangauge";

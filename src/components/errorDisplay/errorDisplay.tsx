@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { NEW_COLOR } from '../../constants/styels/variables';
 import { s } from '../../constants/styels/scale';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

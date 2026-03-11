@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState, forwardRef, ReactNode } from 'react';
 import { Input } from 'react-native-elements';
 import { Platform, Pressable, StyleSheet, View, StyleProp, ViewStyle, TextStyle, KeyboardTypeOptions } from 'react-native';
 import { NEW_COLOR } from '../../constants/styels/variables';
-import Ionicons from '@expo/vector-icons/Ionicons'; // Import Ionicons
+import Ionicons from 'react-native-vector-icons/Ionicons'; // Import Ionicons
 import { commaSeparating } from '../../utils/helpers';
 import { ms, s } from '../../constants/styels/scale';
 import { TouchableOpacity } from 'react-native-gesture-handler';

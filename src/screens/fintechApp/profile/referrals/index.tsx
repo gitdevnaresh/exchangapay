@@ -23,7 +23,7 @@ import Clipboard from "@react-native-clipboard/clipboard";
 import CustomRBSheet from "../../../../components/models/commonDrawer";
 import ButtonComponent from "../../../../components/buttons/button";
 import GenealogyTree from "./genologyTree/GenealogyTree";
-import { Feather } from "@expo/vector-icons";
+import Feather from "react-native-vector-icons/Feather";
 import { useHardwareBackHandler } from "../../../../hooks/backHandleHook";
 import PageHeader from "../../../../components/pageHeader/pageHeader";
 import ParagraphComponent from "../../../../components/textComponets/paragraphText/paragraph";

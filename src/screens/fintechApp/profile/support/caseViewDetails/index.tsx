@@ -17,7 +17,7 @@ import { useHardwareBackHandler } from "../../../../../hooks/backHandleHook";
 import { useNavigation } from "@react-navigation/native";
 import DashboardLoader from "../../../../../components/loader";
 import SafeAreaViewComponent from "../../../../../components/safeArea/safeArea";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ScrollViewComponent from "../../../../../components/scrollView/scrollView";
 
 const ItemSeparator = React.memo(() => {

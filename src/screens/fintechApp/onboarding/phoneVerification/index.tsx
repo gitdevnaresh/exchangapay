@@ -17,7 +17,7 @@ import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../components/CommonStyles';
 import ButtonComponent from '../../../../components/buttons/button';
 import TextMultiLanguage from '../../../../components/textComponets/multiLanguageText/textMultiLangauge';
-import { Feather } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
 import AlertsCarousel from '../../Dashboard/components/allertCases';
 import ParagraphComponent from '../../../../components/textComponets/paragraphText/paragraph';
 import LabelComponent from '../../../../components/textComponets/lableComponent/lable';

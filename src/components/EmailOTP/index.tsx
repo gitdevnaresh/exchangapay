@@ -5,7 +5,7 @@ import { getThemedCommonStyles } from '../CommonStyles';
 import { s } from '../../constants/styels/scale';
 import { useLngTranslation } from '../../hooks/languagesHook/useLngTranslation';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 import LabelComponent from '../textComponets/lableComponent/lable';
 import { isErrorDispaly } from '../../utils/helpers';

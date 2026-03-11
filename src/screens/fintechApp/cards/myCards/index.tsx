@@ -38,7 +38,7 @@ import NoDataComponent from "../../../../components/noData/noData";
 import BindCardNote from "./bindCard/bindcard";
 import { CARDS_CONST, statusIconMap } from "../dashoard/constants";
 import ManageCardIcon from "../../../../components/svgIcons/cardsicons/ManageCardIcon";
-import { FontAwesome5 } from "@expo/vector-icons";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { useHardwareBackHandler } from "../../../../hooks/backHandleHook";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logEvent } from "../../../../hooks/loggingHook";

@@ -27,7 +27,7 @@ import CommonTouchableOpacity from "../../../../components/touchableComponents/t
 import ScrollViewComponent from "../../../../components/scrollView/scrollView";
 import ShieldIcon from "../../../../components/svgIcons/security/shield";
 import Toggle from "../../../../components/toggle/toggle";
-import Foundation from '@expo/vector-icons/Foundation';
+import Foundation from 'react-native-vector-icons/Foundation';
 import SendVerification from "../../../../components/svgIcons/security/sendverification";
 import VerificationPhoneIcon from "../../../../components/svgIcons/security/phone";
 import EmailIcon from "../../../../components/svgIcons/security/email";

@@ -5,7 +5,7 @@ import ViewComponent from "../../../../../../../components/view/view";
 import ParagraphComponent from "../../../../../../../components/textComponets/paragraphText/paragraph";
 import TextMultiLanguage from "../../../../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import { s } from "../../../../../../../constants/styels/scale";
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { CurrencyText } from "../../../../../../../components/textComponets/currencyText/currencyText";
 import { useThemeColors } from "../../../../../../../hooks/themedHook/useThemeColors";
 import { getThemedCommonStyles } from "../../../../../../../components/CommonStyles";

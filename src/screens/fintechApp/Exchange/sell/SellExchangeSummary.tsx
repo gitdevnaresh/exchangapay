@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import { BackHandler } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { ExchangeDropdownItem, ExchangeAsset } from '../interfaces/exchangeInterfaces';
 import { useThemeColors } from '../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../components/CommonStyles';

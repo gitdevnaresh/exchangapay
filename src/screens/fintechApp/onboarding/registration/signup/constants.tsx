@@ -1,7 +1,7 @@
 import TextMultiLangauge from "../../../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import ViewComponent from "../../../../../components/view/view";
 import { s } from "../../../../../constants/styels/scale";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ParagraphComponent from "../../../../../components/textComponets/paragraphText/paragraph";
 
 export const PasswordCriteriaDisplay = ({ password, NEW_COLOR, commonStyles, t }: { password: string | undefined, NEW_COLOR: any, commonStyles: any, t: (key: string) => string }) => {

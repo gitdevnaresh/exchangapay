@@ -9,7 +9,7 @@ import FileUpload from '../../../../../../components/fileUpload/fileUpload';
 import LabelComponent from '../../../../../../components/textComponets/lableComponent/lable';
 import ParagraphComponent from '../../../../../../components/textComponets/paragraphText/paragraph';
 import TextMultiLanguage from '../../../../../../components/textComponets/multiLanguageText/textMultiLangauge';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import PhoneCodePicker from '../../../../../../components/phonePicker/phonePicker';
 import { s } from '../../../../../../constants/styels/scale';
 import { KYC_FORM_FIELDS } from './constants';

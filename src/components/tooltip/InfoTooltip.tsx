@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Modal, View, Dimensions, Linking } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import CommonTouchableOpacity from '../touchableComponents/touchableOpacity';
 import ViewComponent from '../view/view';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

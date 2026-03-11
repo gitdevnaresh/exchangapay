@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Modal, View, TouchableOpacity, Platform } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import ParagraphComponent from '../textComponets/paragraphText/paragraph';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../CommonStyles';

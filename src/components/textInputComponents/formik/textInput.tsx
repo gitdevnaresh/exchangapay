@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { TextInput, TouchableOpacity, TextInputProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { useField } from 'formik';
-import { Feather } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
 import ViewComponent from '../../view/view';
 import ParagraphComponent from '../../textComponets/paragraphText/paragraph';
 import { useLngTranslation } from '../../../hooks/languagesHook/useLngTranslation';

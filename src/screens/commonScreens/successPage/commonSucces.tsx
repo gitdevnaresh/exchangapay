@@ -10,7 +10,7 @@ import { getThemedCommonStyles, SUCCESS_IMG } from '../../../components/CommonSt
 import { useLngTranslation } from '../../../hooks/languagesHook/useLngTranslation';
 import { CurrencyText } from '../../../components/textComponets/currencyText/currencyText';
 import { useThemeColors } from '../../../hooks/themedHook/useThemeColors';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { SvgUri } from 'react-native-svg';
 import { useSelector } from 'react-redux';
 import { isDecimalSmall } from '../../../../configuration';

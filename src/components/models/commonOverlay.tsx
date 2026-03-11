@@ -1,7 +1,7 @@
 import React from "react";
 import { View, TouchableOpacity } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { AntDesign } from '@expo/vector-icons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { WINDOW_WIDTH } from '../../constants/styels/variables';
 import { s } from '../../constants/styels/scale';
 import { useThemeColors } from '../../hooks/themedHook/useThemeColors';

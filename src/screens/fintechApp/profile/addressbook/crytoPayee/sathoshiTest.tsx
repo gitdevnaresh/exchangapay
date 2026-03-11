@@ -18,7 +18,7 @@ import { showAppToast } from '../../../../../components/toasterMessages/ShowMess
 import { useLngTranslation } from '../../../../../hooks/languagesHook/useLngTranslation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ParagraphComponent from '../../../../../components/textComponets/paragraphText/paragraph';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { FormattedDateText } from '../../../../../components/textComponets/dateTimeText/dateTimeText';
 import ErrorComponent from '../../../../../components/errorDisplay/errorDisplay';
 import CopyCard from '../../../../../components/copyIcon/CopyCard';

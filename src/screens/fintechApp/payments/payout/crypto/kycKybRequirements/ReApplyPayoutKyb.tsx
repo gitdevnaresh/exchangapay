@@ -6,7 +6,7 @@ import PageHeader from "../../../../../../newComponents/pageHeader/pageHeader";
 import ViewComponent from "../../../../../../newComponents/view/view";
 import TextMultiLanguage from "../../../../../../newComponents/textComponets/multiLanguageText/textMultiLangauge";
 import ButtonComponent from "../../../../../../newComponents/buttons/button";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { s } from "../../../../../../newComponents/theme/scale";
 import CommonTouchableOpacity from "../../../../../../newComponents/touchableComponents/touchableOpacity";
 import { useSelector } from "react-redux";

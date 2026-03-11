@@ -12,12 +12,12 @@ import ErrorComponent from '../../../../../components/errorDisplay/errorDisplay'
 import Loadding from '../../../../../components/skelton/skeltons';
 import { addressBookFiatCryptoGridSk } from '../../../../../skeletons/payeesSkeltons';
 import { useLngTranslation } from '../../../../../hooks/languagesHook/useLngTranslation';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import KycVerifyPopup from '../../../../commonScreens/kycVerify';
 import { PayeeDetails } from './interface';
 import { useThemeColors } from '../../../../../hooks/themedHook/useThemeColors';
 import ViewComponent from '../../../../../components/view/view';
-import { Entypo } from '@expo/vector-icons';
+import Entypo from 'react-native-vector-icons/Entypo';
 import CustomRBSheet from '../../../../../components/models/commonBottomSheet';
 import ProfileEditIcon from '../../../../../components/svgIcons/mainmenuicons/editicon';
 import ButtonComponent from '../../../../../components/buttons/button';

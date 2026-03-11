@@ -9,7 +9,7 @@ import { PAYOUT_CONSTANTS } from '../../payOutConstants';
 import { useThemeColors } from '../../../../../../hooks/themedHook/useThemeColors';
 import { getThemedCommonStyles } from '../../../../../../components/CommonStyles';
 import { CurrencyText } from '../../../../../../components/textComponets/currencyText/currencyText';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 interface SummaryDetailsSectionProps {
     propsData: any;

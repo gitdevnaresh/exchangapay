@@ -10,7 +10,7 @@ import ButtonComponent from '../../../../components/buttons/button';
 import useMemberLogin from '../../../../hooks/userInfoHook';
 import { NavigationProp, ParamListBase, useNavigation } from '@react-navigation/native';
 import PageHeader from '../../../../components/pageHeader/pageHeader';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { isErrorDispaly } from '../../../../utils/helpers';
 import useEncryptDecrypt from '../../../../hooks/encDecHook';
 import { t } from 'i18next';

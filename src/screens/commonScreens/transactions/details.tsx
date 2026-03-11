@@ -18,13 +18,13 @@ import { CurrencyText } from "../../../components/textComponets/currencyText/cur
 import { useSelector } from "react-redux";
 import { EditIcon, EditIconImage, EditImage, ReceivedImages, Transactionwithdraw } from "../../../assets/svg";
 import ViewComponent from "../../../components/view/view";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useThemeColors } from "../../../hooks/themedHook/useThemeColors";
 import ButtonComponent from "../../../components/buttons/button";
 import DownloadFile from "../../../components/downloadFile";
 import TextMultiLangauge from "../../../components/textComponets/multiLanguageText/textMultiLangauge";
 import CommonTouchableOpacity from "../../../components/touchableComponents/touchableOpacity";
-import Feather from '@expo/vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import DashboardLoader from "../../../components/loader";
 import Clipboard from "@react-native-clipboard/clipboard";
 import ScrollViewComponent from "../../../components/scrollView/scrollView";

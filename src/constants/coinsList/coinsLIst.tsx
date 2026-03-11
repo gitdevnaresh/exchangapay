@@ -1,5 +1,5 @@
 ﻿import { AliaPay, AmazonPay, CanceledIcon, DeposistImage, PendingIcon, ReceivedImages, ShopeeImage, Transactionwithdraw } from "../../assets/svg";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { s } from "../styels/scale";
 import ViewComponent from "../../components/view/view";
 import { SvgUri } from "react-native-svg";

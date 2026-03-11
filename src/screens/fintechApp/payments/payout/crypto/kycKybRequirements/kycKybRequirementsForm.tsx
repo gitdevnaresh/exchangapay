@@ -41,7 +41,7 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import CustomeditLink from "../../../../../../components/svgIcons/mainmenuicons/linkedit";
 import LabelComponent from "../../../../../../components/textComponets/lableComponent/lable";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AddCardsAddress from "../../../../cards/apply_card/apply_card_kyc/addCardsKycAddress";
 import PaymentNotAvailable from "../components/unsupportedCountry";
 
