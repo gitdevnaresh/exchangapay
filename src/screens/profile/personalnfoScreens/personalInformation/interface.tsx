@@ -1,0 +1,34 @@
+export interface PersonalInfoData {
+    id: string;
+    customerId: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    gender: string;
+    dob: string;
+    idIssuranceCountry: string;
+    country: string;
+    phoneNo: string;
+    email: string;
+    documentType: string;
+    documentNumber: string;
+    expirationDate: string;
+    frontIdPhoto: string;
+    handHoldingPhoto: string | null;
+    singaturePhoto: string | null;
+    emergencyContact: string | null;
+    emergencyContactName: string | null;
+    imageurl: string | null;
+    accountType: string;
+    profileImage: string;
+    backDocImage: string | null;
+    referralCommission: number;
+    referralCode: string;
+    customerReferralFullName: string;
+    customerReferralUserName: string;
+    customerState: string;
+    mobileCode: string;
+    mobileNumber: string;
+    emergencyContactMobileCode: string | null;
+    emergencyContactEmail: string | null;
+}
