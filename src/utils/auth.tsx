@@ -1,15 +1,13 @@
 import dayjs from 'dayjs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StorageKey } from '../constants';
-import { SecureStorage } from './secureStorage';
-import { Logger } from './Logger';
 
 export const getAuthTokensFromStorage = async () => {
-  try{
   const [
     [, accessToken],
     [, accessTokenExpirationDate],
     [, refreshToken],
-  ] = await SecureStorage.multiGetSecure([
+  ] = await AsyncStorage.multiGet([
     StorageKey.authAccessToken,
     StorageKey.authAccessTokenExpirationDate,
     StorageKey.authRefreshToken,
@@ -22,47 +20,23 @@ export const getAuthTokensFromStorage = async () => {
     accessTokenExpired = expirationAt.diff(now) < 0;
   }
 
-    return {
-      accessToken,
-      accessTokenExpirationDate,
-      accessTokenExpired,
-      refreshToken,
-    };
-  }
-   catch (error) {
-    Logger.error("Error retrieving auth tokens from storage", {
-      originalError: error.message,
-      context: "AUTH_TOKEN_STORAGE_RETRIEVAL"
-    });
-    
-    // Throw error to halt execution (fail-closed)
-    throw new Error("SECURE_SESSION_FAILED");
-  }
+  return {
+    accessToken,
+    accessTokenExpirationDate,
+    accessTokenExpired,
+    refreshToken,
+  };
 };
 export const getKeyEncrypt = async () => {
-  try{
-  const [[, memberId], [, keySK]] = await SecureStorage.multiGetSecure([StorageKey.memberId, StorageKey.keySK]);
-    if (!memberId || !keySK) {
-      throw new Error("ENCRYPTION_KEYS_MISSING");
-    }
+  const [[, memberId], [, keySK]] = await AsyncStorage.multiGet([StorageKey.memberId, StorageKey.keySK]);
   return {
     memberId,
     keySK,
   };
-}
-  catch (error) {
-    Logger.error("Error retrieving encryption keys from storage", {
-      originalError: error.message,
-      context: "ENCRYPTION_KEY_RETRIEVAL"
-    });
-    
-    // Throw error to halt execution (fail-closed)
-    throw new Error("SECURE_SESSION_FAILED");
-  }
 };
 
 export const setAuthTokensToStorage = async (accessToken:any, accessTokenExpirationDate:any, refreshToken:any ) => {
-  await SecureStorage.multiSetSecure([
+  await AsyncStorage.multiSet([
     [StorageKey.authAccessToken, accessToken],
     [StorageKey.authAccessTokenExpirationDate, accessTokenExpirationDate],
     [StorageKey.authRefreshToken, refreshToken],
@@ -76,7 +50,7 @@ export const setAuthTokensToStorage = async (accessToken:any, accessTokenExpirat
 };
 
 export const removeAuthTokensFromStorage = async () => {
-  await SecureStorage.multiRemoveSecure([
+  await AsyncStorage.multiRemove([
     StorageKey.authAccessToken,
     StorageKey.authAccessTokenExpirationDate,
     StorageKey.authRefreshToken,
@@ -86,9 +60,8 @@ export const removeAuthTokensFromStorage = async () => {
 };
 
 export const setEncryptKey = async ( memberId:any, keySK:any ) => {
-  await SecureStorage.multiSetSecure([
+  await AsyncStorage.multiSet([
     [StorageKey.memberId, memberId],
     [StorageKey.keySK, keySK],
   ]);
 };
-

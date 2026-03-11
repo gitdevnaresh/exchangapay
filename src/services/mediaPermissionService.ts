@@ -55,7 +55,7 @@ export async function checkAppPermissions(
         allowed: false,
         showPopup: true,
         titleKey: "GLOBAL_CONSTANTS.PHOTOS_PERMISSION_REQUIRED",
-        messageKey: "GLOBAL_CONSTANTS.CASES_REPLAY_PERISSION_MESSAGE",
+        messageKey: "GLOBAL_CONSTANTS.PERISSION_MESSAGE",
       };
     }
 

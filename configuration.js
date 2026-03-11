@@ -1,4 +1,4 @@
-import { s } from "./src/components/theme/scale";
+import { s } from "./src/newComponents/theme/scale";
 
 const ICONSURLS = {
     HOME: 'https://storageaccountdott.blob.core.windows.net/mlmimages/Home.svg',

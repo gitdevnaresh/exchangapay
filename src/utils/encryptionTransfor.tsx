@@ -1,7 +1,6 @@
 import createTransform from "redux-persist/es/createTransform";
 import { decryptAES, encryptAES } from "./encryptionDecryption";
 import { getAllEnvData } from "../../Environment";
-import { Logger } from './Logger';
 const SECRET_KEY = getAllEnvData().reduxEncryptKey;
 const encryptTransform = createTransform(
   (inboundState, key) => {
@@ -9,7 +8,7 @@ const encryptTransform = createTransform(
       const stringified = JSON.stringify(inboundState);
       return encryptAES(stringified, SECRET_KEY);
     } catch (e) {
-      Logger.error("Encryption failed:", e);
+      console.error("Encryption failed:", e);
       return inboundState;
     }
   },
@@ -19,7 +18,7 @@ const encryptTransform = createTransform(
       return JSON.parse(decrypted);
 
     } catch (e) {
-      Logger.error("Decryption--- failed:", e);
+      console.error("Decryption--- failed:", e);
       return {};
     }
   }

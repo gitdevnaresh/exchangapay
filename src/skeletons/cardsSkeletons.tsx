@@ -1,11 +1,10 @@
 import { StyleSheet, View } from "react-native";
-
-import { WINDOW_WIDTH } from "../constants/styels/variables";
-import { s } from "../constants/styels/scale";
-import { useThemeColors } from "../hooks/themedHook/useThemeColors";
-import { getThemedCommonStyles } from "../components/CommonStyles";
+import { WINDOW_WIDTH } from "../constants/theme/variables";
+import { s } from "../constants/theme/scale";
+import { useThemeColors } from "../hooks/useThemeColors";
+import { getThemedCommonStyles } from "../assets/styles/CommonStyles";
 const NEW_COLOR=useThemeColors();
- const commonStyles = getThemedCommonStyles(NEW_COLOR);
+const commonStyles =getThemedCommonStyles(NEW_COLOR);
 
 
 export const CardAvailableBalanceLoader = () => {
@@ -283,8 +282,8 @@ export const allAddressList = (count: number) => {
         }
     }
     const html = <View style={{ marginTop: 20 }}>
-        {countList.map((item) => (
-            <View key={item} style={{ ...styles.textSkeleton, width: '100%', height: 55, borderRadius: 10, marginBottom: 16 }} />))}
+        {countList.map(() => (
+            <View key='item' style={{ ...styles.textSkeleton, width: '100%', height: 55, borderRadius: 10, marginBottom: 16 }} />))}
     </View>;
     return html;
 };
@@ -316,18 +315,6 @@ export const CardFee = () => {
         <View style={{ ...styles.textSkeleton, height: 26, width: "100%", borderRadius: 5, marginBottom: 16 }} />
         <View style={{ ...styles.textSkeleton, height: 26, width: "100%", borderRadius: 5, marginBottom: 16 }} />
         </View>;
-    return html;
-};
-export const CardDetailsFieldLoader = () => {
-    const html = <View>
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-        <View style={{ ...styles.textSkeleton, height: 37, width: "100%", borderRadius: 5, marginBottom: 10 }} />
-
-    </View>;
     return html;
 };
 export const Sample = () => {
@@ -372,7 +359,7 @@ const styles = StyleSheet.create({
         height: 16,
         width: '50%',
         marginBottom: 8,
-        backgroundColor: NEW_COLOR.SHIMMER_LOADERCOLOR,
+        backgroundColor: '#ECF1F7',
     },
     cardsbody: {
         height: 16,
@@ -412,4 +399,3 @@ const styles = StyleSheet.create({
         backgroundColor: '#ECF1F7',
     },
 });
-

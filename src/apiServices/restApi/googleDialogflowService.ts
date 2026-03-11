@@ -1,6 +1,5 @@
 // googleDialogflowService.ts
 import { KJUR } from 'jsrsasign';
-import { Logger } from '../../utils/Logger';
 
 // Interface for the OAuth2 token response
 interface OAuth2TokenResponse {
@@ -56,7 +55,10 @@ const serviceAccount = require('../../../android/app/src/main/assets/web3bank-46
 let cachedToken: { token: string; expires: number } | null = null;
 
 const getAccessToken = async (): Promise<string> => {
+  console.log('[Dialogflow] Attempting to get access token...');
+
   if (cachedToken && Date.now() < cachedToken.expires) {
+    console.log('[Dialogflow] Using cached access token');
     return cachedToken.token;
   }
 
@@ -88,7 +90,7 @@ const getAccessToken = async (): Promise<string> => {
     const tokenJson: OAuth2TokenResponse = await tokenResponse.json();
 
     if (!tokenResponse.ok || !tokenJson.access_token) {
-      Logger.error('[Dialogflow] Failed to get access token:', JSON.stringify(tokenJson, null, 2));
+      console.error('[Dialogflow] Failed to get access token:', JSON.stringify(tokenJson, null, 2));
       throw new Error(`Failed to get access token: ${tokenJson.error_description || tokenResponse.statusText || 'Unknown error'}`);
     }
 
@@ -99,12 +101,14 @@ const getAccessToken = async (): Promise<string> => {
 
     return tokenJson.access_token;
   } catch (error) {
-    Logger.error('[Dialogflow] Error in getAccessToken:', error);
+    console.error('[Dialogflow] Error in getAccessToken:', error);
     throw error;
   }
 };
 
 export const sendMessageToDialogflow = async (message: string): Promise<string> => {
+  console.log(`[Dialogflow] Sending message: "${message}"`);
+
   if (!message.trim()) {
     return 'Please enter a message to start the conversation.';
   }
@@ -148,7 +152,7 @@ export const sendMessageToDialogflow = async (message: string): Promise<string> 
 
     return fulfillmentText;
   } catch (error) {
-    Logger.error('[Dialogflow] Error in sendMessageToDialogflow:', error);
+    console.error('[Dialogflow] Error in sendMessageToDialogflow:', error);
 
     if (error instanceof Error) {
       if (error.message.includes('network') || error.message.includes('fetch')) {

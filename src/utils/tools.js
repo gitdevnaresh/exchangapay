@@ -4,7 +4,7 @@ import PBKDF2 from "crypto-js/pbkdf2";
 import Pkcs7 from "crypto-js/pad-pkcs7";
 import ENC from "crypto-js/enc-utf8";
 import { mode } from "crypto-js";
-import ReactNativeBlobUtil from "react-native-blob-util";
+import RNFetchBlob from "rn-fetch-blob";
 
 // eslint-disable-next-line consistent-return
 
@@ -42,7 +42,8 @@ export const downloadFileFromUrl = (path, extension) => {
   const filename = path.replace(/^.*[\\\\/]/, "");
   const name = filename.split(".").slice(0, -1).join(".");
 
-  const { DownloadDir, DocumentDir } = ReactNativeBlobUtil.fs.dirs;
+  const { config, fs } = RNFetchBlob;
+  const { DownloadDir, DocumentDir } = fs?.dirs;
   const fileExt = extension.toLowerCase();
   let mimeType;
   if (fileExt === "png" || fileExt === "jpg" || fileExt === "jpeg") {
@@ -73,7 +74,7 @@ export const downloadFileFromUrl = (path, extension) => {
       },
     },
   });
-  ReactNativeBlobUtil.config(options)
+  config(options)
     .fetch("GET", path)
     .then(() => {
       Alert.alert("Download file success");
@@ -124,7 +125,7 @@ export const uploadFileFromDocument = async () => {
 };
 
 export const readFileURL = async (path) => {
-  const response = await ReactNativeBlobUtil.config({
+  const response = await RNFetchBlob.config({
     // add this option that makes response data to be stored as a file,
     // this is much more performant.
     fileCache: true,

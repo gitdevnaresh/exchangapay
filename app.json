@@ -1,4 +1,7 @@
 {
   "name": "rapidz",
-  "displayName": "Rapidz"
+  "displayName": "Rapidz",
+  "plugins": [
+    "expo-localization"
+  ]
 }

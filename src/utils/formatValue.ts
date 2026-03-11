@@ -1,5 +1,4 @@
 import numeral from "numeral";
-import { Logger } from './Logger';
 
 export const formatDefault = (amount: string, currency = "$") => {
   let textResult = `${currency}`;
@@ -12,7 +11,7 @@ export const formatDefault = (amount: string, currency = "$") => {
       textResult += numeral(parseFloat(amount)).format("0,0.00");
     }
   } catch (e) {
-    // Format error - continue with default
+    console.log(e);
   }
   return textResult;
 };
