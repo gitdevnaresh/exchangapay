@@ -16,7 +16,7 @@ import LabelComponent from "../../newComponents/textComponets/lableComponent/lab
 import ImageUri from "../../newComponents/imageComponents/image";
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
-import RNFetchBlob from 'rn-fetch-blob';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import RNShare from 'react-native-share';
 import ButtonComponent from "../../newComponents/buttons/button";
 import { useThemeColors } from "../../hooks/useThemeColors";
@@ -298,8 +298,7 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
           showCustomToast({ message: "Download failed.", type: ToastType.ERROR });
         }
       } else { // Android < 13
-        const { config, fs } = RNFetchBlob;
-        const downloadDir = fs.dirs.DownloadDir;
+        const downloadDir = ReactNativeBlobUtil.fs.dirs.DownloadDir;
         const downloadPath = `${downloadDir}/${actualFileName}`;
         const rnFetchBlobOptions = {
           fileCache: true,
@@ -314,7 +313,7 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
           },
         };
         
-        const response = await config(rnFetchBlobOptions).fetch('GET', url);
+        const response = await ReactNativeBlobUtil.config(rnFetchBlobOptions).fetch('GET', url);
         showCustomToast({ message: t("GLOBAL_CONSTANTS.DOWNLOAD_COMPLETE"), type: ToastType.SUCCESS });
       }
     } catch (err: any) {

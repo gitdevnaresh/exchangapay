@@ -64,12 +64,17 @@ export default Sentry.wrap(function App() {
     useEffect(() => {
         const initializeApp = async () => {
             try {
-                await initializeNotifications();
-                await refreshToken();
-                await loadFonts();
-                checkVersionUpdate(); // This can run without await if it's not critical for the first render
+                await Promise.race([
+                    Promise.all([
+                        initializeNotifications().catch(e => console.log('Notification init failed:', e)),
+                        refreshToken().catch(e => console.log('Token refresh failed:', e)),
+                        loadFonts()
+                    ]),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+                ]);
+                checkVersionUpdate();
             } catch (error) {
-                setIsInitializing(false);
+                console.log('Init error:', error);
             } finally {
                 setIsInitializing(false);
             }

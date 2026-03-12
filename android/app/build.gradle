@@ -4,6 +4,8 @@ apply plugin: "com.facebook.react"
 apply plugin: 'com.google.gms.google-services' // <- Add this line
 apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+def fronteggDomain = "app-rk7m05g6zv53.ca.frontegg.com" // without protocol https://
+def fronteggClientId = "fd8b4d3e-6b21-4f09-b4ed-cb7de7dc1af2"
 
 import java.util.Properties
 
@@ -104,6 +106,15 @@ android {
     buildToolsVersion "35.0.0"
     compileSdk 36
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
     namespace "money.rapidz.rapidzmoney"
     defaultConfig {
         applicationId "money.rapidz.rapidzmoney"
@@ -111,7 +122,20 @@ android {
         targetSdkVersion 36
         versionCode 11
         versionName "1.0.11"
-        manifestPlaceholders = [auth0Domain: "rapidz-stg.us.auth0.com", auth0Scheme: "${applicationId}.auth0"] 
+        manifestPlaceholders = [
+            auth0Domain: "rapidz-stg.us.auth0.com", 
+            auth0Scheme: "${applicationId}.auth0",
+            "package_name" : applicationId,
+"frontegg_domain" : fronteggDomain,
+"frontegg_client_id": fronteggClientId] 
+        buildConfigField "String", 'FRONTEGG_DOMAIN', "\"$fronteggDomain\""
+buildConfigField "String", 'FRONTEGG_CLIENT_ID', "\"$fronteggClientId\""
+buildConfigField "Boolean", 'FRONTEGG_USE_ASSETS_LINKS', "true" /** For using frontegg domain for deeplinks **/
+buildConfigField "Boolean", 'FRONTEGG_USE_CHROME_CUSTOM_TABS', "true" /** For using custom chrome tab for social-logins **/
+buildConfigField "Boolean", 'FRONTEGG_ENABLE_LOGS', "true" /** Enable debug logs **/
+buildFeatures {
+buildConfig = true
+}
     }
     signingConfigs {
         debug {

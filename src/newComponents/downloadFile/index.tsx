@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, PermissionsAndroid, Platform, Share, ToastAndroid, View } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import CommonTouchableOpacity from '../touchableComponents/touchableOpacity';
 import { s } from '../../constants/theme/scale';
 import ButtonComponent from '../buttons/button';
@@ -170,12 +170,12 @@ const DownloadFile: React.FC<DownloadFileProps> = ({
         const fileExtension = ext ? `.${ext}` : '';
         const mimeType = getMimeTypeFromExtension(ext);
         const fileNameFinal = fileName || imageURL?.split('/').pop()?.split('.')[0] || 'download';
-        const { fs } = RNFetchBlob;
+        const { fs } = ReactNativeBlobUtil;
         const PictureDir = fs.dirs.DownloadDir;
 
         if (Platform.OS !== 'ios') {
             try {
-                const res = await RNFetchBlob.config({
+                const res = await ReactNativeBlobUtil.config({
                     fileCache: true,
                     addAndroidDownloads: {
                         useDownloadManager: true,

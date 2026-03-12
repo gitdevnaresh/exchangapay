@@ -4,7 +4,7 @@ import PBKDF2 from "crypto-js/pbkdf2";
 import Pkcs7 from "crypto-js/pad-pkcs7";
 import ENC from "crypto-js/enc-utf8";
 import { mode } from "crypto-js";
-import RNFetchBlob from "rn-fetch-blob";
+import ReactNativeBlobUtil from "react-native-blob-util";
 
 // eslint-disable-next-line consistent-return
 
@@ -125,7 +125,7 @@ export const uploadFileFromDocument = async () => {
 };
 
 export const readFileURL = async (path) => {
-  const response = await RNFetchBlob.config({
+  const response = await ReactNativeBlobUtil.config({
     // add this option that makes response data to be stored as a file,
     // this is much more performant.
     fileCache: true,

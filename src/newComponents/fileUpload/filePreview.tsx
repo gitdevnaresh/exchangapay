@@ -14,7 +14,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { useLngTranslation } from "../../hooks/useLngTranslation";
 import LabelComponent from "../../newComponents/textComponets/lableComponent/lable";
 import ImageUri from "../../newComponents/imageComponents/image"; // Assuming this is a custom component for displaying images
-import RNFetchBlob from 'rn-fetch-blob'; // Import rn-fetch-blob
+import ReactNativeBlobUtil from 'react-native-blob-util'; // Import react-native-blob-util
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import ButtonComponent from "../../newComponents/buttons/button";
@@ -119,7 +119,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
         }
 
         const { name: actualFileName, mime } = getFileDetails(imageUrl);
-        const { config, fs } = RNFetchBlob;
+        const { config, fs } = ReactNativeBlobUtil;
         if (!config || !fs || !fs.dirs || !fs.dirs.DownloadDir) {
           showCustomToast({ message: "Download feature is currently unavailable.", type: ToastType.WARNING, duration: ToastAndroid.LONG });
           return;

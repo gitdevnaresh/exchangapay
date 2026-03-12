@@ -4,7 +4,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { s } from "react-native-size-matters";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useLngTranslation } from "../../hooks/useLngTranslation";
-import RNFetchBlob from "rn-fetch-blob";
+import ReactNativeBlobUtil from "react-native-blob-util";
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import RNFS from 'react-native-fs';
 import { useThemeColors } from "../../hooks/useThemeColors";
@@ -128,8 +128,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           showCustomToast({ message: "Download failed.", type: ToastType.ERROR });
         }
       } else { // Android < 13
-        const { config, fs } = RNFetchBlob;
-        const downloadDir = fs.dirs.DownloadDir;
+        const downloadDir = ReactNativeBlobUtil.fs.dirs.DownloadDir;
         const rnFetchBlobOptions = {
           fileCache: true,
           addAndroidDownloads: {
@@ -142,7 +141,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             mediaScannable: true,
           },
         };
-        await config(rnFetchBlobOptions).fetch('GET', url);
+        await ReactNativeBlobUtil.config(rnFetchBlobOptions).fetch('GET', url);
         // showCustomToast({ message: t("GLOBAL_CONSTANTS.DOWNLOAD_COMPLETE"), type: ToastType.SUCCESS });
       }
     } catch (err: any) {
@@ -152,7 +151,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const refreshGallery = async (filePath: string) => {
     try {
       if (Platform.OS === 'android') {
-        await RNFetchBlob.fs.scanFile([{ path: filePath, mime: 'image/*' }]);
+        await ReactNativeBlobUtil.fs.scanFile([{ path: filePath, mime: 'image/*' }]);
       }
     } catch (err) {
       console.log('Gallery refresh failed:', err);
