@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>baseUrl</key>
+	<string>https://app-rk7m05g6zv53.ca.frontegg.com</string>
+	<key>clientId</key>
+	<string>fd8b4d3e-6b21-4f09-b4ed-cb7de7dc1af2</string>
+	<key>embeddedMode</key>
+	<true/>
+	<key>lateInit</key>
+	<false/>
+	<key>keychainService</key>
+	<string>frontegg</string>
+</dict>
+</plist>
