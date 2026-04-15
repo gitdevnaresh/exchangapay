@@ -6,6 +6,7 @@ require Pod::Executable.execute_command('node', ['-p',
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 
 # Import permissions setup
 require_relative '../node_modules/react-native-permissions/scripts/setup'
@@ -21,6 +22,7 @@ if linkage != nil
 end
 
 target 'exchangapay' do
+  use_expo_modules!
   config = use_native_modules!
 
   # Permissions
@@ -62,5 +64,50 @@ target 'exchangapay' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Sentry RN 5.x still references the old static Hermes sampling profiler API.
+    # RN 0.81 / Hermes exposes profiling through instance APIs, so we disable the
+    # native Hermes profiling compile flag to keep the pod building cleanly.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'RNSentry'
+
+      target.source_build_phase.files.each do |file|
+        next unless file.settings && file.settings['COMPILER_FLAGS']
+
+        flags = file.settings['COMPILER_FLAGS']
+        next unless flags.include?('-DSENTRY_PROFILING_SUPPORTED=1')
+
+        file.settings['COMPILER_FLAGS'] = flags.gsub('-DSENTRY_PROFILING_SUPPORTED=1', '').squeeze(' ').strip
+      end
+    end
+
+    installer.pods_project.targets.each do |target|
+      if target.name == 'hermes-engine'
+        react_native_path = File.join(Pod::Config.instance.installation_root, '..', 'node_modules', 'react-native')
+        node_binary = Pod::Executable.execute_command('which', ['node']).strip
+
+        target.build_configurations.each do |config|
+          config.build_settings['REACT_NATIVE_PATH'] = react_native_path
+          config.build_settings['NODE_BINARY'] = node_binary
+        end
+      end
+
+      target.build_configurations.each do |config|
+        current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current.to_f < 13.0
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+        end
+      end
+    end
+
+    module_providers_path = File.join(Pod::Config.instance.installation_root, '..', 'build', 'generated', 'ios', 'RCTModuleProviders.mm')
+    if File.exist?(module_providers_path)
+      contents = File.read(module_providers_path)
+      sanitized = contents.gsub(/^\s*@\"RNDatePicker\": @\"RNDatePickerManager\", \/\/ react-native-date-picker\n/, '')
+      if sanitized != contents
+        File.write(module_providers_path, sanitized)
+        Pod::UI.puts "Removed incompatible RNDatePicker TurboModule provider registration for RN 0.81".yellow
+      end
+    end
   end
 end
