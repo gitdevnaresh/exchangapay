@@ -233,7 +233,7 @@ import Bullswipe from "./latest/bullswipe.svg"
 import LeftIcon from "./latest/left.svg";
 import RightIcon from "./latest/right.svg";
 import MAsterIcon from "./latest/master-logo.svg";
-import FaceIcon from "./latest/faceIcon.svg";
+import FaceIcon from "./latest/faceicon.svg";
 import FaceScanner from "./latest/facescanner.svg";
 import Success from "./latest/success.svg";
 

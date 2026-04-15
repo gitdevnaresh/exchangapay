@@ -1,4 +1,4 @@
-package money.rapidz.rapidzmoney
+package com.bullswipe.test
 
 import android.app.Application
 import com.facebook.react.PackageList

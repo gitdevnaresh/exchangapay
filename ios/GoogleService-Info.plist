@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>money.rapidz.rapidzmoney</string>
+	<string>com.bullswipe.test</string>
 	<key>PROJECT_ID</key>
 	<string>rapidz-money-live</string>
 	<key>STORAGE_BUCKET</key>

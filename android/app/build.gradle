@@ -115,9 +115,9 @@ android {
         jvmTarget = '17'
     }
 
-    namespace "money.rapidz.rapidzmoney"
+    namespace "com.bullswipe.test"
     defaultConfig {
-        applicationId "money.rapidz.rapidzmoney"
+        applicationId "com.bullswipe.test"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion 36
         versionCode 11

@@ -1,6 +1,6 @@
 {
-  "name": "rapidz",
-  "displayName": "Rapidz",
+  "name": "BullSwipe",
+  "displayName": "BullSwipe",
   "plugins": [
     "expo-localization"
   ]

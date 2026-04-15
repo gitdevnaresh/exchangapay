@@ -1,140 +1,99 @@
-
 export const getAppName = () => {
-  const appName = "rapidz"
-  return appName;
+    const appName = "BullSwipe"
+    return appName;
 };
-// const SentEnvironmentVariable="development" : "production"
 const ENV = {
-  local: {
-    reduxEncryptKey: '11AA7AE9-4575-4C12-8F2E-C8DAFFE82416',
-    oAuthConfig: {
-      issuer: 'neodigitalbank.us.auth0.com',
-      clientId: '7cpZsKwJutx5HU5lMvqib4eqvYCK0WtO',
-      audience: 'https://ExchangaApi.net',
-      scope: 'openid profile email enroll offline_access',
-      dataBase: "Rapidz-tst"
+    local: {
+        reduxEncryptKey: 'devsecretkey12345678901234567890',
+        oAuthConfig: {
+            issuer: 'neodigitalbank.us.auth0.com',
+            clientId: '7cpZsKwJutx5HU5lMvqib4eqvYCK0WtO',
+            audience: 'https://ExchangaApi.net',
+            scope: 'openid profile email enroll'
+        },
+        apiUrls: {
+            uploadUrl: 'https://neocardsapi.exchangapay.com/',
+            apiUrl: 'https://neocardsapi.exchangapay.com/',
+            marketBaseUrl: 'https://api.coingecko.com',
+        }
     },
-    apiUrls: {
-      uploadUrl: 'https://neocardsapi.exchangapay.com/',
-      apiUrl: 'https://neocardsapi.exchangapay.com/',
-      marketBaseUrl: 'https://api.coingecko.com',
-    }
-  },
-  tst: {
-    reduxEncryptKey: '11AA7AE9-4575-4C12-8F2E-C8DAFFE82416',
-    bundlerId: "money.rapidz.rapidzmoney.dev",
-    oAuthConfig: {
-      issuer: 'dev-2gauj4g0kyi8jm02.us.auth0.com',
-      clientId: 'EguqL0EDQg0Xnn0MUYsZztWFfO7byN2p',
-      audience: 'https://Rapidztst.net',
-      scope: 'openid profile email enroll offline_access',
-      dataBase: "Rapidz-tst",
-      sentryEnvornment: "development",
-      sentryLoggs: false,
-      sentryDsn: 'https://b996932428dba962fe9fb362331aab2e@o4509932318949376.ingest.us.sentry.io/4509932375244800',
-      sumsubWebUrl: 'https://tst.rapidz.money/',
-      appStoreUrl: ''
+    stg: {
+        reduxEncryptKey: 'devsecretkey12345678901234567890',
+        oAuthConfig: {
+            issuer: "dev-p4j3kp4nk6x4m4aq.us.auth0.com",
+            clientId: "UD1UIdz8sslEKPjN9A7ziT5q3qQrtqap",
+            audience: "https://swokipayTSTApi.net",
+            scope: 'openid profile email enroll offline_access',
+            frontEgg_ClientId: "9cf22fa5-edb7-4bf3-8440-5ee35467f30b",
+            frontEgg_Secret: "280ae796-ea09-4df6-961b-be2128ba4688",
+            frontEgg_AppId: "ffda60b1-2844-4e20-a7bd-3efcf57b3862",
+            frontEgg_host: "app-95ajy9qx6083.ca.frontegg.com",
+            sentryEnvornment: "development",
+            sentryLoggs: true,
+            sentryDsn: 'https://072a080903356dfe26e19e25b82dccde@o4510463610126336.ingest.us.sentry.io/4510463612157952',
+            playStoreUrl: '',
+            appStoreUrl: ''
+        },
+        apiUrls: {
+            apiUrl: 'https://stgapi.bullswipe.com',
+            uploadUrl: 'https://stgapi.bullswipe.com',
+            marketBaseUrl: 'https://stgapi.bullswipe.com',
+        }
 
     },
-    apiUrls: {
-      apiUrl: 'https://tstcore.rapidz.money/',
-      uploadUrl: 'https://tstcore.rapidz.money/',
-      marketBaseUrl: 'https://api.coingecko.com',
-      cardsUrl: 'https://tstcards.rapidz.money/',
-      paymentsBaseUrl: 'https://tstpayments.rapidz.money/',
-      bankApiUrl: 'https://tstbanks.rapidz.money/',
-      rewards: 'https://loyalityapitst.azurewebsites.net',
-      exchangeApiUrl: 'https://tstexchange.rapidz.money/',
-    }
-  },
-  staging: {
-    reduxEncryptKey: 'ED8FC691-8EC2-4969-A73A-3480E794F335',
-    bundlerId: "money.rapidz.rapidzmoney.staging",
-    oAuthConfig: {
-      issuer: 'rapidz-stg.us.auth0.com',
-      clientId: 'FbFwvrL9LCjiXfj58fCpjeXt4RO58cVH',
-      audience: 'https://Rapidzstg.net',
-      scope: 'openid profile email enroll offline_access',
-      dataBase: "Rapidz-stg",
-      sentryEnvornment: "production",
-      sentryLoggs: true,
-      sentryDsn: 'https://b202f380d5d87679e54d4cd99644be1b@o4509953990131712.ingest.de.sentry.io/4509988812947536',
-      sumsubWebUrl: 'https://stg.rapidz.money/',
-      playStoreUrl: 'https://play.google.com/store/apps/details?id=money.rapidz.rapidzmoney.staging',
-      appStoreUrl: 'https://www.apple.com/in/app-store/'
+    tst: {
+        reduxEncryptKey: 'devsecretkey12345678901234567890',
+        oAuthConfig: {
+            issuer: 'bullswipe-tst.us.auth0.com',
+            clientId: 'yWlNd9Q7lqIiiX919P8FmS5QlMp6NLXh',
+            audience: 'https://arthapayApi.net',
+            scope: 'openid profile email enroll offline_access',
+            frontEgg_ClientId: 'fd8b4d3e-6b21-4f09-b4ed-cb7de7dc1af2',
+            frontEgg_Secret: '3cc135f4-412e-4cb5-982f-32746c0ad86a',
+            frontEgg_AppId: "ba372851-9970-4987-aaf1-8e321688daed",
+            frontEgg_host: "app-rk7m05g6zv53.ca.frontegg.com",
+            sentryEnvornment: "development",
+            sentryLoggs: false,
+            sentryDsn: 'https://072a080903356dfe26e19e25b82dccde@o4510463610126336.ingest.us.sentry.io/4510463612157952',
+            playStoreUrl: '',
+            appStoreUrl: ''
+        },
+        apiUrls: {
+            apiUrl: 'https://tstapibullswipe.artha.work/',
+            uploadUrl: 'https://arthapayapi.artha.work/',
+            marketBaseUrl: 'https://api.coingecko.com',
+        }
+    },
+    dev: {
+        reduxEncryptKey: 'devsecretkey12345678901234567890',
+        oAuthConfig: {
+            issuer: "dev-p4j3kp4nk6x4m4aq.us.auth0.com",
+            clientId: "UD1UIdz8sslEKPjN9A7ziT5q3qQrtqap",
+            audience: "https://swokipayTSTApi.net",
+            scope: 'openid profile email enroll offline_access',
+            frontEgg_ClientId: 'fd8b4d3e-6b21-4f09-b4ed-cb7de7dc1af2',
+            frontEgg_Secret: '3cc135f4-412e-4cb5-982f-32746c0ad86a',
+            frontEgg_AppId: "ba372851-9970-4987-aaf1-8e321688daed",
+            frontEgg_host: "app-rk7m05g6zv53.ca.frontegg.com",
+            sentryEnvornment: "development",
+            sentryLoggs: false,
+            sentryDsn: 'https://072a080903356dfe26e19e25b82dccde@o4510463610126336.ingest.us.sentry.io/4510463612157952',
+            playStoreUrl: '',
+            appStoreUrl: ''
+        },
+        apiUrls: {
+            uploadUrl: "https://devswokiapi.azurewebsites.net/",
+            cardsUrl: "https://devswokiapi.azurewebsites.net/",
+            apiUrl: 'https://swokipaydev.artha.work/',
+            marketBaseUrl: 'https://api.coingecko.com',
+            paymentsBaseUrl: 'https://arthadevpayments.artha.work/'
 
-
+        },
     },
-    apiUrls: {
-      apiUrl: 'https://stgcoreapi.rapidz.money/',
-      uploadUrl: 'https://stgcoreapi.rapidz.money/',
-      marketBaseUrl: 'https://api.coingecko.com',
-      cardsUrl: 'https://stgcardsapi.rapidz.money/',
-      paymentsBaseUrl: 'https://stgpaymentsapi.rapidz.money/',
-      bankApiUrl: 'https://stgbankapi.rapidz.money/',
-      rewards: 'https://loyalityapi.azurewebsites.net/',
-      exchangeApiUrl: 'https://stgexchangeapi.rapidz.money/',
-    },
-  },
-  prod: {
-    reduxEncryptKey: 'ED8FC691-8EC2-4969-A73A-3480E794F335',
-    bundlerId: "money.rapidz.rapidzmoney",
-    oAuthConfig: {
-      issuer: 'rapidz.us.auth0.com',
-      clientId: 'zifsdYszqALzz10TA36KGBoJn66ZSbnA',
-      audience: 'https://Rapidz.net',
-      scope: 'openid profile email enroll offline_access',
-      dataBase: "Rapidz",
-      sentryEnvornment: "production",
-      sentryLoggs: true,
-      sentryDsn: 'https://2eb5d74663f6818a2bc89c0c367c01d1@o4509953990131712.ingest.de.sentry.io/4510616742199376',
-      sumsubWebUrl: 'https://stg.rapidz.money/',
-      playStoreUrl: 'https://play.google.com/store/apps/details?id=money.rapidz.rapidzmoney',
-      appStoreUrl: 'https://www.apple.com/in/app-store/'
-
-
-    },
-    apiUrls: {
-      apiUrl: 'https://coreapi.rapidz.money/',
-      uploadUrl: 'https://coreapi.rapidz.money/',
-      marketBaseUrl: 'https://api.coingecko.com/',
-      cardsUrl: 'https://cardsapi.rapidz.money/',
-      paymentsBaseUrl: 'https://paymentsapi.rapidz.money/',
-      bankApiUrl: 'https://bankapi.rapidz.money/',
-      rewards: 'https://loyalityapi.azurewebsites.net/',
-      exchangeApiUrl: 'https://exchangeapi.rapidz.money/',
-    },
-  },
-  dev: {
-    reduxEncryptKey: 'devsecretkey12345678901234567890',
-    bundlerId: "money.rapidz.rapidzmoney.dev",
-    oAuthConfig: {
-      issuer: 'yellowblockllp.us.auth0.com',
-      clientId: 'FupavKI3iG7WIWyOwzJkWbaajaUvqsyn',
-      audience: 'https://devarthapayApi.net',
-      scope: 'openid profile email enroll offline_access',
-      dataBase: "DevArthaPay",
-      sentryEnvornment: "development",
-      sentryLoggs: false,
-      sentryDsn: 'https://b996932428dba962fe9fb362331aab2e@o4509932318949376.ingest.us.sentry.io/4509932375244800'
-    },
-    apiUrls: {
-      apiUrl: 'https://arthadevcore.artha.work/',
-      uploadUrl: 'https://arthadevcore.artha.work/',
-      marketBaseUrl: 'https://api.coingecko.com',
-      cardsUrl: 'https://arthadevcards.artha.work/',
-      paymentsBaseUrl: 'https://arthadevpayments.artha.work/',
-      bankApiUrl: 'https://arthadevbanks.artha.work/',
-      rewards: 'https://loyalityapi.azurewebsites.net/'
-
-    },
-  },
 };
-export const getAllEnvData = () => {
-  return ENV['tst'];
+export const getAllEnvData = envName => {
+    return ENV['tst'];
 };
 export const getEnvVars = () => {
-  return __DEV__ ? ENV.local : ENV.prod;
+    return __DEV__ ? ENV.local : ENV.prod;
 };
-
-

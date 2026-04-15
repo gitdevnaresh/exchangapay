@@ -21,6 +21,7 @@ import { useTokenRefresh } from "./hooks/refreshTokenHook";
 import { toastConfig } from "./newComponents/ToasterMessages/Toastermessages";
 import Toast from "react-native-toast-message";
 import { initializeCrashlytics } from "./utils/ApiService";
+import BootSplash from "react-native-bootsplash";
 import { FronteggWrapper } from '@frontegg/react-native';
 import * as Sentry from "@sentry/react-native";
 import { initializeNotifications } from "./pushNotifications";
@@ -88,6 +89,12 @@ export default Sentry.wrap(function App() {
             checkAppVersion(); // Only run when versionInfo is ready
         }
     }, [versionInfo]);
+
+    useEffect(() => {
+        if (!isInitializing && fontsLoaded) {
+            BootSplash.hide({ fade: true });
+        }
+    }, [isInitializing, fontsLoaded]);
 
 
     const checkAppVersion = async () => {
