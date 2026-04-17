@@ -21,9 +21,10 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'exchangapay' do
+target 'BullSwipe' do
   use_expo_modules!
   config = use_native_modules!
+
 
   # Permissions
   setup_permissions([
