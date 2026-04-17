@@ -35,12 +35,15 @@ interface transaction {
   network: string
   preSettlementAmount: any
   action: any
-  withdrawAmount?: any
+  withdrawAmount?: any,
+  preSettlementDate?: any
+  fee?: any
 }
 
 const TransactionDetails = React.memo(({ transId, closePop }: { transId: string, closePop: () => void }) => {
   const styles = useStyleSheet(themedStyles);
   const [errorMsg, setErrorMsg] = useState<any>("");
+  const [statusOpen, setStatusOpen] = useState<boolean>(false);
   const [transactionDetails, setTransactionDetails] = useState<transaction | undefined>();
   useEffect(() => {
     getTransactionDetails();
@@ -205,6 +208,34 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             ]}
           >
             <ParagraphComponent
+              text='Transaction Amount'
+              style={[
+                commonStyles.fs14,
+                commonStyles.fw500,
+                commonStyles.textLightGrey, styles.labelStyle
+              ]}
+            />
+            <ParagraphComponent
+              text={
+                formatCurrency((transactionDetails?.actio?.toLowerCase() === "consume" && transactionDetails?.state === "Approved") ? transactionDetails?.preSettlementAmount : transactionDetails?.amount || 0, 2)
+              }
+              style={[
+                commonStyles.fs14,
+                commonStyles.fw500,
+                commonStyles.textBlack,
+                commonStyles.textRight,
+                commonStyles.flex1,
+              ]}
+            />
+          </View>
+          <View
+            style={[
+              commonStyles.dflex,
+              commonStyles.justifyContent,
+              commonStyles.gap12,
+            ]}
+          >
+            <ParagraphComponent
               text='Amount'
               style={[
                 commonStyles.fs14,
@@ -214,7 +245,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             />
             <ParagraphComponent
               text={
-                formatCurrency((transactionDetails?.action === "Consume" && transactionDetails?.state === "Approved") ? transactionDetails?.preSettlementAmount : transactionDetails?.amount || 0, 2)
+                formatCurrency((transactionDetails?.actio?.toLowerCase() === "consume" && transactionDetails?.state === "Approved") ? transactionDetails?.preSettlementAmount : transactionDetails?.amount || 0, 2)
               }
               style={[
                 commonStyles.fs14,
@@ -264,6 +295,85 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             </View>
           </View>)}
 
+          {((transactionDetails?.action?.toLowerCase() === "consume") && (transactionDetails?.fee || transactionDetails?.fee == 0)) && (<View>
+            <View
+              style={[
+                commonStyles.dashedLine,
+                commonStyles.mt10,
+                commonStyles.mb10,
+                { opacity: 0.2 },
+              ]}
+            />
+            <View
+              style={[
+                commonStyles.dflex,
+                commonStyles.justifyContent,
+                commonStyles.gap12,
+              ]}
+            >
+              <ParagraphComponent
+                text="Fee"
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw500,
+                  commonStyles.textLightGrey, styles.labelStyle
+                ]}
+              />
+              <ParagraphComponent
+                text={
+                  formatCurrency(transactionDetails?.fee || 0, 2)
+                }
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw500,
+                  commonStyles.textBlack,
+                  commonStyles.textRight,
+                  commonStyles.flex1,
+                ]}
+              />
+            </View>
+            <View>
+              <View
+                style={[
+                  commonStyles.dashedLine,
+                  commonStyles.mt10,
+                  commonStyles.mb10,
+                  { opacity: 0.2 },
+                ]}
+              />
+
+              <View style={[
+                commonStyles.dflex,
+                commonStyles.justifyContent,
+                commonStyles.gap12,
+              ]}>
+
+                <ParagraphComponent
+                  text={"Total Amount"}
+                  style={[
+                    commonStyles.fs14,
+                    commonStyles.fw500,
+                    commonStyles.textLightGrey, styles.labelStyle
+                  ]}
+                />
+                <ParagraphComponent
+                  text={formatCurrency(
+                    transactionDetails?.state?.toLowerCase() === "approved"
+                      ? (transactionDetails?.fee || 0) + (transactionDetails?.preSettlementAmount || 0)
+                      : (transactionDetails?.amount || 0) + (transactionDetails?.fee || 0),
+                    2
+                  )}
+                  style={[
+                    commonStyles.fs14,
+                    commonStyles.fw500,
+                    commonStyles.textBlack,
+                    commonStyles.textRight,
+                    commonStyles.flex1,
+                  ]}
+                />
+              </View>
+            </View>
+          </View>)}
           {((transactionDetails?.action?.toLowerCase() === "withdraw" || transactionDetails?.action?.toLowerCase() === "deposit crypto") && (transactionDetails?.withdrawAmount || transactionDetails?.withdrawAmount == 0)) && <View>
             <View
               style={[
@@ -605,7 +715,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             /></>}
 
 
-          {transactionDetails?.remarks && <View
+          {(transactionDetails?.action?.toLowerCase() !== "consume") && transactionDetails?.remarks && <View
           >
             <ParagraphComponent
               text='Remarks'
@@ -626,6 +736,134 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
             />
           </View>}
         </View>
+        {/* 2️⃣ Add this section BELOW the Remarks block */}
+
+        {transactionDetails?.action?.toLowerCase() === "consume" && <View>
+          <View
+            style={[
+              commonStyles.dashedLine,
+              commonStyles.mt10,
+              commonStyles.mb10,
+              commonStyles.mt16,
+              { opacity: 0.2 },
+            ]}
+          />
+          <View style={[commonStyles.screenBg, commonStyles.p12, { borderRadius: s(8), backgroundColor: NEW_COLOR.MENU_CARD_BG, }]}>
+            {/* Accordion Header */}
+
+            <TouchableOpacity
+              onPress={() => setStatusOpen(!statusOpen)}
+              style={[
+                commonStyles.dflex,
+                commonStyles.justifyContent,
+                commonStyles.alignCenter,
+                commonStyles.gap12,
+              ]}
+            >
+              <ParagraphComponent
+                text="Status History"
+                style={[
+                  commonStyles.fs14,
+                  commonStyles.fw500,
+                  commonStyles.textLightGrey,
+                  styles.labelStyle,
+                ]}
+              />
+              <AntDesign
+                name={statusOpen ? "up" : "down"}
+                size={16}
+                color={NEW_COLOR.TEXT_BLACK}
+              />
+            </TouchableOpacity>
+
+
+
+            {/* Accordion Content */}
+            {statusOpen && (
+              <View>
+                <View
+                  style={[
+                    commonStyles.dashedLine,
+                    commonStyles.mt10,
+                    commonStyles.mb10,
+                    { opacity: 0.2 },
+                  ]}
+                />
+                <View style={[commonStyles.mb16]}>
+                  <View
+                    style={[
+                      commonStyles.dflex,
+                      commonStyles.justifyContent,
+                      commonStyles.gap12,
+                    ]}
+                  >
+                    <ParagraphComponent
+                      text={"Authorization Confirmed"}
+                      style={[
+                        commonStyles.fs14,
+                        commonStyles.fw500,
+                        commonStyles.textBlack,
+                      ]}
+                    />
+                    <ParagraphComponent
+                      text={formatCurrency(transactionDetails?.amount || 0, 2)}
+
+                      style={[
+                        commonStyles.fs14,
+                        commonStyles.fw500,
+                        commonStyles.textBlack,
+                      ]}
+                    />
+                  </View>
+
+                  <ParagraphComponent
+                    text={formatDateLocal(transactionDetails?.txDate) || "--"}
+                    style={[
+                      commonStyles.fs12,
+                      commonStyles.textLightGrey,
+                      commonStyles.mt10,
+                    ]}
+                  />
+                </View>
+                {((transactionDetails?.state?.toLowerCase() === "approved") && transactionDetails?.preSettlementAmount) && <View style={[{ marginBottom: 16 }]}>
+                  <View
+                    style={[
+                      commonStyles.dflex,
+                      commonStyles.justifyContent,
+                      commonStyles.gap12,
+                    ]}
+                  >
+                    <ParagraphComponent
+                      text={"Transaction Cleard"}
+                      style={[
+                        commonStyles.fs14,
+                        commonStyles.fw500,
+                        commonStyles.textBlack,
+                      ]}
+                    />
+                    <ParagraphComponent
+                      text={formatCurrency(transactionDetails?.preSettlementAmount || 0, 2)}
+                      style={[
+                        commonStyles.fs14,
+                        commonStyles.fw500,
+                        commonStyles.textBlack,
+                      ]}
+                    />
+                  </View>
+
+                  <ParagraphComponent
+                    text={formatDateLocal(transactionDetails?.preSettlementDate) || "--"}
+                    style={[
+                      commonStyles.fs12,
+                      commonStyles.textLightGrey,
+                      commonStyles.mt10,
+                    ]}
+                  />
+                </View>}
+              </View>
+            )}
+          </View>
+        </View>}
         <View >
           <View style={[commonStyles.mb24]} />
           <DefaultButton
