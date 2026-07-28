@@ -44,11 +44,6 @@ const rootReducer = (state: any, action: any) => {
 // Create persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-if (__DEV__) {
-  const createDebugger = require("redux-flipper").default();
-  middlewares.push(createDebugger);
-}
-
 // Configure store with persistence
 const store = configureStore({
   reducer: persistedReducer,

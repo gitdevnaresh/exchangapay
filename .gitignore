@@ -144,7 +144,10 @@ vite.config.ts.timestamp-*
 .metro-health-check*
 
 # Package lock files
-package-lock.json
+# NOTE: package-lock.json is intentionally TRACKED. This is an application, not a
+# library: an uncommitted lockfile lets every install resolve differently, which is
+# how react-native-reanimated 4.5.3 (which requires RN 0.83+) ended up installed
+# against RN 0.81. Keep it committed so builds are reproducible.
 yarn.lock
 
 # Bin directory (CocoaPods binaries)
@@ -195,7 +198,8 @@ ios/Podfile.lock
 
 # iOS build generated files
 ios/build/generated/
-ios/*/PrivacyInfo.xcprivacy
+# NOTE: PrivacyInfo.xcprivacy is intentionally TRACKED. It is a required App Store
+# submission artifact and is referenced by project.pbxproj's Copy Bundle Resources.
 
 # Ruby/CocoaPods
 vendor/
