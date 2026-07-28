@@ -1,0 +1,67 @@
+name: Release
+
+# Tag a commit to ship it:
+#   git tag v1.2.0 && git push origin v1.2.0
+# Builds the release APK and attaches it to a GitHub Release for that tag.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # required to create the Release
+
+jobs:
+  build:
+    uses: ./.github/workflows/android-build.yml
+    with:
+      build_type: release
+      architectures: armeabi-v7a,arm64-v8a # both real-device ABIs for a shipped build
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so the changelog below has something to diff
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: dist
+
+      - name: Rename APK to the tag
+        run: |
+          mkdir -p out
+          find dist -name '*.apk' -exec cp {} "out/exchangapay-${GITHUB_REF_NAME}.apk" \;
+          ls -lh out
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          {
+            echo "body<<CHANGELOG_EOF"
+            if [ -n "$PREV" ]; then
+              echo "### Changes since $PREV"
+              git log --pretty='- %s (%h)' "$PREV..${GITHUB_REF_NAME}"
+            else
+              echo "### Changes"
+              git log --pretty='- %s (%h)' -20
+            fi
+            echo ""
+            echo "> Signed with the debug keystore — internal testing only, not Play Store ready."
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" out/*.apk \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "${{ steps.changelog.outputs.body }}"
