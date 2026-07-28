@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { s } from "react-native-size-matters";
 import RNFS from 'react-native-fs';
-import { BlobUtil } from "react-native-blob-util";
+import BlobUtil from "react-native-blob-util";
 import ProfileService from "../../services/profile";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Container from "../Container";

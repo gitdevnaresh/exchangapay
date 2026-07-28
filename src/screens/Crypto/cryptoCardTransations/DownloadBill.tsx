@@ -25,7 +25,7 @@ import moment from "moment";
 import "moment-timezone";
 import notifee, { EventType } from "@notifee/react-native";
 import FileViewer from "react-native-file-viewer";
-import { BlobUtil } from "react-native-blob-util";
+import BlobUtil from "react-native-blob-util";
 import SplashScreen from "react-native-splash-screen";
 import ModalPicker from "../../../components/ModalPicker";
 import ErrorComponent from "../../../components/Error";

@@ -4,7 +4,7 @@ import PBKDF2 from "crypto-js/pbkdf2";
 import Pkcs7 from "crypto-js/pad-pkcs7";
 import ENC from "crypto-js/enc-utf8";
 import { mode } from "crypto-js";
-import { BlobUtil } from "react-native-blob-util";
+import BlobUtil from "react-native-blob-util";
 import { Alert, Linking, PermissionsAndroid, Platform } from "react-native";
 import Share from "react-native-share";
 
