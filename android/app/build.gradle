@@ -81,6 +81,15 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    // AGP 8.12 defaults to CMake 3.22.1, which emits `-fuse-ld=gold`. NDK 27 ships
+    // Clang 18, which removed the gold linker, so configure fails with
+    // "invalid linker name in argument '-fuse-ld=gold'". 3.31.6 uses lld instead.
+    externalNativeBuild {
+        cmake {
+            version "3.31.6"
+        }
+    }
+
     namespace "com.exchangapay.tst"
     defaultConfig {
         applicationId "com.exchangapay.tst"

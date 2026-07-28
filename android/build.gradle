@@ -8,6 +8,11 @@ buildscript {
         targetSdkVersion = 35
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
+        // AGP 8.12 defaults to CMake 3.22.1, which emits `-fuse-ld=gold`. NDK 27 ships
+        // Clang 18, which removed the gold linker, so every C++ configure fails with
+        // "invalid linker name in argument '-fuse-ld=gold'". 3.31.6 uses lld instead.
+        // Install with: sdkmanager "cmake;3.31.6"
+        cmakeVersion = "3.31.6"
     }
     repositories {
         google()
@@ -29,6 +34,24 @@ allprojects {
       maven { url "https://maven.sumsub.com/repository/maven-public/" }
       maven { url "https://www.jitpack.io" }
   }
+}
+
+// Force every native module onto one CMake and one NDK. Without this, library
+// modules (e.g. @sentry/react-native) fall back to AGP's default CMake 3.22.1 and
+// whatever NDK they declare themselves, which breaks against NDK 27 / Clang 18.
+subprojects { subproject ->
+    afterEvaluate {
+        if (subproject.hasProperty("android")) {
+            subproject.android {
+                ndkVersion rootProject.ext.ndkVersion
+                externalNativeBuild {
+                    cmake {
+                        version rootProject.ext.cmakeVersion
+                    }
+                }
+            }
+        }
+    }
 }
 
 apply plugin: "com.facebook.react.rootproject"
