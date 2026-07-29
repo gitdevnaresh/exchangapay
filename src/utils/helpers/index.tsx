@@ -214,6 +214,7 @@ const ERROR_MESSAGES = {
   415: "The media type of the request is not supported.",
   417: "The server could not meet the requirements of the request.",
   426: "A protocol upgrade is required to proceed with the request.",
+  429: "Too many requests. Please wait a moment and try again.",
   DEFAULT: "Something went wrong, Please try again after sometime!",
 };
 
@@ -248,6 +249,9 @@ export const isErrorDispaly = (errorToDerive: any) => {
     data?.status === 422
   ) {
     return data.title;
+  }
+  if (status === 429 || data?.status === 429) {
+    return data?.message || data?.title || ERROR_MESSAGES[429];
   }
   if (status >= 500 || data?.status >= 500) {
     return `Error ${data?.traceId}: Unable to process your request at the moment. Please try again after some time!`;

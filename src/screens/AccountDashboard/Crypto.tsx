@@ -69,7 +69,7 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   useEffect(() => {
     if (isFocused) {
-      fetchAlerts();
+      // fetchAlerts();
       getSeccurityInfo();
       getCurrencyData();
       fetchCrypTototalBal(false);
@@ -222,7 +222,7 @@ const CryptoNew: FC<CryptoNew> = React.memo((props: any) => {
                 <ErrorComponent message={errormsg} onClose={handleCloseError} />
               </View>
             )}
-            {alerts?.length > 0 && (<CaseAlertsCarousel commonStyles={commonStyles} screenName="Home" alerts={alerts} />)}
+            {/* {alerts?.length > 0 && (<CaseAlertsCarousel commonStyles={commonStyles} screenName="Home" alerts={alerts} />)} */}
 
             <ParagraphComponent
               style={[

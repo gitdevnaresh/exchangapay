@@ -15,6 +15,7 @@ import { sellCoinSelect } from "../buySkeleton_views";
 import TransactionDetails from "./transactionDetails";
 import Badge from "../../../components/badge/badge";
 import SvgFromUrl from "../../../components/svgIcon";
+import ConsumeTransactionDetails from "./ConsumeTransactionDetails";
 
 
 const EXChangaTransactionHistory = React.memo((props: any) => {
@@ -29,7 +30,8 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
   const [transactionId, setTranasctionId] = useState<string>('');
   const { width } = Dimensions.get('window');
   const isPad = width > 600;
-  const [visible, setVisible] = useState<boolean>(false);
+  const [isCommonVisible, setIsCommonVisible] = useState<boolean>(false);
+  const [isConsumeDetailsVisible, setIsConsumeDetailsVisible] = useState<boolean>(false);
   const [iconsList, setIconsList] = useState<any>([]);
   const data = [
     {
@@ -78,12 +80,20 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
   };
 
   const toggleOverlay = (item: any) => {
-    setVisible(!visible);
-    setTranasctionId(item.id);
+    if (item?.action?.toLowerCase() === "consume") {
+      setIsConsumeDetailsVisible(!isConsumeDetailsVisible);
+      setTranasctionId(item.id);
+    } else {
+      setIsCommonVisible(!isCommonVisible);
+      setTranasctionId(item.id);
+    }
+
 
   };
   const closePop = () => {
-    setVisible(false);
+    setIsCommonVisible(false);
+    setIsConsumeDetailsVisible(false);
+
   };
   const badgeColor = {
     approved: NEW_COLOR.BG_GREEN,
@@ -148,7 +158,7 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
                 </View>
 
 
-                <ParagraphComponent text={formatCurrency(item.action === "Consume" && item?.state === "Approved" ? item.postSettlementAmount : item?.amount || 0, 2) + " " + item.type} style={[commonStyles.fs12, commonStyles.fw700, commonStyles.textBlack, commonStyles.textRight]} numberOfLines={1} />
+                <ParagraphComponent text={formatCurrency(item.action === "Consume" && item?.state === "Approved" ? item.postSettlementAmount || 0 : item?.amount || 0, 2) + " " + item.type} style={[commonStyles.fs12, commonStyles.fw700, commonStyles.textBlack, commonStyles.textRight]} numberOfLines={1} />
               </View>
 
 
@@ -233,7 +243,8 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
         />
       </View>
 
-      {visible && <TransactionDetails transId={transactionId} closePop={() => closePop()} />}
+      {isCommonVisible && <TransactionDetails transId={transactionId} closePop={() => closePop()} />}
+      {isConsumeDetailsVisible && <ConsumeTransactionDetails transId={transactionId} closePop={() => closePop()} />}
     </View>
   );
 });

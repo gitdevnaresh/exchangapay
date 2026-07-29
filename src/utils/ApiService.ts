@@ -5,6 +5,7 @@ import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
 import * as Sentry from "@sentry/react-native";
+import idempotencyConfig, { fastHash } from "./idempotency";
 const appName = getApplicationName();
 const GetTokens = async () => {
   try {
@@ -114,6 +115,41 @@ const getUrl = (path: string) => {
   const envList = getAllEnvData("prod");
   return envList.apiUrls[path];
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const normalizePath = (url: string): string => {
+  const sanitizedUrl = url.split("#")[0];
+  const withoutOrigin = sanitizedUrl.replace(/^https?:\/\/[^/]+\/?/, "");
+  return withoutOrigin.replace(/^\/+/, "");
+};
+
+const findIdempotencyEntry = (url: string) => {
+  const requestPath = normalizePath(url);
+  return idempotencyConfig.find((entry) => {
+    if (entry.path.includes("{")) {
+      const regexPath = entry.path.replace(/{[^}]+}/g, "[^/]+");
+      return new RegExp(`^${regexPath}$`, "i").test(requestPath);
+    }
+    return requestPath === entry.path || requestPath.endsWith(entry.path);
+  });
+};
+
+const buildIdempotencyKey = (
+  userId: string,
+  params: string[],
+  payload: Record<string, unknown>
+) => {
+  const parts = [userId];
+  params.forEach((key) => {
+    const value = payload[key];
+    parts.push(
+      typeof value === "string" || typeof value === "number" ? String(value) : ""
+    );
+  });
+  return fastHash(parts.join(":"));
+};
 const api = create({
   baseURL: getUrl("cardsUrl"),
 });
@@ -128,6 +164,20 @@ api.axiosInstance.interceptors.request.use(async (config: any) => {
     config.headers.ipAddress = `${userInfo?.UserReducer?.ipInfo.ip || ""}`;
   }
   config.headers["Content-Type"] = "application/json";
+  if ((config?.method || "").toLowerCase() === "post" && config?.url) {
+    const entry = findIdempotencyEntry(config.url);
+    if (entry) {
+      const payload = isRecord(config.data) ? config.data : {};
+      const userId =
+        userInfo?.UserReducer?.userInfo?.id ||
+        "";
+      config.headers["X-Idempotency-Key"] = buildIdempotencyKey(
+        String(userId),
+        entry.params,
+        payload
+      );
+    }
+  }
   return config;
 });
 uploadapi.axiosInstance.interceptors.request.use(async (config: any) => {

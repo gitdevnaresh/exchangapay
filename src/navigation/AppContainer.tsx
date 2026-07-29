@@ -285,12 +285,12 @@ const AppContainer = () => {
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
           <Stack.Screen name="addressDetails" component={AddressDetails} />
           <Stack.Screen name="suspectedFraud" component={SuspectedFraud} />
-          <Stack.Screen name="support" component={CaseManagement} options={({ route }) => ({ ...getAnimationForRoute(route), })} />
+          {/* <Stack.Screen name="support" component={CaseManagement} options={({ route }) => ({ ...getAnimationForRoute(route), })} />
           <Stack.Screen name="SupportAllCases" component={SupportAllCases} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
           <Stack.Screen name="supportCaseView" component={SupportCaseView} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
 
           <Stack.Screen name="CaseViewDetails" component={CaseViewDetails} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
-          <Stack.Screen name="SendReplay" component={SendReplay} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} />
+          <Stack.Screen name="SendReplay" component={SendReplay} options={({ route }) => ({ headerShown: false, ...getAnimationForRoute(route), })} /> */}
         </Stack.Navigator>
 
       </View>

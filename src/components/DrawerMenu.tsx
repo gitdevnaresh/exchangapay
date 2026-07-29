@@ -619,7 +619,7 @@ const DrawerModal = (props: any) => {
               </TouchableOpacity>
               <View style={[commonStyles.hLine, styles.py16]} />
             </View>
-            <View>
+            {/* <View>
               <TouchableOpacity onPress={handleNavigateCases}>
                 <View style={[styles.listFlex]}>
                   <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.alignCenter]}>
@@ -631,7 +631,7 @@ const DrawerModal = (props: any) => {
               </TouchableOpacity>
               <View style={[commonStyles.hLine, styles.py16]} />
 
-            </View>
+            </View> */}
             <TouchableOpacity onPress={handlePriceCurrenyModel}>
               <View style={[styles.listFlex]}>
                 <View

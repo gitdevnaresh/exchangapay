@@ -118,6 +118,7 @@ const CryptoPayeesList = (props: any) => {
         cancelled: NEW_COLOR.BG_RED,
         inactive: NEW_COLOR.BG_RED,
         active: NEW_COLOR.BG_GREEN,
+        unverified: NEW_COLOR.BG_YELLOW,
     };
 
     const goToPayeeDetails = (item: CryptoPayee) => {
