@@ -19,8 +19,8 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" image="LaunchBackground" translatesAutoresizingMaskIntoConstraints="NO" id="bgImageView">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logoImageView">
-                                <rect key="frame" x="108" y="0.0" width="157" height="185"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="LaunchLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logoImageView">
+                                <rect key="frame" x="78.5" y="44" width="218" height="116"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
@@ -30,7 +30,13 @@
                             <constraint firstItem="bgImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bgTop"/>
                             <constraint firstAttribute="trailing" secondItem="bgImageView" secondAttribute="trailing" id="bgTrailing"/>
                             <constraint firstItem="logoImageView" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="logoCenterX"/>
-                            <constraint firstItem="logoImageView" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="120" id="logoTop"/>
+                            <constraint firstItem="logoImageView" firstAttribute="top" secondItem="Bcu-3y-fUS" secondAttribute="top" constant="24" id="logoTop"/>
+                            <!-- Sizes the logo relative to the safe area so it fits every screen width.
+                                 Priority 750 so the max-width cap below can override it on iPad. -->
+                            <constraint firstItem="logoImageView" firstAttribute="width" secondItem="Bcu-3y-fUS" secondAttribute="width" multiplier="0.58" priority="750" id="logoWidthProportional"/>
+                            <constraint firstItem="logoImageView" firstAttribute="width" relation="lessThanOrEqual" constant="280" id="logoWidthCap"/>
+                            <!-- Locks height to the artwork's 642:342 ratio, so intrinsic size never drives layout. -->
+                            <constraint firstItem="logoImageView" firstAttribute="width" secondItem="logoImageView" secondAttribute="height" multiplier="642:342" id="logoAspect"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -41,6 +47,6 @@
     </scenes>
     <resources>
         <image name="LaunchBackground" width="215" height="466"/>
-        <image name="LaunchLogo" width="30" height="28"/>
+        <image name="LaunchLogo" width="642" height="342"/>
     </resources>
 </document>
