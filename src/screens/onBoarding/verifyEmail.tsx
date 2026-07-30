@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
-import { Container, Text } from "../../components";
+import { Container } from "../../components";
 import OnBoardingService from '../../services/onBoardingservice';
 import { isErrorDispaly } from '../../utils/helpers';
 import ErrorComponent from '../../components/Error';
@@ -44,6 +44,15 @@ const VerifyEmail = () => {
         await getMemDetails({});
         setPopupVisible(true);
 
+    };
+    // Devices without a mail client (notably the iOS Simulator) reject the
+    // openURL promise, which surfaces as an unhandled rejection redbox.
+    const handleOpenMailApp = async () => {
+        try {
+            await Linking.openURL(`mailto:${decryptAES(email)}`);
+        } catch {
+            setErrorMsg('No email app is available on this device.');
+        }
     };
     const resendMail = async () => {
         setLoadMail(true)
@@ -136,10 +145,7 @@ const VerifyEmail = () => {
                             text="Verify your email to continue. We've sent a verification link to: "
                         />
                         <ParagraphComponent style={[commonStyles?.textBlack, commonStyles.fw800, commonStyles.textCenter, commonStyles.fs14]} text={decryptAES(email)}
-                            onPress={() => {
-                                const mail = decryptAES(email);
-                                Linking.openURL(`mailto:${mail}`);
-                            }}
+                            onPress={handleOpenMailApp}
                         />
 
                         <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw400, commonStyles.textpara, commonStyles.textCenter]}

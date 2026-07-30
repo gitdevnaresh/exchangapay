@@ -16,6 +16,7 @@ import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { s } from "../../constants/theme/scale";
 import { commonStyles } from "../../components/CommonStyles";
 import {
+  formatDateOfBirth,
   formatDateTimeAPI,
   formateExpiryValidationDate,
   isErrorDispaly,
@@ -218,7 +219,7 @@ const QuickKYCInfo = (props: any) => {
         null,
       biometric: (values?.biometric !== "" && values?.biometric) || null,
     };
-    const formatedDob = formatDateTimeAPI(formattedValues?.dob);
+    const formatedDob = formatDateOfBirth(formattedValues?.dob);
     const formatedexpityDate = formatDateTimeAPI(
       formattedValues?.docExpiryDate
     );

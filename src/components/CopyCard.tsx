@@ -46,7 +46,7 @@ const CopyCard: FC<Props> = ({ onPress, contentShow = true, iconShow = false }) 
           isVisible={toolTipVisible}
           contentStyle={{ backgroundColor: NEW_COLOR.SECTION_BG, position: "absolute", top: 100 }}
           onClose={handleToolTip}
-          content={<><ParagraphComponent text='Copied' style={{ color: NEW_COLOR.TEXT_ALWAYS_WHITE }} /></>}
+          content={<View><ParagraphComponent text='Copied' style={{ color: NEW_COLOR.TEXT_ALWAYS_WHITE }} /></View>}
         >
 
         </Tooltip>

@@ -48,8 +48,8 @@ const ENV = {
 
     },
     apiUrls: {
-      uploadUrl: " https://tstapi.exchangapay.com/",
-      cardsUrl: " https://tstapi.exchangapay.com/",
+      uploadUrl: "https://tstapi.exchangapay.com/",
+      cardsUrl: "https://tstapi.exchangapay.com/",
     },
     localization: {
       defaultResourceName: "Exchanga Pay",

@@ -20,6 +20,7 @@ import {
 } from "../../screens/onBoarding/constants";
 import {
   formatDateMonth,
+  formatDateOfBirth,
   formatDateTimeAPI,
   isErrorDispaly,
 } from "../../utils/helpers";
@@ -50,7 +51,7 @@ const AddUserDetails = (props: any) => {
   const handleSubmit = async (values: FormValues) => {
     setSaveLoading(true);
     try {
-      const formatedDob = formatDateTimeAPI(dateOfBirth);
+      const formatedDob = formatDateOfBirth(dateOfBirth);
       const saveObj = {
         firstName: encryptAES(values.firstName),
         lastName: encryptAES(values.lastName),

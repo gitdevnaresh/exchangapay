@@ -113,7 +113,9 @@ const handleErrorCapture = () => async (error: any) => {
 
 const getUrl = (path: string) => {
   const envList = getAllEnvData("prod");
-  return envList.apiUrls[path];
+  // trim: leading/trailing whitespace makes axios treat the baseURL as a
+  // relative path and resolve it against the bundle's file:// document base
+  return (envList.apiUrls[path] || "").trim();
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

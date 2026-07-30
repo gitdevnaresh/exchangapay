@@ -389,6 +389,11 @@ export const formatDateTimeAPI = (date: any) => {
     return dayjs(new Date(date)).format("YYYY-MM-DDT00:00:00");
   }
 };
+export const formatDateOfBirth = (date: any) => {
+  if (date !== null) {
+    return dayjs(new Date(date)).format("YYYY-MM-DD");
+  }
+};
 export const trimValues = (obj: any) => {
   const trimmedObj: any = {};
   for (const key in obj) {

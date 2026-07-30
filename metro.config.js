@@ -2,10 +2,6 @@ const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
 
 const { withSentryConfig } = require("@sentry/react-native/metro");
 
-const {
-  withSentryConfig
-} = require("@sentry/react-native/metro");
-
 const defaultConfig = getDefaultConfig(__dirname);
 
 const config = {
@@ -20,4 +16,4 @@ const config = {
   },
 };
 
-module.exports = withSentryConfig(withSentryConfig(mergeConfig(defaultConfig, config)));
+module.exports = withSentryConfig(mergeConfig(defaultConfig, config));

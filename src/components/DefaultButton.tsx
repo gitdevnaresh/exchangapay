@@ -33,6 +33,15 @@ interface DefaultButtonProps {
   loadingProps?: any;
 }
 
+const gradientColors = (colors: any): string[] => {
+  const safe = (Array.isArray(colors) ? colors : []).filter(
+    (c: any) => typeof c === "string" && c.length > 0
+  );
+  if (safe.length === 0) return [NEW_COLOR.BG_ORANGE, NEW_COLOR.BG_ORANGE];
+  if (safe.length === 1) return [safe[0], safe[0]];
+  return safe;
+};
+
 const DefaultButton = ({
   icon,
   iconRight = false,
@@ -41,10 +50,7 @@ const DefaultButton = ({
   customTitleStyle,
   customButtonStyle,
   customContainerStyle,
-  backgroundColors = [
-    NEW_COLOR.BACKGROUND_DANGER,
-    NEW_COLOR.BACKGROUND_PRIMARY,
-  ],
+  backgroundColors = [NEW_COLOR.BG_ORANGE, NEW_COLOR.BG_ORANGE],
   disable = false,
   loading = false,
   refresh = false,
@@ -57,7 +63,14 @@ const DefaultButton = ({
   closeIcon = false,
 }: DefaultButtonProps) => (
   <LinearGradient
-    colors={colorful ? backgroundColors : ["transparent", "transparent"]}
+    // A nil inside `colors` makes the native BVLinearGradient throw from
+    // -[NSMutableArray insertObject:atIndex:] and takes the whole app down,
+    // so never let an undefined theme token reach it.
+    colors={
+      colorful
+        ? gradientColors(backgroundColors)
+        : ["transparent", "transparent"]
+    }
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 1 }}
     style={{
@@ -233,7 +246,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   colorfulButtonTitle: {
-    color: NEW_COLOR.TEXT_LIGHT,
+    color: NEW_COLOR.TEXT_ALWAYS_WHITE,
   },
   transparentButtonTitle: {
     color: NEW_COLOR.TEXT_ALWAYS_WHITE,

@@ -43,7 +43,7 @@ const OnBoardingService = {
         const token = fcmNotification.createtoken((token: string) => {
             return token;
         })
-        const data = remove(`/api/v1/Notification/DeleteUserToken`, { token: token });
+        const data = post(`/api/v1/Notification/DeleteUserToken`, { token: token });
         return data
 
     }

@@ -24,6 +24,7 @@ import { ms, s } from "../../constants/theme/scale";
 import StepComponent from "../../components/steps/Steps";
 import { commonStyles } from "../../components/CommonStyles";
 import {
+  formatDateOfBirth,
   formatDateTimeAPI,
   formateExpiryValidationDate,
   isErrorDispaly,
@@ -397,7 +398,7 @@ const ApplyExchangaCard = (props: any) => {
         null,
       biometric: (values?.biometric !== "" && values?.biometric) || null,
     };
-    const dateOfBirth = formatDateTimeAPI(formattedValues?.dob);
+    const dateOfBirth = formatDateOfBirth(formattedValues?.dob);
     const expiryDate = formatDateTimeAPI(formattedValues?.docExpiryDate);
     const docissueDate = formatDateTimeAPI(formattedValues?.docissueDate);
     let Obj = {

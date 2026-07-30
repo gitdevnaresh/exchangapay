@@ -20,20 +20,20 @@ import { commonStyles } from "./CommonStyles";
 import ParagraphComponent from "./Paragraph/Paragraph";
 import { NEW_COLOR } from "../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import DefaultButton from "./DefaultButton";
 interface QRCodeScannerProps {
   onCaptureCode: (data: string) => void;
   onClose: () => void;
 }
 
+type PermissionStatus = "checking" | "granted" | "denied" | "blocked";
+
 const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
   onCaptureCode,
   onClose,
 }) => {
-  const [scannedData, setScannedData] = useState<string | null>(null);
-  const [hasPermission, setHasPermission] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState<
-    boolean | null
-  >(null);
+  const [permissionStatus, setPermissionStatus] =
+    useState<PermissionStatus>("checking");
   const isFocused = useIsFocused();
   const [torch, setTorch] = useState(false);
 
@@ -55,52 +55,123 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
 
   useEffect(() => {
     const checkPermission = async () => {
-      if (Platform.OS === "android") {
-        const result = await request(PERMISSIONS.ANDROID.CAMERA);
-        if (result === RESULTS.GRANTED) {
-          setHasPermission(true);
+      const permission =
+        Platform.OS === "android"
+          ? PERMISSIONS.ANDROID.CAMERA
+          : PERMISSIONS.IOS.CAMERA;
+      try {
+        const result = await request(permission);
+        if (result === RESULTS.GRANTED || result === RESULTS.LIMITED) {
+          setPermissionStatus("granted");
+        } else if (result === RESULTS.BLOCKED) {
+          setPermissionStatus("blocked");
+        } else {
+          setPermissionStatus("denied");
         }
-      } else if (Platform.OS === "ios") {
-        const result = await request(PERMISSIONS.IOS.CAMERA);
-        if (result === RESULTS.GRANTED) {
-          setHasPermission(true);
-        }
+      } catch {
+        setPermissionStatus("denied");
       }
     };
 
     checkPermission();
   }, []);
 
-  if (!hasPermission) {
-    return (
-      <View style={styles.container}>
+  // Every non-scanning state needs a way out, otherwise the user is stuck
+  // on a blank screen with no back gesture available inside the modal.
+  const renderFallback = (
+    icon: string,
+    title: string,
+    subtitle: string,
+    showSettings?: boolean
+  ) => (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          onPress={onClose}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} />
+        </TouchableOpacity>
         <ParagraphComponent
-          text={"Camera permission is required"}
+          text={"Scan address"}
           style={[
             commonStyles.fs16,
             commonStyles.fw700,
             commonStyles.textBlack,
-            commonStyles.flex1,
           ]}
         />
       </View>
+
+      <View style={styles.fallbackContent}>
+        <View style={styles.fallbackIconCircle}>
+          <IonIcon name={icon} size={34} color={NEW_COLOR.TEXT_ORANGE} />
+        </View>
+        <ParagraphComponent
+          text={title}
+          style={[
+            commonStyles.fs18,
+            commonStyles.fw700,
+            commonStyles.textBlack,
+            commonStyles.textCenter,
+            styles.fallbackTitle,
+          ]}
+        />
+        <ParagraphComponent
+          text={subtitle}
+          style={[
+            commonStyles.fs14,
+            commonStyles.textGrey,
+            commonStyles.textCenter,
+            styles.fallbackSubtitle,
+          ]}
+        />
+      </View>
+
+      <View style={styles.fallbackActions}>
+        {showSettings ? (
+          <DefaultButton
+            title="Open Settings"
+            iconArrowRight={false}
+            onPress={() => Linking.openSettings()}
+            customContainerStyle={styles.fallbackButton}
+          />
+        ) : null}
+        <DefaultButton
+          title="Go Back"
+          transparent={!!showSettings}
+          iconArrowRight={false}
+          onPress={onClose}
+          customContainerStyle={styles.fallbackButton}
+        />
+      </View>
+    </View>
+  );
+
+  if (permissionStatus === "checking") {
+    return renderFallback(
+      "camera-outline",
+      "Checking camera permission",
+      "Just a moment while we confirm access to your camera."
+    );
+  }
+
+  if (permissionStatus !== "granted") {
+    return renderFallback(
+      "lock-closed-outline",
+      "Camera access needed",
+      permissionStatus === "blocked"
+        ? "Camera access is turned off. Enable it in Settings to scan a QR code."
+        : "We need camera permission to scan a QR code.",
+      permissionStatus === "blocked"
     );
   }
 
   if (device == null) {
-    return (
-      <View style={[commonStyles.flex1, commonStyles.screenBg, commonStyles.container]}>
-        <ParagraphComponent
-          text={"No camera device found"}
-          style={[
-            commonStyles.fs16,
-            commonStyles.fw700,
-            commonStyles.textBlack,
-            commonStyles.flex1,
-            commonStyles.alignCenter
-          ]}
-        />
-      </View>
+    return renderFallback(
+      "camera-reverse-outline",
+      "No camera available",
+      "This device doesn’t have a camera we can use for scanning. Enter the address manually instead."
     );
   }
 
@@ -115,8 +186,14 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
         enableZoomGesture={false}
       />
 
-      {/* Top content */}
-      <View style={styles.topContent}>
+      <View style={[styles.header, styles.cameraHeader]}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          onPress={onClose}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} />
+        </TouchableOpacity>
         <ParagraphComponent
           text={"Scan address"}
           style={[
@@ -126,33 +203,17 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
             commonStyles.flex1,
           ]}
         />
+        <TouchableOpacity
+          onPress={() => setTorch(!torch)}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <IonIcon
+            name={torch ? "flash" : "flash-off"}
+            color={NEW_COLOR.TEXT_BLACK}
+            size={24}
+          />
+        </TouchableOpacity>
       </View>
-
-      {/* Flash toggle button */}
-      <TouchableOpacity
-        style={styles.rightButtonRow}
-        onPress={() => {
-          setTorch(!torch);
-        }}
-      >
-        <IonIcon
-          name={torch ? "flash" : "flash-off"}
-          color={NEW_COLOR.TEXT_BLACK}
-          size={24}
-        />
-      </TouchableOpacity>
-
-      {/* Back button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => {
-          if (onClose) {
-            onClose();
-          }
-        }}
-      >
-        <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} />
-      </TouchableOpacity>
     </View>
   );
 };
@@ -164,54 +225,48 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     paddingTop: 30,
   },
-  button: {
-    marginBottom: 10,
-    width: 10,
-    height: 10,
-    borderRadius: 100 / 2,
-    backgroundColor: "rgba(140, 140, 140, 0.3)",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    paddingHorizontal: 18,
+    paddingTop: 36,
+    paddingBottom: 8,
+  },
+  headerBack: {
+    padding: 2,
+  },
+  cameraHeader: {
+    zIndex: 2,
+  },
+  fallbackContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  fallbackIconCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: NEW_COLOR.SECTION_BG,
     justifyContent: "center",
     alignItems: "center",
   },
-  rightcloseButtonRow: {
-    position: "absolute",
-    right: 10,
-    top: 10,
+  fallbackTitle: {
+    marginTop: 20,
   },
-  rightButtonRow: {
-    position: "absolute",
-    right: 10,
-    top: 10,
+  fallbackSubtitle: {
+    marginTop: 8,
+    lineHeight: 20,
   },
-  topContent: {
-    position: "absolute",
-    top: 50,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    zIndex: 1,
+  fallbackActions: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    gap: 12,
   },
-  backButton: {
-    position: "absolute",
-    left: 18,
-    top: 36,
-  },
-  centerText: {
-    flex: 1,
-    fontSize: 18,
-    padding: 32,
-    color: "#777",
-  },
-  textBold: {
-    fontWeight: "500",
-    color: "#000",
-  },
-  buttonText: {
-    fontSize: 21,
-    color: "rgb(0,122,255)",
-  },
-  buttonTouchable: {
-    padding: 16,
+  fallbackButton: {
+    alignSelf: "stretch",
   },
 });
 

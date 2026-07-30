@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, Linking, Text } from "react-native";
+import { View, ScrollView, Linking, Text,TouchableOpacity } from "react-native";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import AuthService from "../../services/auth";
 import { useSelector } from "react-redux";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -16,7 +15,6 @@ import {
   EMAIL_CONSTANTS,
   REGISTRATION_CONSTATNTS,
 } from "./constants";
-import { WebView } from "react-native-webview";
 import ErrorComponent from "../../components/Error";
 import { isErrorDispaly } from "../../utils/helpers";
 import { progressSkeltons } from "../Profile/skeleton_views";
@@ -78,6 +76,15 @@ const UnderReview = () => {
       });
     }
   };
+  const handleSupportMailPress = async () => {
+    try {
+      await Linking.openURL(
+        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"}`
+      );
+    } catch {
+      setErrorMsg("No email app is available on this device.");
+    }
+  };
   const handleCloseError = () => {
     setErrorMsg(null);
   };
@@ -129,29 +136,7 @@ const UnderReview = () => {
 
           {!isLoading && htmlContent?.message && (
             <View style={[commonStyles.flex1, styles.webViewContainer]}>
-              {/* <WebView
-                originWhitelist={["*"]}
-                source={{ html: htmlContent?.message }}
-                style={{
-                  width: "100%",
-                  height: webViewHeight || s(200),
-                  backgroundColor: "transparent",
-                  alignSelf: "stretch",
-                  marginHorizontal: 0,
-                }}
-                injectedJavaScript={injectedJavaScript}
-                onMessage={handleWebViewMessage}
-                javaScriptEnabled
-                scalesPageToFit={false}
-                scrollEnabled={false}
-                onShouldStartLoadWithRequest={(request) => {
-                  if (request?.url && request.url !== "about:blank") {
-                    handleLinkPress(request.url);
-                    return false;
-                  }
-                  return true;
-                }}
-              /> */}
+             
               <RenderHTML
                 contentWidth={WINDOW_WIDTH}
                 source={{ html: htmlContent?.message }}
@@ -217,12 +202,7 @@ const UnderReview = () => {
                     }
                   />
                   <TouchableOpacity
-                    onPress={() =>
-                      Linking.openURL(
-                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
-                        }`
-                      )
-                    }
+                    onPress={handleSupportMailPress}
                     activeOpacity={0.7}
                   >
                     <ParagraphComponent
@@ -267,12 +247,7 @@ const UnderReview = () => {
                     text={"Your KYC was rejected ,Please contact "}
                   />
                   <TouchableOpacity
-                    onPress={() =>
-                      Linking.openURL(
-                        `mailto:${userInfo?.supportEmail || "support@exchangapay.com"
-                        }`
-                      )
-                    }
+                    onPress={handleSupportMailPress}
                     activeOpacity={0.7}
                   >
                     <ParagraphComponent

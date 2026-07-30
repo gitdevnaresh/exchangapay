@@ -45,10 +45,10 @@ const SelectCryptoAsset = React.memo((props: any) => {
     );
 
     const handleChangeSearch = (e: any) => {
-        let value = e?.trime();
+        let value = e?.trim();
         if (value) {
             let filterData = sendCryptoPreList.filter((item: any) => {
-                return item.walletCode?.toLowerCase().includes(e.toLowerCase())
+                return item.walletCode?.toLowerCase().includes(value.toLowerCase())
             })
             setCryptoCoinData(filterData);
         } else {
@@ -56,7 +56,7 @@ const SelectCryptoAsset = React.memo((props: any) => {
         }
     };
     const groupByAlphabet = () => {
-        const sortedData = cryptoCoinData.sort((a: any, b: any) => a.walletCode.localeCompare(b.walletCode));
+        const sortedData = [...cryptoCoinData].sort((a: any, b: any) => a.walletCode.localeCompare(b.walletCode));
         let groupedData: any = {};
 
         sortedData?.forEach(item => {

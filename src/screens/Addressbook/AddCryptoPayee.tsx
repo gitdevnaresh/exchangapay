@@ -82,19 +82,19 @@ const AddEditPayeeScreen = (props: any) => {
       );
       if (res.ok) {
         setNetworksList(res?.data);
-        if (props?.route?.params?.network && !isChange) {
-          setInitValues((prevValues) => ({
-            ...prevValues,
-            coin: coin,
-            network: props?.route?.params?.network || "",
-          }));
-        } else {
-          setInitValues((prevValues) => ({
-            ...prevValues,
-            coin: coin,
-            network: res?.data[0]?.name || "",
-          }));
-        }
+        const network =
+          props?.route?.params?.network && !isChange
+            ? props?.route?.params?.network
+            : res?.data[0]?.name || "";
+        setInitValues((prevValues) => ({
+          ...prevValues,
+          // coin changed by the user: keep what is already filled in the form,
+          // otherwise reinitialize would wipe it (favorite name, etc.)
+          ...(isChange ? formikRef.current?.values : {}),
+          coin: coin,
+          network,
+          ...(isChange ? { walletAddress: "" } : {}),
+        }));
       } else {
         setErrormsg(isErrorDispaly(res));
       }

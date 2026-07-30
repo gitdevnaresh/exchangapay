@@ -35,6 +35,7 @@ import ProfileService from "../../services/profile";
 import DatePickers from "react-native-date-picker";
 import {
   formatDateMonth,
+  formatDateOfBirth,
   formatDateTimeAPI,
   formateExpiryValidationDate,
   isErrorDispaly,
@@ -300,7 +301,7 @@ const AddKycInfomation = (props: any) => {
 
   const handleUpdate = async (values: any) => {
     setBtnLoading(true);
-    const formteddateOfBirth = formatDateTimeAPI(date);
+    const formteddateOfBirth = formatDateOfBirth(date);
     const formatedexpityDate = formatDateTimeAPI(expirydate);
     const updateValues = trimValues(values);
     let Obj = {

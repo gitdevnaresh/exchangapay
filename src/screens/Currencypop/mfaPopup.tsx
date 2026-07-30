@@ -13,7 +13,7 @@ import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActio
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useAuth0 } from 'react-native-auth0';
 import { fcmNotification } from '../../utils/FCMNotification';
-import { remove } from '../../utils/ApiService';
+import { post } from '../../utils/ApiService';
 import AntDesign from "react-native-vector-icons/AntDesign";
 const MFAPopup = ({isVisible,handleClose}:any) => {
 const dispatch=useDispatch();
@@ -22,7 +22,7 @@ const { clearSession } = useAuth0();
 const [isBtnLoading,setIsBtnLoading]=useState<boolean>(false)
  const updateFcmToken = async () => {
     fcmNotification.createtoken((token: string) => {
-      remove( `/api/v1/Notification/DeleteUserToken`,
+      post( `/api/v1/Notification/DeleteUserToken`,
         {
           token: token,
         }
