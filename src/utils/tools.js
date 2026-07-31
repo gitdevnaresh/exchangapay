@@ -1,42 +1,51 @@
-import { random } from "crypto-js/lib-typedarrays";
-import AES from "crypto-js/aes";
-import PBKDF2 from "crypto-js/pbkdf2";
-import Pkcs7 from "crypto-js/pad-pkcs7";
-import ENC from "crypto-js/enc-utf8";
-import { mode } from "crypto-js";
+import QuickCrypto from "react-native-quick-crypto";
+import { Buffer } from "@craftzdog/react-native-buffer";
 import BlobUtil from "react-native-blob-util";
 import { Alert, Linking, PermissionsAndroid, Platform } from "react-native";
 import Share from "react-native-share";
 
 // eslint-disable-next-line consistent-return
 
+// PBKDF2 + AES-256-CBC via react-native-quick-crypto (NATIVE). Wire format is
+// unchanged and byte-for-byte identical to the previous crypto-js output:
+//   salt.hex(32) + iv.hex(32) + base64(AES-CBC-PKCS7 ciphertext)
+// NOTE: crypto-js 4.2 defaults PBKDF2 to SHA-256 (not SHA-1) — pinned here so
+// the derived key matches anything encrypted by the old implementation.
 export const encrypt = (memberID, key) => {
   const msg =
     typeof memberID === "object" ? JSON.stringify(memberID) : memberID;
-  const salt = random(128 / 8);
-  const newKey = PBKDF2(key, salt, {
-    keySize: 256 / 32,
-    iterations: 10,
-  });
+  const salt = QuickCrypto.randomBytes(16);
+  const newKey = QuickCrypto.pbkdf2Sync(key, salt, 10, 32, "sha256");
 
-  const iv = random(128 / 8);
-  const encrypted = AES.encrypt(msg, newKey, {
-    iv,
-    padding: Pkcs7,
-    mode: mode.CBC,
-  });
-  return salt.toString() + iv.toString() + encrypted.toString();
+  const iv = QuickCrypto.randomBytes(16);
+  const cipher = QuickCrypto.createCipheriv("aes-256-cbc", newKey, iv);
+  const encrypted = Buffer.concat([cipher.update(msg, "utf8"), cipher.final()]);
+
+  return (
+    Buffer.from(salt).toString("hex") +
+    Buffer.from(iv).toString("hex") +
+    encrypted.toString("base64")
+  );
 };
+
+// AES-128-CBC via react-native-quick-crypto (NATIVE). Output is byte-for-byte
+// identical to the previous crypto-js implementation.
+//
+// SECURITY: the key and IV below are hardcoded constants that ship in the
+// bundle, so this provides obfuscation rather than confidentiality — anyone
+// with the APK can decrypt its output. It is also a fixed IV, so identical
+// plaintext always yields identical ciphertext. This function currently has no
+// callers; it should be deleted rather than adopted. See VAPT CRIT-05 /
+// HIGH-02 for the same class of defect.
+const REGISTER_KEY = "8080808080808080";
+
 export const encryptForRegister = (msg) => {
-  const key = ENC.parse("8080808080808080");
-  const iv = ENC.parse("8080808080808080");
-  const encryptedVal = AES.encrypt(ENC.parse(msg), key, {
-    keySize: 128 / 8,
-    iv,
-    mode: mode.CBC,
-    padding: Pkcs7,
-  });
-  return encryptedVal.toString();
+  const key = Buffer.from(REGISTER_KEY, "utf8");
+  const iv = Buffer.from(REGISTER_KEY, "utf8");
+  const cipher = QuickCrypto.createCipheriv("aes-128-cbc", key, iv);
+  return Buffer.concat([cipher.update(msg, "utf8"), cipher.final()]).toString(
+    "base64"
+  );
 };
 
 export const downloadFileFromUrl = (path, extension) => {

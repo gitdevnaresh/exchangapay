@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { Platform } from "react-native";
-import CryptoJS from "crypto-js";
+import QuickCrypto from "react-native-quick-crypto";
+import { Buffer } from "@craftzdog/react-native-buffer";
 import { jwtDecode } from "jwt-decode";
 import { decode as atob } from "base-64";
 import * as Keychain from "react-native-keychain";
@@ -362,24 +363,37 @@ export const checkValidationNumber = (newValue: any) => {
   return newValue;
 };
 
+// PBKDF2 + AES-256-CBC via react-native-quick-crypto (NATIVE). The wire format
+// is unchanged and byte-for-byte identical to the previous crypto-js output:
+//   salt.hex(32 chars) + iv.hex(32 chars) + base64(AES-CBC-PKCS7 ciphertext)
+// NOTE: crypto-js 4.2 defaults PBKDF2 to SHA-256 (not SHA-1), so the digest is
+// pinned explicitly here — using SHA-1 would silently produce a different key.
+const PBKDF2_ITERATIONS = 10;
+const PBKDF2_KEY_BYTES = 32;
+const PBKDF2_DIGEST = "sha256";
+
 export const encryptValue = (msg: any, key: any) => {
   try {
-    msg = typeof msg === "string" ? msg : JSON.stringify(msg);
-    const salt = CryptoJS.lib.WordArray.random(128 / 8);
-    const key1 = CryptoJS.PBKDF2(key, salt, {
-      keySize: 256 / 32,
-      iterations: 10,
-    });
+    const text = typeof msg === "string" ? msg : JSON.stringify(msg);
+    const salt = QuickCrypto.randomBytes(16);
+    const derivedKey = QuickCrypto.pbkdf2Sync(
+      key,
+      salt,
+      PBKDF2_ITERATIONS,
+      PBKDF2_KEY_BYTES,
+      PBKDF2_DIGEST
+    );
 
-    const iv = CryptoJS.lib.WordArray.random(128 / 8);
+    const iv = QuickCrypto.randomBytes(16);
 
-    const encrypted = CryptoJS.AES.encrypt(msg, key1, {
-      iv: iv,
-      padding: CryptoJS.pad.Pkcs7,
-      mode: CryptoJS.mode.CBC,
-    });
+    const cipher = QuickCrypto.createCipheriv("aes-256-cbc", derivedKey, iv);
+    const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
 
-    return salt.toString() + iv.toString() + encrypted.toString();
+    return (
+      Buffer.from(salt).toString("hex") +
+      Buffer.from(iv).toString("hex") +
+      encrypted.toString("base64")
+    );
   } catch (error) {
     return "";
   }

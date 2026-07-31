@@ -9,6 +9,7 @@ import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import * as Keychain from "react-native-keychain";
 import OnBoardingService from "../services/onBoardingservice";
+import { clearDecryptCache } from "./useEncryption_Decryption";
 
 
 interface LogoutOptions {
@@ -39,6 +40,8 @@ const useLogout = () => {
         if (clearCookies) {
             await Cookies.clearAll();
         };
+        // Drop memoized plaintext so decrypted PII does not outlive the session
+        clearDecryptCache();
         // Clear Redux state
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
