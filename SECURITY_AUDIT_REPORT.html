@@ -1,0 +1,2484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ExchangaPay — Security Audit &amp; Remediation Guide</title>
+<style>
+/* ============================ THEME ============================ */
+:root{
+  --bg:#ffffff; --bg-alt:#f5f7fa; --card:#ffffff; --card-2:#fbfcfd;
+  --fg:#15181d; --muted:#5a6472; --faint:#8b95a3; --border:#e3e7ed;
+  --crit:#c1272d; --crit-bg:#fdf2f2; --crit-br:#f3c9c9;
+  --high:#c25708; --high-bg:#fff6ee; --high-br:#f7d5b5;
+  --med:#96700a;  --med-bg:#fffaea;  --med-br:#f0dfae;
+  --low:#15568f;  --low-bg:#f0f6fd;  --low-br:#c5dcf3;
+  --ok:#1f7a37;   --ok-bg:#f0fbf2;   --ok-br:#bde5c6;
+  --accent:#2b4a7a; --accent-soft:#eef3fa;
+  --code-bg:#f6f8fa; --code-fg:#1f2933; --code-br:#e1e6ec;
+  --shadow:0 1px 2px rgba(16,24,40,.05), 0 4px 14px rgba(16,24,40,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1216; --bg-alt:#141920; --card:#161b22; --card-2:#1a2029;
+    --fg:#e6eaf0; --muted:#9aa5b4; --faint:#6b7686; --border:#262d38;
+    --crit:#ff7b7b; --crit-bg:#2a1618; --crit-br:#4d2427;
+    --high:#ffab6b; --high-bg:#2a1d12; --high-br:#4d321c;
+    --med:#e8c766;  --med-bg:#262012;  --med-br:#48391b;
+    --low:#7cb8f0;  --low-bg:#12202e;  --low-br:#1e3b57;
+    --ok:#6ede8a;   --ok-bg:#12241a;   --ok-br:#1e4429;
+    --accent:#8fb4e8; --accent-soft:#18212e;
+    --code-bg:#0d1117; --code-fg:#d5dce5; --code-br:#232a35;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#ffffff; --bg-alt:#f5f7fa; --card:#ffffff; --card-2:#fbfcfd;
+  --fg:#15181d; --muted:#5a6472; --faint:#8b95a3; --border:#e3e7ed;
+  --crit:#c1272d; --crit-bg:#fdf2f2; --crit-br:#f3c9c9;
+  --high:#c25708; --high-bg:#fff6ee; --high-br:#f7d5b5;
+  --med:#96700a;  --med-bg:#fffaea;  --med-br:#f0dfae;
+  --low:#15568f;  --low-bg:#f0f6fd;  --low-br:#c5dcf3;
+  --ok:#1f7a37;   --ok-bg:#f0fbf2;   --ok-br:#bde5c6;
+  --accent:#2b4a7a; --accent-soft:#eef3fa;
+  --code-bg:#f6f8fa; --code-fg:#1f2933; --code-br:#e1e6ec;
+  --shadow:0 1px 2px rgba(16,24,40,.05), 0 4px 14px rgba(16,24,40,.05);
+}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --bg-alt:#141920; --card:#161b22; --card-2:#1a2029;
+  --fg:#e6eaf0; --muted:#9aa5b4; --faint:#6b7686; --border:#262d38;
+  --crit:#ff7b7b; --crit-bg:#2a1618; --crit-br:#4d2427;
+  --high:#ffab6b; --high-bg:#2a1d12; --high-br:#4d321c;
+  --med:#e8c766;  --med-bg:#262012;  --med-br:#48391b;
+  --low:#7cb8f0;  --low-bg:#12202e;  --low-br:#1e3b57;
+  --ok:#6ede8a;   --ok-bg:#12241a;   --ok-br:#1e4429;
+  --accent:#8fb4e8; --accent-soft:#18212e;
+  --code-bg:#0d1117; --code-fg:#d5dce5; --code-br:#232a35;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+/* ============================ BASE ============================ */
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4{line-height:1.25; margin:0 0 .5em; font-weight:650; letter-spacing:-.011em}
+h1{font-size:clamp(1.6rem,4vw,2.3rem)}
+h2{font-size:clamp(1.3rem,3vw,1.75rem); margin-top:0}
+h3{font-size:1.12rem}
+h4{font-size:.98rem; text-transform:uppercase; letter-spacing:.055em; color:var(--muted); font-weight:700}
+p{margin:0 0 1em}
+a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent}
+a:hover{border-bottom-color:currentColor}
+code{
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  font-size:.875em; background:var(--code-bg); color:var(--code-fg);
+  padding:.14em .38em; border-radius:4px; border:1px solid var(--code-br);
+  word-break:break-word;
+}
+pre{
+  background:var(--code-bg); color:var(--code-fg); border:1px solid var(--code-br);
+  border-radius:8px; padding:14px 16px; overflow-x:auto; margin:0 0 1em;
+  font-size:.83rem; line-height:1.6;
+}
+pre code{background:none; border:none; padding:0; font-size:inherit; word-break:normal}
+ul,ol{margin:0 0 1em; padding-left:1.4em}
+li{margin-bottom:.4em}
+hr{border:none; border-top:1px solid var(--border); margin:2.5rem 0}
+.tablewrap{overflow-x:auto; margin:0 0 1.25em; border:1px solid var(--border); border-radius:8px}
+table{border-collapse:collapse; width:100%; font-size:.9rem; min-width:460px}
+th,td{padding:9px 13px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top}
+th{background:var(--bg-alt); font-weight:650; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted)}
+tr:last-child td{border-bottom:none}
+
+/* ============================ LAYOUT ============================ */
+.shell{display:grid; grid-template-columns:250px minmax(0,1fr); gap:0; max-width:1500px; margin:0 auto}
+.side{
+  position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 14px 60px;
+  border-right:1px solid var(--border); background:var(--bg-alt); font-size:.86rem;
+}
+.side .brand{font-weight:750; font-size:.95rem; margin-bottom:2px; letter-spacing:-.01em}
+.side .brandsub{color:var(--faint); font-size:.75rem; margin-bottom:18px}
+.side a{display:block; padding:5px 9px; border-radius:6px; color:var(--muted); border:none; line-height:1.35}
+.side a:hover{background:var(--card); color:var(--fg)}
+.side a.on{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.side .grp{margin:15px 0 5px; font-size:.68rem; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); font-weight:700; padding-left:9px}
+main{padding:34px 30px 100px; min-width:0}
+section{margin-bottom:3.2rem; scroll-margin-top:20px}
+@media (max-width:960px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static; height:auto; border-right:none; border-bottom:1px solid var(--border); padding:16px 18px}
+  .side nav{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1px}
+  .side .grp{grid-column:1/-1}
+  main{padding:24px 18px 70px}
+}
+
+/* ============================ HERO ============================ */
+.hero{border:1px solid var(--border); border-radius:14px; padding:26px 28px; background:var(--card); box-shadow:var(--shadow); margin-bottom:26px}
+.hero h1{margin-bottom:.35em}
+.hero .lede{color:var(--muted); font-size:1.03rem; max-width:70ch; margin-bottom:1.1em}
+.meta{display:flex; flex-wrap:wrap; gap:8px 22px; font-size:.83rem; color:var(--muted); padding-top:16px; border-top:1px solid var(--border)}
+.meta b{color:var(--fg); font-weight:600}
+.verdict{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--crit-bg); border:1px solid var(--crit-br); border-left:4px solid var(--crit);
+  border-radius:10px; padding:16px 20px; margin:0 0 20px;
+}
+.verdict .big{font-size:1.15rem; font-weight:750; color:var(--crit)}
+.verdict .txt{color:var(--fg); font-size:.93rem; flex:1 1 260px}
+
+/* ============================ COMPONENTS ============================ */
+.chip{
+  display:inline-block; padding:2px 9px; border-radius:20px; font-size:.7rem;
+  font-weight:750; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; border:1px solid;
+}
+.c-crit{background:var(--crit-bg); color:var(--crit); border-color:var(--crit-br)}
+.c-high{background:var(--high-bg); color:var(--high); border-color:var(--high-br)}
+.c-med{background:var(--med-bg); color:var(--med); border-color:var(--med-br)}
+.c-low{background:var(--low-bg); color:var(--low); border-color:var(--low-br)}
+.c-ok{background:var(--ok-bg); color:var(--ok); border-color:var(--ok-br)}
+
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:12px; margin-bottom:22px}
+.stat{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:15px 16px; box-shadow:var(--shadow)}
+.stat .n{font-size:1.85rem; font-weight:750; line-height:1.1; letter-spacing:-.02em}
+.stat .l{font-size:.76rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; font-weight:600}
+.stat.crit{border-left:3px solid var(--crit)} .stat.crit .n{color:var(--crit)}
+.stat.high{border-left:3px solid var(--high)} .stat.high .n{color:var(--high)}
+.stat.med{border-left:3px solid var(--med)}  .stat.med .n{color:var(--med)}
+.stat.low{border-left:3px solid var(--low)}  .stat.low .n{color:var(--low)}
+
+.score{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px}
+.score .top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; gap:8px}
+.score .lbl{font-size:.82rem; font-weight:600; color:var(--muted)}
+.score .val{font-size:1.3rem; font-weight:750; letter-spacing:-.02em}
+.bar{height:6px; background:var(--bg-alt); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; border-radius:4px}
+
+/* Finding cards */
+.finding{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  margin-bottom:20px; overflow:hidden; box-shadow:var(--shadow);
+}
+.finding.sev-critical{border-left:4px solid var(--crit)}
+.finding.sev-high{border-left:4px solid var(--high)}
+.finding.sev-medium{border-left:4px solid var(--med)}
+.finding.sev-low{border-left:4px solid var(--low)}
+.fhead{padding:17px 22px 14px; border-bottom:1px solid var(--border); background:var(--card-2)}
+.fhead .row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:7px}
+.fid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:750; font-size:.85rem; color:var(--muted)}
+.fhead h3{margin:0; font-size:1.09rem}
+.floc{font-size:.79rem; color:var(--faint); margin-top:7px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; word-break:break-all}
+.fbody{padding:19px 22px 6px}
+.block{margin-bottom:19px}
+.block:last-child{margin-bottom:14px}
+.block > h4{margin-bottom:.55em}
+.plain{
+  background:var(--accent-soft); border-radius:9px; padding:14px 17px; margin-bottom:19px;
+  border-left:3px solid var(--accent); font-size:.97rem;
+}
+.plain b{color:var(--accent)}
+.plain p:last-child{margin-bottom:0}
+.attack{background:var(--crit-bg); border:1px solid var(--crit-br); border-radius:9px; padding:13px 17px; margin-bottom:19px; font-size:.93rem}
+.attack p:last-child, .attack ol:last-child, .attack ul:last-child{margin-bottom:0}
+.attack h4{color:var(--crit)}
+.fix{background:var(--ok-bg); border:1px solid var(--ok-br); border-radius:9px; padding:15px 18px; margin-bottom:19px}
+.fix h4{color:var(--ok)}
+.fix > *:last-child{margin-bottom:0}
+.fix ol{padding-left:1.3em}
+.fix ol > li{margin-bottom:.85em}
+.verify{background:var(--bg-alt); border:1px solid var(--border); border-radius:9px; padding:13px 18px; font-size:.9rem}
+.verify h4{color:var(--muted)}
+.verify ul{list-style:none; padding-left:0; margin-bottom:0}
+.verify li{padding-left:26px; position:relative; margin-bottom:.5em}
+.verify li:before{content:"☐"; position:absolute; left:2px; top:-1px; font-size:1.05rem; color:var(--muted)}
+
+.effort{font-size:.73rem; color:var(--muted); font-weight:600; letter-spacing:.03em}
+.note{
+  background:var(--med-bg); border:1px solid var(--med-br); border-radius:9px;
+  padding:13px 17px; margin:0 0 1.25em; font-size:.92rem;
+}
+.note strong{color:var(--med)}
+.note p:last-child{margin-bottom:0}
+.good{background:var(--ok-bg); border:1px solid var(--ok-br); border-radius:9px; padding:13px 17px; margin:0 0 1.25em; font-size:.92rem}
+.good strong{color:var(--ok)}
+.good p:last-child, .good ul:last-child{margin-bottom:0}
+
+/* Filters + toolbar */
+.toolbar{
+  display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:20px;
+  padding:12px 14px; background:var(--bg-alt); border:1px solid var(--border); border-radius:10px;
+  position:sticky; top:0; z-index:20; backdrop-filter:saturate(150%) blur(6px);
+}
+.fbtn{
+  background:var(--card); border:1px solid var(--border); color:var(--muted);
+  padding:6px 13px; border-radius:20px; font-size:.81rem; font-weight:600; cursor:pointer;
+  font-family:inherit; transition:all .12s;
+}
+.fbtn:hover{color:var(--fg); border-color:var(--faint)}
+.fbtn.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+:root[data-theme="dark"] .fbtn.on, @media(prefers-color-scheme:dark){}
+.tglt{margin-left:auto}
+.hidden{display:none !important}
+
+/* Phase blocks */
+.phase{border:1px solid var(--border); border-radius:12px; margin-bottom:18px; overflow:hidden; background:var(--card)}
+.phase > header{padding:14px 20px; background:var(--card-2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.phase > header h3{margin:0; font-size:1.05rem}
+.phase .when{font-size:.79rem; color:var(--muted); font-weight:600; margin-left:auto}
+.phase .inner{padding:16px 20px 6px}
+.phase.p1{border-left:4px solid var(--crit)}
+.phase.p2{border-left:4px solid var(--high)}
+.phase.p3{border-left:4px solid var(--med)}
+.phase.p4{border-left:4px solid var(--low)}
+.task{display:flex; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); align-items:flex-start}
+.task:last-child{border-bottom:none}
+.task .box{flex:0 0 auto; font-size:1.1rem; color:var(--muted); line-height:1.4}
+.task .body{flex:1 1 auto; min-width:0}
+.task .t{font-weight:600; margin-bottom:2px}
+.task .d{font-size:.87rem; color:var(--muted)}
+.task .ref{font-size:.72rem; font-family:ui-monospace,Menlo,monospace; color:var(--faint); white-space:nowrap; padding-top:2px}
+
+.redacted{background:var(--med-bg); border-bottom:1px dashed var(--med); padding:0 3px; font-style:normal}
+kbd{font-family:ui-monospace,Menlo,monospace; font-size:.8em; border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; padding:1px 5px; background:var(--bg-alt)}
+
+@media print{
+  .side,.toolbar,.tglt{display:none}
+  .shell{grid-template-columns:1fr}
+  main{padding:0}
+  .finding{break-inside:avoid; box-shadow:none}
+  pre{white-space:pre-wrap}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="side">
+  <div class="brand">ExchangaPay</div>
+  <div class="brandsub">Security Audit &amp; Fix Guide</div>
+  <nav>
+    <div class="grp">Overview</div>
+    <a href="#summary">Executive summary</a>
+    <a href="#scores">Scorecard</a>
+    <a href="#top3">Fix these first</a>
+    <div class="grp">Action plan</div>
+    <a href="#plan">Phased roadmap</a>
+    <div class="grp">Findings</div>
+    <a href="#critical">Critical (8)</a>
+    <a href="#high">High (15)</a>
+    <a href="#medium">Medium (16)</a>
+    <a href="#low">Low / info</a>
+    <div class="grp">Assessment</div>
+    <a href="#vapt">VAPT matrix</a>
+    <a href="#compliance">Compliance</a>
+    <a href="#checklist">Release checklist</a>
+  </nav>
+</aside>
+
+<main>
+
+<!-- ==================== HERO ==================== -->
+<div class="hero">
+  <h1>ExchangaPay Mobile — Security Audit &amp; Remediation Guide</h1>
+  <p class="lede">
+    A complete security, VAPT and performance assessment of the React&nbsp;Native application, written so that
+    <strong>anyone on the team can understand what is broken, why it matters, and exactly how to fix it</strong>.
+    Every finding includes a plain-English explanation, a realistic attack scenario, production-ready fix
+    code, and a way to verify the fix worked.
+  </p>
+  <div class="meta">
+    <span><b>App:</b> exchangapay (crypto wallet, cards, KYC)</span>
+    <span><b>Stack:</b> React Native 0.83.6 · React 19.2 · Hermes · New Arch</span>
+    <span><b>Branch:</b> rn-0.83-upgrade @ 5f38f42</span>
+    <span><b>Size:</b> ~53,261 LOC · ~120 screens</span>
+    <span><b>Date:</b> 2026-08-03</span>
+  </div>
+</div>
+
+<div class="verdict">
+  <span class="big">🔴 CRITICAL — Do Not Release</span>
+  <span class="txt">
+    8 Critical and 15 High findings. Live secrets ship inside the app, the release build is signed with a
+    publicly-known key, and customer session tokens are exported to third-party logging services.
+    Freeze releases until the <a href="#plan">Phase&nbsp;1 actions</a> are complete.
+  </span>
+</div>
+
+<div class="note">
+  <p><strong>A note on this document.</strong> Secret values shown here are <span class="redacted">partially redacted</span>
+  because this HTML is meant to be shared with a wider audience than the source report. The complete values are in
+  <code>SECURITY_AUDIT_REPORT.md</code> — keep that file restricted, and treat every secret in it as already compromised.</p>
+</div>
+
+<!-- ==================== SUMMARY ==================== -->
+<section id="summary">
+<h2>Executive Summary</h2>
+
+<div class="cards">
+  <div class="stat crit"><div class="n">8</div><div class="l">Critical</div></div>
+  <div class="stat high"><div class="n">15</div><div class="l">High</div></div>
+  <div class="stat med"><div class="n">16</div><div class="l">Medium</div></div>
+  <div class="stat low"><div class="n">20+</div><div class="l">Low / Info</div></div>
+  <div class="stat"><div class="n">2.7<span style="font-size:1rem;color:var(--muted)">/10</span></div><div class="l">Overall score</div></div>
+</div>
+
+<h3>What the assessment found</h3>
+<p>
+  This is a fintech application that holds customer crypto balances, issues payment cards, displays full card
+  numbers and PINs, and processes identity documents for KYC. That risk profile demands a high security bar.
+  The application does not currently meet it.
+</p>
+<p>
+  The single biggest problem is not any individual bug — it is a <strong>systemic absence of secrets management</strong>.
+  A live third-party API secret, a Sentry organisation token, a real login token, Auth0 client identifiers, Firebase
+  configuration, and <em>the key used to sign the app itself</em> are all committed to the repository in plain text.
+  Anyone with repository access — or anyone who downloads the app and unzips it — obtains them.
+</p>
+
+<div class="good">
+  <p><strong>What is genuinely done well.</strong> This audit is not a verdict on the team's competence. Several things
+  here are better than the scores suggest:</p>
+  <ul>
+    <li>The migration from JavaScript <code>crypto-js</code> to native <code>react-native-quick-crypto</code> is careful,
+        documented, byte-compatible with the backend, and verified.</li>
+    <li>The decryption memoisation cache correctly reasons about determinism, key-scoping, and why encryption must
+        <em>not</em> be cached.</li>
+    <li>Auth tokens are stored in the Keychain/Keystore rather than plain storage.</li>
+    <li><code>allowBackup="false"</code>, ad-ID removal, and ATS arbitrary-loads-disabled are all correct.</li>
+    <li>Authentication uses Auth0 Authorization Code + PKCE — the right choice for a native app.</li>
+    <li>The build tooling notes (CMake/NDK pinning, Jetifier rationale, lockfile tracking) explain <em>why</em>, not just <em>what</em>.</li>
+  </ul>
+</div>
+
+<h3>Why the failures happened</h3>
+<p>
+  Almost every critical finding is something that was <strong>started correctly and not finished</strong>, or that
+  <strong>no automated check ever looked at</strong>:
+</p>
+<div class="tablewrap"><table>
+<thead><tr><th>What exists</th><th>What went wrong</th></tr></thead>
+<tbody>
+<tr><td>A correct encryption transform for stored data</td><td>Commented out with <code>// Temporarily disable…</code> and committed</td></tr>
+<tr><td>A correct Android network security config file</td><td>Never referenced from the manifest, so it does nothing</td></tr>
+<tr><td>The React Native template's own warning about debug keystores</td><td>Left in place and ignored</td></tr>
+<tr><td>A release pipeline that printed “Signed with the debug keystore — not Play Store ready”</td><td>Shipped anyway, to public GitHub Releases</td></tr>
+<tr><td>A CI pipeline documenting exactly why its checks were non-blocking</td><td>Deleted entirely three days later</td></tr>
+<tr><td>A “temporary login” added for testing</td><td>Never removed; contains a real token and an auth bypass</td></tr>
+</tbody>
+</table></div>
+<p>
+  Every one of these would have been caught by an automated gate. <strong>Restoring CI and making it blocking is the
+  single highest-leverage investment</strong> — it prevents the next shortcut from reaching a release build.
+</p>
+</section>
+
+<!-- ==================== SCORES ==================== -->
+<section id="scores">
+<h2>Scorecard</h2>
+<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+  <div class="score"><div class="top"><span class="lbl">Security</span><span class="val" style="color:var(--crit)">2.0</span></div><div class="bar"><i style="width:20%;background:var(--crit)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Mobile Security (MASVS)</span><span class="val" style="color:var(--crit)">1.5</span></div><div class="bar"><i style="width:15%;background:var(--crit)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">DevSecOps / CI-CD</span><span class="val" style="color:var(--crit)">1.0</span></div><div class="bar"><i style="width:10%;background:var(--crit)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Compliance readiness</span><span class="val" style="color:var(--crit)">1.5</span></div><div class="bar"><i style="width:15%;background:var(--crit)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">API security</span><span class="val" style="color:var(--high)">3.5</span></div><div class="bar"><i style="width:35%;background:var(--high)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Maintainability</span><span class="val" style="color:var(--high)">4.0</span></div><div class="bar"><i style="width:40%;background:var(--high)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Performance</span><span class="val" style="color:var(--med)">5.5</span></div><div class="bar"><i style="width:55%;background:var(--med)"></i></div></div>
+</div>
+<p style="color:var(--muted);font-size:.9rem">
+  Scores are out of 10. With the Phase&nbsp;1 and Phase&nbsp;2 work below complete, the overall rating moves from
+  <strong>Critical</strong> to approximately <strong>Medium</strong>. Reaching a posture appropriate for a regulated
+  custodial crypto and card issuer is realistically a 2–3 quarter programme.
+</p>
+</section>
+
+<!-- ==================== TOP 3 ==================== -->
+<section id="top3">
+<h2>Fix These First — The Three That Matter Most</h2>
+<p>If you do nothing else this week, do these three. Each is a small change with an outsized effect.</p>
+
+<div class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">#1</span><h3>Replace the app signing key</h3></div>
+    <div class="floc">android/app/build.gradle:117 · android/app/debug.keystore (committed to git)</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <p><b>In plain English:</b> Your app is signed with the practice key that ships free with Android Studio.
+      Its password is literally the word <code>android</code>, and every Android developer in the world already
+      has an identical copy. On top of that, the key file itself is committed to your git repository.</p>
+      <p><b>Why that's serious:</b> Android decides whether an app update is legitimate by checking that it was
+      signed with the same key. Anyone can build a fake ExchangaPay — one that steals passwords or rewrites
+      withdrawal addresses — sign it with this key, and phones will install it <em>as an official update</em>,
+      inheriting your app's stored login tokens.</p>
+    </div>
+    <div class="fix">
+      <h4>What to do</h4>
+      <ol>
+        <li>Generate a real key, offline, and store it in a password manager or secrets vault — never in git.</li>
+        <li>Point the release build at it via environment variables.</li>
+        <li>Enrol in Google Play App Signing so Google holds the master key and yours becomes rotatable.</li>
+        <li>Treat every APK you have already distributed as compromised; plan a forced update once a properly signed build exists.</li>
+      </ol>
+      <pre><code>keytool -genkeypair -v -keystore exchangapay-release.jks \
+  -keyalg RSA -keysize 4096 -validity 10000 -alias exchangapay</code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">#2</span><h3>Fix the environment selector — every build points at the test server</h3></div>
+    <div class="floc">Environment.js:69</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <p><b>In plain English:</b> The function that picks which server the app talks to accepts an argument
+      (<code>"prod"</code>, <code>"tst"</code>) and then <strong>throws it away</strong>, always returning the test
+      configuration. Every build of this app — including any you believe is production — talks to
+      <code>tstapi.exchangapay.com</code> and the test Auth0 login tenant.</p>
+      <p><b>Why that's serious:</b> If a build has reached real customers, they have completed real KYC — uploading
+      genuine passports and ID documents — into a <em>test</em> system. Test environments typically have wider team
+      access, weaker retention rules, and less log hygiene than production.</p>
+    </div>
+    <div class="attack">
+      <h4>⚠ Time-sensitive</h4>
+      <p>Check today whether real customer identity documents are sitting in the test environment. If they are,
+      this may be a notifiable data breach with a 72-hour reporting clock. Involve your Data Protection Officer
+      before doing anything else.</p>
+    </div>
+    <div class="fix">
+      <h4>What to do</h4>
+      <pre><code>// Environment.js — before
+export const getAllEnvData = (envName) =&gt; {
+  return ENV["tst"] || ENV.prod;        // ← envName ignored
+};
+
+// after
+const ENV_NAME = process.env.APP_ENV || "prod";   // injected at build time
+export const getAllEnvData = (envName) =&gt; ENV[envName || ENV_NAME] || ENV.prod;</code></pre>
+      <p style="margin-bottom:0">Then add real build-time environment selection: <code>react-native-config</code> with
+      git-ignored <code>.env</code> files, Android product flavours, and iOS build configurations — each with its own
+      Firebase file and Auth0 tenant.</p>
+    </div>
+  </div>
+</div>
+
+<div class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">#3</span><h3>Stop sending login tokens to crash reporting</h3></div>
+    <div class="floc">src/utils/ApiService.ts:87</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <p><b>In plain English:</b> Every time an API call fails, the app sends the user's <strong>live login token</strong>
+      — plus the complete request and response — to Firebase Crashlytics and Sentry. A login token is the digital
+      equivalent of a house key: whoever holds it <em>is</em> that user until it expires.</p>
+      <p><b>Why that's serious:</b> Anyone with access to your Firebase or Sentry console can read live customer session
+      tokens out of crash reports and use them to access those accounts. And because a Sentry access token is committed
+      to your repository (finding C-02), that "anyone" includes people who only have repo access — no device needed.</p>
+    </div>
+    <div class="fix">
+      <h4>What to do</h4>
+      <ol>
+        <li>Delete the <code>token</code> line immediately — one line, no downside.</li>
+        <li>Replace whole-body logging with an allow-list of safe diagnostic fields.</li>
+        <li>Purge existing Crashlytics and Sentry data, and treat every token logged so far as compromised.</li>
+      </ol>
+      <pre><code>// src/utils/ApiService.ts — remove these
+token:    token ?? "unknown",                    // ← DELETE
+response: JSON.stringify(response?.data),        // ← DELETE
+request:  JSON.stringify(config?.data ?? {}),    // ← DELETE
+
+// replace with a shared scrubber used by BOTH Crashlytics and Sentry
+const SAFE_KEYS = new Set(["traceId", "errorCode", "correlationId"]);
+const redact = (o) =&gt; (o &amp;&amp; typeof o === "object")
+  ? Object.fromEntries(Object.entries(o)
+      .map(([k, v]) =&gt; [k, SAFE_KEYS.has(k) ? v : "[REDACTED]"]))
+  : "[REDACTED]";</code></pre>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ==================== ACTION PLAN ==================== -->
+<section id="plan">
+<h2>Phased Remediation Roadmap</h2>
+<p>
+  Work top to bottom. Phase&nbsp;1 is <strong>containment</strong> — it stops active bleeding and does not require
+  a code release. Phase&nbsp;2 makes the app safe to ship. Phases&nbsp;3–4 build the security posture a regulated
+  fintech is expected to have.
+</p>
+
+<div class="phase p1">
+  <header>
+    <span class="chip c-crit">Phase 1</span>
+    <h3>Containment — do this now</h3>
+    <span class="when">0–72 hours · no release required</span>
+  </header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Rotate the Kommo support-chat secret</div><div class="d">Treat all customer support conversations as potentially exposed. The key is in the shipped app.</div></div><span class="ref">C-01</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Revoke the Sentry organisation token</div><div class="d">Then check Sentry's access log for use since 2025-10-25 from unexpected locations.</div></div><span class="ref">C-02</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Revoke the hardcoded Auth0 session and delete <code>onTempLoginPress</code></div><div class="d">A real login token plus an authentication-bypass fallback sits in the splash screen.</div></div><span class="ref">C-04</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Generate a real release keystore; halt all releases until it is in use</div><div class="d">Store it in a secrets vault. Never commit it. Enrol in Play App Signing.</div></div><span class="ref">C-03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Treat every previously distributed APK as compromised</div><div class="d">Plan a forced update via the existing version-check mechanism once a properly signed build exists.</div></div><span class="ref">C-03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Remove tokens and request/response bodies from Crashlytics and Sentry; purge stored data</div><div class="d">One-line deletion stops the bleeding; the scrubber can follow.</div></div><span class="ref">C-07</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Determine whether real customer KYC data is in the test environment</div><div class="d">If yes, this may be a notifiable breach with a 72-hour clock. Engage your DPO immediately.</div></div><span class="ref">C-05</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Purge secrets from git history</div><div class="d">Use <code>git filter-repo</code> or BFG, force-push, and have every contributor re-clone. Rotation alone is not enough.</div></div><span class="ref">C-01/02/03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Enable GitHub push protection and add a <code>gitleaks</code> pre-commit hook</div><div class="d">So the next secret is blocked before it is ever committed.</div></div><span class="ref">CI-05</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Audit the Auth0 tenant</div><div class="d">Disable the Password/ROPC grant on all clients, confirm PKCE is required, and delete the unknown US-tenant client.</div></div><span class="ref">H-13</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Delete dead security-relevant code</div><div class="d"><code>Login.tsx</code>, <code>utils/auth.tsx</code>, and <code>encryptForRegister</code> — all unused, all carrying secrets.</div></div><span class="ref">L-01</span></div>
+  </div>
+</div>
+
+<div class="phase p2">
+  <header>
+    <span class="chip c-high">Phase 2</span>
+    <h3>Make it safe to ship</h3>
+    <span class="when">1–4 weeks</span>
+  </header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix <code>getAllEnvData</code>; add build-time environment selection</div><div class="d"><code>react-native-config</code> + Android product flavours + iOS build configurations, each with its own Firebase file and Auth0 tenant.</div></div><span class="ref">C-05</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Enable R8/ProGuard with a complete keeps file</div><div class="d">Budget real time — R8 without correct keeps causes runtime crashes in native modules. Test the release build end to end.</div></div><span class="ref">C-08</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Wire in the network security config and add certificate pinning</div><div class="d">The config file already exists and is correct — it is simply never referenced from the manifest.</div></div><span class="ref">H-02 · H-03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Harden every Keychain write</div><div class="d">Device-only, hardware-backed, bound to current biometric enrolment.</div></div><span class="ref">H-11</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Stop persisting tokens in Redux; re-enable storage encryption</div><div class="d">Also replace the unmaintained (2018) keychain storage adapter with a small in-house one.</div></div><span class="ref">H-05</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add screenshot protection</div><div class="d"><code>FLAG_SECURE</code> on Android, snapshot blurring plus capture detection on iOS. The app shows card numbers, CVVs and PINs.</div></div><span class="ref">H-09</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix the 2FA WebView</div><div class="d">Restrict origins, gate navigation, and never attach the login token to a URL the WebView produced.</div></div><span class="ref">H-10</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Raise PBKDF2 from 10 to 600,000 iterations</div><div class="d">Coordinate the wire-format version with the backend team — this is a shared format.</div></div><span class="ref">H-01</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Restore CI with blocking gates</div><div class="d">Install, audit, typecheck, test, lint, secret scan, and release-config assertions.</div></div><span class="ref">CI-01</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Move signing into CI; publish to Play Internal Testing, not public GitHub Releases</div><div class="d">No developer workstation should hold a release key.</div></div><span class="ref">C-03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix <code>validateCryptoAddress</code></div><div class="d">It currently validates only TRC-20 and Polygon and returns <code>true</code> for everything else — a real funds-loss risk on BTC/ETH/SOL withdrawals.</div></div><span class="ref">L-09</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add an inactivity lock plus step-up authentication</div><div class="d">Re-authenticate before revealing a card PAN/PIN or confirming a crypto withdrawal.</div></div><span class="ref">M-15 · H-14</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix the iOS privacy manifest, push entitlement, and Auth0 callback scheme</div><div class="d"><code>NSPrivacyCollectedDataTypes</code> is an empty array while the app collects extensive PII — this will fail App Review.</div></div><span class="ref">iOS</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Re-enable Sentry — with replay off, PII off, and scrubbing on</div><div class="d">Production error reporting is currently disabled entirely, so incidents are invisible.</div></div><span class="ref">M-12 · H-08</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Replace <code>react-native-phone-number-input</code>; run <code>npm audit fix</code></div><div class="d">That one package pulls in four of the eleven High-severity vulnerabilities.</div></div><span class="ref">H-12</span></div>
+  </div>
+</div>
+
+<div class="phase p3">
+  <header>
+    <span class="chip c-med">Phase 3</span>
+    <h3>Build real defences</h3>
+    <span class="when">1–3 months</span>
+  </header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Play Integrity (Android) + App Attest (iOS), verified server-side</div><div class="d">This is the control that neutralises repackaged apps and rooted devices — enforcement must live on the backend.</div></div><span class="ref">H-04</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Enforce KYC, role and account state on the server for every financial endpoint</div><div class="d">Today all of it is client-side navigation logic, which anyone can patch out.</div></div><span class="ref">VAPT-01/02</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Migrate AES-CBC to AES-256-GCM; remove the zero-IV legacy path</div><div class="d">Adds tamper detection the current scheme has no way to provide.</div></div><span class="ref">H-06</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Signature-based biometrics with server verification</div><div class="d">Replace the yes/no prompt with a hardware-backed signature the backend can actually check.</div></div><span class="ref">H-14</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Move Kommo request signing to the backend; delete <code>chatService.js</code></div><div class="d">The permanent fix for C-01 — the client must never hold that secret.</div></div><span class="ref">C-01</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Random UUID idempotency keys; verify server-side enforcement</div><div class="d">Also fixes a real bug: two legitimate identical transactions currently produce the same key.</div></div><span class="ref">M-02</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add request timeouts and a retry policy; consolidate onto one HTTP client</div><div class="d">Nine base URLs across three HTTP libraries makes every cross-cutting fix a nine-place change.</div></div><span class="ref">M-03</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Validate push-notification input; move downloads to private storage</div><div class="d">Notification bodies currently flow straight into a file path; statements land in public Downloads.</div></div><span class="ref">M-05 · M-07</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add ESLint config and fix TypeScript errors; make both blocking</div><div class="d">A linter would have caught several findings in this report before review.</div></div><span class="ref">L-06 · L-07</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix Jest; add risk-prioritised tests</div><div class="d">Crypto round-trip, money arithmetic, address validation, idempotency — not coverage percentage.</div></div><span class="ref">L-05</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Remove the eleven redundant dependencies; drop Jetifier</div><div class="d">Three chart libraries, two date libraries, two splash libraries, three notification libraries.</div></div><span class="ref">L-02</span></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Lazy-load screens; tune FlatLists; ship an App Bundle</div><div class="d">~120 screens are imported eagerly at startup today.</div></div><span class="ref">P-01 · P-02</span></div>
+  </div>
+</div>
+
+<div class="phase p4">
+  <header>
+    <span class="chip c-low">Phase 4</span>
+    <h3>Structural improvements</h3>
+    <span class="when">3–6 months</span>
+  </header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Consolidate onto Redux Toolkit; delete the legacy store and reducer</div><div class="d">Two parallel state systems is the root of the persistence and performance issues.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Extract a testable domain layer</div><div class="d">Fees, limits, validation and KYC rules as pure modules — currently buried inside 2,000-line screens.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">"One of each": one logout hook, one error formatter, one crypto module, one storage layer, one HTTP client</div><div class="d">The codebase currently has five logout implementations and two crypto implementations.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Split the 2,000-line screens; standardise naming</div><div class="d">Three screens exceed 1,800 lines; numerous misspellings in files and identifiers.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add request signing for high-value operations</div><div class="d">Defeats both replay and man-in-the-middle tampering.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Evaluate a commercial RASP layer</div><div class="d">Guardsquare, Promon or Appdome — appropriate for this risk profile.</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Commission an external penetration test</div><div class="d">Once Phases 1–3 are complete. This audit is static analysis; a dynamic test against a running backend is still needed.</div></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ==================== CRITICAL ==================== -->
+<section id="critical">
+<h2>Critical Findings</h2>
+<p style="color:var(--muted)">
+  Eight findings that individually justify blocking a release. Each includes a plain-English explanation,
+  the realistic attack, a production-ready fix, and how to verify it.
+</p>
+
+<!-- C-01 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-01</span><h3>Live support-chat API secret hardcoded in the shipped app</h3></div>
+    <div class="floc">src/screens/Chatbot/chatscreen.tsx:44-48 · src/services/chatService.js:184 (duplicated)</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The password that proves your app is allowed to talk to Kommo — your support-chat provider — is written
+      directly into the app's JavaScript, in two separate places. Anyone who downloads the app and unzips it can
+      read it in about thirty seconds. No hacking skill required; <code>unzip</code> and <code>grep</code> are enough.</p>
+      <p>This is a <em>server-class</em> credential: it identifies your whole application to Kommo, not one user.
+      It should never have left your backend.</p>
+    </div>
+
+    <pre><code>// src/screens/Chatbot/chatscreen.tsx
+const config = {
+    secretKey: '60d0c569<span class="redacted">…redacted…</span>3ab4a',   // ← HMAC signing key
+    channelId: '30778ba5-1242-<span class="redacted">…</span>',
+    accountId: 'e393e15b-d500-<span class="redacted">…</span>'
+};</code></pre>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <ol>
+        <li>Downloads the APK and extracts the secret with <code>strings</code>.</li>
+        <li><strong>Reads any customer's support conversation</strong> — the history endpoint is keyed on the customer ID,
+            which is guessable or enumerable.</li>
+        <li><strong>Impersonates any customer</strong> — the chat-creation call accepts an arbitrary name, email and phone
+            supplied by the caller.</li>
+        <li>Harvests what fintech support conversations contain: transaction IDs, wallet addresses, partial card data,
+            identity documents, and account-recovery discussion — then uses it for account takeover.</li>
+      </ol>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Rotate the Kommo secret today.</strong> Assume it has been public for the lifetime of every build containing it.</li>
+        <li><strong>Move all signing to your backend.</strong> Add two endpoints that authenticate with the existing bearer token,
+            derive the conversation ID from the <em>server-side</em> session (never from a client-supplied value), sign the
+            request, and proxy to Kommo:
+            <pre><code>POST /api/v1/Support/Chat/Message
+GET  /api/v1/Support/Chat/History</code></pre></li>
+        <li><strong>Delete <code>src/services/chatService.js</code> from the app</strong> and replace the <code>KommoChatAPI</code>
+            usage in <code>chatscreen.tsx</code> with calls to the new endpoints.</li>
+        <li><strong>Purge from git history</strong> — rotation is not enough if the repo is ever made public or a former
+            contributor kept a copy:
+            <pre><code>git filter-repo --path src/services/chatService.js --invert-paths
+# then force-push and have everyone re-clone</code></pre></li>
+      </ol>
+      <p><strong>The principle to adopt:</strong> a mobile app is a public, untrusted binary. Any credential that grants
+      privileges beyond the currently logged-in user must live only on a server. The Sumsub token flow in this codebase
+      already does this correctly — copy that pattern.</p>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li><code>grep -rn "60d0c569" .</code> returns nothing, including in git history.</li>
+        <li>The old Kommo secret is revoked and confirmed rejected by Kommo.</li>
+        <li>Support chat still works, with all traffic going through your own backend.</li>
+        <li>Requesting another user's conversation history returns 403 from your backend.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-02 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-02</span><h3>Sentry organisation access token committed to the repository</h3></div>
+    <div class="floc">ios/sentry.properties:2 (tracked in git)</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>An access token for your Sentry account is sitting in a file that is committed to git. Sentry is where your
+      crash reports go. This token is used during iOS builds to upload source maps — and it typically carries broad
+      permissions across the whole organisation.</p>
+      <p><strong>Why this one is especially bad:</strong> combined with finding C-07 (login tokens written into crash
+      reports), this token lets someone read <em>live customer session tokens</em> without ever touching a phone.</p>
+    </div>
+
+    <pre><code>auth.token=sntrys_eyJpYXQiOjE3NjEzNzQ3NDku<span class="redacted">…redacted…</span>
+defaults.org=exchangapay</code></pre>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <ol>
+        <li>Gains repository read access — a compromised developer account, an over-permissive fork, an accidental
+            public push, or simply being a former contributor who copied it before access was revoked.</li>
+        <li>Uses the token against the Sentry API to <strong>read every crash and error event</strong> — which, per C-07,
+            contain full API requests, responses, and bearer tokens.</li>
+        <li><strong>Downloads your uploaded source maps</strong>, fully de-minifying the app and handing over readable source.</li>
+        <li>Optionally tampers with releases, corrupting the data you rely on to detect incidents.</li>
+      </ol>
+      <p style="margin-bottom:0">Revoking someone's <em>repository</em> access does not revoke a token they already copied.</p>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small</span></h4>
+      <ol>
+        <li><strong>Revoke the token now</strong> in Sentry → Settings → Auth Tokens. Issue a replacement scoped to
+            <code>project:releases</code> only, as an <em>organisation</em> token rather than a personal one.</li>
+        <li><strong>Remove the file from git and ignore it.</strong> The org and project names are not secret — only the token is,
+            and <code>sentry-cli</code> reads it from an environment variable natively:
+            <pre><code>git rm --cached ios/sentry.properties
+echo "ios/sentry.properties" &gt;&gt; .gitignore
+
+# ios/sentry.properties keeps only the non-secret parts:
+defaults.org=exchangapay
+defaults.project=exchangapay
+defaults.url=https://sentry.io/
+
+# the token comes from CI:  SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}</code></pre></li>
+        <li><strong>Purge from git history</strong> with <code>git filter-repo</code> or BFG.</li>
+        <li><strong>Audit Sentry's access log</strong> for this token since 2025-10-25 (its issue date) to see whether it has
+            already been used from somewhere unexpected.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li>The old token returns 401 when used against the Sentry API.</li>
+        <li><code>git log --all -p -- ios/sentry.properties</code> shows no token value.</li>
+        <li>An iOS release build still uploads source maps successfully, using the CI-provided variable.</li>
+        <li>Sentry's audit log shows no unexpected use of the old token.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-03 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-03</span><h3>Release builds are signed with the committed debug keystore</h3></div>
+    <div class="floc">android/app/build.gradle:104-122 · android/app/debug.keystore (tracked in git)</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Android decides whether an app update is genuine by checking it was signed with the same key as the installed
+      version. Your release builds are signed with the <em>debug</em> key — the practice key that ships with the Android
+      SDK, whose password is literally the word <code>android</code>. Every Android developer on earth has an identical copy,
+      and yours is committed to the repository as well.</p>
+      <p>The React Native template's own warning comment about this is still sitting in the file, unheeded. The release
+      pipeline that was recently deleted even <em>printed a warning about it</em> in every release's changelog — and shipped anyway.</p>
+    </div>
+
+    <pre><code>signingConfigs {
+    debug {
+        storeFile file('debug.keystore')
+        storePassword 'android'          // ← the universal SDK default
+        keyAlias 'androiddebugkey'
+        keyPassword 'android'
+    }
+}
+buildTypes {
+    release {
+        // Caution! In production, you need to generate your own keystore file.
+        signingConfig signingConfigs.debug      // ← release signed with the DEBUG key
+        minifyEnabled enableProguardInReleaseBuilds   // ← which is false (C-08)
+    }
+}</code></pre>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <ol>
+        <li>Takes any released APK, or pulls <code>debug.keystore</code> from the repo — or just uses their own copy of the
+            SDK's default debug keystore.</li>
+        <li>Builds a trojanised ExchangaPay: a keylogger over the PIN screen, exfiltration of the stored login token, or
+            silent rewriting of the destination wallet address before a withdrawal is submitted.</li>
+        <li>Signs it with the same key. <strong>Android's update-integrity check passes.</strong> The malicious build installs
+            <em>over</em> the legitimate app, inheriting its data directory, its stored tokens, and the user's trust.</li>
+        <li>Distributes it by SMS ("update required"), sideload site, or third-party store — behaviour the app's own
+            force-update screen already conditions users to comply with.</li>
+      </ol>
+      <p style="margin-bottom:0"><strong>Second consequence:</strong> if this app is ever published to Google Play with this key,
+      the signing identity can never be cleanly changed for that listing.</p>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Generate a real key, offline, with a strong passphrase:</strong>
+          <pre><code>keytool -genkeypair -v -keystore exchangapay-release.jks \
+  -keyalg RSA -keysize 4096 -validity 10000 -alias exchangapay</code></pre></li>
+        <li><strong>Store it in a secrets manager</strong> (Vault, AWS Secrets Manager, or GitHub encrypted secrets as base64)
+            and materialise it only inside the CI runner.</li>
+        <li><strong>Split the signing configuration:</strong>
+          <pre><code>signingConfigs {
+    debug { /* unchanged — debug builds only */ }
+    release {
+        storeFile     file(System.getenv("EXCHANGA_KEYSTORE_PATH") ?: "dummy.jks")
+        storePassword System.getenv("EXCHANGA_KEYSTORE_PASSWORD")
+        keyAlias      System.getenv("EXCHANGA_KEY_ALIAS")
+        keyPassword   System.getenv("EXCHANGA_KEY_PASSWORD")
+    }
+}
+buildTypes {
+    release {
+        signingConfig signingConfigs.release
+        minifyEnabled true              // see C-08
+        shrinkResources true
+        proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                      "proguard-rules.pro"
+    }
+}</code></pre></li>
+        <li><strong>Enrol in Google Play App Signing</strong> so Google holds the master key and your upload key becomes rotatable.</li>
+        <li><strong>Remove the keystore from git</strong> and purge it from history:
+          <pre><code>git rm --cached android/app/debug.keystore</code></pre></li>
+        <li><strong>Force all users onto a properly signed build</strong> using the existing <code>neoMobileVersioncheck</code>
+            force-update mechanism once one exists.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li><code>apksigner verify --print-certs app-release.apk</code> shows your certificate, not <code>androiddebugkey</code>.</li>
+        <li>No keystore file exists anywhere in the working tree or git history.</li>
+        <li>A release build fails cleanly if the signing environment variables are absent.</li>
+        <li>Play App Signing is enabled on the listing.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-04 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-04</span><h3>Hardcoded login token and an authentication-bypass fallback</h3></div>
+    <div class="floc">src/screens/SplashScreen.tsx:175-250</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The splash screen contains a "temporary login" function holding a <strong>real login token</strong> for an actual
+      customer account on your Auth0 tenant. It skips the entire login flow.</p>
+      <p>The fallback is worse than the token. When the call using that token fails, the code does not stop — it
+      <strong>invents a fully-verified, KYC-approved user and navigates straight into the Dashboard</strong>. It fabricates
+      exactly the flags every onboarding gate checks: email verified, phone verified, KYC complete, state Approved.</p>
+    </div>
+
+    <pre><code>// on failure, instead of stopping…
+dispatch(isLogin(true));
+dispatch(setUserInfo({
+    role: "Customer",
+    isEmailVerified: true,
+    isPhoneNumberVerified: true,
+    isKYC: true,                      // ← fabricated
+    customerState: "Approved",        // ← fabricated
+    customerKycRequiredorNot: false,
+}));
+navigation?.dispatch(CommonActions.reset({ routes: [{ name: "Dashboard" }] }));</code></pre>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <ul>
+        <li><strong>If the button is reachable at all</strong> — even hidden behind a long-press or a conditional — anyone who
+            finds it in the bundle gets an authenticated session with no credentials.</li>
+        <li><strong>If not,</strong> they attach Frida (no root detection, no obfuscation, debug-signed build) and call the
+            function directly, or patch the bundle to invoke it on launch.</li>
+        <li><strong>The bigger lesson:</strong> this code proves that setting one Redux value is all that stands between a user
+            and the Dashboard. Whether that also lets them <em>transact</em> depends entirely on whether your backend
+            re-checks KYC on every financial endpoint — the app provides no protection either way.</li>
+      </ul>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small (code) / medium (server-side)</span></h4>
+      <ol>
+        <li><strong>Delete <code>onTempLoginPress</code> entirely</strong> — the token, the function, and the whole <code>catch</code>
+            fallback. There is no safe version of this.</li>
+        <li><strong>Revoke that account's sessions and refresh tokens</strong> in Auth0.</li>
+        <li><strong>Make every failure path fail closed.</strong> Never fabricate user state:
+          <pre><code>} catch (e) {
+  await clearPersistedState();
+  setError("Sign-in failed. Please try again.");
+}</code></pre></li>
+        <li><strong>Enforce KYC and AML server-side.</strong> Every financial endpoint — top-up, crypto withdrawal, card issuance,
+            statement export — must independently verify the caller's KYC status and account state from the backend's own
+            record, derived from the token's subject. The client's navigation gating is user experience, not security.</li>
+        <li><strong>Add a CI gate</strong> so this cannot come back:
+          <pre><code>grep -rEn 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}' src/ &amp;&amp; exit 1</code></pre></li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li>No JWT-shaped string exists anywhere in <code>src/</code>; the CI gate passes.</li>
+        <li>The old token is rejected by the API.</li>
+        <li>Calling a financial endpoint with a token whose account is not KYC-approved returns 403 <em>from the server</em>.</li>
+        <li>Every authentication failure path lands on the login screen, never on the Dashboard.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-05 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-05</span><h3>Every build points at the test environment</h3></div>
+    <div class="floc">Environment.js:68-74</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The function that selects which backend the app talks to takes an argument — and ignores it, always returning
+      the test configuration. Callers passing <code>"prod"</code> still get <code>"tst"</code>.</p>
+      <p>So every build of this app, including any you consider production, sends its API traffic to
+      <code>tstapi.exchangapay.com</code> and logs users in against the test Auth0 tenant. Three other pieces of
+      configuration confirm it independently: the Android package is <code>com.exchangapay.tst</code>, the Auth0 domain
+      placeholder is the tst tenant, and both Firebase files point at <code>exchangapay-tst-f570a</code>.</p>
+    </div>
+
+    <pre><code>export const getAllEnvData = (envName) =&gt; {
+  return ENV["tst"] || ENV.prod;      // envName accepted, then discarded
+};                                     // ENV["tst"] is always truthy, so the
+                                       // "|| ENV.prod" fallback is dead code</code></pre>
+
+    <div class="attack">
+      <h4>Why this is serious</h4>
+      <ul>
+        <li><strong>Real KYC documents in a test system.</strong> Customers upload genuine passports and IDs. Test environments
+            typically have wider team access, weaker retention rules, and less log hygiene — a serious data-protection failure.</li>
+        <li><strong>Mainnet addresses against a test backend.</strong> A separate hardcoded <code>ENV = "tst"</code> in the helpers
+            selects <em>mainnet</em> crypto address patterns, so the app accepts real BTC/ETH/TRON/SOL addresses while pointed
+            at a non-production system.</li>
+        <li><strong>Production is invisible.</strong> Sentry is tagged <code>environment: "development"</code> and is disabled on the
+            prod config anyway, so genuine production errors are not reported at all.</li>
+      </ul>
+      <p style="margin-bottom:0"><strong>This is not an attack — it is the current behaviour of every build.</strong></p>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: large</span></h4>
+      <ol>
+        <li><strong>Make the function honour its parameter, with a safe default:</strong>
+          <pre><code>const ENV_NAME = process.env.APP_ENV || "prod";   // injected at build time
+export const getAllEnvData = (envName) =&gt; ENV[envName || ENV_NAME] || ENV.prod;</code></pre></li>
+        <li><strong>Add real build-time environment selection.</strong> There is currently no mechanism at all:
+          <ul>
+            <li><em>Config:</em> <code>react-native-config</code> with git-ignored <code>.env.dev</code> / <code>.env.tst</code> / <code>.env.prod</code>.</li>
+            <li><em>Android:</em> product flavours, each with its own <code>applicationId</code>, manifest placeholders, and
+                <code>google-services.json</code> under <code>android/app/src/&lt;flavour&gt;/</code>.</li>
+            <li><em>iOS:</em> separate build configurations and schemes, each with its own <code>GoogleService-Info.plist</code>
+                and bundle identifier.</li>
+          </ul></li>
+        <li><strong>Remove every hardcoded environment string:</strong> <code>const ENV = "tst"</code> in the helpers,
+            <code>environment: "development"</code> in the telemetry tags, and the literal <code>"tst"</code>/<code>"prod"</code>
+            arguments at each call site.</li>
+        <li><strong>Delete the broken <code>getEnvVars()</code></strong> — it references <code>ENV.local</code>, which does not exist.</li>
+        <li><strong>Add a release gate</strong> that fails the production build if the resolved API URL matches
+            <code>/dev|tst|staging/</code>.</li>
+        <li><strong>Watermark non-production builds</strong> visibly in-app, so a mis-targeted build is obvious to whoever opens it first.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li>A production build resolves to <code>api.exchangapay.com</code> and the EU prod Auth0 tenant.</li>
+        <li>Crash reports arrive in the <em>production</em> Firebase project.</li>
+        <li>The CI assertion fails when a prod build is accidentally pointed at tst.</li>
+        <li>You have determined whether real customer KYC data currently sits in the test environment, and involved your DPO if so.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-06 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-06</span><h3>Static encryption key <code>"8080808080808080"</code> used as both key and IV</h3></div>
+    <div class="floc">src/utils/tools.js:40-49</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Registration data is "encrypted" with a fixed key written into the app — the string <code>8080808080808080</code>,
+      which is just "80" repeated eight times. The same value is also used as the initialisation vector, the random
+      starting value that is supposed to make each encryption unique.</p>
+      <p>Since everyone can read the key out of the app, this provides <strong>no confidentiality whatsoever</strong>.
+      It looks like encryption and isn't.</p>
+    </div>
+
+    <pre><code>const REGISTER_KEY = "8080808080808080";
+
+export const encryptForRegister = (msg) =&gt; {
+  const key = Buffer.from(REGISTER_KEY, "utf8");
+  const iv  = Buffer.from(REGISTER_KEY, "utf8");   // ← IV is the same as the KEY
+  const cipher = QuickCrypto.createCipheriv("aes-128-cbc", key, iv);
+  ...
+};</code></pre>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <ol>
+        <li>Extracts the key with a single <code>grep</code>.</li>
+        <li>Intercepts registration traffic — easy, because there is no certificate pinning (H-03).</li>
+        <li>Decrypts every registration payload passing over that network: names, emails, phone numbers, addresses.</li>
+        <li>Because holding the key allows <em>encryption</em> too, forges registration payloads at will — bypassing any
+            backend logic that treats successful decryption as proof the request came from your app.</li>
+        <li>Because the IV never changes, identical inputs always produce identical output — so an attacker can confirm
+            whether a specific person is registered just by matching ciphertexts, without decrypting anything.</li>
+      </ol>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small</span></h4>
+      <ol>
+        <li><strong>Check whether it is still used.</strong> Static analysis found <em>no call sites</em> in <code>src/</code>.
+            If it is genuinely dead — <strong>delete it</strong>. Dead cryptographic code gets resurrected.</li>
+        <li><strong>If it is used,</strong> understand the real problem: at registration time no per-user key exists yet, and the
+            answer is <em>not</em> a shared static key. Rely on TLS (with pinning) for confidentiality of the registration
+            request, and have the server issue the per-user key <em>after</em> registration succeeds. Application-layer
+            encryption with a key every client holds adds nothing over TLS.</li>
+        <li><strong>For any encryption that must stay,</strong> use the codebase's own correct implementation — it already does
+            this properly with a fresh random IV and a per-user server-issued key:
+          <pre><code>import { encryptAES } from "./helpers/encryptionDecryption";
+// random IV per call, versioned wire format, per-user key</code></pre></li>
+        <li><strong>Add a CI check</strong> for <code>createCipheriv</code> calls whose IV is not derived from <code>randomBytes</code>.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li><code>grep -rn "8080808080808080" .</code> returns nothing.</li>
+        <li>Every <code>createCipheriv</code> call in the codebase uses a fresh <code>QuickCrypto.randomBytes</code> IV.</li>
+        <li>Encrypting the same input twice produces two different outputs.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-07 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-07</span><h3>Login tokens and full API traffic sent to Crashlytics and Sentry</h3></div>
+    <div class="floc">src/utils/ApiService.ts:71-113</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Whenever an API call fails, the app packages up the user's <strong>live login token</strong>, the complete request body,
+      and the complete response body, and sends all of it to Firebase Crashlytics — and then again to Sentry. The request
+      and response are logged <em>three times</em> in Crashlytics.</p>
+      <p>A login token is a bearer credential: whoever holds it <em>is</em> that user until it expires. Crash-report fields
+      are not treated as secrets by Firebase — they are visible to every project member and exportable to BigQuery.</p>
+    </div>
+
+    <pre><code>crashlytics().setAttributes({
+  endpoint: config?.url,
+  response: JSON.stringify(response?.data),      // ← full response body
+  token:    token ?? "unknown",                  // ← ★ THE LOGIN TOKEN ★
+  request:  JSON.stringify(config?.data ?? {}),  // ← full request body
+});
+crashlytics().log(`Request Body: ${JSON.stringify(config.data)}`);   // again
+crashlytics().log(`Response Body: ${JSON.stringify(response.data)}`); // and again</code></pre>
+
+    <div class="attack">
+      <h4>What ends up in those logs</h4>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Flow</th><th>Data captured on failure</th></tr></thead>
+        <tbody>
+          <tr><td>Card operations</td><td>Card ID, card number, PIN-retrieval responses, CVV and expiry</td></tr>
+          <tr><td>Crypto withdrawal</td><td>Wallet address, amount, payee ID</td></tr>
+          <tr><td>Password change</td><td>The encrypted new password (weakly protected — see H-01)</td></tr>
+          <tr><td>KYC / profile</td><td>The complete personal-data payload</td></tr>
+          <tr><td>All of the above</td><td>The user's live bearer token</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Attack chain:</strong> repository access → the committed Sentry token (C-02) → read error events →
+      extract bearer tokens and request bodies → replay them against the API → full account access.
+      <strong>No device access required at any step.</strong></p>
+      <p style="margin-bottom:0"><strong>Compliance:</strong> card numbers and CVVs flowing to Google and Sentry as log text is a
+      direct PCI-DSS violation — sensitive authentication data must never be stored after authorisation.</p>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small</span></h4>
+      <ol>
+        <li><strong>Delete the <code>token</code> attribute right now.</strong> There is no diagnostic use for a login token in a
+            crash report. This is a one-line change with no downside.</li>
+        <li><strong>Replace whole-body logging with an allow-list</strong>, shared by both the Crashlytics and Sentry paths:
+          <pre><code>const SAFE_KEYS = new Set(["traceId", "errorCode", "correlationId"]);
+const SENSITIVE = /pass|pin|cvv|cvc|card|token|secret|otp|sk|ssn|dob|address|phone|email/i;
+
+export const scrub = (o: unknown): unknown =&gt; {
+  if (!o || typeof o !== "object") return "[REDACTED]";
+  return Object.fromEntries(Object.entries(o).map(([k, v]) =&gt;
+    [k, SAFE_KEYS.has(k) &amp;&amp; !SENSITIVE.test(k) ? v : "[REDACTED]"]));
+};</code></pre></li>
+        <li><strong>Wire the same scrubber into Sentry's <code>beforeSend</code></strong> and set <code>sendDefaultPii: false</code>.</li>
+        <li><strong>Gate crash collection on user consent.</strong> <code>setCrashlyticsCollectionEnabled(true)</code> currently runs
+            unconditionally with no consent step — default it to <code>false</code>.</li>
+        <li><strong>Purge existing telemetry data</strong> and treat every token logged to date as compromised.</li>
+        <li><strong>Fix a related bug:</strong> <code>getUserInfo()</code> is called without <code>await</code>, so every event is
+            attributed to <code>"unknown"</code>. Fix it <em>together with</em> the scrubbing — not before, or you will start
+            correctly attaching user IDs to reports that still contain secrets.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li>Trigger a failing API call in a release build; the resulting Crashlytics and Sentry events contain no token,
+            no request body, and no response body.</li>
+        <li><code>grep -rn "token:" src/utils/ApiService.ts</code> shows no logging of credentials.</li>
+        <li>A unit test asserts the scrubber redacts a fixture payload containing each sensitive key.</li>
+        <li>Crash collection does not start until the user has consented.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- C-08 -->
+<article class="finding sev-critical">
+  <div class="fhead">
+    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-08</span><h3>Code obfuscation disabled — the app is fully readable</h3></div>
+    <div class="floc">android/app/build.gradle:76 · android/app/proguard-rules.pro (empty)</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Obfuscation scrambles class and method names so a downloaded app is hard to read. It is switched off
+      (<code>enableProguardInReleaseBuilds = false</code>) and the rules file is empty. The JavaScript bundle is also
+      unprotected, so every text string in your code survives intact.</p>
+      <p>On its own this is not a vulnerability — obfuscation is not secrecy. But it is the <strong>force multiplier</strong>
+      that makes findings C-01, C-04 and C-06 trivial rather than merely possible.</p>
+    </div>
+
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <pre><code>unzip exchangapay.apk -d out
+strings out/assets/index.android.bundle | grep -E '[a-f0-9]{40}|eyJ[A-Za-z0-9_-]+\.'
+jadx -d src out/classes.dex        # near-source Java, all names intact</code></pre>
+      <p>Within minutes this yields the Kommo secret, the hardcoded login token, the static AES key, all four Auth0
+      client IDs, every API URL, the idempotency-key algorithm, and the complete client-side gating logic. Then they
+      patch the bundle and <strong>re-sign with the publicly known debug key</strong> (C-03).</p>
+    </div>
+
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: large — budget real time</span></h4>
+      <div class="note" style="margin-bottom:1em">
+        <p style="margin:0"><strong>Expect friction.</strong> R8 without correct keep rules causes runtime crashes in native
+        modules — which is exactly why teams leave it disabled. Plan for a full regression pass on a release build.</p>
+      </div>
+      <ol>
+        <li><strong>Enable R8 with resource shrinking:</strong>
+          <pre><code>def enableProguardInReleaseBuilds = true
+
+release {
+    minifyEnabled true
+    shrinkResources true
+    proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                  "proguard-rules.pro"
+}</code></pre></li>
+        <li><strong>Populate the rules file</strong> for this dependency set:
+          <pre><code># React Native core
+-keep,allowobfuscation @interface com.facebook.proguard.annotations.DoNotStrip
+-keep @com.facebook.proguard.annotations.DoNotStrip class *
+-keepclassmembers class * { @com.facebook.proguard.annotations.DoNotStrip *; }
+-keepclassmembers class * { @com.facebook.react.uimanager.annotations.ReactProp &lt;methods&gt;; }
+-keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jni.** { *; }
+
+# Firebase / Crashlytics — keep line numbers for readable stack traces
+-keepattributes SourceFile,LineNumberTable
+-keep class com.google.firebase.** { *; }
+
+# Native modules used by this app
+-keep class com.sumsub.** { *; }
+-keep class com.oblador.keychain.** { *; }
+-keep class com.auth0.** { *; }
+-keep class com.mrousavy.camera.** { *; }
+-keep class com.swmansion.** { *; }
+
+# Strip debug logging from release builds
+-assumenosideeffects class android.util.Log {
+    public static *** d(...); public static *** v(...); public static *** i(...);
+}</code></pre></li>
+        <li><strong>Obfuscate the JavaScript layer too</strong> — add a Metro minifier with identifier mangling for release builds.</li>
+        <li><strong>Upload mapping files</strong> to Crashlytics and Sentry so your own stack traces stay readable.</li>
+        <li><strong>Remember the ordering:</strong> obfuscation raises cost, it does not create secrecy. Fix C-01, C-04 and C-06
+            by <em>removing the secrets</em>; use R8 as defence in depth on top.</li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <h4>Verify the fix</h4>
+      <ul>
+        <li><code>jadx</code> on the release APK shows obfuscated class names (<code>a.b.c</code>), not readable ones.</li>
+        <li>Full regression pass on the release build — especially camera, KYC, keychain, biometrics and charts.</li>
+        <li>Crashlytics stack traces still de-obfuscate correctly via the uploaded mapping file.</li>
+        <li>APK size has measurably decreased from resource shrinking.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+</section>
+
+<!-- ==================== HIGH ==================== -->
+<section id="high">
+<h2>High Findings</h2>
+<p style="color:var(--muted)">Fifteen findings that must be resolved before this app is considered production-ready.</p>
+
+<!-- H-01 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-01</span><h3>Password encryption uses 10 rounds instead of 600,000</h3></div>
+    <div class="floc">src/utils/helpers/index.tsx:674 · used by src/screens/Profile/ChangePassword.tsx:59</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Key derivation deliberately runs a slow calculation many times so that guessing becomes expensive. The industry
+      minimum for this algorithm is <strong>600,000</strong> rounds. Your code uses <strong>10</strong> — roughly 60,000&times; too few.
+      On a modern graphics card, 10 rounds is effectively instant.</p>
+      <p>The rest of the implementation is correct: random salt, random IV, proper output format. The migration to native
+      crypto was done carefully — the iteration count was simply carried over from legacy code and never re-justified.</p>
+    </div>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>Obtains an encrypted password-change payload (from a network capture, or from the Crashlytics logs in C-07),
+      recovers the per-user key from a compromised device, and decrypts instantly. The user's <strong>plaintext new
+      password</strong> is recovered — and password reuse means it likely also opens their email and other financial services.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small — but needs backend coordination</span></h4>
+      <ol>
+        <li>Raise the iteration count and version the output format so the backend can tell old from new:
+          <pre><code>const PBKDF2_ITERATIONS = 600_000;   // OWASP 2023 minimum for SHA-256</code></pre>
+          This runs natively, not on the JavaScript thread — expect roughly 200–400 ms on a mid-range device.
+          Measure it; switch to the async variant if it blocks the UI.</li>
+        <li><strong>Coordinate with the backend team before shipping</strong> — this is a shared wire format and a breaking change.</li>
+        <li>Prefer <strong>Argon2id</strong> for any new key-derivation work; it resists GPU attack far better.</li>
+        <li><strong>Question the design.</strong> Encrypting a password client-side adds little over TLS. Confirm what the
+            backend does with this field — if it simply decrypts to plaintext, the right fix is to send the password over
+            pinned TLS and hash it server-side with Argon2id.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>A password change still succeeds end to end against the backend.</li>
+      <li>The operation takes a noticeable but acceptable moment (200–400 ms), not zero.</li>
+      <li>The wire format carries a version marker so both sides can migrate safely.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-02 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-02</span><h3>The Android network security config is written but never switched on</h3></div>
+    <div class="floc">android/app/src/main/res/xml/network_security_config.xml · AndroidManifest.xml:14</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Someone wrote a correct network security policy — it blocks unencrypted traffic and, importantly, trusts
+      <em>only</em> the certificates built into the phone, not ones a user has added. That second part is what defeats
+      casual traffic-interception tools.</p>
+      <p>But the manifest never points at the file, so <strong>Android ignores it completely</strong>. The platform falls back to
+      its default, which <em>does</em> trust user-installed certificates. One missing attribute switches off the one control
+      that would have made interception hard.</p>
+    </div>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>Gets a certificate onto the target device — via social engineering ("install this profile for corporate Wi-Fi"),
+      a malicious device-management profile, or malware — and then reads and modifies all app traffic: login tokens,
+      KYC uploads, card operations, and withdrawal requests.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: tiny (one attribute)</span></h4>
+      <pre><code>&lt;!-- android/app/src/main/AndroidManifest.xml --&gt;
+&lt;application
+    android:name=".MainApplication"
+    android:networkSecurityConfig="@xml/network_security_config"   &lt;!-- ← ADD THIS --&gt;
+    android:allowBackup="false"
+    ... &gt;</code></pre>
+      <p>Then extend the config with certificate pinning (see H-03) and add a build-time assertion so this silent
+      omission cannot recur:</p>
+      <pre><code>grep -q 'android:networkSecurityConfig' android/app/src/main/AndroidManifest.xml || exit 1</code></pre>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Install a proxy certificate on a test device and confirm the app's requests now <strong>fail</strong>.
+          A config that is present but wrong looks identical to one that is absent unless you test it.</li>
+      <li>The CI assertion fails if the attribute is ever removed.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-03 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-03</span><h3>No certificate pinning on either platform</h3></div>
+    <div class="floc">All API clients — ApiService.ts, api.tsx, chatService.js, crypto.tsx</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>HTTPS proves you are talking to <em>someone</em> holding a valid certificate. Pinning proves you are talking to
+      <strong>your own server specifically</strong>. Without it, anyone who can get a trusted certificate onto the device — or
+      any certificate authority that is compromised or makes a mistake — can sit in the middle of every request.</p>
+      <p>The app has <strong>nine different API base URLs</strong> across three HTTP libraries, and none of them is pinned.</p>
+    </div>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>Proxies all traffic and <strong>modifies a withdrawal in flight</strong> — changing the destination wallet address.
+      Nothing signs the request, and the idempotency key is a predictable hash the attacker can simply recompute.
+      This is the most direct path to fund theft in the entire report.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium — sequence matters</span></h4>
+      <ol>
+        <li><strong>Consolidate the network clients first.</strong> Pinning nine base URLs across three libraries is unmaintainable.
+            Route everything through the single <code>ApiService</code> instance.</li>
+        <li><strong>Android</strong> — extend the (now-enabled) network security config:
+          <pre><code>&lt;domain-config&gt;
+  &lt;domain includeSubdomains="true"&gt;api.exchangapay.com&lt;/domain&gt;
+  &lt;pin-set expiration="2027-06-01"&gt;
+    &lt;pin digest="SHA-256"&gt;PRIMARY_SPKI_HASH&lt;/pin&gt;
+    &lt;pin digest="SHA-256"&gt;BACKUP_SPKI_HASH&lt;/pin&gt;
+  &lt;/pin-set&gt;
+&lt;/domain-config&gt;
+&lt;debug-overrides&gt;   &lt;!-- so your security team can still test --&gt;
+  &lt;trust-anchors&gt;&lt;certificates src="user" /&gt;&lt;certificates src="system" /&gt;&lt;/trust-anchors&gt;
+&lt;/debug-overrides&gt;</code></pre></li>
+        <li><strong>iOS</strong> — add <code>NSPinnedDomains</code> to <code>Info.plist</code> with the same two hashes.</li>
+      </ol>
+      <div class="note">
+        <p><strong>Three rules that prevent a self-inflicted outage:</strong></p>
+        <ul style="margin-bottom:0">
+          <li><strong>Pin the intermediate certificate or the public key, never the leaf</strong> — leaf pinning breaks on every
+              renewal (every 90 days with ACME).</li>
+          <li><strong>Always ship at least one backup pin</strong> for a key you control but have not deployed yet.</li>
+          <li><strong>Set an expiry</strong> so a stale pin degrades to normal validation rather than bricking the app.
+              Roll out in stages, and keep a server-side kill switch — you already have the version-check mechanism.</li>
+        </ul>
+      </div>
+      <p style="margin-bottom:0"><strong>Pin only domains you control.</strong> Do not pin CoinGecko, Kommo or ipinfo.io — you
+      cannot coordinate their key rotation.</p>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>With a proxy certificate installed on a test device, app requests to your own domains fail; third-party
+          requests still work.</li>
+      <li>Rotating the server certificate to the backup key keeps the app working.</li>
+      <li>Debug builds can still be inspected by your own team via <code>debug-overrides</code>.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-04 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-04</span><h3>No root/jailbreak detection or device attestation</h3></div>
+    <div class="floc">Application-wide — no implementation found</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The app has no way to tell whether it is running on a normal phone or on a modified one where an attacker has
+      full control. It also has no way to prove to your backend that a request came from your genuine, unmodified app.</p>
+      <p>Notably, <code>react-native-device-info</code> is already installed and can report emulator status — the capability
+      is present and simply unused.</p>
+    </div>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>On a rooted phone with Frida, in minutes:</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>They hook…</th><th>And get…</th></tr></thead>
+        <tbody>
+          <tr><td>The biometric prompt</td><td>App lock bypassed</td></tr>
+          <tr><td>The Redux store</td><td>KYC forced to "approved"</td></tr>
+          <tr><td>Keychain reads</td><td>Login token and encryption key dumped</td></tr>
+          <tr><td>The encryption functions</td><td>Plaintext logged before it is ever encrypted</td></tr>
+          <tr><td>The HTTP interceptors</td><td>Every request read and modified</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin-bottom:0">Also enables emulator farms for automated account creation and referral-bonus abuse.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: large</span></h4>
+      <p><strong>Tier 1 — server-side attestation (do this first; it is the only real enforcement).</strong></p>
+      <ul>
+        <li><strong>Android — Play Integrity API.</strong> Request a token in the app, send it with sensitive requests, and verify
+            the verdict <em>on your server</em>. <code>MEETS_DEVICE_INTEGRITY</code> rejects rooted and emulated devices;
+            <code>PLAY_RECOGNIZED</code> rejects repackaged builds — <em>this is the control that neutralises C-03</em>.</li>
+        <li><strong>iOS — App Attest.</strong> Generate a hardware-backed key at first launch, attest it, and sign sensitive
+            requests with it. Verify server-side.</li>
+        <li><strong>Enforce at the API layer.</strong> A failed attestation must cause the <em>backend</em> to reject the request —
+            not the app to hide a button.</li>
+      </ul>
+      <p><strong>Tier 2 — client-side detection (defence in depth; assume it will be bypassed).</strong></p>
+      <ul>
+        <li>Add <code>jail-monkey</code> or equivalent. <strong>Warn and degrade rather than hard-block</strong> — hard-blocking
+            generates support load and is patched out trivially anyway.</li>
+        <li>Disable high-risk operations on a flagged device: crypto withdrawal, card PIN reveal, password change.</li>
+        <li><strong>Report the signal to your backend</strong> as a risk factor feeding fraud monitoring. This is the most
+            durable use of a client-side check.</li>
+      </ul>
+      <p style="margin-bottom:0"><strong>Tier 3.</strong> For this risk profile, evaluate a commercial RASP product
+      (Guardsquare, Promon SHIELD, Appdome) for anti-hooking and integrity self-checks that are harder to strip.</p>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>A request from a rooted device or emulator is rejected <em>by the backend</em>, not just by the app.</li>
+      <li>A repackaged build fails the <code>PLAY_RECOGNIZED</code> check server-side.</li>
+      <li>Device risk signals appear in your fraud-monitoring pipeline.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-05 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-05</span><h3>Stored-data encryption is commented out</h3></div>
+    <div class="floc">src/store/index.tsx:16-24</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>A correct encryption layer for saved app state was written — and then disabled with the comment
+      <code>// Temporarily disable encryption transform to debug redux-persist issue</code>. That "temporary" state is
+      committed to the branch.</p>
+      <p>What gets saved unencrypted includes the <strong>login token, the refresh token, and the encryption key</strong>
+      that protects all the user's personal data — stored right next to the data it protects. Once that blob is readable,
+      the app's field-level encryption is pointless.</p>
+    </div>
+    <div class="good">
+      <p style="margin:0"><strong>Partial mitigation:</strong> the storage backend does write into the iOS Keychain / Android
+      Keystore rather than plain files, which is meaningfully better than nothing. But it uses the weakest available
+      options (see H-11), and the library doing it — <code>redux-persist-keychain-storage@0.1.1</code> — was last published
+      around 2018 and is 27 lines with no tests.</p>
+    </div>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>Reads the saved blob from a rooted device or forensic extraction and obtains, in one artefact: the login token
+      (immediate account access), the refresh token (<strong>indefinite</strong> account access), the encryption key (decrypts all
+      personal data), and the exact KYC/role flags the app checks — so they know precisely what to patch.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Stop persisting credentials in Redux at all.</strong> This is the root fix. Tokens are <em>already</em> stored
+            correctly in the Keychain by <code>storeToken()</code>. Dispatching them into Redux as well duplicates them into
+            a weaker store for no benefit — remove <code>loginAction(safeCredentials)</code>.</li>
+        <li><strong>Narrow what is saved.</strong> Persist UI state, not the full member record:
+          <pre><code>const stripSensitive = createTransform(
+  (inbound, key) =&gt; key === "UserReducer"
+    ? { ...inbound, userDetails: undefined, userInfo: omit(inbound.userInfo, ["sk"]) }
+    : inbound,
+  (outbound) =&gt; outbound
+);</code></pre></li>
+        <li><strong>Then re-enable encryption</strong>, fixing the circular dependency that likely caused it to be disabled:
+            derive the key from a <em>dedicated</em> Keychain entry (a random 32-byte key created at first launch) rather
+            than from the record being encrypted.</li>
+        <li><strong>Replace the unmaintained library</strong> with a 20-line in-house adapter so you control the security options
+            (see H-11 for the correct options).</li>
+        <li><strong>Purge on logout.</strong> Logout currently resets two Keychain services but leaves the saved state blob and the
+            member record behind:
+          <pre><code>await Keychain.resetGenericPassword({ service: "userInfoService" });
+await persistor.purge();</code></pre></li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Dump the app's Keychain entries on a test device — no token, refresh token, or encryption key appears in the
+          persisted state blob.</li>
+      <li>After logout, no user data remains in any Keychain service.</li>
+      <li>App restart still restores the user's session correctly.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-06 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-06</span><h3>Encryption has no tamper detection, and still accepts a weak legacy format</h3></div>
+    <div class="floc">src/hooks/useEncryption_Decryption.tsx · src/utils/helpers/encryptionDecryption.tsx</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The encryption keeps data <em>secret</em> but cannot tell whether it has been <em>altered</em>. An attacker who can
+      modify the encrypted data can flip specific bits and change the decrypted result in a controlled way — without ever
+      knowing the key. Nothing detects this.</p>
+      <p>Separately, the decryption code still accepts an old format that used a fixed starting value, meaning identical
+      inputs always produced identical output. A previous assessment already flagged this; the encryption side was fixed,
+      but the decryption side still accepts the weak form.</p>
+    </div>
+    <div class="good">
+      <p style="margin:0"><strong>What is done well:</strong> fresh random IV per message, versioned wire format, key-length
+      validation, verified cross-compatibility with the old implementation, and a decrypt cache that correctly refuses to
+      cache encryption or failures. This is careful work — it just needs finishing.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium — backend coordination required</span></h4>
+      <ol>
+        <li><strong>Move to AES-256-GCM</strong>, which provides tamper detection built in. Version it as format <code>0x02</code>
+            so both sides can migrate:
+          <pre><code>const AEAD_VERSION = 0x02, NONCE_SIZE = 12;
+
+export const encryptAES = (plainText, secretKey) =&gt; {
+  const keyBuf = Buffer.from(normalizeSecretKey(secretKey), "utf8");
+  const nonce  = QuickCrypto.randomBytes(NONCE_SIZE);
+  const cipher = QuickCrypto.createCipheriv("aes-256-gcm", keyBuf, nonce);
+  const ct     = Buffer.concat([cipher.update(plainText, "utf8"), cipher.final()]);
+  const tag    = cipher.getAuthTag();                    // ← integrity check
+  return Buffer.concat([Buffer.from([AEAD_VERSION]), nonce, tag, ct]).toString("base64");
+};</code></pre></li>
+        <li><strong>If GCM cannot ship immediately,</strong> add Encrypt-then-MAC as an interim: append an HMAC-SHA256 over the
+            version, IV and ciphertext, verified in constant time before decrypting. Derive the MAC key separately via
+            HKDF — never reuse the encryption key.</li>
+        <li><strong>Instrument the legacy path.</strong> Count how often the old format is decrypted, report it as a non-personal
+            metric, and <strong>delete the fallback once it reaches zero</strong> across a full release cycle. Set a hard removal date.</li>
+        <li><strong>Merge the two implementations.</strong> The same scheme is implemented twice with different failure behaviour —
+            one returns an empty string, the other throws. Two copies of a crypto routine will drift.</li>
+        <li><strong>Add cryptographic tests:</strong> known-answer vectors from the backend, a determinism test (two encryptions
+            of the same input must differ), and a tamper test (a flipped bit must be <em>detected</em> — impossible to pass today,
+            which is the point).</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Flipping one bit of a ciphertext causes an explicit, detected failure — not silent garbage or an empty string.</li>
+      <li>Backend and app can each decrypt the other's output for both formats during migration.</li>
+      <li>The legacy-format counter reaches zero, and the fallback is then removed.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-07 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-07</span><h3>A second, unencrypted token store exists in the codebase</h3></div>
+    <div class="floc">src/utils/auth.tsx</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Alongside the proper Keychain storage, there is a second set of helper functions that write login tokens,
+      refresh tokens, and the personal-data encryption key into <code>AsyncStorage</code> — which is <strong>plain,
+      unencrypted storage</strong>, readable on any rooted device or via a forensic extraction.</p>
+      <p><strong>Good news:</strong> these functions appear to have no callers — it looks like a superseded legacy layer.
+      That makes it low-risk today. It is rated High because the functions are exported and inviting: one future
+      developer wiring them in reintroduces the vulnerability silently.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: tiny</span></h4>
+      <ol>
+        <li><strong>Delete <code>src/utils/auth.tsx</code></strong> and the now-unused storage-key constants.</li>
+        <li><strong>Add a one-time cleanup</strong> in case any historical build did populate these keys on real devices:
+          <pre><code>await AsyncStorage.multiRemove([
+  '@auth:accessToken', '@auth:refreshToken',
+  '@auth:accessTokenExpirationDate', '@auth:memberId', '@auth:keySK',
+]);   // remove this migration after two release cycles</code></pre></li>
+        <li><strong>Add a lint rule or CI grep</strong> blocking AsyncStorage writes whose key matches
+            <code>/token|secret|key|sk|password|pin|credential/i</code>.</li>
+        <li><strong>Document the one sanctioned path</strong> so nobody invents a third store: tokens → Keychain
+            <code>authTokenService</code>; member record → Keychain <code>userInfoService</code>; everything non-sensitive → AsyncStorage.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>The file is gone and nothing imports it.</li>
+      <li>Dumping AsyncStorage on a test device shows only <code>theme</code> and <code>supportMessageCount</code>.</li>
+      <li>The CI grep fails if a sensitive AsyncStorage write is ever added.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-08 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-08</span><h3>Sentry is configured to record user sessions and collect personal data</h3></div>
+    <div class="floc">App.tsx:44-67</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The Sentry setup enables <strong>Session Replay</strong> — video-like recordings of what the user sees — at 10% of all
+      sessions and <strong>100% of sessions that hit an error</strong>, plus personal-data collection (IP address, cookies).</p>
+      <p>In this app, that means recording screens showing card numbers, CVVs, PINs, wallet addresses, KYC document
+      capture, statements and support chats. No masking configuration is present, so it relies entirely on library
+      defaults nobody has verified.</p>
+    </div>
+    <div class="note">
+      <p style="margin:0"><strong>Important nuance:</strong> this configuration is currently <em>inactive</em>, because the flag
+      guarding it is <code>false</code> in every environment — which also means <strong>production error reporting is switched
+      off entirely</strong> (finding M-12). It is a loaded gun: the moment someone enables Sentry to restore visibility,
+      session recording of card screens begins immediately.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small</span></h4>
+      <ol>
+        <li><strong>Decide deliberately about replay.</strong> For an app displaying card numbers and PINs, the defensible answer
+            is to disable it:
+          <pre><code>replaysSessionSampleRate: 0,
+replaysOnErrorSampleRate: 0,
+integrations: [Sentry.feedbackIntegration()],   // drop mobileReplayIntegration
+sendDefaultPii: false,</code></pre></li>
+        <li><strong>If replay is kept,</strong> configure masking explicitly (<code>maskAllText</code>, <code>maskAllImages</code>,
+            <code>maskAllVectors</code>), wrap every card/PIN/KYC screen, and <strong>manually review recordings from a test device</strong>
+            before enabling in production. Defaults are not a substitute for looking.</li>
+        <li><strong>Add a <code>beforeSend</code> scrubber</strong> — the same one built for C-07.</li>
+        <li><strong>Gate all telemetry on user consent,</strong> with a settings toggle to withdraw it.</li>
+        <li><strong>Fix the config field names</strong> — <code>sentryEnvornment</code> is misspelled, and one flag currently controls
+            three unrelated things. Split them into <code>enabled</code>, <code>sendPii</code>, and sample rates.</li>
+        <li><strong>Then re-enable Sentry</strong> so you actually have production error visibility (M-12).</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Errors from a release build appear in Sentry, tagged with the correct environment.</li>
+      <li>No session recordings are produced (or, if kept, card/PIN screens are fully masked on manual review).</li>
+      <li>No IP addresses or request bodies appear on events.</li>
+      <li>Nothing is sent before the user consents.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-09 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-09</span><h3>Nothing prevents screenshots of card numbers, CVVs and PINs</h3></div>
+    <div class="floc">Application-wide — no implementation found</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Screenshots and screen recording work on every screen, including the ones showing full card numbers, CVVs and
+      PINs. Worse, the operating system automatically saves a thumbnail of whatever is on screen when the app is
+      backgrounded — so card data gets written to disk without the user doing anything.</p>
+    </div>
+    <div class="attack">
+      <h4>What goes wrong</h4>
+      <ul>
+        <li><strong>Screen-capture malware</strong> records the user revealing their card PIN. On Android this needs no root —
+            an accessibility service is enough.</li>
+        <li><strong>The recents thumbnail</strong> containing the card number persists on disk after backgrounding, recoverable
+            later by anyone with device access.</li>
+        <li><strong>Social engineering:</strong> "screenshot your card details and send them for verification." Nothing resists
+            this, and the screenshot lands in the photo library and cloud photo backup.</li>
+      </ul>
+      <p style="margin-bottom:0"><strong>Compliance:</strong> full card number plus CVV persisting to a photo library or OS
+      snapshot cache is a direct PCI-DSS violation.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small</span></h4>
+      <p><strong>Android</strong> — one flag blocks screenshots, screen recording <em>and</em> the recents thumbnail app-wide:</p>
+      <pre><code>// MainActivity.kt
+import android.view.WindowManager
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    RNBootSplash.init(this, R.style.BootSplashTheme)
+    window.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
+                    WindowManager.LayoutParams.FLAG_SECURE)
+    super.onCreate(null)
+}</code></pre>
+      <p><strong>iOS</strong> — there is no equivalent block, so cover the snapshot and detect recording:</p>
+      <pre><code>// AppDelegate.swift
+func applicationWillResignActive(_ application: UIApplication) {
+    let overlay = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    overlay.frame = window?.bounds ?? .zero
+    window?.addSubview(overlay)
+    privacyOverlay = overlay
+}
+func applicationDidBecomeActive(_ application: UIApplication) {
+    privacyOverlay?.removeFromSuperview(); privacyOverlay = nil
+}</code></pre>
+      <p>Also observe <code>UIScreen.capturedDidChangeNotification</code> and hide sensitive content while recording is active.</p>
+      <p style="margin-bottom:0"><strong>Reduce exposure as well as capture:</strong> mask card data by default (the app already has
+      <code>hideDigits</code> helpers), require an explicit reveal, and auto-hide it after ~15 seconds.</p>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Taking a screenshot on Android produces a black image or is blocked.</li>
+      <li>The Android recents thumbnail shows a blank card, not the number.</li>
+      <li>Backgrounding on iOS shows a blurred snapshot in the app switcher.</li>
+      <li>Card details auto-hide after the reveal timeout.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-10 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-10</span><h3>The withdrawal 2FA WebView sends the login token to whatever URL it lands on</h3></div>
+    <div class="floc">src/screens/Crypto/sendCryptoDetails.tsx:693-701 &amp; :467-474 · src/services/crypto.tsx:87-97</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The two-factor step for crypto withdrawals — the highest-value action in the app — opens a web page inside the
+      app. Three things go wrong together:</p>
+      <ol>
+        <li>The page address comes from an API response and is used <strong>without any validation</strong>.</li>
+        <li>There is no restriction on where that page may navigate to next.</li>
+        <li>The app decides "2FA succeeded" by checking whether the current address <em>contains</em> a certain piece of
+            text — and then sends <strong>the user's login token</strong> to that address.</li>
+      </ol>
+      <p>A URL like <code>https://evil.com/?x=/api/v1/Common/TwoFactorAuthenticationCodeState</code> passes that check.</p>
+    </div>
+    <pre><code>// the check
+if (navState.url?.includes("/api/v1/Common/TwoFactorAuthenticationCodeState")) {
+    await trigger2FAValidation(navState.url);       // ← passes the whole URL through
+}
+
+// which does this
+axios.get(url, { headers: { Authorization: `Bearer ${token}` } });  // ← to ANY url</code></pre>
+    <div class="attack">
+      <h4>What an attacker does</h4>
+      <p>Gets the WebView to navigate to an attacker-controlled address containing that text — via a redirect, or a
+      man-in-the-middle position (there is no pinning). The app then issues a request to the attacker's server
+      <strong>with the user's login token attached</strong>. That is a complete account takeover, harvested from a user who was
+      simply trying to withdraw funds. The WebView also shows no address bar, so a fake login page inside it is
+      indistinguishable from the real one.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Validate the URL before loading it</strong>, against a host allow-list:
+          <pre><code>const ALLOWED_2FA_HOSTS = new Set(["api.exchangapay.com"]);
+const isAllowed = (raw) =&gt; {
+  try { const u = new URL(raw);
+        return u.protocol === "https:" &amp;&amp; ALLOWED_2FA_HOSTS.has(u.hostname); }
+  catch { return false; }
+};</code></pre></li>
+        <li><strong>Gate navigation</strong> — this is the control that actually stops the WebView leaving your domain:
+          <pre><code>&lt;WebView
+  source={{ uri: twoFactorAuthUrl }}
+  originWhitelist={["https://api.exchangapay.com"]}
+  onShouldStartLoadWithRequest={(req) =&gt; isAllowed(req.url)}
+  thirdPartyCookiesEnabled={false}
+  allowFileAccess={false}
+  allowUniversalAccessFromFileURLs={false}
+  mixedContentMode="never"
+  setSupportMultipleWindows={false}
+  javaScriptCanOpenWindowsAutomatically={false}
+  incognito={true}
+/&gt;</code></pre></li>
+        <li><strong>Replace the substring check with a parsed comparison</strong> of protocol, hostname and exact path.</li>
+        <li><strong>Never send the token to a dynamic URL.</strong> Change the service to take only a <em>parameter</em>, routed through
+            the standard client whose base URL is fixed:
+          <pre><code>verifyTwoFactorState: async (code) =&gt;
+    get(`api/v1/Common/TwoFactorAuthenticationCodeState?code=${encodeURIComponent(code)}`),</code></pre></li>
+        <li><strong>Better: remove the WebView.</strong> A native OTP screen calling a JSON API eliminates this whole class of
+            problem — and the app already has OTP input components. If a hosted page is unavoidable, use
+            <code>react-native-inappbrowser</code> / <code>ASWebAuthenticationSession</code>, which shows the real address and
+            isolates cookies.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Feeding the app a 2FA URL on a foreign host is rejected before the WebView opens.</li>
+      <li>The WebView cannot navigate off <code>api.exchangapay.com</code>.</li>
+      <li>No request carrying the <code>Authorization</code> header is ever issued to a URL derived from WebView state.</li>
+      <li>The withdrawal 2FA flow still works end to end.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-11 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-11</span><h3>Keychain entries use the weakest available protection</h3></div>
+    <div class="floc">src/utils/helpers/index.tsx:806 · src/hooks/useMemberLogin.tsx:72 · and 3 more</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Using the Keychain/Keystore is the right choice — but every write passes only a name, with none of the security
+      options the library offers. In practice that means: readable whenever the phone is unlocked, <strong>no fingerprint or
+      Face ID required</strong>, and on iOS the entries <strong>sync to iCloud and appear in device backups</strong>.</p>
+      <p>What is stored this way: the login token, the <strong>refresh token</strong>, the personal-data encryption key, and the
+      complete member record.</p>
+      <p>The refresh token matters most — it is long-lived and mints new login tokens indefinitely. Read it once and you
+      have persistent access, surviving password changes unless your backend explicitly revokes it.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Define one options constant and require its use everywhere:</strong>
+          <pre><code>const SECURE_OPTS: Keychain.Options = {
+  accessible:    Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,  // no iCloud, no backup
+  accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+  securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
+  storage:       Keychain.STORAGE_TYPE.AES_GCM,     // Android
+};
+
+await Keychain.setGenericPassword("authToken", payload,
+  { service: "authTokenService", ...SECURE_OPTS });</code></pre>
+          <code>BIOMETRY_CURRENT_SET</code> matters: it invalidates the entry if someone enrols a new fingerprint.</li>
+        <li><strong>Split the refresh token into its own, stricter entry.</strong> The login token is read on every API call, so a
+            biometric prompt each time is unworkable — but the refresh token is read rarely and can require biometrics.</li>
+        <li><strong>Handle the new failure modes.</strong> Reads can now fail (prompt cancelled, biometrics changed). Every call site
+            currently swallows errors and returns <code>null</code>, which would silently log the user out. Distinguish
+            "user cancelled" from "entry invalidated" and respond appropriately.</li>
+        <li><strong>Fix an inconsistency:</strong> one token-reading helper calls <code>getGenericPassword()</code> with no service name,
+            so it reads a different entry than the rest of the app. Consolidate on one accessor.</li>
+        <li><strong>Reset every service on logout</strong>, not just two of the five.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Reading the refresh token prompts for biometrics.</li>
+      <li>An iOS encrypted backup restored to a different device does <em>not</em> contain the tokens.</li>
+      <li>Enrolling a new fingerprint invalidates the stored credential and forces re-authentication.</li>
+      <li>Cancelling the biometric prompt shows a sensible message rather than silently logging out.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-12 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-12</span><h3>21 known dependency vulnerabilities (11 High)</h3></div>
+    <div class="floc">npm audit · package.json</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>Twenty-one third-party packages have publicly known security issues. Most are build-time only, but the risk is
+      cumulative — and much of it traces back to <strong>eleven redundant packages</strong> that duplicate work another installed
+      package already does.</p>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Priority</th><th>Issue</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><span class="chip c-high">1</span></td><td><code>react-native-phone-number-input</code></td><td>One package pulls in four High findings, dragging a whole web-platform stack into a native-only app</td></tr>
+        <tr><td><span class="chip c-high">2</span></td><td><code>victory-native</code> → <code>d3-color</code></td><td>Denial-of-service in chart rendering; also one of <strong>three</strong> chart libraries installed</td></tr>
+        <tr><td><span class="chip c-med">3</span></td><td>Build-time chain (<code>sharp</code>, <code>fast-xml-parser</code>, CLI packages)</td><td>Risk is to the build machine — which currently holds your signing key</td></tr>
+        <tr><td><span class="chip c-med">4</span></td><td><code>redux-persist-keychain-storage</code></td><td>Last published ~2018, unmaintained, and it handles <em>all</em> your saved credentials</td></tr>
+      </tbody>
+    </table></div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium — one package per PR</span></h4>
+      <ol>
+        <li><code>npm audit fix</code>, then re-audit to see what remains.</li>
+        <li><strong>Replace <code>react-native-phone-number-input</code></strong> — you already bundle <code>phoneCode.json</code> and
+            custom pickers, so a small native component removes four High findings at once.</li>
+        <li><strong>Remove the eleven duplicates</strong> — keep one of each:
+          <div class="tablewrap"><table>
+            <thead><tr><th>Keep</th><th>Remove</th></tr></thead>
+            <tbody>
+              <tr><td>one charting library</td><td>the other two of <code>victory-native</code> / <code>chart-kit</code> / <code>wagmi-charts</code></td></tr>
+              <tr><td><code>react-native-bootsplash</code></td><td><code>react-native-splash-screen</code></td></tr>
+              <tr><td><code>@notifee/react-native</code></td><td><code>react-native-push-notification</code> + <code>push-notification-ios</code></td></tr>
+              <tr><td><code>react-native-blob-util</code></td><td><code>react-native-fs</code></td></tr>
+              <tr><td><code>react-native-signature-canvas</code></td><td><code>react-native-signature-capture</code></td></tr>
+              <tr><td><code>@ui-kitten/components</code></td><td><code>react-native-elements</code></td></tr>
+              <tr><td><code>dayjs</code></td><td><code>moment</code> + <code>moment-timezone</code> (~70 KB → ~2 KB)</td></tr>
+              <tr><td><code>react-native-quick-base64</code> / <code>quick-crypto</code></td><td><code>base-64</code>, <code>crypto-js</code>, <code>hooks</code></td></tr>
+            </tbody>
+          </table></div>
+          <p style="margin:0"><strong>Bonus:</strong> removing the three pre-AndroidX libraries lets you set
+          <code>android.enableJetifier=false</code>, cutting build time. Your <code>gradle.properties</code> already documents
+          those three as the only reason Jetifier is retained.</p></li>
+        <li><strong>Move <code>react-native-modal</code> off its release-candidate version</strong> and pin security-relevant packages exactly.</li>
+        <li><strong>Add a blocking CI gate</strong> plus automated update PRs:
+          <pre><code>- run: npm audit --audit-level=high     # blocking
+# plus Dependabot or Renovate, grouped weekly</code></pre></li>
+        <li><strong>Generate an SBOM per release</strong> — increasingly requested in financial-services supplier reviews.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li><code>npm audit --audit-level=high</code> exits clean and is enforced in CI.</li>
+      <li><code>android.enableJetifier=false</code> and the build still succeeds.</li>
+      <li>APK size and cold-start time have both measurably improved.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-13 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-13</span><h3>A dead login screen that handles raw passwords, plus all environments' Auth0 IDs</h3></div>
+    <div class="floc">src/screens/Login/Login.tsx:7-35 · Environment.js:6,22,42</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>There is an unused login screen that takes the user's password and posts it directly to Auth0 — using the wrong
+      grant type, aimed at Auth0's <strong>Management API</strong> (a highly privileged target), with a fourth Auth0 client ID
+      not documented anywhere else. It discards the response entirely, so it does not even work.</p>
+      <p>The real login flow is correct — Auth0 Authorization Code with PKCE, the right choice for a native app.
+      This screen is unreachable dead code. But it shows that the password-based approach was attempted, and it will
+      be re-enabled by anyone who sees an unused "Login" screen and wires it up.</p>
+      <p>Separately, all three environments' Auth0 client IDs ship in every build. These are <em>not</em> secrets for a
+      PKCE client — but shipping all three discloses your whole tenant layout for free.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: small (app) / small (Auth0 console)</span></h4>
+      <ol>
+        <li><strong>Delete <code>src/screens/Login/Login.tsx</code>.</strong> There is no reason for a second, password-handling
+            login screen to exist.</li>
+        <li><strong>Audit the Auth0 tenant — this is the important part:</strong>
+          <ul>
+            <li>Confirm every client is registered as <strong>Native (public)</strong> with <strong>PKCE required</strong> and no client secret.</li>
+            <li><strong>Disable the Password / ROPC grant</strong> on all clients (Application → Advanced Settings → Grant Types).</li>
+            <li>Identify the unknown US-tenant client, check its grants and audiences, and <strong>delete it if unused</strong>.</li>
+            <li>Verify no client is authorised for the Management API audience.</li>
+            <li>Turn on Attack Protection: brute-force protection, suspicious-IP throttling, breached-password detection.</li>
+          </ul></li>
+        <li><strong>Ship only the active environment's config</strong> once C-05 is fixed, so dev and test identifiers never reach a
+            production bundle.</li>
+        <li><strong>Check a hidden functional bug:</strong> the <code>tst</code> config requests <code>offline_access</code> but
+            <code>prod</code> does not — meaning in a correctly-configured production build, token refresh would silently stop
+            working. Align the scopes deliberately.</li>
+        <li><strong>Enforce MFA at the tenant level</strong> so it cannot be sidestepped by using a different grant or client.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>A password-grant request to <code>/oauth/token</code> is rejected for every client.</li>
+      <li>The unknown US-tenant client is deleted or documented and restricted.</li>
+      <li>A production build contains only production identifiers.</li>
+      <li>Token refresh works in a production build (i.e. <code>offline_access</code> is correctly configured).</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-14 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-14</span><h3>The fingerprint / Face ID lock is decorative</h3></div>
+    <div class="floc">src/hooks/useCheckBio.tsx</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>The biometric check asks the phone "did the fingerprint match?" and gets back <em>yes</em> or <em>no</em>. That answer
+      is just a value in JavaScript — nothing cryptographic happens, and nothing is proved to your server. Anyone who can
+      modify the running app can make it always say <em>yes</em>.</p>
+      <p><strong>You do not even need to modify the app.</strong> If the phone has no fingerprint enrolled, the code takes the
+      <code>else</code> branch and goes <strong>straight to the Dashboard</strong>. Turning biometrics off in device settings bypasses
+      the lock entirely.</p>
+      <p>And the lock only guards the <em>screen</em>. By the time it runs, the session is already authenticated and the token
+      is already stored — so an attacker who reads the token from storage never encounters the prompt at all.</p>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: large — needs a backend endpoint</span></h4>
+      <ol>
+        <li><strong>Switch to signature-based biometrics.</strong> The library already supports it. This produces something the
+            server can verify, rather than a boolean the client can fake:
+          <pre><code>// one-time enrolment
+const { publicKey } = await rnBiometrics.createKeys();
+await SecurityService.registerBiometricKey({ publicKey });
+
+// before each sensitive action
+const nonce   = await SecurityService.getChallenge();     // server-issued
+const payload = `${nonce}:${userId}`;
+const { success, signature } = await rnBiometrics.createSignature({
+  promptMessage: "Confirm withdrawal", payload,
+});
+// the SERVER verifies the signature against the registered public key</code></pre></li>
+        <li><strong>Fail closed when there is no sensor.</strong> Replace the "go to Dashboard" branch with a device-passcode
+            fallback. Never treat "cannot check" as "check passed".</li>
+        <li><strong>Bind the biometric to the credential.</strong> Store the refresh token with
+            <code>ACCESS_CONTROL.BIOMETRY_CURRENT_SET</code> (H-11) so the operating system itself enforces biometric presence
+            before the token can be read. <em>This is what makes the lock real</em> — it also closes the "read the token and
+            skip the app" bypass.</li>
+        <li><strong>Add step-up authentication</strong> before: card PIN reveal, card number/CVV display, crypto withdrawal,
+            adding a payee, password change, and 2FA settings changes.</li>
+        <li><strong>Fix the silent error handler</strong> — a failed prompt currently does nothing at all.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>Disabling biometrics in device settings no longer grants access — it falls back to the device passcode.</li>
+      <li>A withdrawal request without a valid biometric signature is rejected <em>by the server</em>.</li>
+      <li>Revealing a card PIN requires a fresh biometric confirmation.</li>
+      <li>Reading the refresh token from storage requires biometrics at the OS level.</li>
+    </ul></div>
+  </div>
+</article>
+
+<!-- H-15 -->
+<article class="finding sev-high">
+  <div class="fhead">
+    <div class="row"><span class="chip c-high">High</span><span class="fid">H-15</span><h3>Firebase is configured for the test project in every build</h3></div>
+    <div class="floc">android/app/google-services.json · ios/GoogleService-Info.plist</div>
+  </div>
+  <div class="fbody">
+    <div class="plain">
+      <h4>In plain English</h4>
+      <p>First, a calibration: <strong>Firebase API keys are not secrets.</strong> Google documents them as identifiers, and they
+      are expected to appear in client apps. Access is controlled by Security Rules and App Check, not by hiding the key.
+      So having these files in the app is normal.</p>
+      <p>The real problems are narrower:</p>
+      <ol>
+        <li>Both files point at the <strong>test</strong> Firebase project — the third independent confirmation of C-05.
+            Combined with C-07, that means <strong>real customer tokens and personal data are flowing into a test-tier project</strong>
+            that typically has wider team access and weaker data handling.</li>
+        <li>There is only one copy of each file, so there is <em>no mechanism</em> to use a different Firebase project per build.</li>
+        <li>No App Check, so nothing proves Firebase requests come from your genuine app.</li>
+      </ol>
+    </div>
+    <div class="fix">
+      <h4>How to fix it <span class="effort">· effort: medium</span></h4>
+      <ol>
+        <li><strong>Set up per-variant Firebase configuration</strong> (the structural fix):
+          <ul>
+            <li><em>Android:</em> product flavours with each project's file at <code>android/app/src/&lt;flavour&gt;/google-services.json</code>.</li>
+            <li><em>iOS:</em> a build-phase script copying the right <code>GoogleService-Info-&lt;config&gt;.plist</code>.</li>
+            <li>Create a separate <strong>production</strong> Firebase project if one does not exist.</li>
+          </ul></li>
+        <li><strong>Apply API key restrictions</strong> in the Google Cloud Console — restrict by package name + signing certificate
+            (Android) and bundle ID (iOS), and limit to only the APIs actually used. Redo this after the new signing key
+            from C-03 is in place.</li>
+        <li><strong>Enable Firebase App Check</strong> with Play Integrity and App Attest providers, enforced on all services.</li>
+        <li><strong>Review Firebase Security Rules</strong> for any Firestore/Storage usage — default-deny, then allow narrowly.</li>
+        <li><strong>Restrict console access</strong> on the test project and, after fixing C-07, <strong>purge existing Crashlytics data</strong>
+            containing tokens and personal data.</li>
+      </ol>
+    </div>
+    <div class="verify"><h4>Verify the fix</h4><ul>
+      <li>A production build reports crashes to the production Firebase project.</li>
+      <li>API keys are restricted and rejected when used from an unauthorised app.</li>
+      <li>App Check is enforced and unattested requests are rejected.</li>
+      <li>Test-project Crashlytics no longer contains tokens or personal data.</li>
+    </ul></div>
+  </div>
+</article>
+</section>
+
+<!-- ==================== MEDIUM ==================== -->
+<section id="medium">
+<h2>Medium Findings</h2>
+<p style="color:var(--muted)">Sixteen findings. Each row states the problem in plain language and the fix to apply.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:62px">ID</th><th style="width:24%">Problem</th><th>What it means &amp; how to fix it</th></tr></thead>
+<tbody>
+
+<tr><td><b>M-01</b></td><td>Crash reports are never linked to a user</td>
+<td><b>Plain English:</b> <code>getUserInfo()</code> is called without <code>await</code>, so the code reads a property off an unfinished operation and always records <code>"unknown"</code>. The <code>: any</code> type annotation hid the mistake.<br>
+<b>Fix:</b> add <code>await</code> in both places in <code>ApiService.ts</code>, and correct the return type (it returns an object, not a string).<br>
+<b>Important:</b> fix this <em>together with</em> C-07's scrubbing — not before, or you will start correctly attaching user IDs to reports that still contain secrets.<br>
+<span class="effort">File: src/utils/ApiService.ts:27, 74</span></td></tr>
+
+<tr><td><b>M-02</b></td><td>Duplicate-payment protection is predictable — and breaks real transactions</td>
+<td><b>Plain English:</b> The key that stops a payment being processed twice is built by hashing values an attacker can see (user ID, amount, wallet address) with a simple, non-cryptographic algorithm. Two problems: an attacker can recompute it, and <strong>two genuinely separate identical transactions produce the same key</strong> — so a customer sending the same amount twice may silently have the second one dropped.<br>
+<b>Fix:</b> generate a random UUID when the user taps "Confirm", and reuse it only for retries of that same attempt. This is what Stripe and Adyen do. Also verify your server actually enforces the key, and anchor the path match (it uses <code>endsWith</code>, which can match unintended paths).<br>
+<span class="effort">Files: src/utils/idempotency.ts · src/utils/ApiService.ts:142</span></td></tr>
+
+<tr><td><b>M-03</b></td><td>No request timeouts or retries</td>
+<td><b>Plain English:</b> No API call has a time limit. On a poor connection — or against an attacker holding the connection open — the app shows a loading spinner forever with no way to recover except force-quitting.<br>
+<b>Fix:</b> <code>timeout: 30000</code> on normal clients, <code>120000</code> for uploads. Add retry with exponential backoff <strong>for idempotent operations only</strong> — never auto-retry a withdrawal without a correct idempotency key. Surface timeouts to the user (the "took too long" message already exists but is unreachable).<br>
+<span class="effort">File: src/utils/ApiService.ts:156</span></td></tr>
+
+<tr><td><b>M-04</b></td><td>Errors are silently discarded across the codebase</td>
+<td><b>Plain English:</b> Dozens of <code>catch</code> blocks are empty. Security-relevant failures — a token that fails to save, an unreadable Keychain, a failed biometric prompt — vanish without trace.<br>
+<b>The worst one:</b> in the token-refresh code, the line that should log the user out when their session is revoked is <em>commented out</em>, with a comment saying it should be there. So a revoked session keeps working until an API call happens to fail.<br>
+<b>Fix:</b> uncomment that line; make token-storage failures fail the login; log every catch with context; enable ESLint <code>no-empty</code> with <code>allowEmptyCatch: false</code>.<br>
+<span class="effort">Files: helpers/index.tsx:945, 817 · useCheckBio.tsx:38 · and ~15 more</span></td></tr>
+
+<tr><td><b>M-05</b></td><td>Push notification text is used directly as a file path</td>
+<td><b>Plain English:</b> When a user taps a document notification, the app glues the notification's <em>message text</em> onto a folder path and opens that file. Text like <code>../../Library/Cookies/…</code> would escape the intended folder.<br>
+<b>Fix:</b> validate the filename against <code>/^[A-Za-z0-9._-]{1,128}$/</code>, allow-list the extension, and confirm the resolved path stays inside the documents directory. <strong>Better:</strong> send a document <em>ID</em> in the notification and have the app look up the file itself — then no path ever comes from outside.<br>
+<span class="effort">File: src/navigation/AppContainer.tsx:141-160</span></td></tr>
+
+<tr><td><b>M-06</b></td><td>The app asks for more permissions than it needs</td>
+<td><b>Plain English:</b> The app requests <strong>microphone access</strong> despite having no audio feature, plus two storage permissions that either do nothing on modern Android or grant more than required.<br>
+<b>Fix:</b> confirm whether the KYC liveness check genuinely needs audio — if not, remove it. Bound the storage permissions with <code>android:maxSdkVersion</code> (28 for write, 32 for read) and add <code>READ_MEDIA_IMAGES</code>. Remove <code>WAKE_LOCK</code> when the old notification library goes. Add <code>dataExtractionRules</code> to block device-to-device transfer.<br>
+<b>Already good:</b> <code>allowBackup="false"</code> and the explicit ad-ID removal.<br>
+<span class="effort">File: android/app/src/main/AndroidManifest.xml:4-12</span></td></tr>
+
+<tr><td><b>M-07</b></td><td>Statements and bills are saved where any app can read them</td>
+<td><b>Plain English:</b> Transaction statements and card bills are written to the public Downloads folder on Android — readable by any app with storage permission, backed up to the cloud, and left behind after uninstall. Filenames are predictable timestamps.<br>
+<b>Fix:</b> write to app-private storage by default. For user-initiated exports, use the system file picker so the user chooses where it goes — or use <code>react-native-share</code> (already installed) to hand the file straight to their chosen app without persisting it. Delete temporary files after viewing.<br>
+<span class="effort">Files: src/utils/tools.js:56-95 · DownloadBill.tsx:124 · filePreviewWithId.tsx:143</span></td></tr>
+
+<tr><td><b>M-08</b></td><td>iOS is configured for development push notifications</td>
+<td><b>Plain English:</b> The entitlements file says <code>aps-environment: development</code>. A build submitted to TestFlight or the App Store with this setting <strong>cannot receive production push notifications</strong> — so support-chat and document alerts silently stop working.<br>
+<b>Fix:</b> use per-configuration entitlements files (Debug → development, Release → production). Also add the data-protection entitlement <code>NSFileProtectionComplete</code>, and verify the shipped value in CI with <code>codesign -d --entitlements -</code>.<br>
+<span class="effort">File: ios/exchangapay/exchangapay.entitlements</span></td></tr>
+
+<tr><td><b>M-09</b></td><td>The KYC SDK runs with debug logging on, and an unfinished callback</td>
+<td><b>Plain English:</b> The Sumsub identity-verification SDK is initialised with <code>.withDebug(true)</code> in all builds, writing verbose logs — including the decrypted name, email, phone and date of birth being passed to it — to the device log. Its token-refresh callback is still a placeholder pointing at <code>http://example.org/</code> and returning a fake token.<br>
+<b>Fix:</b> <code>.withDebug(__DEV__)</code>; implement the refresh callback to call your real token endpoint; fill in the empty status and log handlers so KYC failures are actually recorded.<br>
+<span class="effort">File: src/components/sumsub.tsx:88-127</span></td></tr>
+
+<tr><td><b>M-10</b></td><td>Every launch tells a third party the user's location — and the check is backwards</td>
+<td><b>Plain English:</b> Two problems in one block. The connectivity check calls the IP-lookup function when the device is <strong>offline</strong> (so it always fails), and the naming is inverted. Separately, every launch sends the user's IP to <code>ipinfo.io</code>, an undeclared third party, and the result is then attached to every API request as a header.<br>
+<b>Why the header matters:</b> a client-supplied IP is trivially forged. If your backend uses it for fraud checks or geo-restriction, that control provides false assurance.<br>
+<b>Fix:</b> fix the inverted branch; <strong>remove the IP header entirely</strong> — your server already sees the real connection IP, which is both accurate and unforgeable. If you need geolocation for AML, derive it server-side.<br>
+<span class="effort">File: src/navigation/AppContainer.tsx:112-136 · ApiService.ts:166</span></td></tr>
+
+<tr><td><b>M-11</b></td><td>No throttling; support chat polls every 60 seconds</td>
+<td><b>Plain English:</b> The support chat asks the server for new messages every minute regardless of activity, and does not pause when the app is backgrounded — even though push notifications for new chat messages <em>already arrive</em>. Elsewhere, buttons can be double-tapped into duplicate submissions (one screen guards against this correctly; the rest do not).<br>
+<b>Fix:</b> trigger chat refresh from the existing push message instead of a timer, with a long fallback interval. Add a shared in-flight guard hook for submit buttons. Fix a <code>useEffect</code> that calls a function inside its dependency array, causing redundant fee lookups on the withdrawal screen.<br>
+<b>Note:</b> real rate limiting must be server-side — the client cannot be trusted to throttle itself. Verify limits exist on OTP, login, password change, withdrawal and PIN reveal.<br>
+<span class="effort">Files: chatscreen.tsx:62 · sendCryptoDetails.tsx:151</span></td></tr>
+
+<tr><td><b>M-12</b></td><td>Production error reporting is switched off entirely</td>
+<td><b>Plain English:</b> Sentry only initialises if a config flag is true — and that flag is <code>false</code> in every environment. So <code>Sentry.init()</code> never runs, every <code>captureException</code> call does nothing, and source maps are uploaded on every build for a client that never starts. Combined with the empty catch blocks (M-04), <strong>JavaScript failures in production are invisible</strong>.<br>
+<b>Why it matters for security:</b> you would not detect a spike in authentication failures, a wave of decryption errors, or an unusual 401 pattern — the signals that reveal an attack in progress.<br>
+<b>Fix:</b> enable Sentry <em>with H-08's privacy fixes applied first</em>. Fix the misspelled config field, split the one flag into separate concerns, and add alerting on security-relevant error rates.<br>
+<span class="effort">Files: Environment.js:27 · App.tsx:44</span></td></tr>
+
+<tr><td><b>M-13</b></td><td>No deep-link configuration — and the iOS login callback may be broken</td>
+<td><b>Plain English:</b> iOS declares no URL scheme at all, which <code>react-native-auth0</code> normally needs for the login callback — so the iOS login flow may not work correctly. Neither platform has verified deep links (App Links / Universal Links).<br>
+<b>Fix:</b> test the iOS login end-to-end on a real device; add <code>CFBundleURLTypes</code> if it fails. When you do add deep links later, use <strong>verified</strong> App Links / Universal Links, never plain custom schemes — custom schemes can be registered by a malicious app and hijacked. Never let a deep link perform an authenticated action directly; it should navigate, then the user authenticates.<br>
+<b>Also:</b> review the merged Android manifest for components contributed by libraries — Auth0 adds an exported redirect activity you should be aware of.<br>
+<span class="effort">Files: ios/exchangapay/Info.plist · AndroidManifest.xml</span></td></tr>
+
+<tr><td><b>M-14</b></td><td>iOS still allows unencrypted local-network traffic</td>
+<td><b>Plain English:</b> <code>NSAllowsLocalNetworking</code> is on. It exists so the development server works, and serves no purpose in a release build. It creates a narrow exemption allowing unencrypted traffic to local network addresses — which matters because the WebView (H-10) is currently unrestricted and would happily load such an address.<br>
+<b>Fix:</b> remove it from the Release configuration via per-configuration Info.plist values. Add a CI check asserting the release plist has no ATS exceptions at all.<br>
+<b>Already good:</b> <code>NSAllowsArbitraryLoads</code> is correctly <code>false</code>.<br>
+<span class="effort">File: ios/exchangapay/Info.plist:29-35</span></td></tr>
+
+<tr><td><b>M-15</b></td><td>The session never times out</td>
+<td><b>Plain English:</b> Once logged in, the app renews the session forever with no user involvement. There is no inactivity timeout, no absolute session limit, and no re-check when the app returns to the foreground. Someone who picks up an unlocked phone is inside a fully authenticated session — able to view card details and start a withdrawal with no challenge.<br>
+<b>Fix:</b> add an <code>AppState</code> listener that requires re-authentication after ~5 minutes in the background; add an absolute session lifetime (12–24 h); stop the refresh chain when either is exceeded; clear the decrypted-data cache on background (the function exists and is only called on logout).<br>
+<b>Compliance:</b> PCI-DSS expects re-authentication after 15 minutes idle.<br>
+<span class="effort">Files: src/hooks/useTokenRefresh.tsx · App.tsx</span></td></tr>
+
+<tr><td><b>M-16</b></td><td>Debug logging left in release builds</td>
+<td><b>Plain English:</b> <code>console.log</code> calls appear in 20 files, including the authentication flow ("Calling getMemDetails with:", "Using temporary login with provided JWT token"). With Hermes these are <em>not</em> stripped automatically — they go to the device log.<br>
+<b>Fix:</b> add <code>transform-remove-console</code> under <code>env.production</code> in <code>babel.config.js</code> (keep <code>react-native-worklets/plugin</code> last in the main plugin list). Replace ad-hoc calls with one logger that routes to console in development and to scrubbed breadcrumbs in production. Enable ESLint <code>no-console</code>.<br>
+<b>Verify:</b> <code>adb logcat | grep -i exchangapay</code> after logging in should produce nothing.<br>
+<span class="effort">Scope: 20 files</span></td></tr>
+
+</tbody>
+</table></div>
+</section>
+
+<!-- ==================== LOW ==================== -->
+<section id="low">
+<h2>Low &amp; Informational Findings</h2>
+
+<div class="note">
+  <p style="margin:0"><strong>Read this one first — it is a real funds-loss risk.</strong> <code>validateCryptoAddress</code>
+  (<code>src/utils/helpers/index.tsx:769</code>) only validates TRC-20 and Polygon addresses. For <strong>Bitcoin, Ethereum and
+  Solana it returns <code>true</code> unconditionally</strong> — despite having correct patterns for them sitting right above,
+  unused. A malformed address would be accepted and the funds could be irrecoverable. It is listed as Low only because it
+  is a correctness bug rather than an attacker-controlled vulnerability; treat it as Phase&nbsp;2 priority.</p>
+</div>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:62px">ID</th><th style="width:24%">Finding</th><th>Detail &amp; fix</th></tr></thead>
+<tbody>
+<tr><td><b>L-01</b></td><td>Nine dead modules still in the tree</td>
+<td><code>Login.tsx</code> (hardcoded client ID), <code>utils/auth.tsx</code> (plain-text token storage), <code>redux/Store/index.js</code> (creates a second Redux store), <code>redux/Reducer/index.js</code>, <code>config/index.tsx</code> (entirely commented out), <code>onBoarding/sumsub.tsx</code> (placeholder screen), <code>encryptForRegister</code>, <code>getEnvVars</code> (references an undefined config).<br><b>Fix:</b> delete them. Dead code that touches credentials or crypto is the most common source of reintroduced vulnerabilities. Add <code>ts-prune</code> or <code>knip</code> to CI.</td></tr>
+
+<tr><td><b>L-02</b></td><td>Eleven redundant dependencies</td>
+<td>Three chart libraries, three notification libraries, two splash libraries, two signature libraries, two date libraries, two UI kits, two base64 libraries. See the table in H-12 for which to keep. Removing three pre-AndroidX libraries also lets you disable Jetifier and cut build time.</td></tr>
+
+<tr><td><b>L-03</b></td><td>Development artefacts committed</td>
+<td><code>.DS_Store</code> (×3), an Xcode user-state file leaking a developer's username, plus the keystore and Sentry properties from C-02/C-03. Note <code>.gitignore</code> already lists most of these — but <code>.gitignore</code> has no effect on files already tracked.<br><b>Fix:</b> <code>git rm --cached</code> each, then commit; purge the two secret-bearing files from history.</td></tr>
+
+<tr><td><b>L-04</b></td><td>Stale hardcoded API endpoints — including a cross-environment mix</td>
+<td><code>src/utils/api.tsx</code> hardcodes nine base URLs, including legacy Azure hosts (<code>neowalletgrid</code>, <code>neobank</code>) and a different organisation's domain. Two of them point at <strong>production</strong> while the main client points at <strong>test</strong> — so <code>changePassword</code> may be hitting production with a test-tenant token.<br><b>Fix:</b> verify this urgently, delete unused clients, move live endpoints into the environment config, and consolidate onto one HTTP client. Also check the Azure hosts are still owned — a deprovisioned <code>*.azurewebsites.net</code> subdomain can be re-registered by anyone.</td></tr>
+
+<tr><td><b>L-05</b></td><td>One smoke test, and it fails</td>
+<td>The entire suite is a single render test, which fails because Jest is not configured to transpile the React Native dependencies.<br><b>Fix:</b> fix <code>transformIgnorePatterns</code>, then add tests by risk rather than coverage: encryption round-trip and known-answer vectors, money arithmetic edge cases, <code>validateCryptoAddress</code>, idempotency key generation, and error mapping.</td></tr>
+
+<tr><td><b>L-06</b></td><td>No ESLint configuration despite a lint script</td>
+<td><code>eslint</code> and the React Native config are installed, but no config file exists anywhere — so <code>npm run lint</code> does nothing. This is the root cause of several findings above: <code>no-floating-promises</code> would catch M-01, <code>no-empty</code> would catch M-04, <code>no-console</code> would catch M-16.<br><b>Fix:</b> add <code>.eslintrc.js</code>; start with those three rules as errors and <code>no-explicit-any</code> as a warning; make it blocking in CI once clean.</td></tr>
+
+<tr><td><b>L-07</b></td><td>TypeScript strictness defeated by 1,081 <code>any</code> annotations</td>
+<td>Strict mode is nominally on but systematically bypassed; <code>tsc --noEmit</code> reports ~17 errors from missing type packages.<br><b>Fix:</b> install <code>@types/lodash</code> and <code>@types/numeral</code>, fix the errors, make it a blocking gate, then reduce <code>any</code> incrementally — prioritising the API layer, the crypto helpers, and Redux state. Use the existing <code>RootStackParamList</code> to type screen props.</td></tr>
+
+<tr><td><b>L-08</b></td><td>2,000-line screens and inconsistent naming</td>
+<td>Three screens exceed 1,800 lines; the withdrawal screen containing H-10 is 874 lines mixing UI, API calls, validation and 2FA. Filenames and identifiers contain many misspellings (<code>rigistration</code>, <code>secessionExpired</code>, <code>useChekBio</code>, <code>sendAmmount</code>, <code>sentryEnvornment</code>, <code>isErrorDispaly</code>).<br><b>Fix:</b> split the large screens into containers plus presentational components; move form state into Formik (already installed); fix the misspellings in one mechanical rename PR.</td></tr>
+
+<tr><td><b>L-09</b></td><td>Assorted observations</td>
+<td>Test-environment builds validate against <em>mainnet</em> crypto addresses · <code>react-native-modal</code> is pinned to a release candidate · three <code>patch-package</code> patches need re-verification on every dependency bump · <code>__DEV__</code> is used inconsistently · defensive <code>if (!store)</code> checks on a value that cannot be undefined · no <code>SECURITY.md</code> or vulnerability-disclosure process · iOS allows landscape orientation, likely untested.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<!-- ==================== PERFORMANCE ==================== -->
+<section id="performance">
+<h2>Performance — What to Optimise</h2>
+<div class="good">
+  <p style="margin:0"><strong>Strong foundations.</strong> Hermes, the New Architecture, Reanimated 4, native cryptography,
+  and a well-designed decryption cache are all in place. The issues below are about what was added on top.</p>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:56px">Rank</th><th style="width:26%">Issue</th><th>Fix &amp; expected gain</th></tr></thead>
+<tbody>
+<tr><td><b>1</b></td><td><b>All ~120 screens load at startup</b><br><span class="effort">AppContainer.tsx</span></td>
+<td>The navigator opens with ~100 <code>import</code> statements, so every screen — including three of over 1,800 lines, plus the chart and KYC libraries they pull in — is parsed before the first frame appears. A user who only opens the dashboard pays for all of it.<br><b>Fix:</b> <code>React.lazy</code> + <code>Suspense</code> for everything except splash, dashboard and the error screens; split into feature-scoped nested navigators. <b>Gain: large</b> — cold start and memory.</td></tr>
+<tr><td><b>2</b></td><td><b>Bundle bloat</b></td>
+<td>Three chart libraries, two date libraries (~70 KB vs ~2 KB), eleven redundant packages, and x86 architectures shipped in release builds.<br><b>Fix:</b> consolidate per L-02; ship an Android App Bundle; set <code>reactNativeArchitectures=armeabi-v7a,arm64-v8a</code>; enable <code>shrinkResources</code>. <b>Gain: large</b> — download size.</td></tr>
+<tr><td><b>3</b></td><td><b>No list virtualisation tuning</b></td>
+<td>Across 12 lists: <code>keyExtractor</code> is present everywhere (good), but <code>getItemLayout</code>, <code>initialNumToRender</code>, <code>maxToRenderPerBatch</code> and <code>windowSize</code> are used <strong>zero</strong> times. Transaction history and chat are the ones that hurt.<br><b>Fix:</b> add the tuning props for uniform-height rows; wrap <code>renderItem</code> in <code>useCallback</code> and rows in <code>React.memo</code>; consider FlashList for variable heights. <b>Gain: medium</b> — scroll smoothness.</td></tr>
+<tr><td><b>4</b></td><td><b>Redundant work every render</b></td>
+<td>Only 5 <code>useMemo</code> calls across 53,000 lines. Concretely: a <code>useEffect</code> calls a function <em>inside its dependency array</em> (causing repeat API calls on the withdrawal screen); the chat screen builds a new API client object on every render; the legacy reducer deep-clones state with <code>JSON.parse(JSON.stringify())</code> on every dispatch.<br><b>Fix:</b> memoise the derived value, the API client and the user object; remove the deep clones. <b>Gain: medium.</b></td></tr>
+<tr><td><b>5</b></td><td><b>Network inefficiency</b></td>
+<td>Chat polls every 60 s even when idle and backgrounded, despite push already delivering the same signal. The IP lookup runs on the offline branch. No response caching or request deduplication.<br><b>Fix:</b> push-triggered refresh; fix the branch; add React Query or RTK Query. <b>Gain: medium</b> — battery, data, server load.</td></tr>
+<tr><td><b>6</b></td><td><b>Startup sequence</b></td>
+<td>The notification permission is requested on first launch with no explanation, which drives high denial rates. Three separate mount effects compete with the first render.<br><b>Fix:</b> request notification permission contextually after first successful login, with a rationale; consolidate the mount effects.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<!-- ==================== VAPT ==================== -->
+<section id="vapt">
+<h2>VAPT Assessment — Attacker's View</h2>
+<p>The same findings, reorganised by what an attacker is trying to achieve.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th style="width:74px">ID</th><th style="width:22%">Attack</th><th style="width:88px">Severity</th><th style="width:92px">Feasibility</th><th>How it works here</th></tr></thead>
+<tbody>
+<tr><td><b>VAPT-01</b></td><td>Authentication bypass</td><td><span class="chip c-crit">Critical</span></td><td>High</td>
+<td>Three independent routes: the hardcoded-token function with its state-fabricating fallback (C-04); turning off biometrics, which sends the app straight to the Dashboard (H-14); or modifying the Redux store, since all gating is client-side navigation. <b>Whether this also enables transactions depends entirely on backend enforcement — verify it.</b></td></tr>
+<tr><td><b>VAPT-02</b></td><td>Authorisation bypass</td><td><span class="chip c-high">High</span></td><td>Medium</td>
+<td>Role and account-state checks are client-side. Several endpoints accept a client-supplied identifier (KYC token request, card PIN, chat conversation ID) — each must be confirmed to resolve identity from the token, not the parameter.</td></tr>
+<tr><td><b>VAPT-03</b></td><td>API abuse</td><td><span class="chip c-med">Medium</span></td><td>High</td>
+<td>With the API fully mapped, an attacker scripts direct calls, bypassing every client-side check — amount limits, address validation, fee calculation. OTP and referral endpoints have no client throttling; the leaked Kommo secret allows unlimited direct abuse.</td></tr>
+<tr><td><b>VAPT-04</b></td><td>Sensitive data exposure</td><td><span class="chip c-crit">Critical</span></td><td>High</td>
+<td><b>The highest-yield chain, requiring no device access:</b> repository access → the committed Sentry token (C-02) → read error events → extract bearer tokens and request bodies logged by C-07 → replay against the API → full account access.</td></tr>
+<tr><td><b>VAPT-05</b></td><td>Man-in-the-middle</td><td><span class="chip c-high">High</span></td><td>Medium</td>
+<td>Place a certificate on the device — nothing objects, because the security config is not applied (H-02) and there is no pinning (H-03). Then <b>modify a withdrawal in flight</b>, changing the destination address. Nothing signs the request and the idempotency key is recomputable.</td></tr>
+<tr><td><b>VAPT-06</b></td><td>Token replay</td><td><span class="chip c-high">High</span></td><td>High</td>
+<td>The token is a bare bearer credential — no device binding, no request signing, no replay detection. Available from crash logs (C-07), the saved state blob (H-05), the Keychain (H-11), a proxy, or the WebView (H-10). The refresh token makes it <b>indefinite</b>, and revocation is not honoured because the logout call is commented out.</td></tr>
+<tr><td><b>VAPT-07</b></td><td>Reverse engineering</td><td><span class="chip c-crit">Critical</span></td><td>Trivial</td>
+<td><code>unzip</code> + <code>strings</code> + <code>jadx</code> yields every secret and the full client logic in minutes. Then patch and <b>re-sign with the publicly known debug key</b>.</td></tr>
+<tr><td><b>VAPT-08</b></td><td>Runtime manipulation</td><td><span class="chip c-high">High</span></td><td>High</td>
+<td>Frida on a rooted device defeats every client-side control at once — biometrics, KYC gating, encryption, request bodies, address validation. Nothing detects it.</td></tr>
+<tr><td><b>VAPT-09</b></td><td>Device compromise</td><td><span class="chip c-high">High</span></td><td>Medium</td>
+<td><b>The most common real-world scenario:</b> brief access to an unlocked phone. No inactivity lock, no step-up authentication before revealing card details, no screenshot protection, statements sitting in public Downloads, and Keychain entries readable without biometrics. <b>Steps 1–4 require no technical skill at all.</b></td></tr>
+<tr><td><b>VAPT-10</b></td><td>Supply chain</td><td><span class="chip c-high">High</span></td><td>Medium</td>
+<td>With CI deleted, releases are built on developer workstations — which hold the signing key. A malicious npm package during install or build reaches it. Six unmaintained dependencies, two in security-critical paths.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<!-- ==================== COMPLIANCE ==================== -->
+<section id="compliance">
+<h2>Compliance Position</h2>
+
+<h3>OWASP Mobile Top 10 (2024)</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:56px">#</th><th style="width:34%">Risk</th><th style="width:96px">Status</th><th>Driving findings</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td>Improper Credential Usage</td><td><span class="chip c-crit">Fail</span></td><td>C-01, C-02, C-04, C-06, H-13</td></tr>
+<tr><td>M2</td><td>Inadequate Supply Chain Security</td><td><span class="chip c-crit">Fail</span></td><td>H-12, C-03, no CI</td></tr>
+<tr><td>M3</td><td>Insecure Authentication / Authorization</td><td><span class="chip c-crit">Fail</span></td><td>C-04, H-14, M-15</td></tr>
+<tr><td>M4</td><td>Insufficient Input / Output Validation</td><td><span class="chip c-med">Partial</span></td><td>H-10, M-05, L-09</td></tr>
+<tr><td>M5</td><td>Insecure Communication</td><td><span class="chip c-crit">Fail</span></td><td>H-02, H-03, M-14</td></tr>
+<tr><td>M6</td><td>Inadequate Privacy Controls</td><td><span class="chip c-crit">Fail</span></td><td>H-08, C-07, M-10, empty iOS privacy manifest</td></tr>
+<tr><td>M7</td><td>Insufficient Binary Protections</td><td><span class="chip c-crit">Fail</span></td><td>C-08, C-03, H-04</td></tr>
+<tr><td>M8</td><td>Security Misconfiguration</td><td><span class="chip c-crit">Fail</span></td><td>C-05, H-02, H-15, M-08</td></tr>
+<tr><td>M9</td><td>Insecure Data Storage</td><td><span class="chip c-crit">Fail</span></td><td>H-05, H-07, H-11, M-07</td></tr>
+<tr><td>M10</td><td>Insufficient Cryptography</td><td><span class="chip c-crit">Fail</span></td><td>C-06, H-01, H-06, M-02</td></tr>
+</tbody>
+</table></div>
+<p><b>Result: 0 of 10 fully passing, 1 partial.</b></p>
+
+<h3>OWASP MASVS v2.0</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:30%">Control group</th><th style="width:76px">L1</th><th style="width:76px">L2</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>MASVS-STORAGE</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>Weak Keychain options, disabled encryption, public downloads</td></tr>
+<tr><td>MASVS-CRYPTO</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>Static keys, 10-round derivation, no tamper detection</td></tr>
+<tr><td>MASVS-AUTH</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>Hardcoded token, client-side biometrics, no session timeout</td></tr>
+<tr><td>MASVS-NETWORK</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>Config not applied, no pinning, unrestricted WebView</td></tr>
+<tr><td>MASVS-PLATFORM</td><td><span class="chip c-med">Partial</span></td><td><span class="chip c-crit">Fail</span></td><td>Good: backup disabled, minimal exports. Bad: WebView, push path, no capture protection</td></tr>
+<tr><td>MASVS-CODE</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>21 dependency issues, no lint, minimal tests, debug code shipped</td></tr>
+<tr><td>MASVS-RESILIENCE</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>No obfuscation, no root detection, no attestation, debug signing</td></tr>
+<tr><td>MASVS-PRIVACY</td><td><span class="chip c-crit">Fail</span></td><td><span class="chip c-crit">Fail</span></td><td>Session replay, PII in telemetry, inaccurate privacy manifest</td></tr>
+</tbody>
+</table></div>
+<p><b>MASVS-L1 not met. MASVS-L2 — the appropriate bar for a custodial crypto and card platform — not approached.</b></p>
+
+<h3>PCI-DSS (the app displays card numbers, CVVs and PINs, so it is in scope)</h3>
+<div class="tablewrap"><table>
+<thead><tr><th style="width:22%">Requirement</th><th style="width:96px">Status</th><th>Gap</th></tr></thead>
+<tbody>
+<tr><td>3.2 — No storage of sensitive authentication data</td><td><span class="chip c-crit">Fail</span></td><td>CVV and PIN captured in crash logs, potentially in session replay and OS snapshots</td></tr>
+<tr><td>3.4 — Render card numbers unreadable</td><td><span class="chip c-crit">Fail</span></td><td>Full number displayed and screenshot-able</td></tr>
+<tr><td>4 — Encrypt transmission</td><td><span class="chip c-med">Partial</span></td><td>HTTPS yes; no pinning; registration data weakly encrypted</td></tr>
+<tr><td>6.2 — Patch known vulnerabilities</td><td><span class="chip c-crit">Fail</span></td><td>21 open</td></tr>
+<tr><td>6.3 — Secure development</td><td><span class="chip c-crit">Fail</span></td><td>No lint, no tests, no CI, secrets in source</td></tr>
+<tr><td>8.2.8 — Re-authenticate after 15 min idle</td><td><span class="chip c-crit">Fail</span></td><td>No inactivity timeout</td></tr>
+<tr><td>10 — Logging and monitoring</td><td><span class="chip c-crit">Fail</span></td><td>Error reporting disabled; over-logging elsewhere; no security event monitoring</td></tr>
+</tbody>
+</table></div>
+
+<h3>Data protection (GDPR)</h3>
+<div class="note">
+  <p><strong>Two items may already require action from your Data Protection Officer:</strong></p>
+  <ul style="margin-bottom:0">
+    <li><strong>Real KYC data in a test environment</strong> (C-05) — identity documents processed in a non-production system.</li>
+    <li><strong>The committed Sentry token</strong> (C-02) — combined with C-07, it grants access to customer session tokens and
+        personal data. If it has been used from an unexpected location, that is a personal-data breach.</li>
+  </ul>
+</div>
+<p>Also outstanding: no consent mechanism for analytics and crash collection (Art. 6); the <code>ipinfo.io</code> data recipient
+is undeclared (Art. 13/14); processor agreements should be confirmed for Sentry, Google, Kommo, Sumsub and ipinfo.io
+(Art. 28); and session replay of financial screens would require a Data Protection Impact Assessment (Art. 35).</p>
+</section>
+
+<!-- ==================== CHECKLIST ==================== -->
+<section id="checklist">
+<h2>Production Release Checklist</h2>
+<p>Use this as the release gate. Nothing ships until every box in the first four groups is ticked.</p>
+
+<div class="phase">
+  <header><h3>Build &amp; release</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Release keystore generated and held in a secrets manager — never on a workstation, never in git</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Release build type uses <code>signingConfigs.release</code>; enrolled in Play App Signing</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">R8 enabled with tested keep rules; <code>shrinkResources</code> on; full regression pass on the release build</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">JavaScript bundle minified with identifier mangling; mapping files and dSYMs uploaded</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">App Bundle published; x86 architectures excluded; signing performed only in CI</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Configuration</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>getAllEnvData</code> honours its parameter; <code>APP_ENV</code> injected at build time</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Android product flavours and iOS build configurations for dev / tst / prod</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Per-environment Firebase project, Auth0 tenant and API base URL</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">CI assertion that a production build never resolves to a dev or test URL</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Non-production builds visibly watermarked in-app</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Network &amp; transport</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>android:networkSecurityConfig</code> declared and verified against a proxy certificate</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Certificate pinning on both platforms, with a backup pin and an expiry date</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>NSAllowsLocalNetworking</code> removed from Release; no ATS exceptions in the release plist</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Timeouts on every client; retry only for idempotent operations; one consolidated HTTP client</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Data &amp; cryptography</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">All Keychain writes use device-only, hardware-backed, biometric-bound options</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Tokens not duplicated into Redux; persist whitelist narrowed; encryption re-enabled</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">AES-256-GCM in use; the zero-IV legacy path instrumented and then removed</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Key derivation at 600,000+ iterations (or Argon2id)</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">No secrets in source; secret scanning in CI and as a pre-commit hook</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Documents written to private storage; system file picker for user-initiated exports</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Authentication &amp; session</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">The temporary-login function deleted; every failure path fails closed</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Password grant disabled on all Auth0 clients; PKCE required; MFA enforced at tenant level</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Signature-based biometrics verified server-side; step-up before PAN/PIN reveal and withdrawal</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Inactivity lock plus absolute session lifetime; revocation honoured immediately</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Refresh-token rotation with reuse detection enabled in Auth0</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Runtime protection</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Play Integrity and App Attest verdicts verified server-side</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Root and jailbreak detection feeding backend risk signals</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>FLAG_SECURE</code> on Android; snapshot blurring and capture detection on iOS</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">WebView origin-restricted; the login token never sent to a dynamic URL</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Privacy &amp; telemetry</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">No tokens or request/response bodies in any telemetry; scrubber unit-tested</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Session replay disabled, or fully masked with a completed impact assessment</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Consent gate before analytics and crash collection; <code>sendDefaultPii: false</code></div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>NSPrivacyCollectedDataTypes</code> accurate; third-party processors declared with agreements in place</div></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <header><h3>Process</h3></header>
+  <div class="inner">
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">CI restored with blocking gates: install, audit, typecheck, test, lint, secret scan, config assertions</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Branch protection on <code>main</code>: required reviews and status checks, no force-push</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">SBOM generated per release; Dependabot or Renovate active</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t"><code>SECURITY.md</code> published with a vulnerability-disclosure process</div></div></div>
+    <div class="task"><span class="box">☐</span><div class="body"><div class="t">External penetration test completed against a running backend</div></div></div>
+  </div>
+</div>
+</section>
+
+<footer style="border-top:1px solid var(--border); padding-top:22px; color:var(--muted); font-size:.86rem">
+  <p><strong>Scope and limitations.</strong> This assessment is based on static source and configuration review of branch
+  <code>rn-0.83-upgrade</code> at commit <code>5f38f42</code>. Three areas could <em>not</em> be verified from the client
+  codebase and are flagged throughout as requiring separate confirmation:
+  <strong>backend authorisation enforcement</strong>, <strong>server-side rate limiting</strong>, and
+  <strong>Auth0 tenant configuration</strong>. This report does not substitute for a dynamic penetration test against a
+  running instance.</p>
+  <p style="margin-bottom:0">Full technical detail, including unredacted secret values, is in
+  <code>SECURITY_AUDIT_REPORT.md</code> — keep that file access-restricted. Generated 2026-08-03.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function () {
+  // Theme toggle
+  var btn = document.createElement('button');
+  btn.className = 'fbtn';
+  btn.style.cssText = 'position:fixed;bottom:18px;right:18px;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.18)';
+  var stored = null;
+  try { stored = localStorage.getItem('epa-theme'); } catch (e) {}
+  if (stored) document.documentElement.setAttribute('data-theme', stored);
+  function label() {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    btn.textContent = t === 'dark' ? '☀ Light' : '☾ Dark';
+  }
+  btn.addEventListener('click', function () {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    var next = t === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('epa-theme', next); } catch (e) {}
+    label();
+  });
+  label();
+  document.body.appendChild(btn);
+
+  // Scroll-spy for the sidebar
+  var links = Array.prototype.slice.call(document.querySelectorAll('.side a'));
+  var targets = links
+    .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+    .filter(Boolean);
+  function spy() {
+    var best = null, bestTop = -Infinity;
+    targets.forEach(function (el) {
+      var top = el.getBoundingClientRect().top - 90;
+      if (top <= 0 && top > bestTop) { bestTop = top; best = el; }
+    });
+    links.forEach(function (a) {
+      a.classList.toggle('on', best && a.getAttribute('href') === '#' + best.id);
+    });
+  }
+  window.addEventListener('scroll', spy, { passive: true });
+  spy();
+
+  // Clickable checklist boxes — progress is local to this browser only
+  var KEY = 'epa-done';
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  Array.prototype.forEach.call(document.querySelectorAll('.task, .verify li'), function (el, i) {
+    var id = 'k' + i;
+    var isTask = el.classList.contains('task');
+    var box = isTask ? el.querySelector('.box') : null;
+    function paint() {
+      if (done[id]) {
+        if (box) box.textContent = '☑';
+        el.style.opacity = '.55';
+        el.style.textDecoration = 'line-through';
+      } else {
+        if (box) box.textContent = '☐';
+        el.style.opacity = '';
+        el.style.textDecoration = '';
+      }
+    }
+    el.style.cursor = 'pointer';
+    el.title = 'Click to mark done (saved in this browser only)';
+    el.addEventListener('click', function (ev) {
+      if (ev.target.tagName === 'A' || ev.target.tagName === 'CODE') return;
+      done[id] = !done[id];
+      try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {}
+      paint();
+    });
+    paint();
+  });
+})();
+</script>
+</body>
+</html>
