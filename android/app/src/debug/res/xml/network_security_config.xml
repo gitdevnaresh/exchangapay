@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG BUILDS ONLY.
+
+  Android's resource merger lets the `debug` source set override the same-named
+  resource in `main`, so this file replaces the strict release policy in
+  src/main/res/xml/network_security_config.xml for debug variants only. Release
+  builds are unaffected and keep cleartext blocked with system-only trust.
+
+  Two relaxations are needed for local development:
+    - cleartextTrafficPermitted: the Metro dev server is plain HTTP.
+    - user trust anchors: debugging proxies (Charles, Proxyman, mitmproxy)
+      install a user certificate that system-only trust would reject.
+
+  Note: android:usesCleartextTraffic in src/debug/AndroidManifest.xml is inert
+  once networkSecurityConfig is set — the platform ignores it. This file, not
+  that attribute, is what permits cleartext in debug.
+-->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true">
+    <trust-anchors>
+      <certificates src="system" />
+      <certificates src="user" />
+    </trust-anchors>
+  </base-config>
+</network-security-config>

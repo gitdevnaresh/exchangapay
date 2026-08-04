@@ -1,6 +1,8 @@
 import { create } from "apisauce";
-import { getAllEnvData } from "../../Environment";
+import { getAllEnvData, getCurrentEnvName } from "../../Environment";
+import { redact, redactToString } from "./redact";
 import * as Keychain from "react-native-keychain";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
@@ -21,24 +23,24 @@ const GetTokens = async () => {
     return null;
   }
 };
-const logApiErrorToSentry = async (error: any) => {
+const logApiErrorToSentry = async (error: any, userInfo: any) => {
   const { config, response } = error;
-  const userInfo: any = getUserInfo();
 
   Sentry.withScope(scope => {
     // 1. Set User
-    scope.setUser({ id: userInfo?.id ?? 'unknown_user' });
+    scope.setUser({ id: userInfo?.userId ?? userInfo?.id ?? 'unknown_user' });
 
     // 2. Set Tags (for filtering and searching in Sentry)
     scope.setTag('api_endpoint', config?.url ?? 'unknown');
     scope.setTag('api_method', config?.method?.toUpperCase() ?? 'unknown');
     scope.setTag('api_status_code', response?.status?.toString() ?? 'no_response');
     scope.setTag('app_name', appName);
-    scope.setTag('environment', "development");
+    scope.setTag('environment', getCurrentEnvName());
 
-    // 3. Set Extras (for additional data, not searchable but visible in the issue)
-    scope.setExtra('Request Body', config?.data);
-    scope.setExtra('Response Data', response?.data);
+    // 3. Set Extras — allow-list redacted (C-07). Keys survive so the shape of a
+    //    failing payload is still diagnosable; values do not.
+    scope.setExtra('Request Body', redact(config?.data));
+    scope.setExtra('Response Data', redact(response?.data));
 
     // 4. Add a Breadcrumb for context within the issue timeline
     Sentry.addBreadcrumb({
@@ -70,35 +72,31 @@ const getUserInfo = async (): Promise<string | null> => {
 const handleErrorCapture = () => async (error: any) => {
   const { config, response, message } = error;
   const method = config?.method?.toUpperCase();
-  const userInfo: any = getUserInfo();
-  const token = await GetTokens();
-  // --- 1. Log to Firebase Crashlytics (Your original code) ---
+  // await was missing, so this was a pending Promise and `userInfo.userId` was
+  // always undefined — every report was attributed to "unknown" (C-07).
+  const userInfo: any = await getUserInfo();
+
+  // --- 1. Log to Firebase Crashlytics ---
   crashlytics().log(`API Error at ${config?.url}`);
-  crashlytics().setUserId(userInfo.userId ?? "unknown");
+  crashlytics().setUserId(userInfo?.userId ?? "unknown");
   crashlytics().setAttributes({
     endpoint: config?.url ?? "unknown",
     method: method ?? "unknown",
     status: response?.status?.toString() ?? "no response",
     appName,
-    environment: "development",
-    response: JSON.stringify(response?.data),
-    userId: userInfo.userId ?? "unknown",
-    token: token ?? "unknown",
-    request: JSON.stringify(config?.data ?? {}),
+    environment: getCurrentEnvName(),
+    userId: userInfo?.userId ?? "unknown",
+    // C-07: the `token` attribute is gone for good. A live bearer credential has
+    // no diagnostic value in a crash report, and anyone with Firebase project
+    // access could read it and replay it as the user.
+    // Bodies are allow-list redacted rather than serialised whole.
+    response: redactToString(response?.data),
+    request: redactToString(config?.data),
   });
 
-  if (["POST", "PUT"].includes(method)) {
-    crashlytics().log(`Request Body: ${JSON.stringify(config?.data || {})}`);
-  }
-
-  if (config?.data) {
-    crashlytics().log(`Request Body: ${JSON.stringify(config.data)}`);
-  }
-
-  if (response?.data) {
-    crashlytics().log(`Response Body: ${JSON.stringify(response.data)}`);
-  }
-
+  // The request and response bodies used to be logged again here, three times
+  // over, in plain text. setAttributes above carries the redacted shape; the
+  // duplicate log lines added nothing but exposure.
   if (message) {
     crashlytics().log(`Message: ${message}`);
   }
@@ -106,13 +104,16 @@ const handleErrorCapture = () => async (error: any) => {
   if (error.stack) {
     crashlytics().log(`Stack Trace: ${error.stack}`);
   }
-  logApiErrorToSentry(error);
+  await logApiErrorToSentry(error, userInfo);
   crashlytics().recordError(error);
   return Promise.reject(error);
 };
 
 const getUrl = (path: string) => {
-  const envList = getAllEnvData("prod");
+  // No literal env name: the target is resolved once, in Environment.js. Passing
+  // "prod" here while other modules passed "tst" is how the app came to straddle
+  // two backends (C-05).
+  const envList = getAllEnvData();
   // trim: leading/trailing whitespace makes axios treat the baseURL as a
   // relative path and resolve it against the bundle's file:// document base
   return (envList.apiUrls[path] || "").trim();
@@ -196,9 +197,44 @@ uploadapi.axiosInstance.interceptors.response.use(
   handleErrorCapture()
 );
 
+/**
+ * Crash-reporting consent (C-07).
+ *
+ * Collection used to be switched on unconditionally at app start, with no consent
+ * step anywhere in the app. Crash reports carry device and usage data about an
+ * identified user, so collection now defaults to OFF and is enabled only once
+ * consent has been recorded.
+ *
+ * NOTE FOR WHOEVER PICKS THIS UP: nothing calls setCrashReportingConsent() yet,
+ * so crash collection is currently disabled in every build. Wire it to a consent
+ * prompt (onboarding, or a Settings toggle) to turn reporting back on. To restore
+ * the previous always-on behaviour instead, pass `true` below — but that is the
+ * behaviour the audit flagged.
+ */
+const CRASH_CONSENT_KEY = "crashReportingConsent";
+
+export const setCrashReportingConsent = async (granted: boolean) => {
+  try {
+    await AsyncStorage.setItem(CRASH_CONSENT_KEY, granted ? "true" : "false");
+    await crashlytics().setCrashlyticsCollectionEnabled(granted);
+  } catch {
+    // Never let a consent-storage failure fail open.
+    await crashlytics().setCrashlyticsCollectionEnabled(false);
+  }
+};
+
+export const hasCrashReportingConsent = async (): Promise<boolean> => {
+  try {
+    return (await AsyncStorage.getItem(CRASH_CONSENT_KEY)) === "true";
+  } catch {
+    return false;
+  }
+};
+
 export const initializeCrashlytics = async () => {
-  await crashlytics().setCrashlyticsCollectionEnabled(true);
-  crashlytics().log("Crashlytics initialized in development mode");
+  // Absent or unreadable consent means no collection.
+  const granted = await hasCrashReportingConsent();
+  await crashlytics().setCrashlyticsCollectionEnabled(granted);
 };
 
 export const get = async (url: string) => {

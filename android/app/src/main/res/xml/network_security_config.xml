@@ -1,8 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  RELEASE network policy. Debug builds use src/debug/res/xml/network_security_config.xml
+  instead (Android's resource merger lets the debug source set override this file).
+
+  H-02: this file is inert unless <application android:networkSecurityConfig> points at
+  it. A guard in app/build.gradle fails release builds if that attribute is removed.
+
+  H-03: certificate pinning below.
+
+  Pin values were computed from the live certificate chains, not copied from a template:
+      openssl s_client -servername <host> -connect <host>:443 -showcerts </dev/null \
+        | openssl x509 -pubkey -noout \
+        | openssl pkey -pubin -outform der \
+        | openssl dgst -sha256 -binary | openssl enc -base64
+
+  WHAT IS PINNED, AND WHY THAT LEVEL:
+
+  Both api.exchangapay.com and tstapi.exchangapay.com chain through the same DigiCert
+  intermediate, so a single pin covers both:
+
+      leaf   api.exchangapay.com      iIJcl/fDdBtX2PZaQXIEsip+r/eSKnx4btuU3j6Nn7M=  exp 2026-12-13
+      leaf   tstapi.exchangapay.com   pOlyhLUFmEV1ozZhaFDJJi7qp4gTXq58jsZVTdtWzD0=
+      inter  GeoTrust TLS RSA CA G1   SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=  exp 2027-11-02
+      root   DigiCert Global Root G2  i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=  exp 2038-01-15
+
+  The intermediate is pinned, never the leaf: leaf pins break on every certificate
+  renewal, and the prod leaf expires 2026-12-13. The DigiCert root is the backup pin,
+  so a reissue from a different DigiCert intermediate still validates instead of
+  bricking installed apps. Two pins are required — one pin plus one renewal is an
+  outage with no recovery path short of a store release.
+
+  NOT PINNED, DELIBERATELY:
+
+  devapi.exchangapay.com is issued by Sectigo ("Sectigo Public Server Authentication
+  CA DV R36", wildcard *.exchangapay.com) — a different CA entirely from prod and tst.
+  Pinning exchangapay.com with includeSubdomains would therefore break dev. Dev traffic
+  carries no production data, so it falls through to normal system validation. If dev is
+  ever migrated to DigiCert, add it to the domain-config below rather than widening the
+  match to the apex.
+
+  Third-party hosts (Auth0, Sentry, Sumsub, CoinGecko) are not pinned: their operators
+  rotate certificates on their own schedule with no notice to us.
+
+  BEFORE THE EXPIRATION DATE BELOW: re-run the openssl command above, confirm the
+  intermediate pin still matches, and extend the date. After it passes, Android silently
+  stops enforcing pinning and falls back to normal validation — the app keeps working,
+  but the H-03 protection is gone until the date is renewed.
+-->
 <network-security-config>
   <base-config cleartextTrafficPermitted="false">
     <trust-anchors>
       <certificates src="system" />
     </trust-anchors>
   </base-config>
+
+  <domain-config>
+    <domain includeSubdomains="false">api.exchangapay.com</domain>
+    <domain includeSubdomains="false">tstapi.exchangapay.com</domain>
+    <pin-set expiration="2027-06-01">
+      <!-- primary: GeoTrust TLS RSA CA G1 (issuing intermediate) -->
+      <pin digest="SHA-256">SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</pin>
+      <!-- backup: DigiCert Global Root G2 -->
+      <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
+    </pin-set>
+  </domain-config>
 </network-security-config>

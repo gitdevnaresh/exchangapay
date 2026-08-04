@@ -6,7 +6,11 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation, CommonActions } from "@react-navigation/native";
+// NOTE: navigation is deliberately not imported here. The splash screen must never
+// navigate into the app by itself — routing is driven by real session state via
+// getMemDetails/useMemberLogin. See security finding C-04: a removed "temp login"
+// fallback used CommonActions.reset to jump straight to the Dashboard after
+// fabricating a verified, KYC-approved user. Every failure path here must fail closed.
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Checkbox, Container } from "../components";
 import { useAuth0 } from "react-native-auth0";
@@ -38,7 +42,6 @@ const SplashScreen = React.memo(() => {
   const { authorize, getCredentials, clearSession } = useAuth0();
   const [loading, setLoading] = React.useState(false);
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<any>();
   const styles = useStyleSheet(themedStyles);
   const [fcmToken, setFcmToken] = React.useState<string>("");
   const [isNewLogin, setIsNewLogin] = React.useState<boolean>(false);
@@ -142,7 +145,7 @@ const SplashScreen = React.memo(() => {
   }, [isOnboarding]);
 
   const getUrl = (path: string) => {
-    const envList = getAllEnvData("prod");
+    const envList = getAllEnvData();
     return (envList.oAuthConfig as any)[path];
   };
   const onChange = () => {
@@ -171,72 +174,6 @@ const SplashScreen = React.memo(() => {
       setLoading(false);
     } catch (e) {
       console.error("Auth0 authorization failed:", e);
-      setLoading(false);
-    }
-  };
-
-  // Temporary login function using provided JWT token
-  const onTempLoginPress = async () => {
-    try {
-      setLoading(true);
-      setIsNewLogin(true);
-
-      // Create mock credentials object with the provided JWT token
-      const tempCredentials = {
-        accessToken:
-          "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlRyQndlTVdEbzdMLTIwLUhMNGVPdSJ9.eyJlY29kZSI6IndFM2JHMGRzc0ZzZHE3NC93b1RKc1BuOGlUaWV3bWxWbmhRYXovWFZmY1E9IiwiaWRjIjoiY0FnZVRyVmNlZ1grR1kvREc4K0dWenp0QUk0d2tYbS9WTURuNnRHVEZ4K1BOY1VjYURqK0VFWkRYa0R1dVdCdCIsImlkciI6IlBEWFYrUVZZbTkveUQyb0paYVJqQkE9PSIsImlzcyI6Imh0dHBzOi8vZXhjaGFuZ2FwYXktdHN0LmV1LmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHxhZGNiYzAzZi1iZjM2LTQzMjctYjExYi04YzkyMzVkNWZiYjYiLCJhdWQiOlsiaHR0cHM6Ly9FeGNoYW5nYVRzdEFwaS5uZXQiLCJodHRwczovL2V4Y2hhbmdhcGF5LXRzdC5ldS5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzU4MzYyNjY1LCJleHAiOjE3NTg0NDkwNjUsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhenAiOiJ0dmFmZENWTE5SZUE1Nlp1RW84cTR5QkdHSmw2Uk9xSiJ9.KGAMar0aQdWntql5PE1bkxUb5uljtY2en9RkuCjONKoZGVf7G_1n623cXr6vVAtW3MkNalWhed4iproLCqzutcpJ-RMBMFHpZKsynnm20JGtPXb6NkIuRgVs-sW8wJaw-clFGFVIOUdwiJc0-n9bZx1clw1f81VScrgU1p_6KUvTiemNt-wskRjvoTkMpxz4d1qOB6qwVAkliUb4JbkABSfj41hnM9tk2sL3ZhiOauH_HJWW80R94LdoATYS3pvzgJZa65e4MtJEoDAhdZQZP0BdCUYZTJMuAcXWT7OCkvnbhHCDlwWm9DNM4HVJdLUzutseqTOTOgedN6b-k0_nNg",
-        refreshToken: null, // No refresh token for temp login
-        idToken: null,
-        expiresIn: 86400, // 24 hours
-        tokenType: "Bearer",
-      };
-
-      console.log("Using temporary login with provided JWT token");
-      console.log(
-        "Token expires at:",
-        new Date(1758449065 * 1000).toISOString()
-      );
-
-      // IMPORTANT: Store the token in Keychain first before calling restoreUserSession
-      // This ensures the API service can access the token for authentication
-      await storeToken(
-        tempCredentials.accessToken,
-        tempCredentials.refreshToken
-      );
-
-      await restoreUserSession(tempCredentials, true);
-
-      setLoading(false);
-    } catch (e) {
-      console.error("Temporary login failed:", e);
-      // If the API call fails, let's try to navigate directly to Dashboard
-      // This is a fallback in case the token is invalid or expired
-      try {
-        dispatch(isLogin(true));
-        dispatch(
-          setUserInfo({
-            role: "Customer",
-            isEmailVerified: true,
-            isPhoneNumberVerified: true,
-            isKYC: true,
-            customerState: "Approved",
-            isCustomerReferralCode: true,
-            customerKycRequiredorNot: false,
-            isReferralRequiredOrNot: false,
-            isPhoneNumberverfiyWhileSignup: false,
-            isSumsubKyc: false,
-          })
-        );
-        // Navigate directly to Dashboard
-        navigation?.dispatch(
-          CommonActions.reset({
-            index: 1,
-            routes: [{ name: "Dashboard" }],
-          })
-        );
-      } catch (fallbackError) {
-        console.error("Fallback navigation failed:", fallbackError);
-      }
       setLoading(false);
     }
   };

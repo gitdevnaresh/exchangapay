@@ -111,7 +111,7 @@ const SendCryptoDetails = React.memo((props: any) => {
       "walletCode": cryptoWithdrawData.code,
       "network": selectedNetwork,
       "walletAddress": address,
-      "amount": sendAmmount,
+      "amount": parseFloat(sendAmmount),
       "feeComission": fee?.fee,
       "concurrencyStamp": fee?.concurrencyStamp || "",
       "createdBy": encryptAES(userName),
@@ -312,7 +312,7 @@ const SendCryptoDetails = React.memo((props: any) => {
       walletAddress: address,
       payeeId: selectedPayee.id || "",
       walletCode: cryptoWithdrawData.code,
-      amount: sendAmmount,
+      amount: parseFloat(sendAmmount),
       concurrencyStamp: fee?.concurrencyStamp || "",
       createdby: encryptAES(userName),
     };

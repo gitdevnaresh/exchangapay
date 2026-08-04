@@ -30,6 +30,61 @@
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
+		<!-- H-03: certificate pinning. Mirrors the Android pin-set in
+		     android/app/src/main/res/xml/network_security_config.xml — the two
+		     MUST be updated together or the platforms diverge silently.
+
+		     NSPinnedCAIdentities pins CA certificates in the chain (not the leaf).
+		     Primary is the GeoTrust TLS RSA CA G1 intermediate that issues both
+		     hosts; backup is DigiCert Global Root G2 so a reissue from a different
+		     DigiCert intermediate still validates.
+
+		     devapi.exchangapay.com is intentionally absent: it is issued by Sectigo,
+		     a different CA, and pinning it against these hashes would break it.
+
+		     WARNING — unlike Android's <pin-set expiration>, ATS has no expiry and
+		     no fail-open. If these pins stop matching, the iOS app cannot reach the
+		     API at all and the only remedy is an App Store release. Re-verify before
+		     the intermediate expires 2027-11-02:
+		       openssl s_client -servername api.exchangapay.com \
+		         -connect api.exchangapay.com:443 -showcerts </dev/null \
+		         | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der \
+		         | openssl dgst -sha256 -binary | openssl enc -base64 -->
+		<key>NSPinnedDomains</key>
+		<dict>
+			<key>api.exchangapay.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+				<key>NSPinnedCAIdentities</key>
+				<array>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</string>
+					</dict>
+				</array>
+			</dict>
+			<key>tstapi.exchangapay.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+				<key>NSPinnedCAIdentities</key>
+				<array>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to access the camera for capturing profile photos and scanning QR codes within the app.</string>

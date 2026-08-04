@@ -60,7 +60,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -74,6 +74,144 @@ def enableProguardInReleaseBuilds = false
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
+
+/**
+ * Release signing credentials.
+ *
+ * Release builds MUST NOT be signed with the debug keystore. The debug key is the
+ * React Native template's own keystore (SHA1 5E:8F:16:...:F6:25, password "android")
+ * — it is public, identical in every RN project on GitHub, so anyone could sign a
+ * trojanised build that Android would accept as a legitimate update over this app.
+ *
+ * Credentials are resolved from the environment (CI) or Gradle properties
+ * (~/.gradle/gradle.properties for local release builds) — never from this repo:
+ *
+ *   EXCHANGA_KEYSTORE_PATH      absolute path to the .jks materialised at build time
+ *   EXCHANGA_KEYSTORE_PASSWORD  keystore passphrase
+ *   EXCHANGA_KEY_ALIAS          key alias inside the keystore
+ *   EXCHANGA_KEY_PASSWORD       key passphrase
+ *
+ * If they are absent the release build fails loudly rather than silently falling
+ * back to the debug key. Pass -PallowUnsignedRelease=true to emit an unsigned APK
+ * on purpose (e.g. for analysis); it will not install as an update.
+ */
+def resolveSigningSecret = { String name ->
+    def value = System.getenv(name) ?: project.findProperty(name)
+    return value?.toString()?.trim() ?: null
+}
+
+def releaseKeystorePath = resolveSigningSecret("EXCHANGA_KEYSTORE_PATH")
+def releaseKeystorePassword = resolveSigningSecret("EXCHANGA_KEYSTORE_PASSWORD")
+def releaseKeyAlias = resolveSigningSecret("EXCHANGA_KEY_ALIAS")
+def releaseKeyPassword = resolveSigningSecret("EXCHANGA_KEY_PASSWORD")
+
+def releaseKeystoreFile = releaseKeystorePath ? file(releaseKeystorePath) : null
+// Note: explicit null check rather than `?.exists()` — Gradle instruments File.exists()
+// with a non-null receiver contract, so safe navigation throws instead of returning null.
+def releaseKeystoreExists = releaseKeystoreFile != null && releaseKeystoreFile.exists()
+def hasReleaseSigning = releaseKeystoreExists && releaseKeystorePassword &&
+        releaseKeyAlias && releaseKeyPassword
+
+// Fail only when a release artefact is actually requested, so debug builds and
+// IDE syncs on machines without the signing secrets are unaffected.
+if (!hasReleaseSigning && !project.hasProperty("allowUnsignedRelease")) {
+    gradle.taskGraph.whenReady { graph ->
+        def releaseTask = graph.allTasks.find {
+            it.project == project && it.name ==~ /(?i)(assemble|bundle|install|package).*Release/
+        }
+        if (releaseTask) {
+            throw new GradleException(
+                "Release signing is not configured, and signing a release with the debug " +
+                "keystore is forbidden (see security finding C-03).\n" +
+                (releaseKeystorePath && !releaseKeystoreExists
+                    ? "  EXCHANGA_KEYSTORE_PATH points at a file that does not exist: ${releaseKeystorePath}\n"
+                    : "") +
+                "Set EXCHANGA_KEYSTORE_PATH, EXCHANGA_KEYSTORE_PASSWORD, EXCHANGA_KEY_ALIAS and " +
+                "EXCHANGA_KEY_PASSWORD (environment variables in CI, or ~/.gradle/gradle.properties " +
+                "locally).\nTo build an intentionally unsigned release, pass -PallowUnsignedRelease=true."
+            )
+        }
+    }
+}
+
+/**
+ * H-02 regression guard.
+ *
+ * res/xml/network_security_config.xml is inert unless the <application> tag
+ * actually references it. That omission is silent: the build succeeds, the app
+ * runs, and Android quietly falls back to its default policy, which trusts
+ * user-installed CAs — exactly what the config exists to prevent. The file sat
+ * unreferenced in this repo until the finding was raised.
+ *
+ * Assert on the source manifest that (a) the attribute is present and (b) the
+ * release policy still blocks cleartext and omits user trust anchors. Checked
+ * only when a release artefact is requested, matching the signing guard above.
+ */
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.project == project && it.name ==~ /(?i)(assemble|bundle|install|package).*Release/
+    }
+    if (!releaseTask) return
+
+    def manifest = file("src/main/AndroidManifest.xml").text
+    if (!(manifest =~ /android:networkSecurityConfig\s*=\s*"@xml\/network_security_config"/)) {
+        throw new GradleException(
+            "src/main/AndroidManifest.xml does not set android:networkSecurityConfig on " +
+            "<application> (security finding H-02).\nWithout it Android ignores " +
+            "res/xml/network_security_config.xml and trusts user-installed CAs, making " +
+            "traffic interception straightforward.\nRestore:\n" +
+            "  android:networkSecurityConfig=\"@xml/network_security_config\""
+        )
+    }
+
+    def nsc = file("src/main/res/xml/network_security_config.xml").text
+    if (!(nsc =~ /cleartextTrafficPermitted\s*=\s*"false"/)) {
+        throw new GradleException(
+            "src/main/res/xml/network_security_config.xml no longer sets " +
+            "cleartextTrafficPermitted=\"false\" (security finding H-02)."
+        )
+    }
+    if (nsc =~ /<certificates\s+src\s*=\s*"user"/) {
+        throw new GradleException(
+            "src/main/res/xml/network_security_config.xml trusts user-installed " +
+            "certificates (security finding H-02).\nThat defeats the control: any CA a " +
+            "user or malicious profile installs can then intercept traffic.\nUser trust " +
+            "belongs only in src/debug/res/xml/network_security_config.xml."
+        )
+    }
+
+    // H-03: certificate pinning must be present, carry a backup pin, and not have
+    // silently lapsed. Android treats an expired pin-set as "no pinning" without any
+    // build or runtime warning, so the expiry is checked here instead.
+    def pins = (nsc =~ /<pin\s+digest\s*=\s*"SHA-256"\s*>([^<]+)<\/pin>/).collect { it[1].trim() }
+    if (pins.size() < 2) {
+        throw new GradleException(
+            "src/main/res/xml/network_security_config.xml declares ${pins.size()} " +
+            "certificate pin(s); at least 2 are required (security finding H-03).\n" +
+            "A single pin means the next certificate reissue bricks every installed app " +
+            "with no remote recovery. Keep a backup pin for a CA in the chain."
+        )
+    }
+    def expiryMatch = (nsc =~ /<pin-set\s+expiration\s*=\s*"(\d{4}-\d{2}-\d{2})"/)
+    if (!expiryMatch) {
+        throw new GradleException(
+            "<pin-set> has no expiration attribute (security finding H-03).\nWithout one " +
+            "a stale pin bricks the app permanently instead of degrading to normal " +
+            "certificate validation."
+        )
+    }
+    def expiry = java.time.LocalDate.parse(expiryMatch[0][1])
+    if (!expiry.isAfter(java.time.LocalDate.now())) {
+        throw new GradleException(
+            "Certificate pin-set expired on ${expiry} (security finding H-03).\nAndroid " +
+            "stops enforcing pinning past this date, silently. Re-verify the pins against " +
+            "the live chain and extend the date:\n" +
+            "  openssl s_client -servername api.exchangapay.com -connect api.exchangapay.com:443 \\\n" +
+            "    -showcerts </dev/null | openssl x509 -pubkey -noout \\\n" +
+            "    | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
+        )
+    }
+}
 
 apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
 android {
@@ -101,10 +239,29 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            // Debug builds only. Uses the project-local debug.keystore when a developer
+            // still has one, otherwise falls back to AGP's ~/.android/debug.keystore,
+            // which is generated automatically on first build — so this keeps working
+            // after debug.keystore is removed from the repository.
+            if (file('debug.keystore').exists()) {
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
+        if (hasReleaseSigning) {
+            release {
+                storeFile releaseKeystoreFile
+                storePassword releaseKeystorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+                // v1 (JAR) signatures are forgeable via Janus on API < 24; minSdk is
+                // well above that, so sign with the v2/v3 APK Signature Schemes only.
+                enableV1Signing false
+                enableV2Signing true
+                enableV3Signing true
+            }
         }
     }
     buildTypes {
@@ -112,11 +269,19 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Signed with the dedicated release key resolved above. Never the debug key:
+            // when signing is unconfigured this is null (unsigned output) and the guard
+            // near the top of this file aborts the build instead.
+            signingConfig hasReleaseSigning ? signingConfigs.release : null
+            // C-08: R8 shrinking + obfuscation. The -optimize base file is required
+            // for the -assumenosideeffects Log stripping in proguard-rules.pro to
+            // take effect; plain proguard-android.txt disables optimisation and
+            // silently ignores it. If regression testing surfaces R8-induced
+            // crashes, dropping back to proguard-android.txt is the safer dial.
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            shrinkResources enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                          "proguard-rules.pro"
         }
     }
 }

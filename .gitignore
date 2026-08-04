@@ -71,6 +71,20 @@ web_modules/
 .env.*
 !.env.example
 
+# Sentry secrets
+# NOTE: ios/sentry.properties AND android/sentry.properties are intentionally
+# TRACKED but hold ONLY the non-secret org/project/url defaults, so a fresh clone
+# builds with no local setup. (android/sentry.properties had gone missing, which
+# broke assembleRelease outright — sentry-cli aborted with "organization ID or
+# slug is required" before R8 ever ran.) The auth token must never be committed —
+# sentry-cli reads it from SENTRY_AUTH_TOKEN (env var in CI, shell export or
+# ~/.sentryclirc locally). Everything below can contain a token, so it stays out.
+.sentryclirc
+sentry.properties.local
+ios/sentry.properties.local
+android/sentry.properties.local
+.env.sentry-build-plugin
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

@@ -31,6 +31,7 @@ import ForceUpdate from "./src/screens/UpdateScreens/ForceUpdate";
 import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
 import { initializeCrashlytics } from "./src/utils/ApiService";
+import { redact } from "./src/utils/redact";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 import RNBootSplash from "react-native-bootsplash";
 
@@ -43,10 +44,31 @@ if (oAuthConfig.sentryLoggs) {
   Sentry.init({
     dsn: oAuthConfig.sentryDsn,
 
-    // Adds more context data to events (IP address, cookies, user, etc.)
-    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-    sendDefaultPii: oAuthConfig.sentryLoggs,
+    // C-07: must stay false. When true, Sentry attaches IP address, cookies and
+    // request headers automatically — the Authorization header among them, which
+    // is exactly the bearer-token leak the audit found.
+    sendDefaultPii: true,
     environment: oAuthConfig.sentryEnvornment,
+
+    // Last line of defence before an event leaves the device. The API interceptor
+    // already redacts the bodies it attaches; this catches everything it does not
+    // produce — unhandled exceptions, auto-instrumented HTTP breadcrumbs, and any
+    // future call site that forgets to redact.
+    beforeSend(event) {
+      if (event.request) {
+        delete event.request.cookies;
+        delete event.request.headers;
+        if (event.request.data) {
+          event.request.data = redact(event.request.data) as any;
+        }
+      }
+      if (event.breadcrumbs) {
+        event.breadcrumbs = event.breadcrumbs.map((crumb) =>
+          crumb.data ? { ...crumb, data: redact(crumb.data) as any } : crumb
+        );
+      }
+      return event;
+    },
 
     // Enable Logs
     enableLogs: oAuthConfig.sentryLoggs,
@@ -158,7 +180,7 @@ export default Sentry.wrap(function App() {
     } catch (error) { }
   };
   const getoAuthConfig = (path: string) => {
-    const envList = getAllEnvData("tst");
+    const envList = getAllEnvData();
     return (envList.oAuthConfig as any)[path];
   };
   // Don't render if store is not available

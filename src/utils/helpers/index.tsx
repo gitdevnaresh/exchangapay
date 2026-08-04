@@ -1,7 +1,5 @@
 import dayjs from "dayjs";
 import { Platform } from "react-native";
-import QuickCrypto from "react-native-quick-crypto";
-import { Buffer } from "@craftzdog/react-native-buffer";
 import { jwtDecode } from "jwt-decode";
 import { decode as atob } from "base-64";
 import * as Keychain from "react-native-keychain";
@@ -363,41 +361,6 @@ export const checkValidationNumber = (newValue: any) => {
   return newValue;
 };
 
-// PBKDF2 + AES-256-CBC via react-native-quick-crypto (NATIVE). The wire format
-// is unchanged and byte-for-byte identical to the previous crypto-js output:
-//   salt.hex(32 chars) + iv.hex(32 chars) + base64(AES-CBC-PKCS7 ciphertext)
-// NOTE: crypto-js 4.2 defaults PBKDF2 to SHA-256 (not SHA-1), so the digest is
-// pinned explicitly here — using SHA-1 would silently produce a different key.
-const PBKDF2_ITERATIONS = 10;
-const PBKDF2_KEY_BYTES = 32;
-const PBKDF2_DIGEST = "sha256";
-
-export const encryptValue = (msg: any, key: any) => {
-  try {
-    const text = typeof msg === "string" ? msg : JSON.stringify(msg);
-    const salt = QuickCrypto.randomBytes(16);
-    const derivedKey = QuickCrypto.pbkdf2Sync(
-      key,
-      salt,
-      PBKDF2_ITERATIONS,
-      PBKDF2_KEY_BYTES,
-      PBKDF2_DIGEST
-    );
-
-    const iv = QuickCrypto.randomBytes(16);
-
-    const cipher = QuickCrypto.createCipheriv("aes-256-cbc", derivedKey, iv);
-    const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
-
-    return (
-      Buffer.from(salt).toString("hex") +
-      Buffer.from(iv).toString("hex") +
-      encrypted.toString("base64")
-    );
-  } catch (error) {
-    return "";
-  }
-};
 export const formatDateTimeAPI = (date: any) => {
   if (date !== null) {
     return dayjs(new Date(date)).format("YYYY-MM-DDT00:00:00");
@@ -422,7 +385,10 @@ export const trimValues = (obj: any) => {
   return trimmedObj;
 };
 
-const ENV = "tst";
+// Derived from the single source of truth rather than a second hardcoded literal,
+// which could drift out of step with the backend the app is actually talking to
+// and select mainnet address validation against a testnet backend, or vice versa.
+const ENV = getAllEnvData().envName;
 
 const mainnetAddressRegex = {
   btc: /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}|bc1p[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58})$/,
