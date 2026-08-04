@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js';
-import * as Keychain from 'react-native-keychain';
+import { KEYCHAIN_SERVICES, readSecret, writeSecret } from '../utils/storage/keychainPolicy';
 import moment from 'moment';
 import axios from 'axios';
 
@@ -69,7 +69,7 @@ export class KommoChatAPI {
             if (data.scope_id) {
                 this.scopeId = data.scope_id;
                 this.isConnected = true;
-                await Keychain.setGenericPassword('kommo_scope_id', data.scope_id, { service: 'chat_bot' });
+                await writeSecret(KEYCHAIN_SERVICES.CHAT_BOT, 'kommo_scope_id', data.scope_id);
                 return data;
             } else {
                 throw new Error('No scope_id in response');
@@ -124,9 +124,9 @@ export class KommoChatAPI {
     }
     async sendUserMessage(messageConfig, conversation_id) {
         let scopeId = null;
-        const credentials = await Keychain.getGenericPassword({ service: 'chat_bot' });
-        if (credentials && credentials.username === 'kommo_scope_id') {
-            scopeId = credentials.password;
+        const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
+        if (stored.username === 'kommo_scope_id') {
+            scopeId = stored.value;
         };
         const messageObject = {
             type: messageConfig.type,
@@ -177,9 +177,9 @@ export class KommoChatAPI {
     }
     async sendSignedGetRequest(conversation_id) {
         let kommoScopeId = null;
-        const credentials = await Keychain.getGenericPassword({ service: 'chat_bot' });
-        if (credentials && credentials.username === 'kommo_scope_id') {
-            kommoScopeId = credentials.password;
+        const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
+        if (stored.username === 'kommo_scope_id') {
+            kommoScopeId = stored.value;
         }
         const secret = '60d0c569acef691e8c11f4db628152b5aaa3ab4a';
         const method = 'GET';

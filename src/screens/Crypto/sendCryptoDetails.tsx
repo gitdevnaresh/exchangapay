@@ -30,7 +30,14 @@ import AddressbookService from "../../services/addressbook";
 import DeafultList from "../../components/DeafultPicker";
 import Cookies from '@react-native-cookies/cookies';
 import { cryptoReceiveLoader } from "./buySkeleton_views";
-import { guardHighRiskAction } from "../../security";
+import {
+  getTwoFactorAllowedOrigins,
+  guardHighRiskAction,
+  isAllowedTwoFactorUrl,
+  matchTwoFactorCallback,
+  parseHttpsUrl,
+} from "../../security";
+import { log } from "../../utils/logger";
 
 let amount;
 
@@ -62,6 +69,13 @@ const SendCryptoDetails = React.memo((props: any) => {
   const [securityInfo, setSecurityInfo] = useState<any>({});
   const [webViewVisible, setWebViewVisible] = useState<boolean>(false);
   const [twoFactorAuthUrl, setTwoFactorAuthUrl] = useState<string>("");
+  // H-10: the host of whatever the 2FA WebView is currently showing. A WebView
+  // has no address bar, so without this the user has no way to tell our identity
+  // provider's login page from one drawn to look like it.
+  const [webViewHost, setWebViewHost] = useState<string>("");
+  // Fixed for the lifetime of the build; memoised so the WebView never sees a
+  // changed prop mid-authentication.
+  const twoFactorOrigins = React.useMemo(() => getTwoFactorAllowedOrigins(), []);
   const { encryptAES, decryptAES } = useEncryptDecrypt();
   const [payeesList, setPayeesList] = useState<any>([]);
   const [openPayeesModel, setOpenPayeesModel] = useState<boolean>(false);
@@ -121,6 +135,17 @@ const SendCryptoDetails = React.memo((props: any) => {
     try {
       const res: any = await CryptoServices.updateTwoFactorAuthentication(body);
       if (res.ok && res.data) {
+        // H-10: an API response is not a reason to load a page. Validate the URL
+        // before it ever reaches the WebView — a compromised or spoofed response
+        // otherwise picks the origin the user is about to authenticate against.
+        if (!isAllowedTwoFactorUrl(res.data)) {
+          log.error("[2FA] rejected a two-factor URL outside the allow-list", undefined, {
+            host: parseHttpsUrl(res.data)?.host || "unparseable",
+          });
+          setErrormsg("Unable to start two-factor authentication. Please try again.");
+          return;
+        }
+        setWebViewHost(parseHttpsUrl(res.data)?.host || "");
         setTwoFactorAuthUrl(res.data);
         setWebViewVisible(true);
       } else {
@@ -435,12 +460,27 @@ const SendCryptoDetails = React.memo((props: any) => {
 
   const handleCloseWebView = () => {
     setWebViewVisible(false);
+    setWebViewHost("");
   };
-  const trigger2FAValidation = async (url: string) => {
+
+  /** True for a session that must be dropped, whatever transport reported it. */
+  const isUnauthorizedBody = (data: any) =>
+    typeof data?.detail === "string" &&
+    data.detail.includes("Please log in using the authorized user credentials");
+
+  /**
+   * H-10: `query` is a query string, not a URL.
+   *
+   * It reaches here only from matchTwoFactorCallback(), which requires the
+   * callback to be on this build's own API host at the exact 2FA path. The
+   * request itself goes through the standard API client, whose base URL is fixed
+   * at build time — so the bearer token cannot follow the WebView anywhere.
+   */
+  const trigger2FAValidation = async (query: string) => {
     if (!isApitriggerd) {
       setIsApiTriggered(true)
       try {
-        const response: any = await CryptoServices.makeAuthenticatedGetRequest(url);
+        const response: any = await CryptoServices.getTwoFactorAuthenticationCodeState(query);
         if (response?.status === 200) {
           setIsApiTriggered(false)
           if (response?.data === true) {
@@ -452,19 +492,24 @@ const SendCryptoDetails = React.memo((props: any) => {
           } else {
             setErrormsg("Your withdrawal was unsuccessful , Please try again after some time.")
           };
-          setWebViewVisible(false);
+          handleCloseWebView();
 
         } else {
           setIsApiTriggered(false)
-          setWebViewVisible(false);
+          handleCloseWebView();
           setErrormsg(isErrorDispaly(response));
+          // apisauce resolves HTTP errors instead of throwing, so the expired
+          // session lands here rather than in the catch below.
+          if (isUnauthorizedBody(response?.data)) {
+            Cookies.clearAll(true);
+          }
         }
 
       } catch (error: any) {
-        setErrormsg(isErrorDispaly(error.response));
-        setWebViewVisible(false);
+        setErrormsg(isErrorDispaly(error?.response || error));
+        handleCloseWebView();
         setIsApiTriggered(false)
-        if (error.response?.data?.detail?.includes("Please log in using the authorized user credentials")) {
+        if (isUnauthorizedBody(error?.response?.data)) {
           Cookies.clearAll(true);
         }
 
@@ -472,13 +517,52 @@ const SendCryptoDetails = React.memo((props: any) => {
     }
   };
 
-
+  /**
+   * H-10: completion is recognised by parsed host + exact path.
+   *
+   * The old check was `navState.url.includes(".../TwoFactorAuthenticationCodeState")`,
+   * which any attacker-controlled URL satisfied by carrying that text in a query
+   * parameter.
+   */
   const handleWebViewNavigationStateChange = async (navState: any) => {
-    if (navState.url?.includes("/api/v1/Common/TwoFactorAuthenticationCodeState")) {
-      await trigger2FAValidation(navState.url);
+    setWebViewHost(parseHttpsUrl(navState?.url)?.host || "");
+
+    const callbackQuery = matchTwoFactorCallback(navState?.url);
+    if (callbackQuery !== null) {
+      await trigger2FAValidation(callbackQuery);
       return;
 
     }
+  };
+
+  /**
+   * H-10: the gate that actually keeps the WebView on our hosts.
+   *
+   * Sub-frames are left alone — the identity provider embeds bot-detection and
+   * asset frames that have nothing to do with the top-level document, and they
+   * cannot reach anything of ours. On Android this callback only ever fires for
+   * main-frame navigation, so `isTopFrame` is undefined there and the strict
+   * branch applies.
+   */
+  const handleShouldStartLoad = (request: any) => {
+    if (request?.isTopFrame === false) {
+      return true;
+    }
+    // The platforms use about:blank as an empty intermediate document between
+    // redirects. It renders nothing and, with pop-ups disabled above, has no
+    // opener that could script it.
+    if (request?.url === "about:blank") {
+      return true;
+    }
+    if (isAllowedTwoFactorUrl(request?.url)) {
+      return true;
+    }
+    log.warn("[2FA] blocked WebView navigation to a non-allow-listed host", {
+      host: parseHttpsUrl(request?.url)?.host || "unparseable",
+    });
+    handleCloseWebView();
+    setErrormsg("Two-factor authentication was interrupted. Please try again.");
+    return false;
   };
 
   const renderWebViewLoading = () => (
@@ -695,18 +779,44 @@ const SendCryptoDetails = React.memo((props: any) => {
             animationType="slide"
           >
             <SafeAreaView style={styles.webViewSafeArea}>
-              <TouchableOpacity onPress={handleCloseWebView} style={styles.closeButton}>
-                <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+              <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                <TouchableOpacity onPress={handleCloseWebView} style={styles.closeButton}>
+                  <AntDesign name="arrowleft" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
 
-              </TouchableOpacity>
+                </TouchableOpacity>
+                {/* H-10: stands in for the address bar the WebView does not have. */}
+                <ParagraphComponent
+                  text={webViewHost ? `🔒 ${webViewHost}` : ""}
+                  numberOfLines={1}
+                  style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textGrey, commonStyles.flex1]}
+                />
+              </View>
               <WebView
                 source={{ uri: twoFactorAuthUrl }}
                 style={styles.webView}
                 onNavigationStateChange={handleWebViewNavigationStateChange}
+                // H-10: two independent origin gates. originWhitelist keeps the
+                // WebView from following a link off our hosts at all;
+                // onShouldStartLoadWithRequest re-checks every navigation it is
+                // asked to start, including redirects.
+                originWhitelist={twoFactorOrigins}
+                onShouldStartLoadWithRequest={handleShouldStartLoad}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 startInLoadingState={true}
                 renderLoading={renderWebViewLoading}
+                // No downgrade to http, so a network attacker cannot strip TLS
+                // and rewrite the page the user authenticates on.
+                mixedContentMode="never"
+                thirdPartyCookiesEnabled={false}
+                allowFileAccess={false}
+                allowFileAccessFromFileURLs={false}
+                allowUniversalAccessFromFileURLs={false}
+                // Pop-ups escape the gates above: a new window is not a
+                // navigation of this one. Force target=_blank back into this
+                // WebView, where handleShouldStartLoad sees it.
+                setSupportMultipleWindows={false}
+                javaScriptCanOpenWindowsAutomatically={false}
               />
 
             </SafeAreaView>

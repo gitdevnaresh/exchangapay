@@ -39,11 +39,14 @@
 
 import QuickCrypto from "react-native-quick-crypto";
 import { Buffer } from "@craftzdog/react-native-buffer";
-import * as Keychain from "react-native-keychain";
-import { SECURE_WRITE_OPTIONS } from "./keychain";
+import {
+  KEYCHAIN_SERVICES,
+  readSecret,
+  writeSecret,
+} from "../storage/keychainPolicy";
 
 /** Versioned so a future key-derivation change can migrate rather than collide. */
-const PERSIST_KEY_SERVICE = "exchangapay.persistKey.v1";
+const PERSIST_KEY_SERVICE = KEYCHAIN_SERVICES.PERSIST_KEY;
 const PERSIST_KEY_BYTES = 32;
 
 /**
@@ -60,10 +63,10 @@ const generate = (): Uint8Array =>
   Uint8Array.from(QuickCrypto.randomBytes(PERSIST_KEY_BYTES));
 
 const write = async (key: Uint8Array): Promise<void> => {
-  await Keychain.setGenericPassword(
+  await writeSecret(
+    PERSIST_KEY_SERVICE,
     "persistKey",
-    Buffer.from(key).toString("base64"),
-    { ...SECURE_WRITE_OPTIONS, service: PERSIST_KEY_SERVICE }
+    Buffer.from(key).toString("base64")
   );
 };
 
@@ -78,12 +81,20 @@ const write = async (key: Uint8Array): Promise<void> => {
 export const loadOrCreatePersistKey = async (): Promise<Uint8Array> => {
   if (cachedKey) return cachedKey;
 
-  const existing = await Keychain.getGenericPassword({
-    service: PERSIST_KEY_SERVICE,
-  });
+  const existing = await readSecret(PERSIST_KEY_SERVICE);
 
-  if (existing && existing.password) {
-    const stored = Uint8Array.from(Buffer.from(existing.password, "base64"));
+  // H-11: only a genuinely absent entry may be replaced with a fresh key.
+  // Reads can now fail for reasons that are nothing to do with the key existing
+  // — a locked handset, a native error — and generating a new key on one of
+  // those would orphan every byte of state the old key protected. Throwing
+  // hands the decision to startPersistence(), which runs the app with no
+  // persisted state and leaves the stored key untouched for the next launch.
+  if (existing.status !== "ok" && existing.status !== "empty") {
+    throw new Error(`Persist key unreadable (${existing.status})`);
+  }
+
+  if (existing.value) {
+    const stored = Uint8Array.from(Buffer.from(existing.value, "base64"));
     if (stored.length === PERSIST_KEY_BYTES) {
       cachedKey = stored;
       return cachedKey;

@@ -5,9 +5,12 @@
  * THE SANCTIONED PATHS — there are three, and there are only three
  * ===========================================================================
  *
- *   Auth tokens          Keychain, service "authTokenService"
- *                        write: storeToken()      (src/utils/helpers/index.tsx)
- *                        read:  GetTokens()       (src/utils/ApiService.ts)
+ *   Access token         Keychain, service "authTokenService"
+ *                        write/read: src/utils/storage/authTokens.ts
+ *
+ *   Refresh token        Keychain, service "refreshTokenService", under a
+ *                        stricter accessibility class than the access token
+ *                        (H-11). Never in the same entry — see authTokens.ts.
  *
  *   Member record        Keychain, service "userInfoService"
  *   (incl. `sk`)         written on login in useMemberLogin, cleared on logout
@@ -18,6 +21,11 @@
  *
  *   Everything else      AsyncStorage — and ONLY things that are not sensitive:
  *                        theme, unread counters, crash-reporting consent.
+ *
+ * Every one of those Keychain entries is written through
+ * src/utils/storage/keychainPolicy.ts, which owns the options and the full
+ * service inventory that logout clears. Importing react-native-keychain
+ * anywhere else fails __tests__/keychainPolicy.test.ts (H-11).
  *
  * ===========================================================================
  * WHY THIS FILE EXISTS

@@ -20,7 +20,7 @@ import { EMAIL_CONSTANTS, REGISTRATION_CONSTATNTS, USER_CONSTANTS } from './cons
 import useMemberLogin from '../../hooks/useMemberLogin';
 import CommonPopup from '../../components/commonPopup';
 import { SvgUri } from 'react-native-svg';
-import * as Keychain from "react-native-keychain";
+import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -90,15 +90,17 @@ const VerifyEmail = () => {
         dispatch(isLogin(false));
         await logOutLogData();
         const response = OnBoardingService.updateFcmToken();
-        await Keychain.setGenericPassword("authToken", JSON.stringify({ token: "", expiryTime: "", refresh_token: "" }), {
-            service: "authTokenService",
-        }),
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 1,
-                    routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-                })
-            );
+        // H-11: this used to overwrite the token entry with empty strings,
+        // which leaves a live record behind (and, before the split, an empty
+        // refresh token that would have clobbered a good one). Clearing the
+        // entries is what sign-out means.
+        await clearAllSecureEntries();
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 1,
+                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
+            })
+        );
         fcmNotification.unRegister();
 
 

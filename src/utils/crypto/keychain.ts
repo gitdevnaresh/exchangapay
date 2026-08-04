@@ -9,35 +9,25 @@
  * protects it should not leave the handset.
  */
 
-import * as Keychain from "react-native-keychain";
+import {
+  readSecretValue,
+  resetSecret,
+  SECURE_WRITE_OPTIONS,
+  writeSecret,
+} from "../storage/keychainPolicy";
 
 /**
- * Write options for everything this module owns.
+ * H-11 consolidated the write options this module used to define into
+ * src/utils/storage/keychainPolicy.ts, so that every entry in the app —
+ * tokens, member record, persisted state — is written with one reviewed set
+ * rather than three that drift apart. Re-exported because existing callers
+ * import it from here.
  *
- * accessible: AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY
- *   The `_THIS_DEVICE_ONLY` suffix is the part that matters — it excludes the
- *   item from encrypted backups and from device-to-device migration, so an
- *   extracted backup no longer yields the app's session state.
- *
- *   WHEN_UNLOCKED_THIS_DEVICE_ONLY is one notch stronger, and is deliberately
- *   NOT used: this app wakes for FCM background messages, and state written
- *   while the handset is locked would fail silently under that flag. Failing
- *   writes are a worse outcome than a locked-device read window that already
- *   requires the device to have been unlocked once since boot.
- *
- * storage: AES_GCM_NO_AUTH (Android)
- *   Android Keystore AES-GCM without a biometric prompt. `AES_GCM` would demand
- *   user authentication on every read, which redux-persist does constantly.
- *
- * securityLevel is deliberately unset. Requesting SECURE_HARDWARE makes
- * react-native-keychain throw outright on devices with no TEE, which would take
- * persistence down entirely on that hardware; the default already prefers
- * hardware backing where it exists.
+ * The reasoning behind AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY rather than
+ * WHEN_UNLOCKED_THIS_DEVICE_ONLY, which applies to persisted state as much as
+ * to the tokens, now lives with the constant.
  */
-export const SECURE_WRITE_OPTIONS: Keychain.SetOptions = {
-  accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-  storage: Keychain.STORAGE_TYPE.AES_GCM_NO_AUTH,
-};
+export { SECURE_WRITE_OPTIONS };
 
 /**
  * redux-persist storage adapter. One Keychain entry per persist key, with the
@@ -46,18 +36,14 @@ export const SECURE_WRITE_OPTIONS: Keychain.SetOptions = {
  */
 export const createKeychainStorage = () => ({
   async getItem(key: string): Promise<string | null> {
-    const credentials = await Keychain.getGenericPassword({ service: key });
-    return credentials ? credentials.password : null;
+    return readSecretValue(key);
   },
 
   async setItem(key: string, value: string): Promise<void> {
-    await Keychain.setGenericPassword("persist", value, {
-      ...SECURE_WRITE_OPTIONS,
-      service: key,
-    });
+    await writeSecret(key, "persist", value);
   },
 
   async removeItem(key: string): Promise<void> {
-    await Keychain.resetGenericPassword({ service: key });
+    await resetSecret(key);
   },
 });

@@ -7,7 +7,7 @@ import { isLogin, setUserInfo } from "../redux/Actions/UserActions";
 import AuthService from "../services/auth";
 import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
-import * as Keychain from "react-native-keychain";
+import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
 import OnBoardingService from "../services/onBoardingservice";
 import { clearDecryptCache } from "./useEncryption_Decryption";
 import { clearAttestationToken } from "../security";
@@ -56,13 +56,13 @@ const useLogout = () => {
         if (userInfo) {
             await logOutLogData();
         }
-        await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
-        await Keychain.resetGenericPassword({ service: "authTokenService" });
-        // H-05: logout previously reset two Keychain services and left both the
-        // member record and the persisted state blob behind, so the encryption
-        // key, the KYC/role flags and the cached account data survived until the
-        // next login overwrote them.
-        await Keychain.resetGenericPassword({ service: "userInfoService" });
+        // H-05 / H-11: logout previously reset two Keychain services and left
+        // the rest behind, so the member record, the persisted state blob, its
+        // encryption key and the chat identifiers all survived sign-out and
+        // lived on until the next login happened to overwrite them. One call,
+        // driven by the inventory in keychainPolicy.ts, so a service added
+        // later is cleared without anyone remembering to come back here.
+        await clearAllSecureEntries();
         await persistor.purge();
         // Rotate after the purge: if the purge is interrupted, or a copy of the
         // blob survives in a backup or a forensic image, the leftovers become

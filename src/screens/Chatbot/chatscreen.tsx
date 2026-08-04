@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
-import * as Keychain from 'react-native-keychain';
+import { KEYCHAIN_SERVICES, readSecretValue, writeSecret } from '../../utils/storage/keychainPolicy';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { KommoChatAPI } from '../../services/chatService';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -154,7 +154,7 @@ const KommoChatScreen = (props: any) => {
             setSelectedImage(null);
             const result: any = await api.sendUserMessage(messageConfig, currentChatId);
             if (result?.success) {
-                await Keychain.setGenericPassword('conversationId', result?.data?.new_message.conversation_id, { service: 'chat_conversation_Id' });
+                await writeSecret(KEYCHAIN_SERVICES.CHAT_CONVERSATION, 'conversationId', result?.data?.new_message.conversation_id);
                 if (result?.data.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id
@@ -209,9 +209,9 @@ const KommoChatScreen = (props: any) => {
 
     const getChatHistory = async () => {
         try {
-            const credentials = await Keychain.getGenericPassword({ service: 'chat_conversation_Id' });
-            if (credentials && credentials.password) {
-                const chatHistory = await api.sendSignedGetRequest(credentials.password);
+            const conversationId = await readSecretValue(KEYCHAIN_SERVICES.CHAT_CONVERSATION);
+            if (conversationId) {
+                const chatHistory = await api.sendSignedGetRequest(conversationId);
                 if (chatHistory?.success) {
                     const formattedMessages = chatHistory.data?.messages.map(formatApiMessage).filter(Boolean);
                     formattedMessages?.sort((a: any, b: any) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -257,7 +257,7 @@ const KommoChatScreen = (props: any) => {
             const result: any = await api.sendUserMessage(messageConfig, currentChatId);
             if (result?.success) {
                 setMessages(prev => [...prev, tempMessage]);
-                await Keychain.setGenericPassword('conversationId', result?.data?.new_message.conversation_id, { service: 'chat_conversation_Id' });
+                await writeSecret(KEYCHAIN_SERVICES.CHAT_CONVERSATION, 'conversationId', result?.data?.new_message.conversation_id);
                 if (result?.data.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id

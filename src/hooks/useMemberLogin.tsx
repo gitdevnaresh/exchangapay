@@ -15,7 +15,7 @@ import {
 } from "../redux/Actions/UserActions";
 import crashlytics from "@react-native-firebase/crashlytics";
 import useChekBio from "./useCheckBio";
-import * as Keychain from "react-native-keychain";
+import { KEYCHAIN_SERVICES, writeSecret } from "../utils/storage/keychainPolicy";
 
 interface GetMemDetailsParams {
   isNewLogin?: boolean;
@@ -69,12 +69,13 @@ const useMemberLogin = () => {
       const userLoginInfo: any = await AuthService.getMemberInfo();
       const userDetails = userLoginInfo?.data;
       if (userLoginInfo?.status === 200) {
-        await Keychain.setGenericPassword(
+        // H-11: written with the shared options — device-only, so the member
+        // record (which carries `sk`) no longer syncs to iCloud or appears in
+        // a device backup.
+        await writeSecret(
+          KEYCHAIN_SERVICES.USER_INFO,
           "userInfo",
-          JSON.stringify(userDetails),
-          {
-            service: "userInfoService",
-          }
+          JSON.stringify(userDetails)
         );
         dispatch(setUserInfo(userDetails));
         if (isOnlyMember) {

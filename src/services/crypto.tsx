@@ -2,8 +2,6 @@
 import { update } from 'lodash';
 import { get, post, put } from '../utils/ApiService';
 import { marketApi, api, transactionApi, transactionBankApi, coingico, cardApi } from '../utils/api';
-import axios from 'axios';
-import * as Keychain from "react-native-keychain";
 
 
 const CryptoServices = {
@@ -82,18 +80,22 @@ const CryptoServices = {
     }, updateTwoFactorAuthentication: async (body: any) => {
         return post(`api/v1/Common/TwoFactorAuthenticationURL`, body)
     },
-    getWithdrawStatus: async (url: string) => {
-        return get(url);
-    }, makeAuthenticatedGetRequest: async (url: string) => {
-        const credentials = await Keychain.getGenericPassword({
-            service: "authTokenService",
-        });
-        const { token } = JSON.parse(credentials.password);
-        return axios.get(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+    /**
+     * H-10: read the 2FA challenge result.
+     *
+     * `query` is the query string the WebView callback landed with — validated by
+     * matchTwoFactorCallback() in src/security/webViewUrlPolicy.ts, which returns
+     * a query and never a URL. The host and path are fixed here, so the bearer
+     * token can only ever go to this build's own API.
+     *
+     * This replaces makeAuthenticatedGetRequest(url) and getWithdrawStatus(url),
+     * both of which took a caller-supplied URL: the first read the token out of
+     * the Keychain and attached it to a raw axios GET against whatever it was
+     * given. Do not reintroduce that shape — a URL argument is what turned a
+     * redirect into an account takeover.
+     */
+    getTwoFactorAuthenticationCodeState: async (query: string = "") => {
+        return get(`/api/v1/Common/TwoFactorAuthenticationCodeState${query}`)
     }
 
 }

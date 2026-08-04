@@ -25,7 +25,7 @@ import { useAuth0 } from 'react-native-auth0';
 import CommonPopup from '../../components/commonPopup';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import OnBoardingService from '../../services/onBoardingservice';
-import * as Keychain from "react-native-keychain";
+import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 
 
 const RigistrationReferral = () => {
@@ -92,8 +92,8 @@ const RigistrationReferral = () => {
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
         const response = await OnBoardingService.updateFcmToken();
-        await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
-        await Keychain.resetGenericPassword({ service: "authTokenService" });
+        // H-11: clear every keychain service, not the two this path happened to know about.
+        await clearAllSecureEntries();
         logOutLogData()
         navigation.dispatch(
             CommonActions.reset({

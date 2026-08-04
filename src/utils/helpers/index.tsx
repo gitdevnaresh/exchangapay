@@ -1,13 +1,18 @@
 import dayjs from "dayjs";
 import { Platform } from "react-native";
-import { jwtDecode } from "jwt-decode";
 import { decode as atob } from "base-64";
-import * as Keychain from "react-native-keychain";
 import moment from "moment";
 import Auth0 from "react-native-auth0";
 import { getAllEnvData } from "../../../Environment";
 import store from "../../store";
 import { isSessionExpired } from "../../redux/Actions/UserActions";
+import { log } from "../logger";
+import {
+  readAccessToken,
+  readAccessTokenExpiry,
+  readRefreshToken,
+  storeAuthTokens,
+} from "../storage/authTokens";
 declare const global: any;
 if (typeof global.atob === "undefined") {
   global.atob = atob;
@@ -118,17 +123,15 @@ export const formatOnlyDateLocal = (transactionData: any) => {
 
   return formattedDate;
 };
+/**
+ * H-11: this used to call `getGenericPassword()` with no service name, so it
+ * read the *default* keychain entry rather than "authTokenService" — a
+ * different item than every other token reader in the app. It now goes through
+ * the single accessor like everything else.
+ */
 export const getTokenData = async () => {
-  try {
-    const credentials = await Keychain.getGenericPassword();
-    if (credentials) {
-      const { token } = JSON.parse(credentials.password);
-      return token;
-    }
-    return null;
-  } catch (err) {
-    return null;
-  }
+  const { value } = await readAccessToken();
+  return value;
 };
 export const hideDigits = (input: string): string => {
   if (!input) {
@@ -466,18 +469,17 @@ export const validateCryptoAddress = (
   return regex.test(address.trim());
 };
 
+/**
+ * H-11: the write now carries the shared options (device-only, never backed up
+ * or synced to iCloud) and puts the refresh token in its own, stricter entry.
+ * Kept as a thin wrapper because SplashScreen and the refresh path both call it.
+ */
 export const storeToken = async (token: string, refresh_token: any) => {
   try {
-    const decoded: any = jwtDecode(token);
-    const expiryTime = decoded.exp * 1000;
-    await Keychain.setGenericPassword(
-      "authToken",
-      JSON.stringify({ token, expiryTime, refresh_token }),
-      {
-        service: "authTokenService",
-      }
-    );
-  } catch (err) { }
+    await storeAuthTokens(token, refresh_token);
+  } catch (err) {
+    log.error("Failed to store auth tokens", err);
+  }
 };
 
 export function formatExpityDate(dateString: any) {
@@ -558,60 +560,82 @@ export const formatTimestamp = (date: Date) => {
   return `${dateString}, ${timeString}`;
 };
 export const getDecodedTokenExpiry = async (): Promise<number | null> => {
-  try {
-    const credentials = await Keychain.getGenericPassword({
-      service: "authTokenService",
-    });
-    if (!credentials) {
-      return null;
-    }
-    const { token } = JSON.parse(credentials.password);
-    const decodedToken: any = jwtDecode(token);
-    const expiryTime = decodedToken?.exp; // exp is a number (seconds)
-    return expiryTime;
-  } catch (error) {
-    return null;
-  }
+  const { value } = await readAccessTokenExpiry();
+  return value;
 };
 
-export const checkAndRefreshToken = async () => {
+/**
+ * Outcome of a refresh attempt. The caller schedules its next run from this —
+ * "the read failed because the device was locked" and "there is no session"
+ * must not lead to the same behaviour.
+ */
+export type TokenRefreshOutcome =
+  /** Token refreshed, or none needed yet. */
+  | "ok"
+  /** No stored session. Nothing to refresh, and nothing to retry. */
+  | "no-session"
+  /** Could not read the entry right now (locked device, dismissed prompt). */
+  | "unavailable"
+  /** The identity provider rejected the refresh token. */
+  | "rejected";
+
+/**
+ * H-11: reads the refresh token from its own entry, and reports *why* it could
+ * not proceed.
+ *
+ * The previous version swallowed every failure into a bare `return`, so a
+ * transient keychain error was indistinguishable from an expired session — and
+ * the caller retried it in a tight loop.
+ */
+export const checkAndRefreshToken = async (): Promise<TokenRefreshOutcome> => {
   const { oAuthConfig } = getAllEnvData();
   const auth0 = new Auth0({
     domain: oAuthConfig.issuer,
     clientId: oAuthConfig.clientId,
   });
   try {
-    const credentials = await Keychain.getGenericPassword({
-      service: "authTokenService",
-    });
-    if (!credentials) {
-      return;
+    const refresh = await readRefreshToken();
+    if (refresh.status === "empty") {
+      return "no-session";
     }
-    const { refresh_token } = JSON.parse(credentials.password);
-    // Ensure there is a refresh token to use
-    if (!refresh_token) {
-      // Could dispatch a logout action here if a refresh token is required but missing
-      return;
+    if (refresh.status !== "ok" || !refresh.value) {
+      // Locked, cancelled, invalidated or unclassifiable. The session may well
+      // be fine; the entry just is not readable at this instant.
+      return "unavailable";
     }
-    const decodedToken: any = await getDecodedTokenExpiry();
+
+    const expiry = await readAccessTokenExpiry();
+    if (expiry.status === "empty") {
+      return "no-session";
+    }
+    if (expiry.status !== "ok" || !expiry.value) {
+      return "unavailable";
+    }
+
     const currentTime = Math.floor(Date.now() / 1000);
     // Check if token needs refreshing (expires within the next 60 seconds)
-    if (decodedToken && decodedToken - currentTime <= 60) {
+    if (expiry.value - currentTime <= 60) {
       try {
         const refreshed = await auth0.auth.refreshToken({
-          refreshToken: refresh_token,
+          refreshToken: refresh.value,
         });
-        // CORRECTED: Handle refresh token rotation.
-        // Use the new refresh token from the response if it exists, otherwise fallback to the old one.
-        const newRefreshToken = refreshed.refreshToken || refresh_token;
-        await storeToken(refreshed.accessToken, newRefreshToken);
+        // Handle refresh token rotation: use the new refresh token from the
+        // response if it exists, otherwise keep the one we already hold.
+        const newRefreshToken = refreshed.refreshToken || refresh.value;
+        await storeAuthTokens(refreshed.accessToken, newRefreshToken);
       } catch (error: any) {
-        // This error often occurs if the refresh token is expired or revoked.
-        // You should handle this by logging the user out.
-        // store.dispatch(isSessionExpired(true));
+        // Usually an expired or revoked refresh token. Reported rather than
+        // swallowed so the caller can stop retrying; the session-expiry
+        // dispatch still happens on the next 401, as it did before.
+        log.warn("Token refresh rejected by the identity provider");
+        return "rejected";
       }
     }
-  } catch (error) { }
+    return "ok";
+  } catch (error) {
+    log.warn("Token refresh could not run");
+    return "unavailable";
+  }
 };
 
 //Navigation Sliding Animations

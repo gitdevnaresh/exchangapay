@@ -29,7 +29,7 @@ import { fcmNotification } from '../../utils/FCMNotification';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
 import OnBoardingService from '../../services/onBoardingservice';
-import * as Keychain from "react-native-keychain";
+import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 const PhoneOtpVerification = () => {
     const [errorMsg, setErrorMsg] = useState<any>('');
     const [resendTimer, setResendTimer] = useState(0);
@@ -239,8 +239,8 @@ const PhoneOtpVerification = () => {
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
         const response = await OnBoardingService.updateFcmToken();
-        await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
-        await Keychain.resetGenericPassword({ service: "authTokenService" });
+        // H-11: clear every keychain service, not the two this path happened to know about.
+        await clearAllSecureEntries();
         logOutLogData()
         navigation.dispatch(
             CommonActions.reset({

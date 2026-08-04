@@ -1,7 +1,8 @@
 import { create } from "apisauce";
 import { getAllEnvData, getCurrentEnvName } from "../../Environment";
 import { redact, redactToString } from "./redact";
-import * as Keychain from "react-native-keychain";
+import { isTransientTokenFailure, readAccessToken } from "./storage/authTokens";
+import { KEYCHAIN_SERVICES, readSecretValue } from "./storage/keychainPolicy";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
@@ -35,19 +36,28 @@ const applySecurityHeaders = async (config: any) => {
     // Never let device posture break the request path.
   }
 };
-const GetTokens = async () => {
-  try {
-    const credentials = await Keychain.getGenericPassword({
-      service: "authTokenService",
-    });
-    if (credentials) {
-      const { token } = JSON.parse(credentials.password);
-      return token;
-    }
-    return null;
-  } catch (err) {
-    return null;
+/**
+ * H-11: reads the access token through the single accessor, and distinguishes
+ * "there is no session" from "the keychain would not answer just now".
+ *
+ * The distinction is not academic. Returning null for a transient failure sends
+ * the request with no credential, the backend answers 401, and the 401 handler
+ * signs the user out — a locked handset would have looked exactly like an
+ * expired session.
+ */
+const GetTokens = async (): Promise<string | null> => {
+  const { status, value } = await readAccessToken();
+  if (status === "ok") {
+    return value;
   }
+  if (isTransientTokenFailure(status)) {
+    // Fail the request instead of sending an unauthenticated one. The caller
+    // sees a network-style error and can retry; the session is left intact.
+    const error: any = new Error("Credentials are temporarily unavailable");
+    error.isKeychainUnavailable = true;
+    throw error;
+  }
+  return null;
 };
 const logApiErrorToSentry = async (error: any, userInfo: any) => {
   const { config, response } = error;
@@ -81,21 +91,26 @@ const logApiErrorToSentry = async (error: any, userInfo: any) => {
 };
 
 const getUserInfo = async (): Promise<string | null> => {
-  try {
-    const credentials = await Keychain.getGenericPassword({
-      service: "userInfoService",
-    });
-    if (credentials) {
-      const userInfo = JSON.parse(credentials.password);
-      return userInfo;
-    }
+  const raw = await readSecretValue(KEYCHAIN_SERVICES.USER_INFO);
+  if (!raw) {
     return null;
+  }
+  try {
+    return JSON.parse(raw);
   } catch (err) {
+    // Only used to attribute crash reports; a corrupt record is not worth
+    // failing a request over.
     return null;
   }
 };
 
 const handleErrorCapture = () => async (error: any) => {
+  // H-11: a request abandoned because the keychain was momentarily unreadable
+  // never reached the network. It is expected on a locked handset, carries no
+  // diagnostic value, and would otherwise flood crash reporting.
+  if (error?.isKeychainUnavailable) {
+    return Promise.reject(error);
+  }
   const { config, response, message } = error;
   const method = config?.method?.toUpperCase();
   // await was missing, so this was a pending Promise and `userInfo.userId` was
@@ -139,10 +154,12 @@ const getUrl = (path: string) => {
   // No literal env name: the target is resolved once, in Environment.js. Passing
   // "prod" here while other modules passed "tst" is how the app came to straddle
   // two backends (C-05).
-  const envList = getAllEnvData();
+  // H-13 gave the env config a concrete shape (one module per environment), so
+  // the lookup is annotated rather than implicitly `any`.
+  const apiUrls: Record<string, string> = getAllEnvData().apiUrls;
   // trim: leading/trailing whitespace makes axios treat the baseURL as a
   // relative path and resolve it against the bundle's file:// document base
-  return (envList.apiUrls[path] || "").trim();
+  return (apiUrls[path] || "").trim();
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -188,7 +205,11 @@ const uploadapi = create({
 api.axiosInstance.interceptors.request.use(async (config: any) => {
   const token = await GetTokens();
   const userInfo = store.getState();
-  config.headers.Authorization = `Bearer ${token}`;
+  // Only send the header when there is something to send. `Bearer null` reads
+  // to the backend as a malformed credential rather than an absent one.
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   if (userInfo?.UserReducer?.ipInfo) {
     config.headers.ipAddress = `${userInfo?.UserReducer?.ipInfo.ip || ""}`;
   }
@@ -212,7 +233,9 @@ api.axiosInstance.interceptors.request.use(async (config: any) => {
 });
 uploadapi.axiosInstance.interceptors.request.use(async (config: any) => {
   const token = await GetTokens();
-  config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   config.headers["Content-Type"] = "multipart/form-data";
   await applySecurityHeaders(config);
   return config;

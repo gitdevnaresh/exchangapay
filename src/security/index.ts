@@ -30,3 +30,15 @@ export {
   getAttestationToken,
   isAttestationAvailable,
 } from "./attestation";
+
+export {
+  getApiHosts,
+  getIdentityHosts,
+  getTwoFactorAllowedHosts,
+  getTwoFactorAllowedOrigins,
+  isAllowedTwoFactorUrl,
+  matchTwoFactorCallback,
+  parseHttpsUrl,
+  TWO_FACTOR_STATE_PATH,
+} from "./webViewUrlPolicy";
+export type { ParsedHttpsUrl } from "./webViewUrlPolicy";
