@@ -1,6 +1,5 @@
 //user realted actions
 export const IS_LOGIN = "IS_LOGIN";
-export const USER_DETAILS = "USER_DETAILS";
 export const USER_INFO = "USER_INFO";
 export const LOGOUT = "LOGOUT";
 export const PERSONAL_INFO = "PERSONAL_INFO";

@@ -9,7 +9,7 @@ import DefaultButton from '../../components/DefaultButton';
 import DeviceInfo from 'react-native-device-info';
 import AuthService from '../../services/auth';
 import { useDispatch } from 'react-redux';
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useAuth0 } from 'react-native-auth0';
 import { fcmNotification } from '../../utils/FCMNotification';
@@ -36,7 +36,6 @@ const [isBtnLoading,setIsBtnLoading]=useState<boolean>(false)
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         logOutLogData()
         navigation.dispatch(
           CommonActions.reset({

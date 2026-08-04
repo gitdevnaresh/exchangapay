@@ -2,7 +2,6 @@ import * as types from "../Actions/ActionsTypes";
 
 const initialState = {
   login: false,
-  userDetails: "",
   userInfo: "",
   personalInfo: "",
   isEnableSandBox: false,
@@ -22,14 +21,6 @@ export default (state = initialState, action) => {
         login: action.payload,
       };
 
-    case types.USER_DETAILS: {
-      return {
-        ...state,
-        userDetails: action.payload
-          ? JSON.parse(JSON.stringify(action.payload))
-          : action.payload,
-      };
-    }
     case types.USER_INFO: {
       return {
         ...state,

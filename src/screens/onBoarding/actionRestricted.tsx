@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth0 } from "react-native-auth0";
@@ -23,7 +23,6 @@ const ActionRestricted = () => {
   const handleLgout = async () => {
     dispatch(setUserInfo(""));
     dispatch(isLogin(false));
-    dispatch(loginAction(""));
     await clearSession();
     navigation.navigate(CONSTANTS.SPLASH_SCREEN);
   };

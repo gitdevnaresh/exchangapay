@@ -25,15 +25,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AssetsIconsPack from "./src/assets/AssetsIconsPack";
 import DeviceInfo from "react-native-device-info";
-import store, { persistor } from "./src/store";
+import store, { persistor, startPersistence } from "./src/store";
 import OnBoardingService from "./src/services/onBoardingservice";
 import crashlytics from "@react-native-firebase/crashlytics";
 import messaging from "@react-native-firebase/messaging";
 import ForceUpdate from "./src/screens/UpdateScreens/ForceUpdate";
 import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
-import { initializeCrashlytics } from "./src/utils/ApiService";
-import { redact } from "./src/utils/redact";
+import {
+  buildSentryOptions,
+  initializeTelemetry,
+  isSentryEnabled,
+} from "./src/utils/telemetry";
 import { log } from "./src/utils/logger";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 import RNBootSplash from "react-native-bootsplash";
@@ -41,56 +44,25 @@ import {
   initializeDeviceIntegrity,
   refreshDeviceIntegrity,
 } from "./src/security";
+import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 
 import * as Sentry from "@sentry/react-native";
 import { version as appVersion } from './package.json';
 
-const { oAuthConfig } = getAllEnvData();
+const { sentry: sentryConfig } = getAllEnvData();
 const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getBuildNumber()}`;
-if (oAuthConfig.sentryLoggs) {
-  Sentry.init({
-    dsn: oAuthConfig.sentryDsn,
 
-    // C-07: must stay false. When true, Sentry attaches IP address, cookies and
-    // request headers automatically — the Authorization header among them, which
-    // is exactly the bearer-token leak the audit found.
-    sendDefaultPii: true,
-    environment: oAuthConfig.sentryEnvornment,
-
-    // Last line of defence before an event leaves the device. The API interceptor
-    // already redacts the bodies it attaches; this catches everything it does not
-    // produce — unhandled exceptions, auto-instrumented HTTP breadcrumbs, and any
-    // future call site that forgets to redact.
-    beforeSend(event) {
-      if (event.request) {
-        delete event.request.cookies;
-        delete event.request.headers;
-        if (event.request.data) {
-          event.request.data = redact(event.request.data) as any;
-        }
-      }
-      if (event.breadcrumbs) {
-        event.breadcrumbs = event.breadcrumbs.map((crumb) =>
-          crumb.data ? { ...crumb, data: redact(crumb.data) as any } : crumb
-        );
-      }
-      return event;
-    },
-
-    // Enable Logs
-    enableLogs: oAuthConfig.sentryLoggs,
-    release: releaseName,
-    // Configure Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1,
-    integrations: [
-      Sentry.mobileReplayIntegration(),
+// H-08: the options — including the beforeSend scrubber, the consent gate and
+// the absence of Session Replay — are built in src/utils/telemetry so they can
+// be asserted by tests rather than reviewed by eye. feedbackIntegration is
+// user-initiated and captures nothing on its own; anything screen-capturing
+// passed here is filtered out by buildSentryOptions.
+if (isSentryEnabled(sentryConfig)) {
+  Sentry.init(
+    buildSentryOptions(sentryConfig, releaseName, [
       Sentry.feedbackIntegration(),
-    ],
-
-    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-    // spotlight: __DEV__,
-  });
+    ])
+  );
 }
 // Safety check
 if (!store) {
@@ -114,7 +86,19 @@ export default Sentry.wrap(function App() {
         .catch((error) => {
           log.error("Error getting theme", error);
         });
-      initializeCrashlytics();
+      // H-08: loads the stored consent decision and applies it to Sentry and
+      // Crashlytics together. Until it resolves, getTelemetryConsentSync() is
+      // false and events are dropped — startup errors are not sent optimistically.
+      initializeTelemetry();
+      // H-05: load the at-rest key, then let redux-persist rehydrate. Unlike
+      // the integrity probe below this one DOES gate rendering — PersistGate
+      // holds its loading component until it resolves — because rehydrating
+      // before the key exists would discard the stored state as undecryptable.
+      startPersistence();
+      // H-07: erase the tokens and encryption key that a previous build's
+      // AsyncStorage token store may have left in plaintext on this device.
+      // Deleting the code does not delete what it already wrote.
+      cleanupLegacyTokenStorage();
       // H-04: fire-and-forget. Bounded internally and fails open, so it never
       // delays the splash screen or gates rendering on a filesystem probe.
       initializeDeviceIntegrity();

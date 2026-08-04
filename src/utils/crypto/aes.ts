@@ -89,6 +89,16 @@ export class CryptoError extends Error {
 // ---------------------------------------------------------------------------
 
 /**
+ * A key is either the backend's human-readable `sk` string, or raw bytes.
+ *
+ * Raw bytes exist for at-rest encryption (H-05), where the key is a random
+ * 256-bit value this app generates rather than a string the backend issued.
+ * Squeezing that through the UTF-8 string path would cost entropy: a 32-byte
+ * key expressed as a printable 32-character string carries well under 256 bits.
+ */
+export type SecretKey = string | Uint8Array;
+
+/**
  * Strip spaces/dashes and validate length — mirrors the C# NormalizeKey so the
  * same human-readable key string yields the same bytes on both sides.
  */
@@ -128,8 +138,19 @@ function gcmAlgorithm(keyByteLength: number): string {
   }
 }
 
-const keyBuffer = (secretKey: string) =>
-  Buffer.from(normalizeSecretKey(secretKey), "utf8");
+const keyBuffer = (secretKey: SecretKey) => {
+  if (typeof secretKey !== "string") {
+    const raw = Buffer.from(secretKey);
+    if (![16, 24, 32].includes(raw.length)) {
+      throw new CryptoError(
+        "bad-key-length",
+        `AES key must be 16/24/32 bytes (got ${raw.length})`
+      );
+    }
+    return raw;
+  }
+  return Buffer.from(normalizeSecretKey(secretKey), "utf8");
+};
 
 // ---------------------------------------------------------------------------
 // Encrypt
@@ -142,7 +163,7 @@ const keyBuffer = (secretKey: string) =>
  * Without that, an attacker could rewrite 0x02 to 0x01 and hand the remainder to
  * the unauthenticated CBC parser — a downgrade that would undo the whole point.
  */
-export const encryptGCM = (plainText: string, secretKey: string): string => {
+export const encryptGCM = (plainText: string, secretKey: SecretKey): string => {
   const keyBuf = keyBuffer(secretKey);
   const header = Buffer.from([FORMAT_GCM]);
   const nonce = Buffer.from(QuickCrypto.randomBytes(GCM_NONCE_SIZE));
@@ -173,7 +194,7 @@ export const encryptGCM = (plainText: string, secretKey: string): string => {
  * No integrity protection — see the header comment. Use encryptGCM wherever the
  * far side can read it.
  */
-export const encryptCBC = (plainText: string, secretKey: string): string => {
+export const encryptCBC = (plainText: string, secretKey: SecretKey): string => {
   const keyBuf = keyBuffer(secretKey);
   const iv = Buffer.from(QuickCrypto.randomBytes(AES_IV_SIZE));
 
@@ -345,7 +366,7 @@ const decryptLegacy = (
  * exception or as an empty string. It never returns a partially-verified result:
  * for 0x02 the tag is checked before any plaintext is handed back.
  */
-export const decryptAny = (cipherText: string, secretKey: string): string => {
+export const decryptAny = (cipherText: string, secretKey: SecretKey): string => {
   if (!cipherText) {
     throw new CryptoError("malformed", "Ciphertext is empty");
   }

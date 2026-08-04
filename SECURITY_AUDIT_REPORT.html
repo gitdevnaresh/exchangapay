@@ -140,6 +140,27 @@ section{margin-bottom:3.2rem; scroll-margin-top:20px}
 .c-low{background:var(--low-bg); color:var(--low); border-color:var(--low-br)}
 .c-ok{background:var(--ok-bg); color:var(--ok); border-color:var(--ok-br)}
 
+/* ---- remediation status (added at re-verification) ---- */
+.finding.resolved{opacity:.72}
+.finding.resolved .fhead{position:relative}
+.finding.resolved h3{text-decoration:line-through; text-decoration-thickness:1px; text-decoration-color:var(--muted)}
+.fixnote{
+  margin:10px 0 0; padding:10px 13px; border-radius:8px;
+  background:var(--ok-bg); border:1px solid var(--ok-br);
+  font-size:.87rem; line-height:1.55;
+}
+.fixnote b{color:var(--ok)}
+.fixnote code{font-size:.82rem}
+.prog{display:flex; align-items:center; gap:10px; margin:4px 0 16px}
+.prog .track{flex:1; height:9px; border-radius:6px; background:var(--border); overflow:hidden}
+.prog .track i{display:block; height:100%; background:var(--ok)}
+.prog .pct{font-size:.85rem; font-weight:750; color:var(--ok); min-width:44px; text-align:right}
+.task .box.done{color:var(--ok)}
+.task .box.part{color:var(--med)}
+.task .note{display:block;margin-top:4px;font-size:.8rem;color:var(--muted)}
+.task .note b{color:var(--ok)}
+.delta{font-size:.78rem; font-weight:700; color:var(--ok); margin-left:7px; white-space:nowrap}
+
 .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:12px; margin-bottom:22px}
 .stat{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:15px 16px; box-shadow:var(--shadow)}
 .stat .n{font-size:1.85rem; font-weight:750; line-height:1.1; letter-spacing:-.02em}
@@ -266,8 +287,8 @@ kbd{font-family:ui-monospace,Menlo,monospace; font-size:.8em; border:1px solid v
     <div class="grp">Action plan</div>
     <a href="#plan">Phased roadmap</a>
     <div class="grp">Findings</div>
-    <a href="#critical">Critical (8)</a>
-    <a href="#high">High (15)</a>
+    <a href="#critical">Critical (1 of 8 open)</a>
+    <a href="#high">High (12 of 15 open)</a>
     <a href="#medium">Medium (16)</a>
     <a href="#low">Low / info</a>
     <div class="grp">Assessment</div>
@@ -317,11 +338,35 @@ kbd{font-family:ui-monospace,Menlo,monospace; font-size:.8em; border:1px solid v
 <h2>Executive Summary</h2>
 
 <div class="cards">
-  <div class="stat crit"><div class="n">8</div><div class="l">Critical</div></div>
-  <div class="stat high"><div class="n">15</div><div class="l">High</div></div>
+  <div class="stat crit"><div class="n">1<span style="font-size:.95rem;color:var(--muted)"> / 8</span></div><div class="l">Critical open</div></div>
+  <div class="stat high"><div class="n">12<span style="font-size:.95rem;color:var(--muted)"> / 15</span></div><div class="l">High open</div></div>
   <div class="stat med"><div class="n">16</div><div class="l">Medium</div></div>
   <div class="stat low"><div class="n">20+</div><div class="l">Low / Info</div></div>
-  <div class="stat"><div class="n">2.7<span style="font-size:1rem;color:var(--muted)">/10</span></div><div class="l">Overall score</div></div>
+  <div class="stat"><div class="n">4.7<span style="font-size:1rem;color:var(--muted)">/10</span><span class="delta">▲ 2.0</span></div><div class="l">Overall score</div></div>
+</div>
+
+<div class="verdict" style="background:var(--ok-bg);border:1px solid var(--ok-br);border-radius:10px;padding:14px 16px;margin-bottom:20px">
+  <div class="txt">
+    <b style="color:var(--ok)">Re-verification, 3 August 2026.</b>
+    <strong>10 of 51 findings are now confirmed fixed</strong> — seven of the eight Critical findings, and
+    H-01, H-02 and H-03. All three &ldquo;Fix These First&rdquo; items are closed. Every status on this page was
+    re-checked against the working tree, not taken from a changelog; findings that only <em>looked</em> fixed are
+    still marked open below, with the evidence.
+    <div class="prog" style="margin-top:11px">
+      <span style="font-size:.85rem;color:var(--muted);min-width:74px">Critical</span>
+      <span class="track"><i style="width:87.5%"></i></span><span class="pct">7/8</span>
+    </div>
+    <div class="prog">
+      <span style="font-size:.85rem;color:var(--muted);min-width:74px">High</span>
+      <span class="track"><i style="width:20%"></i></span><span class="pct">3/15</span>
+    </div>
+    <p style="margin:9px 0 0;font-size:.87rem;color:var(--muted)">
+      Still open and unchanged: <strong>C-01</strong> (the live Kommo secret is still hardcoded at
+      <code>chatscreen.tsx:43</code>), <strong>H-05</strong> (stored-data encryption still commented out),
+      <strong>H-12</strong> (<code>npm audit</code> still reports 21 vulnerabilities, 11 High), and
+      <strong>H-13</strong>. Medium and Low findings were not re-assessed in this pass.
+    </p>
+  </div>
 </div>
 
 <h3>What the assessment found</h3>
@@ -378,18 +423,48 @@ kbd{font-family:ui-monospace,Menlo,monospace; font-size:.8em; border:1px solid v
 <section id="scores">
 <h2>Scorecard</h2>
 <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
-  <div class="score"><div class="top"><span class="lbl">Security</span><span class="val" style="color:var(--crit)">2.0</span></div><div class="bar"><i style="width:20%;background:var(--crit)"></i></div></div>
-  <div class="score"><div class="top"><span class="lbl">Mobile Security (MASVS)</span><span class="val" style="color:var(--crit)">1.5</span></div><div class="bar"><i style="width:15%;background:var(--crit)"></i></div></div>
-  <div class="score"><div class="top"><span class="lbl">DevSecOps / CI-CD</span><span class="val" style="color:var(--crit)">1.0</span></div><div class="bar"><i style="width:10%;background:var(--crit)"></i></div></div>
-  <div class="score"><div class="top"><span class="lbl">Compliance readiness</span><span class="val" style="color:var(--crit)">1.5</span></div><div class="bar"><i style="width:15%;background:var(--crit)"></i></div></div>
-  <div class="score"><div class="top"><span class="lbl">API security</span><span class="val" style="color:var(--high)">3.5</span></div><div class="bar"><i style="width:35%;background:var(--high)"></i></div></div>
-  <div class="score"><div class="top"><span class="lbl">Maintainability</span><span class="val" style="color:var(--high)">4.0</span></div><div class="bar"><i style="width:40%;background:var(--high)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Security</span><span class="val" style="color:var(--med)">5.5<span class="delta">▲ 3.5</span></span></div><div class="bar"><i style="width:55%;background:var(--med)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Mobile Security (MASVS)</span><span class="val" style="color:var(--med)">5.0<span class="delta">▲ 3.5</span></span></div><div class="bar"><i style="width:50%;background:var(--med)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">DevSecOps / CI-CD</span><span class="val" style="color:var(--high)">3.0<span class="delta">▲ 2.0</span></span></div><div class="bar"><i style="width:30%;background:var(--high)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Compliance readiness</span><span class="val" style="color:var(--high)">4.0<span class="delta">▲ 2.5</span></span></div><div class="bar"><i style="width:40%;background:var(--high)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">API security</span><span class="val" style="color:var(--med)">5.5<span class="delta">▲ 2.0</span></span></div><div class="bar"><i style="width:55%;background:var(--med)"></i></div></div>
+  <div class="score"><div class="top"><span class="lbl">Maintainability</span><span class="val" style="color:var(--high)">4.5<span class="delta">▲ 0.5</span></span></div><div class="bar"><i style="width:45%;background:var(--high)"></i></div></div>
   <div class="score"><div class="top"><span class="lbl">Performance</span><span class="val" style="color:var(--med)">5.5</span></div><div class="bar"><i style="width:55%;background:var(--med)"></i></div></div>
 </div>
 <p style="color:var(--muted);font-size:.9rem">
-  Scores are out of 10. With the Phase&nbsp;1 and Phase&nbsp;2 work below complete, the overall rating moves from
-  <strong>Critical</strong> to approximately <strong>Medium</strong>. Reaching a posture appropriate for a regulated
-  custodial crypto and card issuer is realistically a 2–3 quarter programme.
+  Scores are out of 10; the overall figure is their unweighted mean, which moves
+  <strong>2.7 &rarr; 4.7</strong>. Arrows show movement since the original assessment.
+</p>
+
+<h3>How each score moved, and what caps it</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Dimension</th><th>Why it moved</th><th>What holds it back</th></tr></thead>
+<tbody>
+<tr><td><b>Security</b> 2.0&rarr;5.5</td>
+    <td>Seven Criticals closed: signing key, environment selector, telemetry leakage, hardcoded JWT, static AES key, Sentry token, obfuscation.</td>
+    <td>C-01 still ships a live third-party secret. H-05 leaves persisted data unencrypted. Secrets remain in git history.</td></tr>
+<tr><td><b>MASVS</b> 1.5&rarr;5.0</td>
+    <td>MASVS-NETWORK effectively satisfied — network security config wired (H-02) and pinning on both platforms (H-03). MASVS-CRYPTO improved by removing the weak KDF and static key.</td>
+    <td>MASVS-RESILIENCE untouched: no root/jailbreak detection (H-04), decorative biometrics (H-14), no screenshot protection (H-09).</td></tr>
+<tr><td><b>DevSecOps</b> 1.0&rarr;3.0</td>
+    <td>Release builds now fail closed on three regressions: debug-key signing, an unreferenced network config, and missing or lapsed certificate pins.</td>
+    <td>Still no CI pipeline. The guards only fire for anyone who runs a release build locally; nothing gates a pull request.</td></tr>
+<tr><td><b>Compliance</b> 1.5&rarr;4.0</td>
+    <td>The PCI-relevant leak is closed — card data no longer reaches Crashlytics or Sentry (C-07), via an allow-list rather than a deny-list.</td>
+    <td>Sentry session replay and PII collection remain on (H-08). No data-retention position. Secrets in history are still a disclosure event.</td></tr>
+<tr><td><b>API security</b> 3.5&rarr;5.5</td>
+    <td>Traffic to <code>api</code> and <code>tstapi</code> is now pinned to the DigiCert intermediate with a root backup pin.</td>
+    <td>Clients are not consolidated — <code>api.tsx</code> still holds eight hardcoded base URLs across three libraries, none pinned. Idempotency keys stay predictable (M-02).</td></tr>
+<tr><td><b>Maintainability</b> 4.0&rarr;4.5</td>
+    <td>Three dead cryptographic functions and a dead Formik form deleted.</td>
+    <td><code>Login.tsx</code>, <code>utils/auth.tsx</code> and other abandoned modules remain (L-01). Still no ESLint config (L-06).</td></tr>
+<tr><td><b>Performance</b> 5.5</td><td>Not re-assessed.</td><td>&mdash;</td></tr>
+</tbody>
+</table></div>
+<p style="color:var(--muted);font-size:.9rem">
+  <strong>The ceiling is C-01.</strong> While a live API secret ships inside the bundle, the overall posture cannot
+  honestly be called better than Medium regardless of how the other dimensions score. Reaching a posture appropriate
+  for a regulated custodial crypto and card issuer remains a 2&ndash;3 quarter programme.
 </p>
 </section>
 
@@ -397,6 +472,14 @@ kbd{font-family:ui-monospace,Menlo,monospace; font-size:.8em; border:1px solid v
 <section id="top3">
 <h2>Fix These First — The Three That Matter Most</h2>
 <p>If you do nothing else this week, do these three. Each is a small change with an outsized effect.</p>
+
+<div class="fixnote" style="margin:0 0 18px">
+  <b>&#10003; All three are now resolved.</b> The signing key (C-03), the environment selector (C-05) and
+  telemetry leakage (C-07) have each been fixed and re-verified against the working tree — details in their
+  full entries below. Two carry residual actions that code changes cannot complete on their own:
+  <b>the Sentry token and the production JWT must be revoked at their issuers</b>, since both were committed
+  and remain recoverable from git history. The single highest-value item now is <b>C-01</b>.
+</div>
 
 <div class="finding sev-critical">
   <div class="fhead">
@@ -519,11 +602,11 @@ const redact = (o) =&gt; (o &amp;&amp; typeof o === "object")
   </header>
   <div class="inner">
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Rotate the Kommo support-chat secret</div><div class="d">Treat all customer support conversations as potentially exposed. The key is in the shipped app.</div></div><span class="ref">C-01</span></div>
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Revoke the Sentry organisation token</div><div class="d">Then check Sentry's access log for use since 2025-10-25 from unexpected locations.</div></div><span class="ref">C-02</span></div>
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Revoke the hardcoded Auth0 session and delete <code>onTempLoginPress</code></div><div class="d">A real login token plus an authentication-bypass fallback sits in the splash screen.</div></div><span class="ref">C-04</span></div>
+    <div class="task"><span class="box part">◐</span><div class="body"><div class="t">Revoke the Sentry organisation token</div><div class="d">Then check Sentry's access log for use since 2025-10-25 from unexpected locations.</div><span class="note"><b>Partly done:</b> the token is out of the tracked files and read from the environment. <b>Outstanding:</b> revoke it in Sentry &mdash; it remains in git history.</span></div><span class="ref">C-02</span></div>
+    <div class="task"><span class="box part">◐</span><div class="body"><div class="t">Revoke the hardcoded Auth0 session and delete <code>onTempLoginPress</code></div><div class="d">A real login token plus an authentication-bypass fallback sits in the splash screen.</div><span class="note"><b>Code half done:</b> <code>onTempLoginPress</code> and the JWT are removed. <b>Outstanding:</b> revoke that token at the issuer &mdash; it is still in git history.</span></div><span class="ref">C-04</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Generate a real release keystore; halt all releases until it is in use</div><div class="d">Store it in a secrets vault. Never commit it. Enrol in Play App Signing.</div></div><span class="ref">C-03</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Treat every previously distributed APK as compromised</div><div class="d">Plan a forced update via the existing version-check mechanism once a properly signed build exists.</div></div><span class="ref">C-03</span></div>
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Remove tokens and request/response bodies from Crashlytics and Sentry; purge stored data</div><div class="d">One-line deletion stops the bleeding; the scrubber can follow.</div></div><span class="ref">C-07</span></div>
+    <div class="task"><span class="box part">◐</span><div class="body"><div class="t">Remove tokens and request/response bodies from Crashlytics and Sentry; purge stored data</div><div class="d">One-line deletion stops the bleeding; the scrubber can follow.</div><span class="note"><b>Code half done:</b> allow-list redaction is live and the token attribute is gone. <b>Outstanding:</b> purge data already stored in Crashlytics and Sentry.</span></div><span class="ref">C-07</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Determine whether real customer KYC data is in the test environment</div><div class="d">If yes, this may be a notifiable breach with a 72-hour clock. Engage your DPO immediately.</div></div><span class="ref">C-05</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Purge secrets from git history</div><div class="d">Use <code>git filter-repo</code> or BFG, force-push, and have every contributor re-clone. Rotation alone is not enough.</div></div><span class="ref">C-01/02/03</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Enable GitHub push protection and add a <code>gitleaks</code> pre-commit hook</div><div class="d">So the next secret is blocked before it is ever committed.</div></div><span class="ref">CI-05</span></div>
@@ -539,14 +622,14 @@ const redact = (o) =&gt; (o &amp;&amp; typeof o === "object")
     <span class="when">1–4 weeks</span>
   </header>
   <div class="inner">
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix <code>getAllEnvData</code>; add build-time environment selection</div><div class="d"><code>react-native-config</code> + Android product flavours + iOS build configurations, each with its own Firebase file and Auth0 tenant.</div></div><span class="ref">C-05</span></div>
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Enable R8/ProGuard with a complete keeps file</div><div class="d">Budget real time — R8 without correct keeps causes runtime crashes in native modules. Test the release build end to end.</div></div><span class="ref">C-08</span></div>
+    <div class="task"><span class="box part">◐</span><div class="body"><div class="t">Fix <code>getAllEnvData</code>; add build-time environment selection</div><div class="d"><code>react-native-config</code> + Android product flavours + iOS build configurations, each with its own Firebase file and Auth0 tenant.</div><span class="note"><b>Partly done:</b> <code>getAllEnvData()</code> now honours <code>BUILD_ENV</code>. <b>Outstanding:</b> product flavours / iOS build configurations with per-environment Firebase and Auth0.</span></div><span class="ref">C-05</span></div>
+    <div class="task"><span class="box done">☑</span><div class="body"><div class="t">Enable R8/ProGuard with a complete keeps file</div><div class="d">Budget real time — R8 without correct keeps causes runtime crashes in native modules. Test the release build end to end.</div><span class="note"><b>Done.</b> <code>enableProguardInReleaseBuilds = true</code> with <code>proguard-android-optimize.txt</code>. End-to-end regression on a release build is still outstanding.</span></div><span class="ref">C-08</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Wire in the network security config and add certificate pinning</div><div class="d">The config file already exists and is correct — it is simply never referenced from the manifest.</div></div><span class="ref">H-02 · H-03</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Harden every Keychain write</div><div class="d">Device-only, hardware-backed, bound to current biometric enrolment.</div></div><span class="ref">H-11</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Stop persisting tokens in Redux; re-enable storage encryption</div><div class="d">Also replace the unmaintained (2018) keychain storage adapter with a small in-house one.</div></div><span class="ref">H-05</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Add screenshot protection</div><div class="d"><code>FLAG_SECURE</code> on Android, snapshot blurring plus capture detection on iOS. The app shows card numbers, CVVs and PINs.</div></div><span class="ref">H-09</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix the 2FA WebView</div><div class="d">Restrict origins, gate navigation, and never attach the login token to a URL the WebView produced.</div></div><span class="ref">H-10</span></div>
-    <div class="task"><span class="box">☐</span><div class="body"><div class="t">Raise PBKDF2 from 10 to 600,000 iterations</div><div class="d">Coordinate the wire-format version with the backend team — this is a shared format.</div></div><span class="ref">H-01</span></div>
+    <div class="task"><span class="box done">☑</span><div class="body"><div class="t">Raise PBKDF2 from 10 to 600,000 iterations</div><div class="d">Coordinate the wire-format version with the backend team — this is a shared format.</div><span class="note"><b>Done differently &mdash; no backend coordination needed.</b> The only caller was dead code; <code>encryptValue()</code> was deleted outright, so the 10-iteration path no longer exists.</span></div><span class="ref">H-01</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Restore CI with blocking gates</div><div class="d">Install, audit, typecheck, test, lint, secret scan, and release-config assertions.</div></div><span class="ref">CI-01</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Move signing into CI; publish to Play Internal Testing, not public GitHub Releases</div><div class="d">No developer workstation should hold a release key.</div></div><span class="ref">C-03</span></div>
     <div class="task"><span class="box">☐</span><div class="body"><div class="t">Fix <code>validateCryptoAddress</code></div><div class="d">It currently validates only TRC-20 and Polygon and returns <code>true</code> for everything else — a real funds-loss risk on BTC/ETH/SOL withdrawals.</div></div><span class="ref">L-09</span></div>
@@ -675,12 +758,13 @@ GET  /api/v1/Support/Chat/History</code></pre></li>
 </article>
 
 <!-- C-02 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-02</span><h3>Sentry organisation access token committed to the repository</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-02</span><h3>Sentry organisation access token committed to the repository</h3></div>
     <div class="floc">ios/sentry.properties:2 (tracked in git)</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> The auth token is gone from <code>ios/sentry.properties</code> and <code>android/sentry.properties</code>; <code>sentry-cli</code> now reads <code>SENTRY_AUTH_TOKEN</code> from the environment. <b>Residual risk:</b> the token remains in git history and is only truly neutralised once revoked in Sentry. Release builds now fail without that variable set &mdash; observed during H-03 testing, so CI must provide it.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>An access token for your Sentry account is sitting in a file that is committed to git. Sentry is where your
@@ -741,12 +825,13 @@ defaults.url=https://sentry.io/
 </article>
 
 <!-- C-03 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-03</span><h3>Release builds are signed with the committed debug keystore</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-03</span><h3>Release builds are signed with the committed debug keystore</h3></div>
     <div class="floc">android/app/build.gradle:104-122 · android/app/debug.keystore (tracked in git)</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>android/app/debug.keystore</code> is deleted from the repository, and release signing is resolved from <code>EXCHANGA_KEYSTORE_*</code> environment variables or Gradle properties. A guard in <code>build.gradle</code> aborts any release task when signing is unconfigured rather than silently falling back to the debug key. <b>Residual risk:</b> builds already published with the debug key remain signed by a public key.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Android decides whether an app update is genuine by checking it was signed with the same key as the installed
@@ -837,12 +922,13 @@ buildTypes {
 </article>
 
 <!-- C-04 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-04</span><h3>Hardcoded login token and an authentication-bypass fallback</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-04</span><h3>Hardcoded login token and an authentication-bypass fallback</h3></div>
     <div class="floc">src/screens/SplashScreen.tsx:175-250</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>onTempLoginPress()</code> and the embedded production JWT are removed from <code>SplashScreen.tsx</code>. A repository-wide search for <code>eyJhbGciOi</code> now returns no matches in <code>src/</code>. <b>Residual risk:</b> that token existed in a real issuer and should be treated as compromised and revoked.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>The splash screen contains a "temporary login" function holding a <strong>real login token</strong> for an actual
@@ -909,12 +995,13 @@ navigation?.dispatch(CommonActions.reset({ routes: [{ name: "Dashboard" }] }));<
 </article>
 
 <!-- C-05 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-05</span><h3>Every build points at the test environment</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-05</span><h3>Every build points at the test environment</h3></div>
     <div class="floc">Environment.js:68-74</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>getAllEnvData()</code> no longer hard-returns a fixed block. <code>resolveEnvName()</code> honours the requested name and the <code>BUILD_ENV</code> build flag, warning and falling back only for an unknown value. <code>DEFAULT_ENV</code> is still <code>"tst"</code> &mdash; deliberately, and documented in place: the native Auth0 callback scheme and Firebase config are registered against the test tenant, so flipping it alone would break login. That switch is the last step of the production migration, not the first.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>The function that selects which backend the app talks to takes an argument — and ignores it, always returning
@@ -981,12 +1068,13 @@ export const getAllEnvData = (envName) =&gt; ENV[envName || ENV_NAME] || ENV.pro
 </article>
 
 <!-- C-06 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-06</span><h3>Static encryption key <code>"8080808080808080"</code> used as both key and IV</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-06</span><h3>Static encryption key <code>"8080808080808080"</code> used as both key and IV</h3></div>
     <div class="floc">src/utils/tools.js:40-49</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>encryptForRegister()</code> and the <code>REGISTER_KEY</code> constant are deleted from <code>src/utils/tools.js</code>, along with the sibling <code>encrypt()</code> that shared the weak 10-iteration derivation. Both had zero call sites, confirmed by repository-wide search, so removal was the complete fix rather than a rewrite. The now-unused <code>QuickCrypto</code> and <code>Buffer</code> imports went with them.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Registration data is "encrypted" with a fixed key written into the app — the string <code>8080808080808080</code>,
@@ -1047,12 +1135,13 @@ export const encryptForRegister = (msg) =&gt; {
 </article>
 
 <!-- C-07 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-07</span><h3>Login tokens and full API traffic sent to Crashlytics and Sentry</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-07</span><h3>Login tokens and full API traffic sent to Crashlytics and Sentry</h3></div>
     <div class="floc">src/utils/ApiService.ts:71-113</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> Telemetry now runs through an <b>allow-list</b> in <code>src/utils/redact.ts</code>: every value is replaced with <code>[REDACTED]</code> unless its key is explicitly known safe. Keys survive so payload shape stays diagnosable. The <code>token</code> attribute is gone, and the triplicate plaintext body logging is removed. An allow-list was the right call &mdash; a deny-list fails silently the first time the backend adds a field nobody listed. <b>Still verify:</b> Sentry's own integrations can attach request metadata independently of this code path.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Whenever an API call fails, the app packages up the user's <strong>live login token</strong>, the complete request body,
@@ -1128,12 +1217,13 @@ export const scrub = (o: unknown): unknown =&gt; {
 </article>
 
 <!-- C-08 -->
-<article class="finding sev-critical">
+<article class="finding resolved sev-critical">
   <div class="fhead">
-    <div class="row"><span class="chip c-crit">Critical</span><span class="fid">C-08</span><h3>Code obfuscation disabled — the app is fully readable</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-crit">Critical</span><span class="fid">C-08</span><h3>Code obfuscation disabled — the app is fully readable</h3></div>
     <div class="floc">android/app/build.gradle:76 · android/app/proguard-rules.pro (empty)</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>minifyEnabled</code> and <code>shrinkResources</code> are enabled for release via <code>enableProguardInReleaseBuilds = true</code>, using <code>proguard-android-optimize.txt</code> &mdash; required for the <code>-assumenosideeffects</code> log stripping in <code>proguard-rules.pro</code> to take effect at all; the non-optimize base file ignores it silently. <b>Note:</b> R8 changes runtime behaviour, so a full regression pass on a release build is warranted before shipping.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Obfuscation scrambles class and method names so a downloaded app is hard to read. It is switched off
@@ -1219,12 +1309,13 @@ release {
 <p style="color:var(--muted)">Fifteen findings that must be resolved before this app is considered production-ready.</p>
 
 <!-- H-01 -->
-<article class="finding sev-high">
+<article class="finding resolved sev-high">
   <div class="fhead">
-    <div class="row"><span class="chip c-high">High</span><span class="fid">H-01</span><h3>Password encryption uses 10 rounds instead of 600,000</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-high">High</span><span class="fid">H-01</span><h3>Password encryption uses 10 rounds instead of 600,000</h3></div>
     <div class="floc">src/utils/helpers/index.tsx:674 · used by src/screens/Profile/ChangePassword.tsx:59</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> Closed by deletion rather than by raising the iteration count. <code>encryptValue()</code> had exactly one caller, in the change-password screen; that screen renders no password inputs at all &mdash; it triggers an email reset link &mdash; so the call site was dead. Removing it left the function with zero callers, and it and its <code>PBKDF2_ITERATIONS = 10</code> constant are gone. <b>This avoided a breaking change:</b> the key came from the server, so raising the count client-side would have broken change-password until the backend shipped a matching value in the same release.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Key derivation deliberately runs a slow calculation many times so that guessing becomes expensive. The industry
@@ -1262,12 +1353,13 @@ release {
 </article>
 
 <!-- H-02 -->
-<article class="finding sev-high">
+<article class="finding resolved sev-high">
   <div class="fhead">
-    <div class="row"><span class="chip c-high">High</span><span class="fid">H-02</span><h3>The Android network security config is written but never switched on</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-high">High</span><span class="fid">H-02</span><h3>The Android network security config is written but never switched on</h3></div>
     <div class="floc">android/app/src/main/res/xml/network_security_config.xml · AndroidManifest.xml:14</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> <code>android:networkSecurityConfig="@xml/network_security_config"</code> is set on <code>&lt;application&gt;</code>, confirmed present in the <em>merged</em> manifest, not just the source. <b>The one-line fix alone would have broken every debug build:</b> Android ignores <code>usesCleartextTraffic</code> once a network security config is set, so Metro's HTTP connection would have failed. A debug-only override at <code>src/debug/res/xml/</code> restores cleartext and user-CA trust for development; the resource merge blame confirms debug resolves to that file and release to the strict one. A <code>build.gradle</code> guard now fails release builds if the attribute is removed.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>Someone wrote a correct network security policy — it blocks unencrypted traffic and, importantly, trusts
@@ -1304,12 +1396,13 @@ release {
 </article>
 
 <!-- H-03 -->
-<article class="finding sev-high">
+<article class="finding resolved sev-high">
   <div class="fhead">
-    <div class="row"><span class="chip c-high">High</span><span class="fid">H-03</span><h3>No certificate pinning on either platform</h3></div>
+    <div class="row"><span class="chip c-ok">&#10003; Resolved</span><span class="chip c-high">High</span><span class="fid">H-03</span><h3>No certificate pinning on either platform</h3></div>
     <div class="floc">All API clients — ApiService.ts, api.tsx, chatService.js, crypto.tsx</div>
   </div>
   <div class="fbody">
+    <div class="fixnote"><b>Verified fixed.</b> Pinning is live on both platforms, against pins computed from the live certificate chains rather than a template: primary <code>GeoTrust TLS RSA CA G1</code> (the issuing intermediate, shared by prod and tst), backup <code>DigiCert Global Root G2</code>. The root was verified to actually sign that intermediate, so the backup pin is a genuine fallback. The intermediate is pinned rather than the leaf, which expires 2026-12-13. <b>Correction to the original advice:</b> pinning <code>exchangapay.com</code> with <code>includeSubdomains</code> would have broken dev &mdash; <code>devapi</code> is issued by <em>Sectigo</em>, a different CA &mdash; so the domains are listed explicitly and devapi is deliberately excluded. <b>Platform asymmetry:</b> Android's <code>pin-set expiration</code> fails open, but iOS ATS has no expiry and no fail-open, so a stale iOS pin can only be recovered by an App Store release.</div>
     <div class="plain">
       <h4>In plain English</h4>
       <p>HTTPS proves you are talking to <em>someone</em> holding a valid certificate. Pinning proves you are talking to

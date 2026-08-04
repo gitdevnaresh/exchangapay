@@ -2,7 +2,6 @@ import { create } from "apisauce";
 import { getAllEnvData, getCurrentEnvName } from "../../Environment";
 import { redact, redactToString } from "./redact";
 import * as Keychain from "react-native-keychain";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
@@ -226,45 +225,11 @@ uploadapi.axiosInstance.interceptors.response.use(
   handleErrorCapture()
 );
 
-/**
- * Crash-reporting consent (C-07).
- *
- * Collection used to be switched on unconditionally at app start, with no consent
- * step anywhere in the app. Crash reports carry device and usage data about an
- * identified user, so collection now defaults to OFF and is enabled only once
- * consent has been recorded.
- *
- * NOTE FOR WHOEVER PICKS THIS UP: nothing calls setCrashReportingConsent() yet,
- * so crash collection is currently disabled in every build. Wire it to a consent
- * prompt (onboarding, or a Settings toggle) to turn reporting back on. To restore
- * the previous always-on behaviour instead, pass `true` below — but that is the
- * behaviour the audit flagged.
- */
-const CRASH_CONSENT_KEY = "crashReportingConsent";
-
-export const setCrashReportingConsent = async (granted: boolean) => {
-  try {
-    await AsyncStorage.setItem(CRASH_CONSENT_KEY, granted ? "true" : "false");
-    await crashlytics().setCrashlyticsCollectionEnabled(granted);
-  } catch {
-    // Never let a consent-storage failure fail open.
-    await crashlytics().setCrashlyticsCollectionEnabled(false);
-  }
-};
-
-export const hasCrashReportingConsent = async (): Promise<boolean> => {
-  try {
-    return (await AsyncStorage.getItem(CRASH_CONSENT_KEY)) === "true";
-  } catch {
-    return false;
-  }
-};
-
-export const initializeCrashlytics = async () => {
-  // Absent or unreadable consent means no collection.
-  const granted = await hasCrashReportingConsent();
-  await crashlytics().setCrashlyticsCollectionEnabled(granted);
-};
+// H-08: crash-reporting consent used to live here, governing Crashlytics only,
+// while Sentry had no consent step at all. Both channels now read one decision —
+// see src/utils/telemetry/consent.ts. The storage key changed from
+// "crashReportingConsent" to "telemetryConsent"; nothing had ever written the
+// old one, so there is no stored value to migrate.
 
 export const get = async (url: string) => {
   return api.get(url);

@@ -8,11 +8,10 @@ export const isLogin = (payload) => {
 };
 
 
-export const loginAction = (payload) => {
-  return async (dispatch) => {
-    dispatch({ type: types.USER_DETAILS, payload: payload });
-  };
-};
+// H-05: loginAction() used to write the Auth0 access/refresh/id tokens into
+// UserReducer.userDetails, which redux-persist then wrote to durable storage.
+// Nothing read them back — tokens are read from the Keychain by GetTokens() —
+// so the action, the USER_DETAILS type and the userDetails field are all gone.
 export const setUserInfo = (payload) => {
   return async (dispatch) => {
     dispatch({ type: types.USER_INFO, payload: payload });

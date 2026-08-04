@@ -18,7 +18,6 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/useReduxStore";
 import {
   isSessionExpired,
-  loginAction,
   isLogin,
   setUserInfo,
 } from "../redux/Actions/UserActions";
@@ -90,17 +89,11 @@ const SplashScreen = React.memo(() => {
     isNewLogin: boolean = false
   ) => {
     try {
-      // Create a serializable credentials object
-      const safeCredentials = {
-        accessToken: credentials?.accessToken || "",
-        refreshToken: credentials?.refreshToken || "",
-        idToken: credentials?.idToken || "",
-        expiresIn: credentials?.expiresIn || 0,
-        tokenType: credentials?.tokenType || "Bearer",
-      };
-
-      // Ensure we're storing serializable data
-      dispatch(loginAction(JSON.parse(JSON.stringify(safeCredentials))));
+      // H-05: the access, refresh and id tokens used to be dispatched into
+      // Redux here as well as stored in the Keychain. Nothing ever read them
+      // back — the only consumer of a token is GetTokens(), which reads the
+      // Keychain — so the copy existed purely to be persisted into a weaker
+      // store alongside the key that decrypts the user's data. Removed.
       await storeToken(credentials?.accessToken, credentials?.refreshToken);
 
       const userDetails = {
@@ -125,7 +118,6 @@ const SplashScreen = React.memo(() => {
   const clearPersistedState = async () => {
     try {
       // Use proper serializable values
-      dispatch(loginAction(""));
       dispatch(isLogin(false));
       dispatch(setUserInfo(null));
       await clearSession();

@@ -18,7 +18,7 @@ import { SvgUri } from 'react-native-svg';
 import TextInputField from '../../components/textInput';
 import { EMAIL_CONSTANTS, REFERRAL_CONSTANTS } from './constants';
 import useMemberLogin from '../../hooks/useMemberLogin';
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import DeviceInfo from 'react-native-device-info';
 import { fcmNotification } from '../../utils/FCMNotification';
 import { useAuth0 } from 'react-native-auth0';
@@ -91,7 +91,6 @@ const RigistrationReferral = () => {
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         const response = await OnBoardingService.updateFcmToken();
         await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
         await Keychain.resetGenericPassword({ service: "authTokenService" });

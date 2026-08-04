@@ -17,7 +17,7 @@ import { NEW_COLOR } from '../../constants/theme/variables';
 import Loadding from '../../components/skeleton';
 import { accountTypeSkelton } from '../Crypto/buySkeleton_views';
 import NoDataComponent from '../../components/nodata';
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { fcmNotification } from '../../utils/FCMNotification';
 import { useAuth0 } from 'react-native-auth0';
 import DeviceInfo from 'react-native-device-info';
@@ -143,7 +143,6 @@ const ChooseAccountType = React.memo((props: any) => {
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         logOutLogData()
         navigation.dispatch(
             CommonActions.reset({

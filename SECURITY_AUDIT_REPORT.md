@@ -174,7 +174,7 @@ Adopt the invariant: *a mobile client is a public, untrusted binary*. Any creden
 #### Technical Explanation
 
 ```properties
-auth.token=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
+auth.token=sntrys_eyJpYXQiOjE3NjEzNzQ3NDku…redacted…
 defaults.org=exchangapay
 defaults.project=exchangapay
 ```

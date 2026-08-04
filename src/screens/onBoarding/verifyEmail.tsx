@@ -8,7 +8,7 @@ import ErrorComponent from '../../components/Error';
 import { ms, s, screenHeight } from '../../constants/theme/scale';
 import { useDispatch, useSelector } from 'react-redux';
 import AuthService from '../../services/auth';
-import { isLogin, loginAction, setUserInfo } from "../../redux/Actions/UserActions";
+import { isLogin, setUserInfo } from "../../redux/Actions/UserActions";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import DefaultButton from "../../components/DefaultButton";
 import { commonStyles } from '../../components/CommonStyles';
@@ -88,7 +88,6 @@ const VerifyEmail = () => {
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         await logOutLogData();
         const response = OnBoardingService.updateFcmToken();
         await Keychain.setGenericPassword("authToken", JSON.stringify({ token: "", expiryTime: "", refresh_token: "" }), {

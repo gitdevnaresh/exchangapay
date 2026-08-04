@@ -14,7 +14,7 @@ import DefaultButton from './DefaultButton';
 import { WINDOW_HEIGHT } from '../constants/theme/variables';
 import { EMAIL_CONSTANTS } from '../screens/onBoarding/constants';
 import { useAuth0 } from 'react-native-auth0';
-import { isCardKycCompleted, isLogin, loginAction, setUserInfo } from '../redux/Actions/UserActions';
+import { isCardKycCompleted, isLogin, setUserInfo } from '../redux/Actions/UserActions';
 import { fcmNotification } from '../utils/FCMNotification';
 import DeviceInfo from 'react-native-device-info';
 import AuthService from '../services/auth';
@@ -198,7 +198,6 @@ const SumsubCompnent = (props: any) => {
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         const response = await OnBoardingService.updateFcmToken();
         await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
         await Keychain.resetGenericPassword({ service: "authTokenService" });

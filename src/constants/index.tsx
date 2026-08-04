@@ -1,11 +1,10 @@
-export const StorageKey = {
-  authAccessToken: '@auth:accessToken',
-  authRefreshToken: '@auth:refreshToken',
-  authAccessTokenExpirationDate: '@auth:accessTokenExpirationDate',
-  twoFAAlert: '@storage_twoFAAlert',
-  memberId: '@auth:memberId',
-  keySK: '@auth:keySK',
-};
+// H-07: `StorageKey` held AsyncStorage keys for the access token, the refresh
+// token and `keySK` — the personal-data encryption key. AsyncStorage is plain
+// unencrypted storage, readable on any rooted device or via forensic
+// extraction. The keys and their only consumer (src/utils/auth.tsx) are gone.
+//
+// Secrets go in the Keychain. The sanctioned paths are listed in
+// src/utils/storage/storagePolicy.ts, which also enforces them at test time.
 export const RequestStatus = {
   idle: 'idle',
   pending: 'pending',

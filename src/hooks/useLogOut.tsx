@@ -3,7 +3,7 @@ import { useAuth0 } from "react-native-auth0";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import DeviceInfo from "react-native-device-info";
 import Cookies from '@react-native-cookies/cookies';
-import { isLogin, loginAction, setUserInfo } from "../redux/Actions/UserActions";
+import { isLogin, setUserInfo } from "../redux/Actions/UserActions";
 import AuthService from "../services/auth";
 import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
@@ -11,6 +11,8 @@ import * as Keychain from "react-native-keychain";
 import OnBoardingService from "../services/onBoardingservice";
 import { clearDecryptCache } from "./useEncryption_Decryption";
 import { clearAttestationToken } from "../security";
+import { persistor } from "../store";
+import { rotatePersistKey } from "../utils/crypto/persistKey";
 
 
 interface LogoutOptions {
@@ -49,7 +51,6 @@ const useLogout = () => {
         // Clear Redux state
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         await clearSession();
         const response = await OnBoardingService.updateFcmToken();
         if (userInfo) {
@@ -57,6 +58,16 @@ const useLogout = () => {
         }
         await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
         await Keychain.resetGenericPassword({ service: "authTokenService" });
+        // H-05: logout previously reset two Keychain services and left both the
+        // member record and the persisted state blob behind, so the encryption
+        // key, the KYC/role flags and the cached account data survived until the
+        // next login overwrote them.
+        await Keychain.resetGenericPassword({ service: "userInfoService" });
+        await persistor.purge();
+        // Rotate after the purge: if the purge is interrupted, or a copy of the
+        // blob survives in a backup or a forensic image, the leftovers become
+        // unreadable rather than merely deleted.
+        await rotatePersistKey();
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,

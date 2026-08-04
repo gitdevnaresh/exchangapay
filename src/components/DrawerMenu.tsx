@@ -18,7 +18,6 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import {
   isLogin,
-  loginAction,
   setUserInfo,
 } from "../redux/Actions/UserActions";
 import ParagraphComponent from "./Paragraph/Paragraph";
@@ -126,7 +125,6 @@ const DrawerModal = (props: any) => {
     Cookies.clearAll(true);
     dispatch(setUserInfo(""));
     dispatch(isLogin(false));
-    dispatch(loginAction(""));
     await logOutLogData();
     const response = await OnBoardingService.updateFcmToken();
     await clearSession();

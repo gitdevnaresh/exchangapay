@@ -9,6 +9,17 @@ const ENV = {
       audience: "https://ExchangaApi.net",
       scope: "openid profile email",
     },
+    // dev had no Sentry config at all, so the old `oAuthConfig.sentryLoggs`
+    // read as undefined. Stated explicitly now rather than left to fall through.
+    sentry: {
+      enabled: false,
+      dsn: "",
+      environment: "dev",
+      sendPii: false,
+      enableLogs: false,
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
+    },
     apiUrls: {
       uploadUrl: "https://devapi.exchangapay.com/",
       cardsUrl: "https://devapi.exchangapay.com/",
@@ -24,11 +35,29 @@ const ENV = {
       clientId: "0zf1gFmgg6rp3BezUDn1jAimFY5FF3hH",
       audience: "https://ExchangaApi.net",
       scope: "openid profile email",
-      // Must match envName so production incidents are not filed under "development".
-      sentryEnvornment: "prod",
-      sentryLoggs: false,
-      sentryDsn: 'https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720',
-
+    },
+    // Telemetry (security finding H-08). Moved out of oAuthConfig — it has
+    // nothing to do with OAuth — and split into named fields. One flag,
+    // `sentryLoggs`, used to gate three unrelated things: whether Sentry ran at
+    // all, SDK log verbosity, and by omission the fact that nobody had decided
+    // about Session Replay. `sentryEnvornment` was also misspelled.
+    //
+    // Raising the replay rates here does NOT enable replay: the integration is
+    // filtered out in src/utils/telemetry/sentryOptions.ts, which documents what
+    // has to happen first. Turning it on is a reviewed code change.
+    sentry: {
+      /** Whether Sentry.init() runs. Off means no production error visibility. */
+      enabled: true,
+      dsn: "https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720",
+      /** Was `sentryEnvornment`. Must match envName, or prod incidents file under the wrong project. */
+      environment: "prod",
+      /** IP address, cookies and request headers — including Authorization. Keep false. */
+      sendPii: false,
+      /** SDK log verbosity. Nothing to do with whether Sentry is enabled. */
+      enableLogs: false,
+      /** Session Replay of card, PIN and KYC screens. Keep at 0. */
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
     },
     apiUrls: {
       uploadUrl: "https://api.exchangapay.com/",
@@ -45,10 +74,29 @@ const ENV = {
       clientId: "QN7NMqYHzengFUnmR0HCvenDCSOwGwNs",
       audience: "https://ExchangaTstApi.net",
       scope: "openid profile email enroll offline_access",
-      sentryEnvornment: "tst",
-      sentryLoggs: false,
-      sentryDsn: 'https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720',
-
+    },
+    // Telemetry (security finding H-08). Moved out of oAuthConfig — it has
+    // nothing to do with OAuth — and split into named fields. One flag,
+    // `sentryLoggs`, used to gate three unrelated things: whether Sentry ran at
+    // all, SDK log verbosity, and by omission the fact that nobody had decided
+    // about Session Replay. `sentryEnvornment` was also misspelled.
+    //
+    // Raising the replay rates here does NOT enable replay: the integration is
+    // filtered out in src/utils/telemetry/sentryOptions.ts, which documents what
+    // has to happen first. Turning it on is a reviewed code change.
+    sentry: {
+      /** Whether Sentry.init() runs. Off means no production error visibility. */
+      enabled: true,
+      dsn: "https://97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io/4510198383902720",
+      /** Was `sentryEnvornment`. Must match envName, or prod incidents file under the wrong project. */
+      environment: "tst",
+      /** IP address, cookies and request headers — including Authorization. Keep false. */
+      sendPii: false,
+      /** SDK log verbosity. Nothing to do with whether Sentry is enabled. */
+      enableLogs: false,
+      /** Session Replay of card, PIN and KYC screens. Keep at 0. */
+      replaysSessionSampleRate: 0,
+      replaysOnErrorSampleRate: 0,
     },
     apiUrls: {
       uploadUrl: "https://tstapi.exchangapay.com/",

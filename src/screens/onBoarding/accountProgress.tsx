@@ -5,7 +5,7 @@ import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import AuthService from '../../services/auth';
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { useDispatch, useSelector } from 'react-redux';
 import { CommonActions, useIsFocused, useNavigation } from '@react-navigation/native';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -96,7 +96,6 @@ const AccountProgress = (props: any) => {
     await clearSession();
     dispatch(setUserInfo(""));
     dispatch(isLogin(false));
-    dispatch(loginAction(""));
     logOutLogData()
     navigation.dispatch(
       CommonActions.reset({

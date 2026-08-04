@@ -24,7 +24,7 @@ import { EMAIL_CONSTANTS, REGISTRATION_CONSTATNTS } from './constants';
 import DefaultOtpInput from '../../components/DefualtOtpInput';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import DeviceInfo from 'react-native-device-info';
-import { isLogin, loginAction, setUserInfo } from '../../redux/Actions/UserActions';
+import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { fcmNotification } from '../../utils/FCMNotification';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
@@ -238,7 +238,6 @@ const PhoneOtpVerification = () => {
         await clearSession();
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
-        dispatch(loginAction(""));
         const response = await OnBoardingService.updateFcmToken();
         await Keychain.resetGenericPassword({ service: 'chat_conversation_Id' });
         await Keychain.resetGenericPassword({ service: "authTokenService" });
