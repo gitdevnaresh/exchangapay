@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../store";
+import { log } from "../utils/logger";
 
 // Typed hooks for better TypeScript support
 export const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -33,14 +34,10 @@ export const useReduxState = () => {
 export const useReduxDebug = () => {
   const state = useAppSelector((state) => state);
 
-  const logState = () => {
-    console.log("=== REDUX STATE DEBUG ===");
-    console.log("Auth State:", state.auth);
-    console.log("User State:", state.UserReducer);
-    console.log("Send State:", state.send);
-    console.log("SendCrypto State:", state.sendcrypto);
-    console.log("========================");
-  };
+  // M-16: Redux state holds the access token, KYC payload and card details.
+  // log.debug compiles to nothing outside __DEV__, so this cannot dump the
+  // store to logcat even if a call to it is left behind in a release build.
+ 
 
-  return { logState, state };
+  return {  state };
 };

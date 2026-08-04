@@ -19,6 +19,7 @@ import { s } from '../../constants/theme/scale';
 import SvgFromUrl from '../../components/svgIcon';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import CardsModuleService from '../../services/card';
+import { log } from '../../utils/logger';
 
 const Notifications = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -48,10 +49,10 @@ const Notifications = React.memo((props: any) => {
     const handleLinkPress = (href: any) => {
         if (href.startsWith('mailto:')) {
             setNotePopVisble(false);
-            Linking.openURL(href).catch(err => console.error("Failed to open email:", err));
+            Linking.openURL(href).catch(err => log.error("Failed to open email", err));
         } else if (href.startsWith('https:')) {
             setNotePopVisble(false);
-            Linking.openURL(href).catch(err => console.error("Failed to open url:", err));
+            Linking.openURL(href).catch(err => log.error("Failed to open url", err));
         } else {
             setNotePopVisble(false);
             navigation.navigate('EditProfile');

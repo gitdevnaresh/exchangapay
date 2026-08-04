@@ -1,6 +1,7 @@
 import createTransform from "redux-persist/es/createTransform";
 import { decryptAES, encryptAES } from "./encryptionDecryption";
 import * as Keychain from "react-native-keychain";
+import { log } from "../logger";
 
 const getSecretKey = async (): Promise<string | null> => {
     try {
@@ -11,7 +12,8 @@ const getSecretKey = async (): Promise<string | null> => {
         }
         return null;
     } catch (err) {
-        console.error("Error retrieving secret key:", err);
+        // M-16: the error only, never the key material or the Keychain entry.
+        log.error("Error retrieving secret key", err);
         return null;
     }
 };

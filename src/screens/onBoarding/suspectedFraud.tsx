@@ -20,6 +20,7 @@ import Loadding from '../../components/skeleton';
 import { SvgUri } from 'react-native-svg';
 import useLogout from '../../hooks/useLogOut';
 import useMemberLogin from '../../hooks/useMemberLogin';
+import { log } from '../../utils/logger';
 
 const SuspectedFraud = () => {
     const styles = useStyleSheet(themedStyles);
@@ -60,9 +61,8 @@ const SuspectedFraud = () => {
         }
     };
     const handleLinkPress = (href: any) => {
-        console.log("href", href);
         if (href.startsWith('mailto:')) {
-            Linking.openURL(`${href}${userInfo?.supportEmail}`).catch(err => console.error("Failed to open email:", err));
+            Linking.openURL(`${href}${userInfo?.supportEmail}`).catch(err => log.error("Failed to open email", err));
         }
     };
     const handleCloseError = () => {

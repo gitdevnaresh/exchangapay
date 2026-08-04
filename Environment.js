@@ -1,3 +1,5 @@
+import { log } from "./src/utils/logger";
+
 const ENV = {
   dev: {
     envName: "dev",
@@ -96,10 +98,10 @@ const DEFAULT_ENV = "tst";
 const resolveEnvName = (envName) => {
   const requested = envName || BUILD_ENV || DEFAULT_ENV;
   if (!ENV[requested]) {
-    console.warn(
-      `[Environment] Unknown environment "${requested}" requested; ` +
-        `falling back to "${DEFAULT_ENV}".`
-    );
+    log.warn("[Environment] Unknown environment requested; falling back", {
+      requested,
+      fallback: DEFAULT_ENV,
+    });
     return DEFAULT_ENV;
   }
   return requested;

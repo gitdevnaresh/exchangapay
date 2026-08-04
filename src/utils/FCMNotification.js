@@ -3,6 +3,7 @@ import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification from 'react-native-push-notification';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
+import { log } from './logger';
 
 class FCMNotification {
   initiate = onNotificationAction => {
@@ -30,7 +31,7 @@ class FCMNotification {
 
       // (optional) Called when the user fails to register for remote notifications. Typically occurs when APNS is having issues, or the device is a simulator. (iOS)
       onRegistrationError: function (err) {
-        console.error('[FCMService] register error', err.message, err);
+        log.error('[FCMService] register error', err);
       },
 
       // IOS ONLY (optional): default: all - Permissions to register.

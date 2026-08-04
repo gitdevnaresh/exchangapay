@@ -27,7 +27,8 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer, applyMiddleware(thunk));
 const persistor = null;
 
-console.log("Store with thunk middleware created successfully:", typeof store);
-console.log("Thunk middleware:", typeof thunk);
+// M-16: two console.log calls fired here on import — an import-time side effect
+// in a module that L-01 flags as dead anyway (superseded by src/store/index.tsx).
+// They carried no diagnostic value beyond `typeof`, so they are simply gone.
 
 export { store, persistor };

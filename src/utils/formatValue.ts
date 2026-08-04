@@ -1,4 +1,5 @@
 import numeral from "numeral";
+import { log } from "./logger";
 
 export const formatDefault = (amount: string, currency = "$") => {
   let textResult = `${currency}`;
@@ -11,7 +12,9 @@ export const formatDefault = (amount: string, currency = "$") => {
       textResult += numeral(parseFloat(amount)).format("0,0.00");
     }
   } catch (e) {
-    console.log(e);
+    // M-16: the raw error is dev-only — a formatting failure here embeds the
+    // monetary amount in its message, which has no business in a device log.
+    log.debug("formatDefault failed to parse amount", { error: e });
   }
   return textResult;
 };

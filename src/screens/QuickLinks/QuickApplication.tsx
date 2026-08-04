@@ -48,7 +48,6 @@ const ApplicatoionReview = (props: any) => {
             const response: any = await CardsModuleService?.getApplyCardStatus(cardId);
             if (response.status === 200) {
                 setStatusInfo(response?.data);
-                console.log(response?.data)
                 setStatusLoading(false)
                 setErrorMsg('');
 

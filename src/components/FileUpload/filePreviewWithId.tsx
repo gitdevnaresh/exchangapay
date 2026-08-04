@@ -24,6 +24,7 @@ import DefaultButton from "../DefaultButton";
 import { AttachmentIcon } from "../../assets/svg";
 import { requestAndroidPermission } from "../../utils/tools";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { log } from "../../utils/logger";
 
 interface FilePreviewProps {
     label: string;
@@ -172,7 +173,7 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
                 Alert.alert("Download Complete", `Saved to: ${response.path()}`);
             }
         } catch (error) {
-            console.log("Download Error:", error);
+            log.error("Download Error", error);
             Alert.alert("Download Failed", "Unable to download file.");
         }
     };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
+import { log } from "../../utils/logger";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -31,7 +32,10 @@ const Login = () => {
         const { id_token, access_token, expires_in } = responseJson;
       })
       .catch((err) => {
-        console.error(err);
+        // M-16: this rejection comes from a request whose body carried the
+        // user's password (H-13). Only the reduced, redacted shape is reported —
+        // never the raw error, which can echo back the request configuration.
+        log.error("Login request failed", err);
       });
   };
 

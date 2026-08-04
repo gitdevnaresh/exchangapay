@@ -13,6 +13,7 @@ import DefaultButton from '../../components/DefaultButton';
 import { useDispatch } from 'react-redux';
 import AuthService from '../../services/auth';
 import { setUserInfo } from '../../redux/Actions/UserActions';
+import { log } from '../../utils/logger';
 
 const VerifyMobile = () => {
     const styles = useStyleSheet(themedStyles);
@@ -63,7 +64,7 @@ const VerifyMobile = () => {
             dispatch(setUserInfo(userLoginInfo.data));
             setVerifyLoader(false);
         }).catch((error) => {
-            console.error(`onRejected function called: ${error.message}`);
+            log.error("Mobile verification rejected", error);
             setVerifyLoader(false);
         })
     }

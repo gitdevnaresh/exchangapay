@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import { log } from '../../utils/logger';
 
 const customFonts = {
 };
@@ -25,7 +26,7 @@ const ParagraphComponent = ({ text, style, children, numberOfLines, onPress }: L
         );
         setFontsLoaded(true);
       } catch (error) {
-        console.error('Error loading fonts:', error);
+        log.error('Error loading fonts', error);
       }
     };
 

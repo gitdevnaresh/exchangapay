@@ -203,7 +203,6 @@ const SendReplay = (props: any) => {
           const uploadRes = await ProfileService.casesReplyUploadFile(formData);
           if (uploadRes.status === 200) {
             const uploadedFile: any = uploadRes.data;
-            console.log(uploadedFile, "uploadedFile")
             if (uploadedFile.id) {
               setAttachment({
                 id: uploadedFile.id,

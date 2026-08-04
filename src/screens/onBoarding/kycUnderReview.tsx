@@ -24,6 +24,7 @@ import useLogout from "../../hooks/useLogOut";
 import useMemberLogin from "../../hooks/useMemberLogin";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RenderHTML from "react-native-render-html";
+import { log } from "../../utils/logger";
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
@@ -68,7 +69,7 @@ const UnderReview = () => {
   const handleLinkPress = (href: any) => {
     if (href.startsWith("mailto:")) {
       Linking.openURL(href).catch((err) =>
-        console.error("Failed to open email:", err)
+        log.error("Failed to open email", err)
       );
     } else {
       navigation.navigate("addKycInfomation", {

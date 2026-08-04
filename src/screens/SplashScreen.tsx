@@ -38,6 +38,7 @@ import { getAllEnvData } from "../../Environment";
 import useMemberLogin from "../hooks/useMemberLogin";
 import useChekBio from "../hooks/useCheckBio";
 import { storeToken } from "../utils/helpers";
+import { log } from "../utils/logger";
 const SplashScreen = React.memo(() => {
   const { authorize, getCredentials, clearSession } = useAuth0();
   const [loading, setLoading] = React.useState(false);
@@ -70,7 +71,7 @@ const SplashScreen = React.memo(() => {
           await clearPersistedState();
         } else {
           // No session at all, user needs to login
-          console.log("No session found, user needs to login");
+          log.debug("No session found, user needs to login");
         }
       } catch (error) {
         await clearPersistedState();
@@ -108,12 +109,14 @@ const SplashScreen = React.memo(() => {
         isSplashScreen: true,
       };
 
-      console.log("Calling getMemDetails with:", userDetails);
+      // M-16: the payload is deliberately NOT logged — `userDetails` carries the
+      // FCM token, which is a push-notification credential for this install.
+      log.debug("Restoring session", { isNewLogin });
       // Call getMemDetails separately to avoid race conditions
       await getMemDetails(userDetails, true);
-      console.log("User session restored successfully");
+      log.debug("User session restored successfully");
     } catch (error) {
-      console.log("Failed to restore user session:", error);
+      log.error("Failed to restore user session", error);
       await clearPersistedState();
     }
   };
@@ -127,7 +130,7 @@ const SplashScreen = React.memo(() => {
       dispatch(setUserInfo(null));
       await clearSession();
     } catch (error) {
-      console.log("Error clearing persisted state:", error);
+      log.error("Error clearing persisted state", error);
     }
   };
 
@@ -173,7 +176,7 @@ const SplashScreen = React.memo(() => {
 
       setLoading(false);
     } catch (e) {
-      console.error("Auth0 authorization failed:", e);
+      log.error("Auth0 authorization failed", e);
       setLoading(false);
     }
   };
@@ -199,7 +202,7 @@ const SplashScreen = React.memo(() => {
 
       setLoading(false);
     } catch (e) {
-      console.error("Auth0 signup failed:", e);
+      log.error("Auth0 signup failed", e);
       setLoading(false);
     }
   };

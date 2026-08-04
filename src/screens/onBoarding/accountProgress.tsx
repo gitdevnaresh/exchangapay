@@ -24,6 +24,7 @@ import { fcmNotification } from '../../utils/FCMNotification';
 import DeviceInfo from 'react-native-device-info';
 import { useAuth0 } from 'react-native-auth0';
 import useMemberLogin from '../../hooks/useMemberLogin';
+import { log } from '../../utils/logger';
 
 
 const AccountProgress = (props: any) => {
@@ -65,7 +66,7 @@ const AccountProgress = (props: any) => {
 
   const handleLinkPress = (href: any) => {
     if (href.startsWith('mailto:')) {
-      Linking.openURL(href).catch(err => console.error("Failed to open email:", err));
+      Linking.openURL(href).catch(err => log.error("Failed to open email", err));
     } else {
       navigation.navigate('addKycInfomation');
     }

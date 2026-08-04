@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Text } from 'react-native';
+import { log } from '../../utils/logger';
 const customFonts = {
   // 'InriaSans-Bold': require('../../../assets/fonts/InriaSans-Bold.ttf'),
   // 'InriaSans-Light': require('../../../assets/fonts/InriaSans-Light.ttf'),
@@ -27,7 +28,7 @@ const TitleComponent = ({ text, style, children, numberOfLines, fontFamily }: La
         );
         setFontsLoaded(true);
       } catch (error) {
-        console.error('Error loading fonts:', error);
+        log.error('Error loading fonts', error);
       }
     };
 

@@ -34,6 +34,7 @@ import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
 import { initializeCrashlytics } from "./src/utils/ApiService";
 import { redact } from "./src/utils/redact";
+import { log } from "./src/utils/logger";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 import RNBootSplash from "react-native-bootsplash";
 import {
@@ -93,7 +94,7 @@ if (oAuthConfig.sentryLoggs) {
 }
 // Safety check
 if (!store) {
-  console.error("Store is undefined! This will cause the app to crash.");
+  log.error("Store is undefined! This will cause the app to crash.");
 }
 
 export default Sentry.wrap(function App() {
@@ -111,14 +112,14 @@ export default Sentry.wrap(function App() {
           if (value === "light" || value === "dark") setTheme(value);
         })
         .catch((error) => {
-          console.log("Error getting theme:", error);
+          log.error("Error getting theme", error);
         });
       initializeCrashlytics();
       // H-04: fire-and-forget. Bounded internally and fails open, so it never
       // delays the splash screen or gates rendering on a filesystem probe.
       initializeDeviceIntegrity();
     } catch (error) {
-      console.log("Error in app initialization:", error);
+      log.error("Error in app initialization", error);
     }
   }, []);
 
@@ -205,7 +206,7 @@ export default Sentry.wrap(function App() {
   };
   // Don't render if store is not available
   if (!store) {
-    console.error("Cannot render app: store is undefined");
+    log.error("Cannot render app: store is undefined");
     return null;
   }
 

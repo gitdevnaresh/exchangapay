@@ -32,6 +32,7 @@ import ErrorComponent from "../../../components/Error";
 import DatePickers from "react-native-date-picker";
 import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
+import { log } from "../../../utils/logger";
 
 const EXChangaCardDownloadBill = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -158,7 +159,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
       }).fetch("GET", pdfUrl);
       return response.path();
     } catch (error) {
-      console.error("Error saving PDF:", error);
+      log.error("Error saving PDF", error);
       Alert.alert("Error", "Failed to save the CSV.");
       return null;
     }
@@ -174,7 +175,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
 
       await Share.open(options);
     } catch (error) {
-      console.error("Error sharing PDF:", error);
+      log.error("Error sharing PDF", error);
     }
   };
 

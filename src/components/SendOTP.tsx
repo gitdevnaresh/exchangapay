@@ -9,6 +9,7 @@ import { text } from '../constants/theme/mixins';
 import AuthService from '../services/auth';
 import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { log } from '../utils/logger';
 
 
 const SendOTP = ({ onChangeText, value, isOTP, phoneNumber, onVerify, showError, handlePhoneOtpVerified, verfiedOtpErrorMsg, verifiedPhoneOtp }: any) => {
@@ -70,7 +71,7 @@ const SendOTP = ({ onChangeText, value, isOTP, phoneNumber, onVerify, showError,
             }
         }
         catch (error) {
-            console.error("Error fetching OTP:", error);
+            log.error("Error fetching OTP", error);
         }
     };
 
