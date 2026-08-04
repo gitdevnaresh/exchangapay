@@ -1,62 +1,47 @@
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import QuickCrypto from 'react-native-quick-crypto';
-import { Buffer } from '@craftzdog/react-native-buffer';
-
-// ---------------------------------------------------------------------------
-// AES-CBC/PKCS7 via react-native-quick-crypto (NATIVE, off the JS interpreter)
-// ---------------------------------------------------------------------------
-// Replaces the former pure-JS crypto-js path (VAPT P-1). The wire format is
-// UNCHANGED and byte-for-byte compatible with the C# backend and any data
-// already encrypted by the old implementation:
-//   base64( [0x01][16-byte random IV][AES-CBC-PKCS7 ciphertext] )
-// plus the legacy `v2:` hex-IV form and the legacy zero-IV fallback on decrypt.
-// (Cross-decrypt equivalence with the old crypto-js code was verified: 100/100.)
-const BACKEND_RANDOM_IV_VERSION = 1;
-const AES_IV_SIZE               = 16;
-const AES_BLOCK_SIZE            = 16;
-const IV_PREFIX                 = 'v2:';
+import { decryptAny, encryptCBC, encryptGCM } from '../utils/crypto/aes';
+import { BACKEND_SUPPORTS_AEAD } from '../utils/crypto/policy';
 
 /**
- * Strip spaces/dashes and validate key length — mirrors C# NormalizeKey.
- * Returns the normalized key string (16, 24, or 32 UTF-8 bytes).
+ * Encrypt/decrypt for backend traffic, keyed off the session `sk`.
+ *
+ * The scheme lives in `src/utils/crypto/aes.ts`. This file used to hold its own
+ * copy of it (H-06: two implementations of the same routine, with different
+ * failure behaviour, guaranteed to drift). What is left here is the three things
+ * that are actually specific to React callers:
+ *
+ *   1. the key comes from Redux,
+ *   2. a failure returns '' instead of throwing, because ~400 call sites render
+ *      the result straight into a <Text> and an exception there blanks a screen,
+ *   3. the decrypt memoization cache.
+ *
+ * Writes are still CBC (format 0x01) until the backend can read GCM — flip
+ * BACKEND_SUPPORTS_AEAD in utils/crypto/policy.ts, which documents the migration
+ * order. Reads already accept GCM, so the backend can switch first and
+ * unilaterally.
  */
-function normalizeSecretKey(secretKey: string): string {
-  if (!secretKey) throw new Error('SecretKey is missing');
-  const normalized = secretKey.replace(/[ -]/g, '');
-  const byteLen = Buffer.byteLength(normalized, 'utf8');
-  if (![16, 24, 32].includes(byteLen)) {
-    throw new Error(`AES key must be 128/192/256-bit after normalization (got ${byteLen * 8}-bit)`);
-  }
-  return normalized;
-}
-
-/** Pick the CBC variant from the key byte-length (crypto-js auto-detected this). */
-function cbcAlgorithm(keyByteLength: number): 'aes-128-cbc' | 'aes-192-cbc' | 'aes-256-cbc' {
-  switch (keyByteLength) {
-    case 16: return 'aes-128-cbc';
-    case 24: return 'aes-192-cbc';
-    case 32: return 'aes-256-cbc';
-    default: throw new Error(`Unsupported AES key length: ${keyByteLength}`);
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Decryption memoization cache (VAPT P-1)
 // ---------------------------------------------------------------------------
-// AES-CBC decryption is DETERMINISTIC: an identical (secretKey, cipherText) pair
-// always yields the identical plaintext. So caching the result is 100%
-// behaviour-preserving. This collapses the "same field re-decrypted on every
-// render across 416 call sites" cost (e.g. KYC decrypts ~20 fields per render):
-// the FIRST decrypt does the native AES work; every subsequent render of the
-// same ciphertext returns the cached plaintext instantly.
+// Decryption is DETERMINISTIC: an identical (secretKey, cipherText) pair always
+// yields the identical plaintext. So caching the result is behaviour-preserving.
+// This collapses the "same field re-decrypted on every render across 400+ call
+// sites" cost (e.g. KYC decrypts ~20 fields per render): the FIRST decrypt does
+// the native AES work; every subsequent render returns the cached plaintext.
 //
 // The cache key includes the resolved secret key, so a key change (new login /
 // different `sk`) can never return another user's plaintext.
 //
-// NOTE: encryptAES is deliberately NOT cached — it uses a fresh random IV per
-// call, and caching it would emit identical ciphertext for identical plaintext,
-// a cryptographic-integrity regression.
+// Only successful decrypts are cached. For GCM that matters: the authentication
+// tag has already been verified for anything in here, and a blob that failed
+// verification is never stored, so a tampered value cannot be cached past its
+// rejection.
+//
+// NOTE: encryption is deliberately NOT cached — it uses a fresh random IV/nonce
+// per call, and caching it would emit identical ciphertext for identical
+// plaintext, which is the exact weakness being fixed elsewhere in this change.
 const DECRYPT_CACHE_MAX = 1000;
 const decryptCache = new Map<string, string>();
 
@@ -82,40 +67,23 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
     return customSecretKey || defaultSecretKey || '';
   }, [customSecretKey, defaultSecretKey]);
 
-  // -------------------------------------------------------------------------
-  // encryptAES
-  // Output: base64( [0x01][16-byte random IV][AES-CBC-PKCS7 ciphertext] )
-  // Matches the former crypto-js output, the web app encryptAES, and C#
-  // EncryptString.
-  // -------------------------------------------------------------------------
   const encryptAES = useCallback((plainText: string): string => {
     try {
       const sk = getKey();
       if (!sk) return '';
-      const keyBuf = Buffer.from(normalizeSecretKey(sk), 'utf8');
-      const iv = QuickCrypto.randomBytes(AES_IV_SIZE);
-
-      const cipher = QuickCrypto.createCipheriv(cbcAlgorithm(keyBuf.length), keyBuf, iv);
-      const cipherBuf = Buffer.concat([cipher.update(plainText || '', 'utf8'), cipher.final()]);
-
-      return Buffer.concat([
-        Buffer.from([BACKEND_RANDOM_IV_VERSION]),
-        Buffer.from(iv),
-        cipherBuf,
-      ]).toString('base64');
+      return BACKEND_SUPPORTS_AEAD
+        ? encryptGCM(plainText, sk)
+        : encryptCBC(plainText, sk);
     } catch {
       return '';
     }
   }, [getKey]);
 
-  // -------------------------------------------------------------------------
   const decryptAES = useCallback((cipherText: string): string => {
     if (!cipherText) return '';
     const sk = getKey();
     if (!sk) return '';
 
-    // Memoized fast path: reuse prior plaintext when this exact (key, ciphertext)
-    // was already decrypted, instead of re-running AES on every render (P-1).
     const cacheKey = `${sk}::${cipherText}`;
     const cached = decryptCache.get(cacheKey);
     if (cached !== undefined) {
@@ -126,35 +94,8 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
     }
 
     try {
-      const keyBuf = Buffer.from(normalizeSecretKey(sk), 'utf8');
+      const result = decryptAny(cipherText, sk);
 
-      let iv: Buffer;
-      let cipherBuf: Buffer;
-
-      if (cipherText.startsWith(IV_PREFIX)) {
-        const data = cipherText.slice(IV_PREFIX.length);
-        iv        = Buffer.from(data.slice(0, 32), 'hex');
-        cipherBuf = Buffer.from(data.slice(32), 'base64');
-      } else {
-        const bytes = Buffer.from(cipherText, 'base64');
-        if (
-          bytes.length > 1 + AES_IV_SIZE &&
-          bytes[0] === BACKEND_RANDOM_IV_VERSION &&
-          bytes.length % AES_BLOCK_SIZE === 1
-        ) {
-          iv        = bytes.subarray(1, 1 + AES_IV_SIZE);
-          cipherBuf = bytes.subarray(1 + AES_IV_SIZE);
-        } else {
-          // Legacy fallback: static all-zero IV, ciphertext is the bare base64.
-          iv        = Buffer.alloc(AES_IV_SIZE, 0);
-          cipherBuf = Buffer.from(cipherText, 'base64');
-        }
-      }
-
-      const decipher = QuickCrypto.createDecipheriv(cbcAlgorithm(keyBuf.length), keyBuf, iv);
-      const result = Buffer.concat([decipher.update(cipherBuf), decipher.final()]).toString('utf8') || '';
-
-      // Cache the deterministic result; evict oldest when over the bound.
       decryptCache.set(cacheKey, result);
       if (decryptCache.size > DECRYPT_CACHE_MAX) {
         const oldestKey = decryptCache.keys().next().value;
@@ -163,7 +104,8 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
 
       return result;
     } catch {
-      // Do NOT cache failures — a transient error must be retryable.
+      // Do NOT cache failures — a transient error must be retryable, and a
+      // rejected (tampered) blob must be re-rejected rather than remembered.
       return '';
     }
   }, [getKey]);
