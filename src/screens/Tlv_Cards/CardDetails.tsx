@@ -24,6 +24,7 @@ import CardPin, { ChiperCardPin } from "./showPin";
 import AccountDeactivatePopup from "../Currencypop/actDeactivatePopup";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import { handleCardDetailsBack } from "./constants";
+import { guardHighRiskAction } from "../../security";
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
@@ -182,6 +183,9 @@ const CardDetails = React.memo((props: any) => {
     setErrormsg("");
   };
   const getCardPin = async () => {
+    // H-04: the PIN is rendered in cleartext, so on a hooked device it is read
+    // straight out of the view tree. Gate before the request is even made.
+    if (!(await guardHighRiskAction("CARD_PIN_REVEAL"))) return;
     try {
       const body = {
         "walletId": props?.route?.params?.cardId

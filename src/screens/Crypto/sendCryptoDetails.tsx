@@ -30,6 +30,7 @@ import AddressbookService from "../../services/addressbook";
 import DeafultList from "../../components/DeafultPicker";
 import Cookies from '@react-native-cookies/cookies';
 import { cryptoReceiveLoader } from "./buySkeleton_views";
+import { guardHighRiskAction } from "../../security";
 
 let amount;
 
@@ -233,6 +234,14 @@ const SendCryptoDetails = React.memo((props: any) => {
 
   const goToTheSummarryPage = async () => {
     setErrormsg("")
+    // H-04: gate the whole withdrawal flow at its single entry point, ahead of
+    // the biometric prompt below — on a hooked device that prompt is itself
+    // trivially bypassed, so it cannot be the thing this depends on.
+    if (!(await guardHighRiskAction("CRYPTO_WITHDRAWAL"))) {
+      setSummryLoading(false);
+      setBtnDisabled(false);
+      return;
+    }
     if (!address) {
       setSummryLoading(false);
       setBtnDisabled(false);

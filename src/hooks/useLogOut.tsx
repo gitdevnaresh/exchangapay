@@ -10,6 +10,7 @@ import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import * as Keychain from "react-native-keychain";
 import OnBoardingService from "../services/onBoardingservice";
 import { clearDecryptCache } from "./useEncryption_Decryption";
+import { clearAttestationToken } from "../security";
 
 
 interface LogoutOptions {
@@ -42,6 +43,9 @@ const useLogout = () => {
         };
         // Drop memoized plaintext so decrypted PII does not outlive the session
         clearDecryptCache();
+        // H-04: the attestation token is bound to this device/session, not to
+        // whoever signs in next.
+        clearAttestationToken();
         // Clear Redux state
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));

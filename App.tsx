@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import {
+  AppState,
   LogBox,
   PermissionsAndroid,
   Platform,
@@ -7,6 +8,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
+import type { AppStateStatus } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -34,6 +36,10 @@ import { initializeCrashlytics } from "./src/utils/ApiService";
 import { redact } from "./src/utils/redact";
 import { useTokenRefresh } from "./src/hooks/useTokenRefresh";
 import RNBootSplash from "react-native-bootsplash";
+import {
+  initializeDeviceIntegrity,
+  refreshDeviceIntegrity,
+} from "./src/security";
 
 import * as Sentry from "@sentry/react-native";
 import { version as appVersion } from './package.json';
@@ -108,9 +114,23 @@ export default Sentry.wrap(function App() {
           console.log("Error getting theme:", error);
         });
       initializeCrashlytics();
+      // H-04: fire-and-forget. Bounded internally and fails open, so it never
+      // delays the splash screen or gates rendering on a filesystem probe.
+      initializeDeviceIntegrity();
     } catch (error) {
       console.log("Error in app initialization:", error);
     }
+  }, []);
+
+  // A device can be rooted between sessions, so a launch-time verdict goes stale.
+  // Re-check on foreground; the result only ever reaches high-risk operations.
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+      if (nextState === "active") {
+        refreshDeviceIntegrity();
+      }
+    });
+    return () => subscription.remove();
   }, []);
 
   useEffect(() => {

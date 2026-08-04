@@ -10,6 +10,7 @@ import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import SecurityServices from "../../services/security";
+import { guardHighRiskAction } from "../../security";
 
 const ChangePassword = (props: any) => {
     const [errormsg, setErrormsg] = useState(null);
@@ -28,6 +29,9 @@ const ChangePassword = (props: any) => {
     };
 
     const fetchResetPassword = async () => {
+        // H-04: a credential change on an attacker-controlled device hands the
+        // account over rather than securing it. Gate before the reset is sent.
+        if (!(await guardHighRiskAction("PASSWORD_CHANGE"))) return;
         try {
             setPwdLoading(true);
             const response: any = await SecurityServices.getResetPassword();

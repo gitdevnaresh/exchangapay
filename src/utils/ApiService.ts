@@ -8,7 +8,34 @@ import { getApplicationName } from "react-native-device-info";
 import store from "../store";
 import * as Sentry from "@sentry/react-native";
 import idempotencyConfig, { fastHash } from "./idempotency";
+import { getAttestationToken, getIntegrityReport, toRiskHeader } from "../security";
 const appName = getApplicationName();
+
+/**
+ * H-04: carry the device posture to the backend on every request.
+ *
+ * X-Device-Risk        client-side verdict. Advisory — it comes from a process the
+ *                      attacker controls, so the backend must treat it as a fraud
+ *                      *signal* (risk scoring, step-up auth, review queues), never
+ *                      as an authorisation decision.
+ * X-Device-Attestation platform-signed attestation, present only once the native
+ *                      module is in place. THIS is the one the backend enforces
+ *                      on. See src/security/attestation.ts for the remaining work.
+ *
+ * Both fail open: no verdict and no token still produces a normal request, so a
+ * probe failure can never take the app offline.
+ */
+const applySecurityHeaders = async (config: any) => {
+  try {
+    config.headers["X-Device-Risk"] = toRiskHeader(getIntegrityReport());
+    const attestation = await getAttestationToken();
+    if (attestation) {
+      config.headers["X-Device-Attestation"] = attestation;
+    }
+  } catch {
+    // Never let device posture break the request path.
+  }
+};
 const GetTokens = async () => {
   try {
     const credentials = await Keychain.getGenericPassword({
@@ -167,6 +194,7 @@ api.axiosInstance.interceptors.request.use(async (config: any) => {
     config.headers.ipAddress = `${userInfo?.UserReducer?.ipInfo.ip || ""}`;
   }
   config.headers["Content-Type"] = "application/json";
+  await applySecurityHeaders(config);
   if ((config?.method || "").toLowerCase() === "post" && config?.url) {
     const entry = findIdempotencyEntry(config.url);
     if (entry) {
@@ -187,6 +215,7 @@ uploadapi.axiosInstance.interceptors.request.use(async (config: any) => {
   const token = await GetTokens();
   config.headers.Authorization = `Bearer ${token}`;
   config.headers["Content-Type"] = "multipart/form-data";
+  await applySecurityHeaders(config);
   return config;
 });
 

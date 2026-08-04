@@ -311,6 +311,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
+					"-lc++abi",
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
@@ -338,6 +339,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
+					"-lc++abi",
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
