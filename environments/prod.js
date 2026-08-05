@@ -55,6 +55,12 @@ export default {
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
   },
+  // H-04 — see environments/tst.js. Production ships from Google Play, which
+  // links the Cloud project itself, so this stays empty unless the production
+  // build is ever distributed outside Play.
+  attestation: {
+    playIntegrityCloudProject: "",
+  },
   apiUrls: {
     uploadUrl: "https://api.exchangapay.com/",
     cardsUrl: "https://api.exchangapay.com/",

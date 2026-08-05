@@ -25,6 +25,13 @@ export {
 export type { LegacyFormat } from "./legacyTelemetry";
 
 export {
+  getIntegrityFailureCounts,
+  recordDecryptFailure,
+  resetIntegrityFailureCounts,
+} from "./integrityTelemetry";
+export type { CryptoContext } from "./integrityTelemetry";
+
+export {
   AT_REST_USES_AEAD,
   BACKEND_SUPPORTS_AEAD,
   LEGACY_FORMAT_REMOVAL_DATE,

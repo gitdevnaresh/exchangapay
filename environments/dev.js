@@ -30,6 +30,10 @@ export default {
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
   },
+  // H-04 — see environments/tst.js for what this is and when it is required.
+  attestation: {
+    playIntegrityCloudProject: "",
+  },
   apiUrls: {
     uploadUrl: "https://devapi.exchangapay.com/",
     cardsUrl: "https://devapi.exchangapay.com/",

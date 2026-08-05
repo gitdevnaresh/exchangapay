@@ -19,8 +19,9 @@
  *
  * 0x01  CBC, backend-compat base64( [0x01][16B random IV][AES-CBC-PKCS7 ct] )
  *       Confidentiality only. Byte-for-byte compatible with the C# backend and
- *       the web app. Still the default for backend traffic until the server
- *       speaks GCM — see BACKEND_SUPPORTS_AEAD in policy.ts.
+ *       the web app. No longer written by this build — backend traffic moved to
+ *       0x02 — but still READ, because installs that have not updated are still
+ *       sending it. See BACKEND_SUPPORTS_AEAD in policy.ts.
  *
  * v2:   legacy              "v2:" + hex(16B IV) + base64(AES-CBC-PKCS7 ct)
  * (none) legacy, WEAK       base64( AES-CBC-PKCS7 ct ) with an all-zero IV
@@ -35,14 +36,21 @@
  * plaintext block, with no error raised. An attacker who can modify ciphertext in
  * transit can therefore make controlled edits to the decrypted value without
  * knowing the key. That is exactly what a MAC prevents and CBC does not have.
- * Removing it is a two-sided change — the backend has to be able to read what we
- * send — so the client half ships first and the switch is one constant.
+ *
+ * Nothing in this build writes CBC any more. The decoder keeps it because the
+ * far side of a migration is never instantaneous: older installs are still
+ * sending 0x01, and records written before the switch are still sitting in the
+ * backend and in the Keychain. Deleting the branch would make all of that
+ * unreadable. The encrypt function stays only so that reverting
+ * BACKEND_SUPPORTS_AEAD remains a one-constant rollback.
  */
 
 import QuickCrypto from "react-native-quick-crypto";
 import { Buffer } from "@craftzdog/react-native-buffer";
 import { LEGACY_FORMATS_ENABLED } from "./policy";
 import { recordLegacyFormatDecrypt } from "./legacyTelemetry";
+import { recordDecryptFailure } from "./integrityTelemetry";
+import type { CryptoContext } from "./integrityTelemetry";
 
 export const FORMAT_CBC = 0x01;
 export const FORMAT_GCM = 0x02;
@@ -359,14 +367,7 @@ const decryptLegacy = (
   return plain;
 };
 
-/**
- * Decrypt any format this app has ever emitted.
- *
- * Throws CryptoError on failure — callers decide whether that surfaces as an
- * exception or as an empty string. It never returns a partially-verified result:
- * for 0x02 the tag is checked before any plaintext is handed back.
- */
-export const decryptAny = (cipherText: string, secretKey: SecretKey): string => {
+const decryptAnyInner = (cipherText: string, secretKey: SecretKey): string => {
   if (!cipherText) {
     throw new CryptoError("malformed", "Ciphertext is empty");
   }
@@ -424,4 +425,36 @@ export const decryptAny = (cipherText: string, secretKey: SecretKey): string => 
   }
 
   throw new CryptoError("malformed", "Unrecognised ciphertext format");
+};
+
+/**
+ * Decrypt any format this app has ever emitted.
+ *
+ * Throws CryptoError on failure — callers decide whether that surfaces as an
+ * exception or as an empty string. It never returns a partially-verified result:
+ * for 0x02 the tag is checked before any plaintext is handed back.
+ *
+ * `context` is telemetry only; it never changes which formats are accepted. Pass
+ * the honest value — it is what separates "a record in our own Keychain did not
+ * decrypt" from "something on the wire is being modified".
+ */
+export const decryptAny = (
+  cipherText: string,
+  secretKey: SecretKey,
+  context: CryptoContext = "unknown"
+): string => {
+  try {
+    return decryptAnyInner(cipherText, secretKey);
+  } catch (error) {
+    // This build writes 0x02, but not everything it READS is 0x02 yet: older
+    // installs still send CBC and old records are still CBC, and tampering with
+    // those cannot be *prevented*. Recording every failure is what makes it
+    // visible — see integrityTelemetry.ts for what each reason actually proves.
+    if (error instanceof CryptoError) {
+      recordDecryptFailure(context, error.reason);
+    } else {
+      recordDecryptFailure(context, "decrypt-failed");
+    }
+    throw error;
+  }
 };

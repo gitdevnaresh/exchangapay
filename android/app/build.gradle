@@ -285,6 +285,64 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
+/**
+ * H-13 regression guard — the JavaScript tenant and the native Auth0 callback
+ * must name the same Auth0 domain.
+ *
+ * environments/active.js decides which tenant the app talks to, but the OAuth
+ * redirect is registered natively from the auth0Domain manifest placeholder
+ * below. Nothing connects the two: flipping active.js to prod while this file
+ * still says the test domain produces a build that authenticates against one
+ * tenant and registers its callback against another. Login does not degrade —
+ * the redirect never comes back and the user is stranded on the browser tab.
+ *
+ * That failure is invisible until someone runs the build, which is exactly when
+ * an environment migration is under time pressure. Checked only for release
+ * artefacts, matching the guards above, so debug builds and IDE syncs are
+ * untouched.
+ */
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.project == project && it.name ==~ /(?i)(assemble|bundle|install|package).*Release/
+    }
+    if (!releaseTask) return
+
+    def activeSource = file("../../environments/active.js").text
+    def activeMatch = (activeSource =~ /from\s+["']\.\/(dev|tst|prod)["']/)
+    if (!activeMatch) {
+        throw new GradleException(
+            "[H-13] Could not tell which environment environments/active.js selects.\n" +
+            "It must import exactly one of ./dev, ./tst or ./prod — that single import is " +
+            "what keeps one tenant's identifiers in the bundle."
+        )
+    }
+    def activeEnv = activeMatch[0][1]
+
+    def envSource = file("../../environments/${activeEnv}.js").text
+    def issuerMatch = (envSource =~ /issuer:\s*["']([^"']+)["']/)
+    if (!issuerMatch) {
+        throw new GradleException(
+            "[H-13] environments/${activeEnv}.js has no oAuthConfig.issuer to check against."
+        )
+    }
+    def jsDomain = issuerMatch[0][1]
+    def nativeDomain = android.defaultConfig.manifestPlaceholders["auth0Domain"]?.toString()
+
+    if (jsDomain != nativeDomain) {
+        throw new GradleException(
+            "[H-13] Auth0 tenant mismatch between JavaScript and the native build.\n" +
+            "  environments/active.js selects '${activeEnv}', whose issuer is: ${jsDomain}\n" +
+            "  android/app/build.gradle registers the callback for:            ${nativeDomain}\n" +
+            "The app would authenticate against one tenant and wait for a redirect that is " +
+            "registered for another, so login would hang rather than fail cleanly.\n" +
+            "Update manifestPlaceholders.auth0Domain to '${jsDomain}', and check the rest of " +
+            "the environment migration checklist in environments/active.js (applicationId, " +
+            "google-services.json, GoogleService-Info.plist)."
+        )
+    }
+    logger.lifecycle("[H-13] Auth0 tenant '${jsDomain}' matches between JS and native for '${activeEnv}'.")
+}
+
 apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -361,6 +419,12 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+
+    // H-04: Play Integrity. Produces a Google-signed verdict about the device and
+    // the app binary that the BACKEND verifies — the only check here an attacker
+    // with root cannot patch out, because it is not computed in this process.
+    // See PlayIntegrityModule.kt and src/security/attestation.ts.
+    implementation("com.google.android.play:integrity:1.4.0")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

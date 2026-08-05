@@ -7,23 +7,28 @@
  * key the app never sees, so only your *backend* can meaningfully check it.
  *
  * This module is the client half. It obtains a token and hands it to the API
- * layer, which attaches it as X-Device-Attestation. It is intentionally inert
- * until both halves below are done.
+ * layer, which attaches it as X-Device-Attestation on the requests listed in
+ * attestationPolicy.ts.
  *
- * ─── REMAINING WORK (cannot be completed from this repo) ────────────────────
+ * ─── STATE OF PLAY ──────────────────────────────────────────────────────────
  *
- * 1. NATIVE MODULE — this file talks to a native module through the adapter
- *    below and no-ops while one is absent. Provide either:
- *      Android  `PlayIntegrityModule.requestToken(nonce, cloudProjectNumber)`
- *               using com.google.android.play:integrity. Needs the Play Integrity
- *               API enabled for the app in Play Console and the Google Cloud
- *               project number wired into Environment.js (see CLOUD_PROJECT key).
- *      iOS      `AppAttestModule.attest(nonce)` using DCAppAttestService. Needs
- *               the com.apple.developer.devicecheck.appattest-environment
+ * 1. NATIVE MODULES — DONE, but dormant until each platform is provisioned:
+ *      Android  android/app/src/main/java/com/exchangapay/app/PlayIntegrityModule.kt
+ *               Needs the Play Integrity API enabled for the app in Play Console.
+ *               For builds not installed from Play, also set the Google Cloud
+ *               project number (environments/*.js → attestation
+ *               .playIntegrityCloudProject). Without either, the request fails
+ *               and this module reports no token.
+ *      iOS      ios/AppAttest/AppAttestModule.m
+ *               Needs the com.apple.developer.devicecheck.appattest-environment
  *               entitlement, which must be enabled on the provisioning profile
  *               FIRST — adding the entitlement without it breaks code signing.
+ *               Until then DCAppAttestService reports unsupported and this module
+ *               reports no token. The iOS token is a JSON envelope, not an opaque
+ *               string; its shape is documented in AppAttestModule.m.
  *
- * 2. BACKEND VERIFICATION — the part that actually enforces anything:
+ * 2. BACKEND VERIFICATION — STILL OUTSTANDING, and the part that actually
+ *    enforces anything. Everything above is a courier service until this exists:
  *      - Android: decode the integrity verdict server-side. Reject unless
  *        deviceIntegrity contains MEETS_DEVICE_INTEGRITY (rejects rooted and
  *        emulated devices) and appIntegrity is PLAY_RECOGNIZED (rejects
@@ -67,9 +72,20 @@ const getNativeModule = (): AttestationNativeModule | null => {
 /** True once the native module is present — lets callers skip the work entirely. */
 export const isAttestationAvailable = (): boolean => getNativeModule() !== null;
 
+/**
+ * Optional for builds installed from Google Play — Play links those to the right
+ * Cloud project by itself. Required for anything sideloaded or distributed
+ * outside Play, which includes most internal QA builds.
+ */
 const getCloudProjectNumber = (): string | undefined => {
   try {
-    return (getAllEnvData() as any)?.oAuthConfig?.playIntegrityCloudProject;
+    const env = getAllEnvData() as any;
+    const configured =
+      env?.attestation?.playIntegrityCloudProject ??
+      // Original location. Kept as a fallback so an environment file that has
+      // not been migrated still works rather than silently losing the setting.
+      env?.oAuthConfig?.playIntegrityCloudProject;
+    return configured ? String(configured) : undefined;
   } catch {
     return undefined;
   }

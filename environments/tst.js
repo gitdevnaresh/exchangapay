@@ -44,6 +44,15 @@ export default {
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
   },
+  // Device attestation (security finding H-04). Play Integrity links builds
+  // installed from Google Play to their Cloud project automatically; a build
+  // distributed any other way — internal QA, Firebase App Distribution,
+  // sideloaded — must name the project number here or the token request fails.
+  // Not a secret: it identifies a project, it does not authorise anything.
+  // Empty means "rely on Play linkage"; iOS ignores this entirely.
+  attestation: {
+    playIntegrityCloudProject: "",
+  },
   apiUrls: {
     uploadUrl: "https://tstapi.exchangapay.com/",
     cardsUrl: "https://tstapi.exchangapay.com/",

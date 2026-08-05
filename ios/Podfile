@@ -45,6 +45,11 @@ target 'exchangapay' do
     # 'StoreKit',
   ])
 
+  # H-04: App Attest bridge. Kept in-tree as a development pod so the native
+  # files are wired up by `pod install` instead of by hand-editing the Xcode
+  # project. See ios/AppAttest/AppAttestModule.m.
+  pod 'AppAttest', :path => './AppAttest'
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

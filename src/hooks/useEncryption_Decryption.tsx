@@ -16,10 +16,14 @@ import { BACKEND_SUPPORTS_AEAD } from '../utils/crypto/policy';
  *      the result straight into a <Text> and an exception there blanks a screen,
  *   3. the decrypt memoization cache.
  *
- * Writes are still CBC (format 0x01) until the backend can read GCM — flip
- * BACKEND_SUPPORTS_AEAD in utils/crypto/policy.ts, which documents the migration
- * order. Reads already accept GCM, so the backend can switch first and
- * unilaterally.
+ * Writes are authenticated AES-GCM (format 0x02) — the H-06 fix. Every outbound
+ * field carries a tag, so a request modified in transit is rejected by the
+ * server instead of decrypting to something the attacker chose. The CBC branch
+ * is retained only so that reverting BACKEND_SUPPORTS_AEAD is a one-constant
+ * change if the backend rollout has to be unwound; see utils/crypto/policy.ts.
+ *
+ * Reads accept every format the app has ever emitted, which is what lets the two
+ * sides migrate independently.
  */
 
 // ---------------------------------------------------------------------------
@@ -94,7 +98,10 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
     }
 
     try {
-      const result = decryptAny(cipherText, sk);
+      // "network": everything keyed off `sk` came from, or is going to, the
+      // backend. That tag is what makes a decrypt failure here legible as a
+      // possible integrity event rather than a stale local record.
+      const result = decryptAny(cipherText, sk, 'network');
 
       decryptCache.set(cacheKey, result);
       if (decryptCache.size > DECRYPT_CACHE_MAX) {

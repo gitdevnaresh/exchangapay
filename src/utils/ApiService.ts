@@ -8,7 +8,12 @@ import { getApplicationName } from "react-native-device-info";
 import store from "../store";
 import * as Sentry from "@sentry/react-native";
 import idempotencyConfig, { fastHash } from "./idempotency";
-import { getAttestationToken, getIntegrityReport, toRiskHeader } from "../security";
+import {
+  getAttestationToken,
+  getIntegrityReport,
+  requiresAttestation,
+  toRiskHeader,
+} from "../security";
 const appName = getApplicationName();
 
 /**
@@ -18,9 +23,15 @@ const appName = getApplicationName();
  *                      attacker controls, so the backend must treat it as a fraud
  *                      *signal* (risk scoring, step-up auth, review queues), never
  *                      as an authorisation decision.
- * X-Device-Attestation platform-signed attestation, present only once the native
- *                      module is in place. THIS is the one the backend enforces
- *                      on. See src/security/attestation.ts for the remaining work.
+ * X-Device-Attestation platform-signed by Google Play Integrity or Apple App
+ *                      Attest, so it cannot be forged from inside a modified
+ *                      app. THIS is the one the backend enforces on — until it
+ *                      verifies the token and rejects on a bad verdict, the
+ *                      header is just cargo. See src/security/attestation.ts.
+ *                      Sent only on the high-risk requests in
+ *                      attestationPolicy.ts: Play Integrity is quota'd per app
+ *                      per day, so attesting everything would exhaust it and
+ *                      leave the requests that matter unattested.
  *
  * Both fail open: no verdict and no token still produces a normal request, so a
  * probe failure can never take the app offline.
@@ -28,6 +39,7 @@ const appName = getApplicationName();
 const applySecurityHeaders = async (config: any) => {
   try {
     config.headers["X-Device-Risk"] = toRiskHeader(getIntegrityReport());
+    if (!requiresAttestation(config?.url)) return;
     const attestation = await getAttestationToken();
     if (attestation) {
       config.headers["X-Device-Attestation"] = attestation;

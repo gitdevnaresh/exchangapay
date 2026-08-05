@@ -42,6 +42,7 @@ export {
   getAttestationToken,
   isAttestationAvailable,
 } from "./attestation";
+export { requiresAttestation } from "./attestationPolicy";
 
 export {
   getApiHosts,

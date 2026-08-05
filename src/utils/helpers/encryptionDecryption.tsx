@@ -19,7 +19,10 @@ import { decryptAny, encryptCBC, encryptGCM } from "../crypto/aes";
 export const decryptAES = (cipherText: string, secretKey: string): string => {
     try {
         if (!cipherText || !secretKey) return "";
-        return decryptAny(cipherText, secretKey);
+        // "at-rest": this data never crossed the network, so a failure here is
+        // far more likely a stale or corrupt local record than an integrity
+        // event. Tagging it keeps the two apart in the telemetry.
+        return decryptAny(cipherText, secretKey, "at-rest");
     } catch (error: any) {
         throw new Error("Decryption failed: " + error?.message);
     }
