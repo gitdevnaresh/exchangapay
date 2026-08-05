@@ -131,9 +131,19 @@ export const requireUserPresence = async (
   const client = allowPasscode ? biometrics : strictBiometrics;
 
   try {
-    const { available } = await client.isSensorAvailable();
-    if (!available) {
+    const sensor = await client.isSensorAvailable();
+    if (!sensor.available) {
       // FAIL CLOSED. The previous code navigated to the Dashboard here.
+      //
+      // Log the reason. Without it every cause collapses into one message that
+      // tells a user with an enrolled finger to go and enrol a finger — which
+      // is what "set up a fingerprint, Face ID or passcode" said on a Redmi
+      // Note 7 Pro that had all three, because its Class 2 sensor cannot
+      // satisfy the BIOMETRIC_STRONG query the library makes.
+      log.warn("[biometrics] sensor unavailable", {
+        reason: (sensor as any)?.error ?? "unspecified",
+        allowPasscode,
+      });
       return "unavailable";
     }
 

@@ -30,7 +30,7 @@ import { Field, Formik } from "formik";
 import CustomPickerAcc from "../../components/CustomPicker";
 import InputDefault from "../../components/DefaultFiat";
 import { EditProfileSchema } from "./EditProfileInfoSchema";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 import ProfileService from "../../services/profile";
 import DatePickers from "react-native-date-picker";
 import {
@@ -69,6 +69,7 @@ import useSendUserWebhook from "../../hooks/useSendUserWebhook";
 import CommonOverlay from "../../components/commonOverlyPopup";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
+import SelfieCamera from "../../components/SelfieCamera";
 
 const AddKycInfomation = (props: any) => {
   const ref = useRef<any>(null);
@@ -93,6 +94,7 @@ const AddKycInfomation = (props: any) => {
   const [isBackLoading, setBackLoading] = useState<boolean>(false);
   const [signModelVisible, setSignModelVisible] = useState<boolean>(false);
   const [openSelfiePopup, setOpenSelfiePopup] = useState<boolean>(false);
+  const [selfieCameraVisible, setSelfieCameraVisible] = useState<boolean>(false);
   const [selfieLoadingType, setIsSelfieLoadingType] = useState<string>("");
   const [lists, setLists] = useState<any>({
     countryLookUp: [],
@@ -738,59 +740,36 @@ const AddKycInfomation = (props: any) => {
   const selectSelfie = async () => {
     Keyboard.dismiss();
     setIsSelfieLoadingType("methodOne");
-    // setUploadImgs((prev: any) => ({ ...prev, selfie: "" }))
-    // setOpenSelfiePopup(false);
-
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
+      setIsSelfieLoadingType("");
       return;
     }
+
+    setOpenSelfiePopup(false);
+    setSelfieCameraVisible(true);
+    setIsSelfieLoadingType("");
+  };
+
+  const uploadCapturedSelfie = async (file: { uri: string; name: string; type: string }) => {
     setIsSelfieLoading(true);
     try {
-      const result = await launchCamera({ mediaType: 'photo', cameraType: "front" });
-      if (!result.didCancel && result.assets && result.assets.length > 0) {
-        const isValid = verifyFileTypes(result.assets[0].fileName);
-        const isValidSize = verifyFileSize(result.assets[0].fileSize);
-        if (isValid && isValidSize) {
+      const formData = new FormData();
+      formData.append("document", file);
+      const uploadRes = await ProfileService.uploadFile(formData);
 
-          let formData = new FormData();
-          formData.append('document', {
-            uri: result.assets[0].uri,
-            type: result.assets[0].type,
-            name: result.assets[0].fileName,
-          });
-          const uploadRes = await ProfileService.uploadFile(formData);
-
-          setOpenSelfiePopup(false)
-          if (uploadRes.status === 200) {
-            setUploadImgs((prev: any) => ({ ...prev, selfie: (uploadRes?.data && uploadRes.data?.length > 0) ? uploadRes.data[0] : "" }));
-            handleUpdateDocuments({
-              url: uploadRes.data[0],
-              docType: "profileImage"
-            });
-            setOpenSelfiePopup(false);
-
-          } else {
-            setOpenSelfiePopup(false);
-            ref?.current?.scrollToPosition(0, 0, true);
-            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
-          }
-        } else {
-          if (!isValid) {
-            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.ACCEPTS_ONLY_JPG_OR_PNG_FPRMAT }));
-            ref?.current?.scrollToPosition(0, 0, true);
-          } else if (!isValidSize) {
-            setErrorMsgs((prev: any) => ({ ...prev, errorMsg: PROFILE_CONSTANTS.IMAGE_SIZE_SHOULD_BE_LESS_THAN_20MB }));
-            ref?.current?.scrollToPosition(0, 0, true);
-          }
-        }
+      if (uploadRes.status === 200) {
+        setUploadImgs((prev: any) => ({ ...prev, selfie: uploadRes?.data?.[0] || "" }));
+        handleUpdateDocuments({ url: uploadRes.data[0], docType: "profileImage" });
+      } else {
+        ref?.current?.scrollToPosition(0, 0, true);
+        setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(uploadRes) }));
       }
     } catch (err) {
       ref?.current?.scrollToPosition(0, 0, true);
       setErrorMsgs((prev: any) => ({ ...prev, errorMsg: isErrorDispaly(err) }));
     } finally {
       setIsSelfieLoading(false);
-      setIsSelfieLoadingType("");
     }
   };
 
@@ -2091,6 +2070,14 @@ const AddKycInfomation = (props: any) => {
           )}
         </Container>
       </KeyboardAwareScrollView>
+      <SelfieCamera
+        visible={selfieCameraVisible}
+        onClose={() => setSelfieCameraVisible(false)}
+        onCapture={async (file) => {
+          setSelfieCameraVisible(false);
+          await uploadCapturedSelfie(file);
+        }}
+      />
       <OverlayPopup
         title={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO}
         isVisible={openSelfiePopup}

@@ -175,30 +175,32 @@ const DrawerModal = (props: any) => {
   };
 
   const selectImage = async () => {
+    if (imgLoader) return;
+
+    setImageLoader(true);
     try {
       const result = await launchImageLibrary({ mediaType: "photo" });
-      if (result.assets) {
+      const asset = result.assets?.[0];
+      if (asset?.uri) {
+        const extension = asset.type === "image/png" ? "png" : "jpg";
         const formData = new FormData();
         formData.append("profileImage", {
-          uri: result.assets[0].uri,
-          type: result.assets[0].type,
-          name: result.assets[0].fileName,
+          uri: asset.uri,
+          type: asset.type || "image/jpeg",
+          // Android gallery filenames can contain duplicate extensions, which
+          // UploadProfile correctly rejects. Do not forward that filename.
+          name: `profile-${Date.now()}.${extension}`,
         });
-        setImageLoader(true);
         const avatharRes = await ProfileService.profileAvathar(formData);
         if (avatharRes.status === 200) {
           setProfileImage(avatharRes?.data[0]);
           updateUserInfo();
-          setImageLoader(false);
-        } else {
-          setImageLoader(false);
         }
-      } else if (result.didCancel) {
-        setImageLoader(false);
-      } else {
-        setImageLoader(false);
       }
-    } catch (err) {
+    } catch {
+      // The picker may reject a second open request while its first callback
+      // is pending. Keeping this caught prevents a native red error screen.
+    } finally {
       setImageLoader(false);
     }
   };
@@ -354,7 +356,7 @@ const DrawerModal = (props: any) => {
                 { zIndex: 1000 },
               ]}
             >
-              <TouchableOpacity onPress={selectImage}>
+              <TouchableOpacity onPress={selectImage} disabled={imgLoader}>
                 <View style={styles.wauto}>
                   {imgLoader ? (
                     <ActivityIndicator

@@ -32,7 +32,7 @@ import useMemberLogin from "../../hooks/useMemberLogin";
 import CommonPopup from "../../components/commonPopup";
 import { IconRefresh } from "../../assets/svg";
 import useLogout from "../../hooks/useLogOut";
-import { guardHighRiskAction } from "../../security";
+import { cacheAppLock, guardHighRiskAction } from "../../security";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 
 const Security = (props: any) => {
@@ -107,6 +107,9 @@ const Security = (props: any) => {
       };
       const verifedRes = await ProfileService.setFaceRecognisationSwitch(obj);
       if (verifedRes.status === 200) {
+        // Mirror the switch locally so the app-open lock still applies on a
+        // launch where the security endpoint cannot be reached (see appLock.ts).
+        await cacheAppLock(data);
         getSecurityInfo();
         getMemDetails({}, false, true)
       } else {

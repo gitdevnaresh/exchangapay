@@ -10,7 +10,7 @@ import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
 import OnBoardingService from "../services/onBoardingservice";
 import { clearDecryptCache } from "./useEncryption_Decryption";
-import { clearAttestationToken, clearBiometricKeys } from "../security";
+import { clearAttestationToken, clearBiometricKeys, clearCachedAppLock } from "../security";
 import { persistor } from "../store";
 import { rotatePersistKey } from "../utils/crypto/persistKey";
 
@@ -51,6 +51,9 @@ const useLogout = () => {
         // H-14: the biometric key pair is registered against one account. The
         // next person to sign in on this handset must not inherit it.
         await clearBiometricKeys();
+        // The app-open lock is a per-account setting; the next user signing in
+        // on this handset gets their own, not this one's.
+        await clearCachedAppLock();
         // Clear Redux state
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));

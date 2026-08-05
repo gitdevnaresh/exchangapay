@@ -1,0 +1,163 @@
+diff --git a/node_modules/react-native-biometrics/android/src/main/java/com/rnbiometrics/ReactNativeBiometrics.java b/node_modules/react-native-biometrics/android/src/main/java/com/rnbiometrics/ReactNativeBiometrics.java
+index 624ecd9..37b44b3 100644
+--- a/node_modules/react-native-biometrics/android/src/main/java/com/rnbiometrics/ReactNativeBiometrics.java
++++ b/node_modules/react-native-biometrics/android/src/main/java/com/rnbiometrics/ReactNativeBiometrics.java
+@@ -54,9 +54,18 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+                 boolean allowDeviceCredentials = params.getBoolean("allowDeviceCredentials");
+                 ReactApplicationContext reactApplicationContext = getReactApplicationContext();
+                 BiometricManager biometricManager = BiometricManager.from(reactApplicationContext);
+-                int canAuthenticate = biometricManager.canAuthenticate(getAllowedAuthenticators(allowDeviceCredentials));
+-
+-                if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
++                int canAuthenticate = biometricManager.canAuthenticate(getPresenceAuthenticators(allowDeviceCredentials));
++
++                // API 29 and below cannot report DEVICE_CREDENTIAL through
++                // canAuthenticate at all, so a Class 2 sensor there answers
++                // NO_HARDWARE even on a device with both a finger and a PIN.
++                // The keyguard is the authority on whether the PIN exists, and
++                // getPresencePromptInfo can genuinely offer it.
++                boolean credentialFallback = allowDeviceCredentials
++                        && isCurrentSDK29OrEarlier()
++                        && hasDeviceCredential();
++
++                if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS || credentialFallback) {
+                     WritableMap resultMap = new WritableNativeMap();
+                     resultMap.putBoolean("available", true);
+                     resultMap.putString("biometryType", "Biometrics");
+@@ -75,6 +84,21 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+                         case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
+                             resultMap.putString("error", "BIOMETRIC_ERROR_NONE_ENROLLED");
+                             break;
++                        // Upstream left these unmapped, so the JS side received
++                        // "unavailable" with no reason attached and could not
++                        // tell a locked-out sensor from a missing one.
++                        case BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED:
++                            resultMap.putString("error", "BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED");
++                            break;
++                        case BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED:
++                            resultMap.putString("error", "BIOMETRIC_ERROR_UNSUPPORTED");
++                            break;
++                        case BiometricManager.BIOMETRIC_STATUS_UNKNOWN:
++                            resultMap.putString("error", "BIOMETRIC_STATUS_UNKNOWN");
++                            break;
++                        default:
++                            resultMap.putString("error", "BIOMETRIC_ERROR_CODE_" + canAuthenticate);
++                            break;
+                     }
+ 
+                     promise.resolve(resultMap);
+@@ -182,6 +206,7 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+         }
+     }
+ 
++    /** Crypto-backed prompt (createSignature). Must stay Class 3. */
+     private PromptInfo getPromptInfo(String promptMessage, String cancelButtonText, boolean allowDeviceCredentials) {
+         PromptInfo.Builder builder = new PromptInfo.Builder().setTitle(promptMessage);
+ 
+@@ -194,6 +219,34 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+         return builder.build();
+     }
+ 
++    /**
++     * Presence-check prompt (simplePrompt). Accepts Class 2, and actually
++     * honours allowDeviceCredentials on API 29 and below.
++     *
++     * Upstream's getPromptInfo drops the credential fallback entirely there:
++     * getAllowedAuthenticators returns bare BIOMETRIC_STRONG whenever
++     * isCurrentSDK29OrEarlier(), so on Android 10 "allowDeviceCredentials: true"
++     * is silently a no-op. setDeviceCredentialAllowed is deprecated but is the
++     * only route to the PIN below API 30, and it cannot be combined with
++     * setAllowedAuthenticators or with a negative button.
++     */
++    private PromptInfo getPresencePromptInfo(String promptMessage, String cancelButtonText, boolean allowDeviceCredentials) {
++        PromptInfo.Builder builder = new PromptInfo.Builder().setTitle(promptMessage);
++
++        if (allowDeviceCredentials && isCurrentSDK29OrEarlier()) {
++            builder.setDeviceCredentialAllowed(true);
++            return builder.build();
++        }
++
++        builder.setAllowedAuthenticators(getPresenceAuthenticators(allowDeviceCredentials));
++
++        if (allowDeviceCredentials == false || isCurrentSDK29OrEarlier()) {
++            builder.setNegativeButtonText(cancelButtonText);
++        }
++
++        return builder.build();
++    }
++
+     private int getAllowedAuthenticators(boolean allowDeviceCredentials) {
+         if (allowDeviceCredentials && !isCurrentSDK29OrEarlier()) {
+             return BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+@@ -201,6 +254,62 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+         return BiometricManager.Authenticators.BIOMETRIC_STRONG;
+     }
+ 
++    /**
++     * Authenticators acceptable for a PRESENCE check (isSensorAvailable, simplePrompt).
++     *
++     * Upstream only ever asks for BIOMETRIC_STRONG. Class 2 (BIOMETRIC_WEAK)
++     * sensors are common on mid-range Android — the Redmi Note 7 Pro is one —
++     * and on those canAuthenticate(BIOMETRIC_STRONG) answers NO_HARDWARE even
++     * with a finger enrolled. The app then concludes the device cannot verify
++     * its owner and locks the user out of their own app.
++     *
++     * Class 2 is the right bar for "is the owner holding this handset". It is
++     * NOT the right bar for a CryptoObject — Keystore requires Class 3, and
++     * pairing WEAK with a CryptoObject throws. createSignature therefore keeps
++     * using getAllowedAuthenticators() above; only these two paths widen.
++     */
++    private int getPresenceAuthenticators(boolean allowDeviceCredentials) {
++        BiometricManager biometricManager = BiometricManager.from(getReactApplicationContext());
++
++        if (allowDeviceCredentials && !isCurrentSDK29OrEarlier()) {
++            int strong = BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
++            if (biometricManager.canAuthenticate(strong) == BiometricManager.BIOMETRIC_SUCCESS) {
++                return strong;
++            }
++            int weak = BiometricManager.Authenticators.BIOMETRIC_WEAK | BiometricManager.Authenticators.DEVICE_CREDENTIAL;
++            if (biometricManager.canAuthenticate(weak) == BiometricManager.BIOMETRIC_SUCCESS) {
++                return weak;
++            }
++            return strong;
++        }
++
++        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS) {
++            return BiometricManager.Authenticators.BIOMETRIC_STRONG;
++        }
++        if (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS) {
++            return BiometricManager.Authenticators.BIOMETRIC_WEAK;
++        }
++        return BiometricManager.Authenticators.BIOMETRIC_STRONG;
++    }
++
++    /**
++     * True when the device can verify its owner by PIN, pattern or password.
++     *
++     * On API 29 and below, androidx.biometric 1.1.0 cannot express
++     * DEVICE_CREDENTIAL through setAllowedAuthenticators at all, so
++     * canAuthenticate() has no way to report it. Ask the keyguard directly.
++     */
++    private boolean hasDeviceCredential() {
++        try {
++            android.app.KeyguardManager keyguardManager =
++                    (android.app.KeyguardManager) getReactApplicationContext()
++                            .getSystemService(android.content.Context.KEYGUARD_SERVICE);
++            return keyguardManager != null && keyguardManager.isDeviceSecure();
++        } catch (Exception e) {
++            return false;
++        }
++    }
++
+     private boolean isCurrentSDK29OrEarlier() {
+         return Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q;
+     }
+@@ -222,7 +331,7 @@ public class ReactNativeBiometrics extends ReactContextBaseJavaModule {
+                                 Executor executor = Executors.newSingleThreadExecutor();
+                                 BiometricPrompt biometricPrompt = new BiometricPrompt(fragmentActivity, executor, authCallback);
+ 
+-                                biometricPrompt.authenticate(getPromptInfo(promptMessage, cancelButtonText, allowDeviceCredentials));
++                                biometricPrompt.authenticate(getPresencePromptInfo(promptMessage, cancelButtonText, allowDeviceCredentials));
+                             } catch (Exception e) {
+                                 promise.reject("Error displaying local biometric prompt: " + e.getMessage(), "Error displaying local biometric prompt: " + e.getMessage());
+                             }

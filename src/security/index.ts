@@ -22,6 +22,13 @@ export {
   useDeviceIntegrity,
 } from "./integrityState";
 
+export {
+  cacheAppLock,
+  clearCachedAppLock,
+  isAppLockEnabled,
+  readCachedAppLock,
+} from "./appLock";
+
 export { guardHighRiskAction } from "./guard";
 export type { GuardOptions, HighRiskOperation } from "./guard";
 

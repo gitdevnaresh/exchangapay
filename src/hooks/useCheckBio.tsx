@@ -1,6 +1,6 @@
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { isAppLockEnabled } from "../security/appLock";
 import {
     describeBiometricOutcome,
     requireUserPresence,
@@ -26,7 +26,6 @@ import { log } from "../utils/logger";
  * is the control that closes the rest — see biometricAuth.ts.
  */
 const useChekBio = () => {
-    const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
     const navigation = useNavigation<any>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLocedModelOpen, setIsLocedModelOpen] = useState<boolean>(false);
@@ -54,8 +53,12 @@ const useChekBio = () => {
     };
 
     const checkBio = async () => {
-        // The user has not switched the lock on. Nothing to enforce.
-        if (!userInfo?.isFaceRecognition) {
+        // Read from the security endpoint, not from `userInfo`. The previous
+        // `userInfo.isFaceRecognition` matched no field the API returns, so this
+        // branch was taken unconditionally and the prompt never ran — see the
+        // header of security/appLock.ts.
+        if (!(await isAppLockEnabled())) {
+            // The user has not switched the lock on. Nothing to enforce.
             goToDashboard();
             return;
         }
