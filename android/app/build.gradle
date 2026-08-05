@@ -5,6 +5,78 @@ apply plugin: 'com.google.gms.google-services' // <- Add this line
 apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
+// ---------------------------------------------------------------------------
+// Firebase project selection and guard (security finding H-15)
+// ---------------------------------------------------------------------------
+// Both google-services.json and GoogleService-Info.plist point at the TEST
+// Firebase project, and there is only one copy of each, so there is no way to
+// build against a different project. Real customer tokens and personal data
+// therefore land in a test-tier project, which typically has wider team access
+// and weaker data handling than production.
+//
+// Calibration, so this is not over-read: the API keys in these files are NOT
+// secrets. Google documents them as identifiers and expects them in client
+// apps; access is controlled by Security Rules and App Check. The problem is
+// which PROJECT the data goes to, not that the file is committed.
+//
+// HOW TO USE A DIFFERENT PROJECT PER BUILD
+// The Google Services plugin already searches build-type source sets before
+// falling back to the module root, so no product flavours (and no renamed
+// gradle tasks) are needed:
+//
+//     android/app/src/release/google-services.json   <- production project
+//     android/app/google-services.json               <- fallback, currently test
+//
+// Drop the production file in at that path and release builds pick it up
+// automatically. Debug builds keep using the fallback.
+//
+// THE GUARD BELOW is deliberately inert today. The app is pinned to the test
+// tenant end to end (applicationId, Auth0 domain, Firebase — see C-05), so
+// today's release builds are legitimately test builds and must keep working.
+// It fires the moment applicationId becomes a production one while Firebase is
+// still pointing at test — which is exactly the mistake this finding is about,
+// and precisely the moment nobody will be thinking about Firebase.
+ext.PRODUCTION_APPLICATION_IDS = ["com.exchangapay"] as Set
+ext.NON_PRODUCTION_FIREBASE_PROJECTS = ["exchangapay-tst-f570a"] as Set
+
+ext.resolveGoogleServicesFile = { String buildType ->
+    // Mirrors the plugin's search order for the source sets this project uses.
+    [file("src/${buildType}/google-services.json"), file("google-services.json")]
+        .find { it.exists() }
+}
+
+tasks.register("verifyFirebaseProjectForRelease") {
+    description = "Fails a production release wired to a non-production Firebase project (H-15)."
+    doLast {
+        def appId = android.defaultConfig.applicationId
+        if (!PRODUCTION_APPLICATION_IDS.contains(appId)) {
+            logger.lifecycle("[H-15] applicationId '${appId}' is not a production id; Firebase project check skipped.")
+            return
+        }
+        def configFile = resolveGoogleServicesFile("release")
+        if (configFile == null) {
+            throw new GradleException(
+                "[H-15] Production release '${appId}' has no google-services.json.\n" +
+                "Add the production project's file at android/app/src/release/google-services.json.")
+        }
+        def projectId = new groovy.json.JsonSlurper().parse(configFile).project_info.project_id
+        if (NON_PRODUCTION_FIREBASE_PROJECTS.contains(projectId)) {
+            throw new GradleException(
+                "[H-15] Refusing to build production '${appId}' against Firebase project " +
+                "'${projectId}', which is a TEST project.\n" +
+                "Resolved from: ${configFile}\n" +
+                "Customer tokens and personal data would be written to a test-tier project.\n" +
+                "Add the production google-services.json at android/app/src/release/.")
+        }
+        logger.lifecycle("[H-15] Release Firebase project '${projectId}' OK for '${appId}'.")
+    }
+}
+
+afterEvaluate {
+    tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+         .configureEach { dependsOn "verifyFirebaseProjectForRelease" }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.

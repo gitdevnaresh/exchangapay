@@ -23,7 +23,19 @@ export {
 } from "./integrityState";
 
 export { guardHighRiskAction } from "./guard";
-export type { HighRiskOperation } from "./guard";
+export type { GuardOptions, HighRiskOperation } from "./guard";
+
+export {
+  clearBiometricKeys,
+  createBiometricKey,
+  describeBiometricOutcome,
+  getBiometricStatus,
+  hasBiometricKey,
+  isSignatureBiometricsEnabled,
+  requireUserPresence,
+  signBiometricChallenge,
+} from "./biometricAuth";
+export type { BiometricOutcome, BiometricStatus } from "./biometricAuth";
 
 export {
   clearAttestationToken,

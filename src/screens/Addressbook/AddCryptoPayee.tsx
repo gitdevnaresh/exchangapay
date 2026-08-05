@@ -22,6 +22,7 @@ import CustomPickerAcc from "../../components/CustomPicker";
 import ErrorComponent from "../../components/Error";
 import Loadding from "../../components/skeleton";
 import { formatDateTimeAPI, isErrorDispaly } from "../../utils/helpers";
+import { guardHighRiskAction } from "../../security";
 import QRCodeScanner from "../../components/qrScanner";
 import { personalInfoLoader } from "../Profile/skeleton_views";
 import { NEW_COLOR } from "../../constants/theme/variables";
@@ -160,6 +161,14 @@ const AddEditPayeeScreen = (props: any) => {
 
   const onSubmit = async (values: FormValues) => {
     setErrormsg("");
+    // H-14: a withdrawal address is where the money goes, so adding one is the
+    // step an attacker with a borrowed handset takes before withdrawing.
+    //
+    // No biometric prompt here: the payee is not usable until the emailed code
+    // on the next screen is entered, and that out-of-band factor covers the same
+    // attack. The device-integrity block is kept — a rooted or hooked device
+    // still may not register a destination address.
+    if (!(await guardHighRiskAction("ADD_PAYEE", { skipPresenceCheck: true }))) return;
     setBtnLoading(true);
     const payload = {
       id: "00000000-0000-0000-0000-000000000000",

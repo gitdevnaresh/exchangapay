@@ -23,7 +23,6 @@ import Icon from "react-native-vector-icons/AntDesign";
 import TextInputField from "../../components/textInput";
 import LabelComponent from "../../components/Paragraph/label";
 import { commonStyles } from "../../components/CommonStyles";
-import ReactNativeBiometrics from "react-native-biometrics";
 import Authentication from "./authentication";
 import { Overlay } from "react-native-elements";
 import ErrorComponent from "../../components/Error";
@@ -33,6 +32,7 @@ import useMemberLogin from "../../hooks/useMemberLogin";
 import CommonPopup from "../../components/commonPopup";
 import { IconRefresh } from "../../assets/svg";
 import useLogout from "../../hooks/useLogOut";
+import { guardHighRiskAction } from "../../security";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 
 const Security = (props: any) => {
@@ -41,7 +41,6 @@ const Security = (props: any) => {
   const [verificationFieldLoading, setVerificationFieldLoading] = useState<boolean>(false);
   const [isVisableVerifcation, setIsVisableVerifcation] = useState<boolean>(false);
   const securityVerifySk = securityCEnterVerify(1);
-  const rnBiometrics = new ReactNativeBiometrics();
   const [accountDeleteErrMsg, setAccountDeleteErrMsg] = useState<string | null>(null);
   const [accountDeleteLoader, setAccountDeleteLoader] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
@@ -63,6 +62,14 @@ const Security = (props: any) => {
   const enbleGoogleAuthenticator = async (data: boolean, isProceed?: boolean) => {
     if (!data && !isProceed) {
       setIsDisableAuthPopupVisible(true);
+      return;
+    }
+    // H-14: turning two-factor authentication OFF is the change an attacker
+    // makes first, and it had no challenge of its own — the confirmation popup
+    // above is a dialog, not an authentication.
+    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS"))) {
+      setVerificationFieldLoading(false);
+      await getSecurityInfo();
       return;
     }
     try {
@@ -109,24 +116,19 @@ const Security = (props: any) => {
       setVerificationFieldLoading(false);
     }
   };
-  const checkBio = (data: any) => {
-    rnBiometrics.isSensorAvailable().then((resultObject) => {
-      const { available, biometryType } = resultObject;
-      if (available) {
-        rnBiometrics
-          .simplePrompt({ promptMessage: "Confirm fingerprint" })
-          .then((resultObject) => {
-            const { success } = resultObject;
-            if (success) {
-              toggleFaceRecognisationSwitch(data);
-            } else {
-            }
-          })
-          .catch(() => { });
-      } else {
-        toggleFaceRecognisationSwitch(data);
-      }
-    });
+  /**
+   * H-14: the same decorative pattern as the app-open lock, on the switch that
+   * controls the lock itself.
+   *
+   * With no sensor enrolled it called the toggle anyway — so on a device with
+   * biometrics turned off in settings, anyone holding the handset could switch
+   * the user's biometric lock off without being challenged. Now the switch is
+   * only thrown on an explicit confirmation, with the device passcode offered
+   * as the fallback, and a failure says something instead of nothing.
+   */
+  const checkBio = async (data: any) => {
+    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS"))) return;
+    toggleFaceRecognisationSwitch(data);
   };
   const toggleSequrityQuationsSwitch = async (data: boolean) => {
     if (data) {

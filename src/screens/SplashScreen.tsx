@@ -55,7 +55,7 @@ const SplashScreen = React.memo(() => {
   const [isChecked, setIsChecked] = React.useState<boolean>(false);
   const [show, setShow] = React.useState<boolean>(false);
   const { memberLoader, getMemDetails, isOnboarding } = useMemberLogin();
-  const { isLocedModelOpen, checkBio, handleUpdateModel } = useChekBio();
+  const { isLocedModelOpen, checkBio, handleUpdateModel, lockReason } = useChekBio();
 
   // Main authentication initialization effect
   useEffect(() => {
@@ -359,7 +359,10 @@ const SplashScreen = React.memo(() => {
               btndisabled={false}
               erroMsg=""
               errorAmt=""
-              stateErrorMsg=""
+              // H-14: say why the unlock did not happen. "No screen lock on
+              // this device" and "you cancelled" need different actions from
+              // the user, and the modal's fixed copy cannot tell them apart.
+              stateErrorMsg={lockReason}
               setStateErrorMsg={() => { }}
             />
           )}

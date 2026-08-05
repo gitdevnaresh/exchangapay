@@ -17,7 +17,6 @@ import { commonStyles } from "../../components/CommonStyles";
 import CryptoServices from "../../services/crypto";
 import SendCryptoServices from "../../services/sendcrypto";
 import QRCodeScanner from "../../components/qrScanner";
-import ReactNativeBiometrics from "react-native-biometrics";
 import Authentication from "../Profile/authentication";
 import CoinsDropdown from "../Tlv_Cards/CoinsDropDown";
 import Loadding from "../../components/skeleton";
@@ -31,11 +30,13 @@ import DeafultList from "../../components/DeafultPicker";
 import Cookies from '@react-native-cookies/cookies';
 import { cryptoReceiveLoader } from "./buySkeleton_views";
 import {
+  describeBiometricOutcome,
   getTwoFactorAllowedOrigins,
   guardHighRiskAction,
   isAllowedTwoFactorUrl,
   matchTwoFactorCallback,
   parseHttpsUrl,
+  requireUserPresence,
 } from "../../security";
 import { log } from "../../utils/logger";
 
@@ -54,7 +55,6 @@ const SendCryptoDetails = React.memo((props: any) => {
   const [networkLu, setNetworkLu] = useState<any>([]);
   const [cryptoWithdrawData, setCryptoWithdrawData] = useState<any>({});
   const [enableScanner, setEnableScanner] = useState<boolean>(false);
-  const rnBiometrics = new ReactNativeBiometrics();
   const [networkModel, setNetworkModel] = useState<boolean>(false);
   const [selectedNetwork, setSelectedNetwok] = useState<any>("");
   const [fee, setFee] = useState<any>({});
@@ -262,7 +262,12 @@ const SendCryptoDetails = React.memo((props: any) => {
     // H-04: gate the whole withdrawal flow at its single entry point, ahead of
     // the biometric prompt below — on a hooked device that prompt is itself
     // trivially bypassed, so it cannot be the thing this depends on.
-    if (!(await guardHighRiskAction("CRYPTO_WITHDRAWAL"))) {
+    //
+    // H-14: skipPresenceCheck because this screen runs its own challenge below,
+    // and on a device with no sensor escalates to Auth0 2FA or SMS OTP rather
+    // than to nothing. Two prompts for one Send button teaches people to tap
+    // through them.
+    if (!(await guardHighRiskAction("CRYPTO_WITHDRAWAL", { skipPresenceCheck: true }))) {
       setSummryLoading(false);
       setBtnDisabled(false);
       return;
@@ -298,33 +303,31 @@ const SendCryptoDetails = React.memo((props: any) => {
       return setErrormsg("Insufficient balance.");
     }
     if (securityInfo.isFaceResgEnabled) {
-      rnBiometrics.isSensorAvailable().then((resultObject) => {
-        const { available, biometryType } = resultObject;
-        if (available) {
-          rnBiometrics
-            .simplePrompt({ promptMessage: "Confirm fingerprint" })
-            .then((resultObject) => {
-              const { success } = resultObject;
-              if (success) {
-
-                handleAccount()
-              } else {
-                setErrormsg("Authentication failed, please retry");
-              }
-            })
-            .catch(() => {
-              setErrormsg("Authentication failed, please retry");
-            });
-        } else {
-          if (securityInfo.isAuth0Enabled) {
-            getAuthOtpUrl()
-          } else if (isOTPVerified) {
-            setIsOTP(true);
-          } else {
-            setMFAPopupVisible(true)
-          }
-        }
-      });
+      // H-14: one outcome means "go ahead". A cancelled or failed prompt stops
+      // the withdrawal and says so — the old empty catch left the user pressing
+      // Send with nothing happening at all.
+      const outcome = await requireUserPresence("Confirm it's you to send crypto");
+      if (outcome === "confirmed") {
+        handleAccount();
+        return;
+      }
+      if (outcome !== "unavailable") {
+        setSummryLoading(false);
+        setBtnDisabled(false);
+        return setErrormsg(
+          describeBiometricOutcome(outcome) || "Authentication failed, please retry"
+        );
+      }
+      // "unavailable": this device has neither biometrics nor a passcode. Fall
+      // through to the stronger challenge below rather than to the withdrawal —
+      // Auth0 2FA and SMS OTP do not depend on this device having a lock.
+      if (securityInfo.isAuth0Enabled) {
+        getAuthOtpUrl()
+      } else if (isOTPVerified) {
+        setIsOTP(true);
+      } else {
+        setMFAPopupVisible(true)
+      }
     } else if (isOTPVerified) {
       setIsOTP(true);
       return;

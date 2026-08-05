@@ -41,6 +41,7 @@ const CardDetails = React.memo((props: any) => {
   const [infoModelVisible, setInfoModelVisible] = useState<boolean>(false);
   const [isShowPin, setShowPin] = useState<boolean>(false);
   const [isPressed, setIsPressd] = useState<boolean>(false);
+  const [isDetailsRevealed, setIsDetailsRevealed] = useState<boolean>(false);
   const { decryptAES } = useEncryptDecrypt();
   const { width } = Dimensions.get('window');
   const spin = useSharedValue(0);
@@ -63,6 +64,12 @@ const CardDetails = React.memo((props: any) => {
   const isPad = width > 600;
   useEffect(() => {
     fetchMyCardDetails();
+    if (!isFocused) {
+      // The screen stays mounted while another one is pushed over it, so a card
+      // left revealed would still be revealed on return. Re-lock instead.
+      spin.value = 0;
+      setIsDetailsRevealed(false);
+    }
   }, [isFocused]);
 
   const fetchMyCardDetails = async () => {
@@ -155,9 +162,33 @@ const CardDetails = React.memo((props: any) => {
     }
   };
 
-  const handleFlipcard = () => {
-    setInfoModelVisible(!infoModelVisible)
+  /**
+   * H-14: the back face carries the card number, CVV and expiry, so the flip is
+   * the reveal control and the step-up belongs on it — not on the fetch, which
+   * pull-to-refresh and the focus effect would re-run and re-prompt for.
+   *
+   * Flipping back to the masked face proves nothing and asks for nothing, but it
+   * re-locks: the next reveal is challenged again, so a card left face-up on a
+   * borrowed handset does not stay readable.
+   */
+  const handleRevealCardDetails = async () => {
+    if (spin.value !== 0) {
+      spin.value = 0;
+      setIsDetailsRevealed(false);
+      return;
+    }
+    if (!(await guardHighRiskAction("CARD_DETAILS_REVEAL"))) return;
+    setIsDetailsRevealed(true);
+    spin.value = 1;
+  };
 
+  const handleFlipcard = async () => {
+    if (infoModelVisible) {
+      setInfoModelVisible(false);
+      return;
+    }
+    if (!(await guardHighRiskAction("CARD_INFO_VIEW"))) return;
+    setInfoModelVisible(true);
   };
 
   const bargeColor = {
@@ -257,7 +288,7 @@ const CardDetails = React.memo((props: any) => {
                 >
                   <TouchableOpacity
                     style={[commonStyles.mxAuto, commonStyles.relative, styles.cardBg,]}
-                    onPress={() => { spin.value = spin.value == 0 ? 1 : 0 }}
+                    onPress={handleRevealCardDetails}
                     activeOpacity={1}
                   >
                     <Animated.View
@@ -383,8 +414,9 @@ const CardDetails = React.memo((props: any) => {
                                 commonStyles.fs16,
                                 commonStyles.fw500,
                               ]}
-                              text={`${convertCardNumberWithSpace(decryptAES(myCardsData?.number))
-                                }`}
+                              text={isDetailsRevealed
+                                ? `${convertCardNumberWithSpace(decryptAES(myCardsData?.number))}`
+                                : "**** **** **** ****"}
                               numberOfLines={1}
                             />
                             <ParagraphComponent
@@ -439,7 +471,7 @@ const CardDetails = React.memo((props: any) => {
                                   commonStyles.fw500,
                                   commonStyles.fs14,
                                 ]}
-                                text={decryptAES(myCardsData?.cvv) || ""}
+                                text={isDetailsRevealed ? (decryptAES(myCardsData?.cvv) || "") : "****"}
                               />
                             </View>
                             <View>
@@ -453,7 +485,7 @@ const CardDetails = React.memo((props: any) => {
                                   commonStyles.fw500,
                                   commonStyles.fs14,
                                 ]}
-                                text={convertExpiry(decryptAES(myCardsData?.expireDate)) || ""}
+                                text={isDetailsRevealed ? (convertExpiry(decryptAES(myCardsData?.expireDate)) || "") : "XX/XX"}
                               />
                             </View>
                           </View>

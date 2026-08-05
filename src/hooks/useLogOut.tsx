@@ -10,7 +10,7 @@ import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
 import OnBoardingService from "../services/onBoardingservice";
 import { clearDecryptCache } from "./useEncryption_Decryption";
-import { clearAttestationToken } from "../security";
+import { clearAttestationToken, clearBiometricKeys } from "../security";
 import { persistor } from "../store";
 import { rotatePersistKey } from "../utils/crypto/persistKey";
 
@@ -48,6 +48,9 @@ const useLogout = () => {
         // H-04: the attestation token is bound to this device/session, not to
         // whoever signs in next.
         clearAttestationToken();
+        // H-14: the biometric key pair is registered against one account. The
+        // next person to sign in on this handset must not inherit it.
+        await clearBiometricKeys();
         // Clear Redux state
         dispatch(setUserInfo(""));
         dispatch(isLogin(false));
