@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, BackHandler } from 'react-native';
+import { View, SafeAreaView, ScrollView, BackHandler, Linking } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
@@ -15,6 +15,8 @@ import { s } from '../../constants/theme/scale';
 import { RenderHTML } from 'react-native-render-html';
 import ErrorComponent from '../../components/Error';
 import { SvgUri } from 'react-native-svg';
+import { sanitizeNotesHtml } from '../../security';
+import { log } from '../../utils/logger';
 
 
 const MessagePopUp = (props: any) => {
@@ -25,6 +27,24 @@ const MessagePopUp = (props: any) => {
   const [errorMsg, setErrorMsg] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
+  // The renderer has always called this on a link tap, but it was never
+  // defined — tapping a link in the message threw a ReferenceError. The
+  // sanitiser leaves only https and mailto hrefs; this re-checks anyway, since
+  // it is the value's second reader.
+  const handleLinkPress = (href: any) => {
+    if (
+      typeof href === 'string' &&
+      (href.startsWith('mailto:') || href.startsWith('https:'))
+    ) {
+      Linking.openURL(href).catch((err) => log.error('Failed to open link', err));
+    }
+  };
+
+  // H-03: this message is backend HTML. See src/security/htmlPolicy.ts.
+  const notesHtml = React.useMemo(
+    () => sanitizeNotesHtml(htmlContent?.message),
+    [htmlContent?.message]
+  );
 
   const updateUserInfo = () => {
     setSaveLoading(true)
@@ -97,10 +117,10 @@ const MessagePopUp = (props: any) => {
           </View>
           {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
 
-          {(!isLoading && htmlContent?.message) && <View style={commonStyles.flex1}>
+          {(!isLoading && notesHtml) && <View style={commonStyles.flex1}>
             <RenderHTML
               contentWidth={WINDOW_WIDTH}
-              source={{ html: htmlContent?.message }}
+              source={{ html: notesHtml }}
               tagsStyles={{
                 body: { color: NEW_COLOR.TEXT_BLACK },
               }}
@@ -114,7 +134,7 @@ const MessagePopUp = (props: any) => {
             />
 
           </View>}
-          {(!isLoading && !htmlContent?.message) &&
+          {(!isLoading && !notesHtml) &&
             <Container style={[commonStyles.container, commonStyles.flex1, commonStyles.dflex, commonStyles.alignCenter]}>
               <View style={commonStyles.flex1}>
                 {(props?.route?.params?.accountType === "Personal" && props?.route?.params?.step === 1) && <View>

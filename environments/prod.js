@@ -61,9 +61,22 @@ export default {
   attestation: {
     playIntegrityCloudProject: "",
   },
+  // H-01: every host the app talks to is named here — no base URL literals in src/.
   apiUrls: {
     uploadUrl: "https://api.exchangapay.com/",
     cardsUrl: "https://api.exchangapay.com/",
+    // MUST BE CONFIRMED BEFORE A PRODUCTION RELEASE. src/utils/api.tsx hardcoded
+    // a single set of hosts for every environment, so no production values exist
+    // to recover; these are that one set, carried over verbatim. `authUrl` in
+    // particular is plainly a TEST login host — shipping it in a production
+    // build would point authentication at the test tenant. Treat this block as
+    // a release blocker, not a default.
+    walletGridUrl: "https://neowalletgrid.azurewebsites.net/",
+    bankUrl: "https://neobank.azurewebsites.net/",
+    walletApiUrl: "https://neowalletapi.azurewebsites.net/",
+    authUrl: "https://tstlogin.suissebase.io",
+    // Third party. Never receives a bearer token or a device-risk header.
+    marketUrl: "https://api.coingecko.com/",
   },
   localization: {
     defaultResourceName: "Exchanga Pay",

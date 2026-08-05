@@ -25,6 +25,7 @@ import DeviceInfo from 'react-native-device-info';
 import { useAuth0 } from 'react-native-auth0';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import { log } from '../../utils/logger';
+import { sanitizeNotesHtml } from '../../security';
 
 
 const AccountProgress = (props: any) => {
@@ -37,6 +38,11 @@ const AccountProgress = (props: any) => {
   const isFocused = useIsFocused();
   const dispatch = useDispatch();
   const skeltons = progressSkeltons();
+  // H-03: customerNotes() is backend HTML. See src/security/htmlPolicy.ts.
+  const notesHtml = React.useMemo(
+    () => sanitizeNotesHtml(htmlContent?.message),
+    [htmlContent?.message]
+  );
   const { clearSession } = useAuth0();
   const { getMemDetails } = useMemberLogin();
   useEffect(() => {
@@ -65,7 +71,9 @@ const AccountProgress = (props: any) => {
   };
 
   const handleLinkPress = (href: any) => {
-    if (href.startsWith('mailto:')) {
+    // H-03: the sanitiser already refused anything that is not https or mailto;
+    // this is the second reader of the same value, so it re-checks.
+    if (typeof href === 'string' && href.startsWith('mailto:')) {
       Linking.openURL(href).catch(err => log.error("Failed to open email", err));
     } else {
       navigation.navigate('addKycInfomation');
@@ -139,10 +147,10 @@ const AccountProgress = (props: any) => {
           {isLoading && <Loadding contenthtml={skeltons} />}
           {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
 
-          {(!isLoading && htmlContent?.message) && <View style={commonStyles.flex1}>
+          {(!isLoading && notesHtml) && <View style={commonStyles.flex1}>
             <RenderHTML
               contentWidth={WINDOW_WIDTH}
-              source={{ html: htmlContent?.message }}
+              source={{ html: notesHtml }}
               tagsStyles={{
                 body: { color: NEW_COLOR.TEXT_BLACK },
               }}
@@ -156,7 +164,7 @@ const AccountProgress = (props: any) => {
             />
 
           </View>}
-          {!htmlContent?.message&&
+          {!notesHtml &&
             <Container style={[commonStyles.container, commonStyles.flex1, commonStyles.dflex, commonStyles.alignCenter]}>
               <View style={commonStyles.flex1}>
                 <View style={[commonStyles.mb16]} />

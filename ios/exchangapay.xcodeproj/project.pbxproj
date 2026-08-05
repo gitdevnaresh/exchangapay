@@ -126,6 +126,7 @@
 				CCD891920CA4B412BBA9EE26 /* [CP] Copy Pods Resources */,
 				EA5B4A6C98DA5DD1768B215B /* [CP-User] [RNFB] Core Configuration */,
 				A74B55C8AEB24091381899F6 /* [CP-User] [RNFB] Crashlytics Configuration */,
+				70FE938D6C98F91B6217FC3A /* [H-15] Select Firebase config */,
 			);
 			buildRules = (
 			);
@@ -197,6 +198,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+		};
+		70FE938D6C98F91B6217FC3A /* [H-15] Select Firebase config */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[H-15] Select Firebase config";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PROJECT_DIR}/scripts/select-firebase-config.sh\"\n";
 		};
 		8E83CA7F942FD217624014DD /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

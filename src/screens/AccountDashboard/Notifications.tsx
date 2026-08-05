@@ -20,6 +20,7 @@ import SvgFromUrl from '../../components/svgIcon';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import CardsModuleService from '../../services/card';
 import { log } from '../../utils/logger';
+import { sanitizeNotesHtml } from '../../security';
 
 const Notifications = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -32,6 +33,8 @@ const Notifications = React.memo((props: any) => {
     const navigation = useNavigation();
     const [iconsList, setIconsList] = useState<any>([]);
     const isFocused = useIsFocused();
+    // H-03: notification bodies are backend HTML. See src/security/htmlPolicy.ts.
+    const noteHtmlSafe = React.useMemo(() => sanitizeNotesHtml(noteHtml), [noteHtml]);
 
     useEffect(() => {
         getAllIcons()
@@ -47,6 +50,11 @@ const Notifications = React.memo((props: any) => {
 
 
     const handleLinkPress = (href: any) => {
+        // H-03: the sanitiser already refused anything that is not https or
+        // mailto; this is the second reader of the same value, so it re-checks.
+        if (typeof href !== 'string') {
+            return;
+        }
         if (href.startsWith('mailto:')) {
             setNotePopVisble(false);
             Linking.openURL(href).catch(err => log.error("Failed to open email", err));
@@ -250,7 +258,7 @@ const Notifications = React.memo((props: any) => {
                     <View style={commonStyles.flex1}>
                         <RenderHTML
                             contentWidth={WINDOW_WIDTH}
-                            source={{ html: noteHtml }}
+                            source={{ html: noteHtmlSafe }}
                             tagsStyles={{
                                 body: { color: NEW_COLOR.TEXT_BLACK },
                             }}

@@ -21,6 +21,7 @@ import { SvgUri } from 'react-native-svg';
 import useLogout from '../../hooks/useLogOut';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import { log } from '../../utils/logger';
+import { sanitizeNotesHtml } from '../../security';
 
 const SuspectedFraud = () => {
     const styles = useStyleSheet(themedStyles);
@@ -35,6 +36,11 @@ const SuspectedFraud = () => {
     const isFocused = useIsFocused();
     const skeltons = progressSkeltons();
     const { getMemDetails } = useMemberLogin();
+    // H-03: customerNotes() is backend HTML. See src/security/htmlPolicy.ts.
+    const notesHtml = React.useMemo(
+        () => sanitizeNotesHtml(htmlContent?.message),
+        [htmlContent?.message]
+    );
     useEffect(() => {
         handleGetCustomerNotes();
     }, [isFocused])
@@ -61,7 +67,9 @@ const SuspectedFraud = () => {
         }
     };
     const handleLinkPress = (href: any) => {
-        if (href.startsWith('mailto:')) {
+        // H-03: the sanitiser already refused anything that is not https or
+        // mailto; this is the second reader of the same value, so it re-checks.
+        if (typeof href === 'string' && href.startsWith('mailto:')) {
             Linking.openURL(`${href}${userInfo?.supportEmail}`).catch(err => log.error("Failed to open email", err));
         }
     };
@@ -104,11 +112,11 @@ const SuspectedFraud = () => {
                     {isLoading && <Loadding contenthtml={skeltons} />}
                     {errorMsg && <ErrorComponent message={errorMsg} onClose={handleCloseError} />}
 
-                    {(!isLoading && htmlContent?.message) && <View style={commonStyles.flex1}>
+                    {(!isLoading && notesHtml) && <View style={commonStyles.flex1}>
                         <View style={[commonStyles.mb24]} />
                         <RenderHTML
                             contentWidth={WINDOW_WIDTH}
-                            source={{ html: htmlContent?.message }}
+                            source={{ html: notesHtml }}
                             tagsStyles={{
                                 body: { color: NEW_COLOR.TEXT_BLACK },
                             }}

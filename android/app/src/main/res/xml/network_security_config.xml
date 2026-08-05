@@ -32,20 +32,37 @@
 
   NOT PINNED, DELIBERATELY:
 
-  devapi.exchangapay.com is issued by Sectigo ("Sectigo Public Server Authentication
-  CA DV R36", wildcard *.exchangapay.com) — a different CA entirely from prod and tst.
-  Pinning exchangapay.com with includeSubdomains would therefore break dev. Dev traffic
-  carries no production data, so it falls through to normal system validation. If dev is
-  ever migrated to DigiCert, add it to the domain-config below rather than widening the
-  match to the apex.
+  H-02: this list used to live here, in prose, and it was incomplete — it named the
+  third parties somebody had thought about and omitted six hosts nobody knew existed,
+  because they were hardcoded in src/utils/api.tsx. An omission and a decision looked
+  identical from inside this file.
 
-  Third-party hosts (Auth0, Sentry, Sumsub, CoinGecko) are not pinned: their operators
-  rotate certificates on their own schedule with no notice to us.
+  The list now lives in security/pinning-policy.json, one entry per host with a reason,
+  a remediation and a review date, and it is ENFORCED: a release build fails if any host
+  in environments/*.js is neither pinned below nor exempt there, and fails again if an
+  exemption has no reason or its review date has passed. See the H-02 coverage guard in
+  app/build.gradle and __tests__/pinningCoverage.test.ts. Read that file rather than
+  trusting this comment to stay current.
 
-  BEFORE THE EXPIRATION DATE BELOW: re-run the openssl command above, confirm the
+  In short, as of 2026-08-05: devapi.exchangapay.com is on a different CA (Sectigo) so
+  it cannot share these pins; Auth0, Sentry, Sumsub and CoinGecko rotate certificates on
+  their own schedule with no notice to us; and the four legacy hosts named in H-02
+  (neobank / neowalletgrid / neowalletapi.azurewebsites.net, tstlogin.suissebase.io)
+  return NXDOMAIN — they cannot be pinned because they no longer exist.
+
+  ANY HOST ADDED TO environments/*.js MUST BE PINNED HERE, ON iOS, OR EXEMPTED.
+  Compute the hashes with ./scripts/compute-spki-pins.sh; add to both platforms or the
+  Android/iOS parity check fails the build.
+
+  BEFORE THE EXPIRATION DATE BELOW: re-run ./scripts/compute-spki-pins.sh, confirm the
   intermediate pin still matches, and extend the date. After it passes, Android silently
   stops enforcing pinning and falls back to normal validation — the app keeps working,
   but the H-03 protection is gone until the date is renewed.
+
+  LAST VERIFIED AGAINST THE LIVE CHAINS: 2026-08-05. Both hosts still chain through
+  GeoTrust TLS RSA CA G1, whose SPKI matches the primary pin; that intermediate is
+  issued by DigiCert Global Root G2, whose SPKI matches the backup pin. The recovery
+  path is confirmed, not assumed. Findings recorded in security/pinning-policy.json.
 -->
 <network-security-config>
   <base-config cleartextTrafficPermitted="false">

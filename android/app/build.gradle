@@ -283,6 +283,131 @@ gradle.taskGraph.whenReady { graph ->
             "    | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
         )
     }
+
+    // ---------------------------------------------------------------------
+    // H-02: pinning COVERAGE, as opposed to pinning construction.
+    //
+    // The pin-set above is well built and covered 2 of the 8 hosts the app
+    // talks to. The other six were hardcoded in src/utils/api.tsx, so whoever
+    // wrote the pin-set never saw them — the gap was invisible from inside the
+    // file that was supposed to close it.
+    //
+    // The rule below removes "invisible" as an option. Every host the app is
+    // configured to reach must be pinned or carry a written exemption. Adding a
+    // host is now a decision someone has to record, not something that happens
+    // by typing a URL.
+    // ---------------------------------------------------------------------
+    def repoRoot = file("${rootProject.projectDir}/..")
+
+    def policyFile = new File(repoRoot, "security/pinning-policy.json")
+    if (!policyFile.exists()) {
+        throw new GradleException(
+            "security/pinning-policy.json is missing (security finding H-02).\nIt is the " +
+            "record of which hosts are deliberately unpinned and why. Without it an " +
+            "omission and a decision look the same again."
+        )
+    }
+    def policy = new groovy.json.JsonSlurper().parse(policyFile)
+    def exemptions = policy.exemptions.collectEntries { [(it.host.toLowerCase()), it] }
+
+    // The inventory: hosts named in the apiUrls block of each environment, plus
+    // any baseURL literal left in src/. H-01 moved every host into apiUrls, so
+    // the second scan should find nothing — it exists to catch a regression.
+    def inventory = [:] as LinkedHashMap
+    def recordHost = { String host, String source ->
+        def key = host.toLowerCase()
+        inventory[key] = (inventory[key] ?: []) + source
+    }
+
+    new File(repoRoot, "environments").listFiles()
+        .findAll { it.isFile() && it.name ==~ /(dev|tst|prod)\.js/ }
+        .sort { it.name }
+        .each { envFile ->
+            def block = (envFile.text =~ /apiUrls\s*:\s*\{([\s\S]*?)\n\s*\},/)
+            if (!block) {
+                throw new GradleException(
+                    "environments/${envFile.name} has no apiUrls block (security finding " +
+                    "H-02).\nThe pinning inventory is derived from it; a host that is not " +
+                    "there is a host nobody checked the pin coverage of."
+                )
+            }
+            (block[0][1] =~ /https?:\/\/([^\/"'\s]+)/).each { m ->
+                recordHost(m[1], "environments/${envFile.name}")
+            }
+        }
+
+    new File(repoRoot, "src").eachFileRecurse { f ->
+        if (f.isFile() && f.name ==~ /.*\.(ts|tsx|js|jsx)/) {
+            (f.text =~ /baseURL\s*:\s*["'`]\s*https?:\/\/([^\/"'`\s]+)/).each { m ->
+                recordHost(m[1], "src literal in ${f.name}")
+            }
+        }
+    }
+
+    def pinnedDomains = (nsc =~ /<domain[^>]*>([^<]+)<\/domain>/)
+        .collect { it[1].trim().toLowerCase() }
+
+    def uncovered = inventory.keySet().findAll {
+        !pinnedDomains.contains(it) && !exemptions.containsKey(it)
+    }
+    if (uncovered) {
+        throw new GradleException(
+            "These hosts are neither pinned nor exempt (security finding H-02):\n" +
+            uncovered.collect { "  ${it}  <- ${inventory[it].unique().join(', ')}" }.join("\n") +
+            "\n\nPin them, or record why not.\n" +
+            "  ./scripts/compute-spki-pins.sh      prints the chain and SPKI hashes\n" +
+            "  network_security_config.xml         add a <domain-config> with 2 pins\n" +
+            "  ios/exchangapay/Info.plist          add the matching NSPinnedDomains entry\n" +
+            "  security/pinning-policy.json        or add an exemption with a reason"
+        )
+    }
+
+    // An exemption with no reason, or one nobody has looked at in a year, is the
+    // omission this guard exists to prevent — wearing a label.
+    def today = java.time.LocalDate.now()
+    exemptions.each { host, entry ->
+        if (!entry.reason?.trim()) {
+            throw new GradleException(
+                "The pinning exemption for ${host} has no reason (security finding H-02).\n" +
+                "An explicit exemption is a control; a blank one is an omission with a name."
+            )
+        }
+        if (!entry.reviewBy) {
+            throw new GradleException(
+                "The pinning exemption for ${host} has no reviewBy date (security finding H-02)."
+            )
+        }
+        if (!java.time.LocalDate.parse(entry.reviewBy as String).isAfter(today)) {
+            throw new GradleException(
+                "The pinning exemption for ${host} was due for review on ${entry.reviewBy} " +
+                "(security finding H-02).\nRe-check whether it can be pinned now — the " +
+                "remediation on file is:\n  ${entry.remediation}\nThen extend the date."
+            )
+        }
+    }
+
+    // Android and iOS must pin the same hosts. The finding measured the gap as
+    // materially larger on iOS, and nothing in either file would have said so.
+    def plistFile = new File(repoRoot, "ios/exchangapay/Info.plist")
+    if (plistFile.exists()) {
+        // Hostname-shaped <key> entries in Info.plist only ever occur inside
+        // NSPinnedDomains — no other Info.plist key contains a dotted label.
+        def iosPinned = (plistFile.text =~ /<key>([a-z0-9][a-z0-9.\-]*\.[a-z]{2,})<\/key>/)
+            .collect { it[1].toLowerCase() } as Set
+        def androidOnly = pinnedDomains.findAll { !iosPinned.contains(it) }
+        def iosOnly = iosPinned.findAll { !pinnedDomains.contains(it) }
+        if (androidOnly || iosOnly) {
+            throw new GradleException(
+                "The Android and iOS pin-sets name different hosts (security finding H-02):\n" +
+                (androidOnly ? "  pinned on Android only: ${androidOnly.join(', ')}\n" : "") +
+                (iosOnly ? "  pinned on iOS only: ${iosOnly.join(', ')}\n" : "") +
+                "\nUnpinned hosts are materially more exposed on iOS: ATS honours " +
+                "user-installed certificates, so a configuration profile the user was " +
+                "talked into installing is enough to intercept them. Android's " +
+                "<base-config> trusts system anchors only. Keep the two files in step."
+            )
+        }
+    }
 }
 
 /**

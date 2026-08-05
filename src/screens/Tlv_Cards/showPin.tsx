@@ -10,6 +10,11 @@ import { SvgUri } from "react-native-svg";
 import QRCode from "react-native-qrcode-svg";
 import { s } from "../../constants/theme/scale";
 import WebView from "react-native-webview";
+import {
+    buildCardHtmlDocument,
+    CARD_HTML_WEBVIEW_PROPS,
+    isCardHtmlNavigationAllowed,
+} from "../../security";
 
 
 const CardPin = React.memo((props: any) => {
@@ -73,6 +78,12 @@ export const ChiperCardPin = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
     const refRBSheet = useRef();
     const [getPin, setGetPin] = useState(props?.showPinDetails)
+    // Sanitised once per payload, so the WebView is never handed a changed
+    // document mid-render and the sanitiser does not re-run on every frame.
+    const pinDocument = React.useMemo(
+        () => buildCardHtmlDocument(getPin?.description),
+        [getPin?.description]
+    );
 
 
     useEffect(() => {
@@ -104,9 +115,17 @@ export const ChiperCardPin = React.memo((props: any) => {
 
                     <View style={[commonStyles.alignCenter, commonStyles.justifyContent]}>
                         <View style={{ width: '100%', height: "65%", marginTop: 8 }}>
+                            {/*
+                              * H-03: getPin.description is HTML from the card API,
+                              * rendered in the same document as the PIN. It is
+                              * sanitised, wrapped in a `default-src 'none'` CSP,
+                              * and shown with scripting and navigation off — see
+                              * src/security/cardHtmlPolicy.ts.
+                              */}
                             <WebView
-                                originWhitelist={['*']}
-                                source={{ html: getPin?.description }}
+                                {...CARD_HTML_WEBVIEW_PROPS}
+                                source={{ html: pinDocument, baseUrl: '' }}
+                                onShouldStartLoadWithRequest={isCardHtmlNavigationAllowed}
                                 style={{ backgroundColor: 'transparent' }}
                                 scrollEnabled={false}
                                 showsVerticalScrollIndicator={false}

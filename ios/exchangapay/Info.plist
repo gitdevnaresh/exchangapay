@@ -42,14 +42,25 @@
 		     devapi.exchangapay.com is intentionally absent: it is issued by Sectigo,
 		     a different CA, and pinning it against these hashes would break it.
 
+		     H-02 — WHAT IS NOT PINNED, AND WHY: security/pinning-policy.json, one
+		     entry per host with a reason and a review date. It is enforced, not
+		     documentation: the Android release build fails if a host in
+		     environments/*.js is neither pinned nor exempt, and fails if this file
+		     and the Android pin-set name different hosts. That parity check exists
+		     because coverage on iOS matters more, not less — ATS still honours
+		     user-installed certificates, so an unpinned host here can be intercepted
+		     with a configuration profile alone, where Android's <base-config> trusts
+		     system anchors only.
+
 		     WARNING — unlike Android's <pin-set expiration>, ATS has no expiry and
 		     no fail-open. If these pins stop matching, the iOS app cannot reach the
 		     API at all and the only remedy is an App Store release. Re-verify before
 		     the intermediate expires 2027-11-02:
-		       openssl s_client -servername api.exchangapay.com \
-		         -connect api.exchangapay.com:443 -showcerts </dev/null \
-		         | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der \
-		         | openssl dgst -sha256 -binary | openssl enc -base64 -->
+		       ./scripts/compute-spki-pins.sh
+
+		     LAST VERIFIED: 2026-08-05. Both hosts chain through GeoTrust TLS RSA
+		     CA G1 (primary pin) under DigiCert Global Root G2 (backup pin); both
+		     SPKI hashes below match the live chain exactly. -->
 		<key>NSPinnedDomains</key>
 		<dict>
 			<key>api.exchangapay.com</key>

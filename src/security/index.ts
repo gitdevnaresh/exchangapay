@@ -45,6 +45,16 @@ export {
 export { requiresAttestation } from "./attestationPolicy";
 
 export {
+  buildCardHtmlDocument,
+  CARD_HTML_CSP,
+  CARD_HTML_WEBVIEW_PROPS,
+  isCardHtmlNavigationAllowed,
+  MAX_HTML_LENGTH,
+  sanitizeCardHtml,
+  sanitizeNotesHtml,
+} from "./htmlPolicy";
+
+export {
   getApiHosts,
   getIdentityHosts,
   getTwoFactorAllowedHosts,

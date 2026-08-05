@@ -1,0 +1,126 @@
+{
+  "_comment": [
+    "H-02 — certificate pinning coverage, derived from the host inventory.",
+    "",
+    "The pin-set covered 2 of the 8 hosts the app talks to. That was not a",
+    "decision: the other six were hardcoded in src/utils/api.tsx (see H-01), so",
+    "whoever wrote the pin-set never saw them. Excluding Auth0 was a judgement",
+    "call; excluding the bank host was an omission, and from outside the file the",
+    "two looked identical.",
+    "",
+    "This file is what makes them look different. Every host the app is configured",
+    "to reach must be either pinned in the Android pin-set or listed below with a",
+    "written reason and a review date. The release build fails otherwise — see the",
+    "H-02 coverage guard in android/app/build.gradle — and",
+    "__tests__/pinningCoverage.test.ts asserts the same invariant on every test run.",
+    "",
+    "The inventory is read from the apiUrls block of environments/*.js and from any",
+    "baseURL literal left in src/. After H-01 there are no such literals.",
+    "",
+    "TO PROMOTE A HOST FROM EXEMPT TO PINNED:",
+    "  ./scripts/compute-spki-pins.sh          (prints each chain and its SPKI hashes)",
+    "  add a <domain-config> to android/app/src/main/res/xml/network_security_config.xml",
+    "  add the matching NSPinnedDomains entry to ios/exchangapay/Info.plist",
+    "  delete the exemption below",
+    "The guards check that Android and iOS name the same hosts, so the platforms",
+    "cannot drift — unpinned hosts are materially more exposed on iOS, where ATS",
+    "still honours user-installed certificates."
+  ],
+
+  "lastVerified": {
+    "date": "2026-08-05",
+    "method": "./scripts/compute-spki-pins.sh against the live chains",
+    "findings": [
+      "api.exchangapay.com and tstapi.exchangapay.com both chain through GeoTrust TLS RSA CA G1 (expires 2027-11-02), whose SPKI matches the primary pin in the pin-set exactly.",
+      "That intermediate is issued by DigiCert Global Root G2 (expires 2038-01-15), whose SPKI matches the backup pin exactly. The recovery path is real, not assumed.",
+      "The prod leaf expires 2026-12-13 and the tst leaf 2026-12-14. Neither is pinned, which is correct — renewal will not affect the pin-set.",
+      "neobank / neowalletgrid / neowalletapi.azurewebsites.net and tstlogin.suissebase.io returned NXDOMAIN from the public resolver (8.8.8.8). See the exemptions below: these hosts no longer exist.",
+      "Every endpoint those hosts served was then probed against tstapi.exchangapay.com and api.exchangapay.com and returned 404, against a negative control that also returns 404 and live routes that return 401. The endpoints did not move to the main API — they are gone. Full survey in security/legacy-endpoint-audit.md.",
+      "Consequence for this file: pin coverage over live traffic is complete. Every host the app can actually reach is pinned. The four exemptions below are for hosts that do not exist, which is a correctness problem, not a transport-security one."
+    ]
+  },
+
+  "exemptions": [
+    {
+      "host": "neobank.azurewebsites.net",
+      "risk": "medium",
+      "traffic": "Bank transfers, balances, account details, payee additions — via src/utils/api.tsx",
+      "reason": "THE HOST DOES NOT RESOLVE. Verified 2026-08-05: NXDOMAIN from the public resolver, not merely unreachable from one network. The Azure App Service site has been deleted or renamed. Pinning a hostname that has no DNS record protects nothing, and computing a pin for it is impossible — there is no chain to read. This also answers H-01 scenario B for these routes: the backend is not rejecting the unauthenticated requests, it is not there at all, and until H-01 attached a response interceptor these calls failed with no telemetry and no user-visible error beyond a spinner.",
+      "remediation": "Find where this traffic actually goes now and repoint environments/*.js at it. If the endpoints moved behind api.exchangapay.com they are already pinned and this entry can be deleted; if they moved to another Azure site, run compute-spki-pins.sh against the new host before deciding. If the features are simply gone, delete the routes in src/services rather than leaving dead calls that look live.",
+      "owner": "mobile-platform",
+      "reviewBy": "2026-11-01"
+    },
+    {
+      "host": "neowalletgrid.azurewebsites.net",
+      "risk": "medium",
+      "traffic": "Transaction lists — via src/utils/api.tsx",
+      "reason": "THE HOST DOES NOT RESOLVE. Verified 2026-08-05, NXDOMAIN from the public resolver. Same situation as neobank.azurewebsites.net.",
+      "remediation": "Repoint or delete, as for neobank.azurewebsites.net.",
+      "owner": "mobile-platform",
+      "reviewBy": "2026-11-01"
+    },
+    {
+      "host": "neowalletapi.azurewebsites.net",
+      "risk": "medium",
+      "traffic": "Profile, password change — via src/utils/api.tsx",
+      "reason": "THE HOST DOES NOT RESOLVE. Verified 2026-08-05, NXDOMAIN from the public resolver. Same situation as neobank.azurewebsites.net.",
+      "remediation": "Repoint or delete, as for neobank.azurewebsites.net.",
+      "owner": "mobile-platform",
+      "reviewBy": "2026-11-01"
+    },
+    {
+      "host": "tstlogin.suissebase.io",
+      "risk": "medium",
+      "traffic": "/connect/userinfo — identity, via src/utils/api.tsx",
+      "reason": "THE HOST DOES NOT RESOLVE. Verified 2026-08-05, NXDOMAIN from the public resolver — the apex suissebase.io does not resolve either. Identity now goes through Auth0 (react-native-auth0); this looks like a leftover from the previous identity provider. It was the highest-value unpinned host on paper and turns out to carry no traffic at all.",
+      "remediation": "Confirm AuthService.getAccountInfo() is dead code and delete it along with the authApi instance. If something still needs /connect/userinfo, it needs a live host first.",
+      "owner": "mobile-platform",
+      "reviewBy": "2026-11-01"
+    },
+    {
+      "host": "devapi.exchangapay.com",
+      "risk": "low",
+      "traffic": "Development API",
+      "reason": "Issued by Sectigo Public Server Authentication CA DV R36 (wildcard *.exchangapay.com, verified 2026-08-05) — a different CA from prod and tst, so it cannot share their pins, and pinning the apex with includeSubdomains would break it. Carries no production data. It could be given its own domain-config with the Sectigo intermediate, but that needs a second pin from the Sectigo root as backup before it is safe to ship.",
+      "remediation": "If dev migrates to the DigiCert chain, add it to the existing pin-set rather than widening the apex match.",
+      "owner": "mobile-platform",
+      "reviewBy": "2027-02-01"
+    },
+    {
+      "host": "api.coingecko.com",
+      "risk": "low",
+      "traffic": "Public market prices",
+      "reason": "Third party, public data, and no credential ever reaches it — applyThirdPartyInterceptors in src/utils/apiInterceptors.ts withholds the bearer token and the device-risk header, asserted by __tests__/apiLayerHardening.test.ts. It currently chains through Google Trust Services WE1 / GTS Root R4, but CoinGecko can change CA without telling us, and an outage on the price screen buys no security: an attacker intercepting this can misstate a coin price and nothing else.",
+      "remediation": "None planned. Treat displayed prices as untrusted input.",
+      "owner": "mobile-platform",
+      "reviewBy": "2027-06-01"
+    },
+    {
+      "host": "exchangapay-tst.eu.auth0.com",
+      "risk": "medium",
+      "traffic": "OAuth token exchange (react-native-auth0 — not an apiUrls host)",
+      "reason": "Auth0 rotates certificates on its own schedule with no notice to tenants. Already documented in the Android network security config; recorded here so the exemption list is the whole picture rather than half of it.",
+      "remediation": "Revisit if Auth0 publishes a pinning-safe chain commitment.",
+      "owner": "mobile-platform",
+      "reviewBy": "2027-06-01"
+    },
+    {
+      "host": "o4510198382919680.ingest.us.sentry.io",
+      "risk": "low",
+      "traffic": "Crash and error telemetry",
+      "reason": "Third-party operator, certificates rotate without notice. Bodies are allow-list redacted before they leave the device (C-07), so an interceptor gets shapes, not values.",
+      "remediation": "None planned.",
+      "owner": "mobile-platform",
+      "reviewBy": "2027-06-01"
+    },
+    {
+      "host": "api.sumsub.com",
+      "risk": "medium",
+      "traffic": "KYC document capture",
+      "reason": "Third-party SDK host with its own transport, so a pin in our config would not be enforced on it anyway, and its certificates rotate without notice.",
+      "remediation": "None planned. If the SDK exposes a pinning hook, revisit — this path carries identity documents.",
+      "owner": "mobile-platform",
+      "reviewBy": "2027-06-01"
+    }
+  ]
+}

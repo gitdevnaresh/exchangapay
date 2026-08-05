@@ -53,9 +53,28 @@ export default {
   attestation: {
     playIntegrityCloudProject: "",
   },
+  // H-01: every host the app talks to is named here. A base URL literal under
+  // src/ cannot be repointed per environment, which is how the test build came
+  // to hold production hosts; __tests__/apiLayerHardening.test.ts now fails on
+  // any `create({ baseURL: "https://..." })` left in src/.
   apiUrls: {
     uploadUrl: "https://tstapi.exchangapay.com/",
     cardsUrl: "https://tstapi.exchangapay.com/",
+    // Hosts recovered from the hardcoded literals in src/utils/api.tsx. These
+    // were the *only* values that layer ever used, in every build — the test
+    // build was talking to them as-is, so these are the test-tier values by
+    // observation rather than by configuration. They still carry live traffic
+    // (bank transfers, balances, payee additions) and are NOT covered by the
+    // certificate pin-set — see H-02. Migrate them behind *.exchangapay.com or
+    // add them to the pin-set; until then this block is the record of what is
+    // unpinned.
+    walletGridUrl: "https://neowalletgrid.azurewebsites.net/",
+    bankUrl: "https://neobank.azurewebsites.net/",
+    walletApiUrl: "https://neowalletapi.azurewebsites.net/",
+    authUrl: "https://tstlogin.suissebase.io",
+    // Third party. Never receives a bearer token or a device-risk header —
+    // see applyThirdPartyInterceptors in src/utils/apiInterceptors.ts.
+    marketUrl: "https://api.coingecko.com/",
   },
   localization: {
     defaultResourceName: "Exchanga Pay",

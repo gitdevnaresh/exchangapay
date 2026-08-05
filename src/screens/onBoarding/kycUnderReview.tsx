@@ -25,6 +25,7 @@ import useMemberLogin from "../../hooks/useMemberLogin";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RenderHTML from "react-native-render-html";
 import { log } from "../../utils/logger";
+import { sanitizeNotesHtml } from "../../security";
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
@@ -40,6 +41,14 @@ const UnderReview = () => {
   const isFocused = useIsFocused();
   const skeltons = progressSkeltons();
   const { getMemDetails } = useMemberLogin();
+  // H-03: customerNotes() is backend-supplied HTML. RenderHTML has no script
+  // engine, so this is the allow-list alone — enough to keep an injected
+  // `javascript:` link or a tracking pixel off a screen the user is told to
+  // trust. See src/security/htmlPolicy.ts.
+  const notesHtml = React.useMemo(
+    () => sanitizeNotesHtml(htmlContent?.message),
+    [htmlContent?.message]
+  );
 
   useEffect(() => {
     handleGetCustomerNotes();
@@ -67,7 +76,9 @@ const UnderReview = () => {
   };
 
   const handleLinkPress = (href: any) => {
-    if (href.startsWith("mailto:")) {
+    // The sanitiser already refused anything that is not https or mailto; this
+    // is the second reader of the same value, so it re-checks rather than trusts.
+    if (typeof href === "string" && href.startsWith("mailto:")) {
       Linking.openURL(href).catch((err) =>
         log.error("Failed to open email", err)
       );
@@ -135,12 +146,12 @@ const UnderReview = () => {
             <ErrorComponent message={errorMsg} onClose={handleCloseError} />
           )}
 
-          {!isLoading && htmlContent?.message && (
+          {!isLoading && notesHtml && (
             <View style={[commonStyles.flex1, styles.webViewContainer]}>
              
               <RenderHTML
                 contentWidth={WINDOW_WIDTH}
-                source={{ html: htmlContent?.message }}
+                source={{ html: notesHtml }}
                 tagsStyles={{
                   body: { color: NEW_COLOR.TEXT_BLACK },
 
@@ -176,7 +187,7 @@ const UnderReview = () => {
               userInfo.customerState === "Registered" ||
               (userInfo.customerState === "Approved" &&
                 userInfo?.isSumsubKyc)) &&
-            !htmlContent?.message && (
+            !notesHtml && (
               <Container style={[commonStyles.container, commonStyles.flex1]}>
                 <View style={commonStyles.flex1}>
                   <ParagraphComponent
@@ -222,7 +233,7 @@ const UnderReview = () => {
           {/* <View style={[commonStyles.mb24]} /> */}
           {!isLoading &&
             userInfo.customerState?.toLowerCase() === "registered" &&
-            !htmlContent?.message &&
+            !notesHtml &&
             !userInfo.isSumsubKyc && (
               <Container style={[commonStyles.container, commonStyles.flex1]}>
                 <View style={commonStyles.flex1}>
