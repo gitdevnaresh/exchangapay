@@ -25,13 +25,12 @@ import moment from "moment";
 import "moment-timezone";
 import notifee, { EventType } from "@notifee/react-native";
 import FileViewer from "react-native-file-viewer";
-import BlobUtil from "react-native-blob-util";
-import SplashScreen from "react-native-splash-screen";
 import ModalPicker from "../../../components/ModalPicker";
 import ErrorComponent from "../../../components/Error";
 import DatePickers from "react-native-date-picker";
 import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
+import { saveToDownloads, fetchContentType, extensionFromContentType } from "../../../utils/fileDownload";
 import { log } from "../../../utils/logger";
 
 const EXChangaCardDownloadBill = React.memo((props: any) => {
@@ -69,15 +68,23 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
   useEffect(() => {
     return notifee.onForegroundEvent(async ({ type, detail }) => {
       const notificationType = detail.notification?.data?.type;
-      if (type === EventType.PRESS) {
+      if (type !== EventType.PRESS) return;
+
+      // FileManagerModule is not registered on either platform; calling into it
+      // throws and kills the notification handler, so treat it as optional.
+      const fileManager = NativeModules.FileManagerModule;
+      if (!fileManager) return;
+
+      try {
         if (Platform.OS === "ios" && notificationType === "Document_IOS") {
-          NativeModules.FileManagerModule.getDocumentDirectoryPath(
+          fileManager.getDocumentDirectoryPath(
             async (documentDirectory: string) => {
               try {
                 await FileViewer.open(
                   documentDirectory + "/" + detail.notification?.body!
                 );
-              } finally {
+              } catch (error) {
+                log.error("Could not open downloaded document", error);
               }
             }
           );
@@ -85,91 +92,80 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
           Platform.OS === "android" &&
           notificationType === "Document_Android"
         ) {
-          await NativeModules.FileManagerModule.goToFolder("Downloads");
+          await fileManager.goToFolder("Downloads");
         }
+      } catch (error) {
+        log.error("Could not handle document notification", error);
       }
     });
   }, []);
 
-  useEffect(() => {
-    SplashScreen.hide();
-  }, []);
+  const downloadImage = async (url: any) => {
+    if (!url) {
+      setErrormsg("Invalid data received");
+      return;
+    }
 
-  const downloadImage = async (path: any) => {
     if (Platform.OS === "android") {
       const hasPermission = await requestAndroidPermission();
       if (!hasPermission) {
         Alert.alert(
           "Permission Denied",
-          "Cannot download image without permission."
+          "Cannot download the bill without permission."
         );
         return;
       }
     }
-    let date = new Date();
-    let image_URL = path;
-    let ext: any = getExtention(image_URL);
-    ext = "." + ext[0];
-    if (Platform.OS === "ios") {
-      downloadAndSavePDF(
-        path,
-        `Bill_Transaction_${Math.floor(
-          date.getTime() + date.getSeconds() / 2
-        )}.csv`
-      ).then((filePath) => {
-        if (filePath) {
-          sharePDF(filePath);
-        }
-      });
-    } else {
-      const downloadDir = BlobUtil.fs.dirs.DownloadDir;
-      const fileName = `Bill_Transaction_${Math.floor(
-        date.getTime() + date.getSeconds() / 2
-      )}${ext}`;
 
-      const config = {
-        fileCache: true,
-        addAndroidDownloads: {
-          useDownloadManager: true,
-          notification: true,
-          path: `${downloadDir}/${fileName}`,
-          description: "csv",
-        },
-      };
+    const date = new Date();
+    const baseName = `Bill_Transaction_${Math.floor(
+      date.getTime() + date.getSeconds() / 2
+    )}`;
 
-      try {
-        const response = await BlobUtil.config(config).fetch("GET", image_URL);
+    try {
+      const contentType = await fetchContentType(url);
+      const extension = extensionFromContentType(contentType, "xlsx");
+
+      const saved = await saveToDownloads(url, { baseName, extension });
+
+      // iOS has no shared Downloads folder, so the share sheet ("Save to Files")
+      // is the only way to put the bill somewhere the user can find it.
+      if (Platform.OS === "ios") {
+        await sharePDF(saved.path, saved.mime);
+        return;
+      }
+
+      if (saved.savedToDownloads) {
         Alert.alert(
           "Transactions Bill Downloaded Successfully.",
-          `File saved to: ${response.path()}`
+          `${saved.fileName} has been saved to your Downloads folder.`
         );
-      } catch (error) {
-        Alert.alert("Download Failed", "Failed to download the bill.");
+        return;
       }
+
+      // Bytes are on disk but MediaStore rejected them; let the user place the
+      // file themselves rather than pointing them at a Downloads folder that
+      // does not contain it.
+      Alert.alert(
+        "Bill Downloaded",
+        "We couldn’t add the bill to your Downloads folder. Choose where to save it.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Save", onPress: () => sharePDF(saved.path, saved.mime) },
+        ]
+      );
+    } catch (error) {
+      log.error("Error downloading transactions bill", error);
+      Alert.alert("Download Failed", "Failed to download the bill.");
     }
   };
 
-  const downloadAndSavePDF = async (pdfUrl: any, pdfName: string) => {
-    try {
-      const documentDir = BlobUtil.fs.dirs.DocumentDir;
-      const filePath = `${documentDir}/${pdfName}`;
-      const response = await BlobUtil.config({
-        fileCache: true,
-        path: filePath,
-      }).fetch("GET", pdfUrl);
-      return response.path();
-    } catch (error) {
-      log.error("Error saving PDF", error);
-      Alert.alert("Error", "Failed to save the CSV.");
-      return null;
-    }
-  };
-  const sharePDF = async (pdfPath: any) => {
+  const sharePDF = async (filePath: any, mime: string = "text/csv") => {
     try {
       const options = {
         title: "Transactions Bill",
-        url: `${pdfPath}`,
-        type: "text/csv",
+        url: `${filePath}`,
+        type: mime,
         saveToFiles: true,
       };
 
@@ -177,10 +173,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     } catch (error) {
       log.error("Error sharing PDF", error);
     }
-  };
-
-  const getExtention = (filename: any) => {
-    return /[.]/.exec(filename) ? /[^.]+$/.exec(filename) : undefined;
   };
 
   useEffect(() => {
@@ -265,8 +257,9 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
         toDate
       );
       if (response && response.data) {
-        downloadImage(response.data);
         setErrormsg("");
+        // Awaited so the button keeps spinning until the file actually lands.
+        await downloadImage(response.data);
       } else {
         setErrormsg("Invalid data received");
       }

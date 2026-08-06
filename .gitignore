@@ -70,6 +70,11 @@ web_modules/
 .env
 .env.*
 !.env.example
+# Non-production values contain no secrets — safe to commit so a fresh clone builds.
+!.env.tst
+!.env.dev
+# Production values must never be committed.
+.env.prod
 
 # Sentry secrets
 # NOTE: ios/sentry.properties AND android/sentry.properties are intentionally
@@ -133,6 +138,13 @@ dist
 
 # Firebase cache directory
 .firebase/
+
+# Firebase config files — real files are gitignored; only the example placeholders are committed.
+# When switching environments, manually replace with the real file from the Firebase console:
+#   android/app/google-services.json
+#   ios/GoogleService-Info.plist
+android/app/google-services.json
+ios/GoogleService-Info.plist
 
 # TernJS port file
 .tern-port

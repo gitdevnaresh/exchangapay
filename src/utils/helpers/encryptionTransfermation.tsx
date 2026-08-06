@@ -27,6 +27,7 @@
 import { createTransform } from "redux-persist";
 import { decryptAny, encryptGCM } from "../crypto/aes";
 import { getPersistKey } from "../crypto/persistKey";
+import { SENSITIVE_KEY } from "../redact";
 
 /**
  * Fields that must never reach durable storage, per persisted slice.
@@ -44,7 +45,7 @@ const stripSecrets = (value: any): any => {
 
   const out: Record<string, any> = {};
   for (const key of Object.keys(value)) {
-    if (SECRET_FIELDS.includes(key)) continue;
+    if (SECRET_FIELDS.includes(key) || SENSITIVE_KEY.test(key)) continue;
     out[key] = stripSecrets(value[key]);
   }
   return out;

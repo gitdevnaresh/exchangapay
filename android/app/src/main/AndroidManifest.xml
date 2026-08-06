@@ -49,6 +49,29 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+      <!-- M-07: App Links intent filter. android:autoVerify="true" causes Android
+           to verify ownership of the domain against the hosted assetlinks.json
+           before registering this filter. A verified App Link cannot be claimed
+           by another app — unlike the custom scheme below, which any app can
+           register. Requires /.well-known/assetlinks.json to be hosted at
+           https://exchangapay.com (see security/M07_APPLINKS_SETUP.md).
+           The custom-scheme filter below is kept during migration so existing
+           installs continue to work until the App Link is verified. -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" android:host="${auth0Domain}" android:pathPrefix="/android/${applicationId}/callback" />
+      </intent-filter>
+      <!-- M-07: Legacy custom-scheme callback. Keep until App Links are verified
+           on all active installs, then remove this filter and the auth0Scheme
+           placeholder in build.gradle. -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="${auth0Scheme}" android:host="callback" />
+      </intent-filter>
     </activity>
   </application>
 </manifest>

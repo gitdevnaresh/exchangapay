@@ -8,7 +8,7 @@ import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../../constants/theme
 import ParagraphComponent from "../../../components/Paragraph/Paragraph";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import CopyCard from "../../../components/CopyCard";
-import Clipboard from "@react-native-clipboard/clipboard";
+import { copyEphemeral } from "../../../utils/clipboard";
 import { formatCurrency, formatDateLocal } from "../../../utils/helpers";
 import CardsModuleService from "../../../services/card";
 import { s } from "../../../constants/theme/scale";
@@ -56,12 +56,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
     );
     return () => backHandler.remove();
   }, [])
-  const copyToClipboard = async (text: any) => {
-    try {
-      await Clipboard.setString(text);
-    } catch (error: any) {
-    }
-  };
+  const copyToClipboard = (text: any) => copyEphemeral(text, "Address");
   const getTransactionDetails = async () => {
     try {
       const response: any = await CardsModuleService.getTransactionDetails(transId);

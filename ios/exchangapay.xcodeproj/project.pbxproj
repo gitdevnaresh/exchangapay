@@ -67,7 +67,6 @@
 			children = (
 			);
 			name = Resources;
-			path = "";
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -127,6 +126,7 @@
 				EA5B4A6C98DA5DD1768B215B /* [CP-User] [RNFB] Core Configuration */,
 				A74B55C8AEB24091381899F6 /* [CP-User] [RNFB] Crashlytics Configuration */,
 				70FE938D6C98F91B6217FC3A /* [H-15] Select Firebase config */,
+				B1C3D4E5F6A7B8C9D0E1F2A3 /* [H-07] Release security guards */,
 			);
 			buildRules = (
 			);
@@ -250,6 +250,20 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
 		};
+		B1C3D4E5F6A7B8C9D0E1F2A3 /* [H-07] Release security guards */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[H-07] Release security guards";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# H-07: iOS release security guards.\n# Runs only for Release; exits silently for Debug so simulator builds are unaffected.\nif [ \"$CONFIGURATION\" != \"Release\" ]; then exit 0; fi\n\nset -e\nINFO_PLIST=\"${SRCROOT}/exchangapay/Info.plist\"\nACTIVE_JS=\"${SRCROOT}/../environments/active.js\"\n\n# --- H-02: NSAllowsArbitraryLoads must be false ---\nARBITRARY=$(plutil -extract NSAppTransportSecurity.NSAllowsArbitraryLoads raw -o - \"$INFO_PLIST\" 2>/dev/null || echo \"missing\")\nif [ \"$ARBITRARY\" != \"0\" ] && [ \"$ARBITRARY\" != \"false\" ]; then\n  echo \"error: [H-07/H-02] NSAllowsArbitraryLoads is not false in Info.plist. ATS must block arbitrary loads for a release build.\"\n  exit 1\nfi\n\n# --- H-03: NSPinnedDomains must contain at least 2 SPKI entries per domain ---\nPIN_COUNT=$(plutil -extract NSAppTransportSecurity.NSPinnedDomains json -o - \"$INFO_PLIST\" 2>/dev/null | grep -o 'SPKI-SHA256-BASE64' | wc -l | tr -d ' ')\nif [ \"$PIN_COUNT\" -lt 2 ]; then\n  echo \"error: [H-07/H-03] NSPinnedDomains has fewer than 2 SPKI-SHA256-BASE64 entries. At least 2 pins (primary + backup) are required.\"\n  exit 1\nfi\n\n# --- H-03: pin expiry warning (ATS has no expiry; warn 90 days before 2027-11-02) ---\nEXPIRY=\"2027-11-02\"\nEXPIRY_EPOCH=$(date -j -f \"%Y-%m-%d\" \"$EXPIRY\" +%s 2>/dev/null || date -d \"$EXPIRY\" +%s)\nNOW_EPOCH=$(date +%s)\nDAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))\nif [ \"$DAYS_LEFT\" -lt 90 ]; then\n  echo \"warning: [H-07/H-03] iOS ATS pin-set expires on $EXPIRY ($DAYS_LEFT days). Re-verify SPKI hashes before expiry or the app will be unable to reach the API without an App Store release.\"\nfi\n\n# --- H-13: JS Auth0 issuer must match the native bundle's expected tenant ---\nif [ -f \"$ACTIVE_JS\" ]; then\n  ACTIVE_ENV=$(grep -oE \"from [\\'\\\"]\\./([a-z]+)[\\'\\\"]\" \"$ACTIVE_JS\" | grep -oE \"(dev|tst|prod)\")\n  if [ -n \"$ACTIVE_ENV\" ]; then\n    ENV_FILE=\"${SRCROOT}/../environments/${ACTIVE_ENV}.js\"\n    JS_ISSUER=$(grep -oE \"issuer:[[:space:]]*[\\'\\\"][^\\'\\\"]+[\\'\\\"]\" \"$ENV_FILE\" | grep -oE \"[\\'\\\"][^\\'\\\"]+[\\'\\\"]\" | tr -d \"\\'\\\"\")\n    BUNDLE_ID=$(plutil -extract CFBundleIdentifier raw -o - \"$INFO_PLIST\" 2>/dev/null || echo \"\")\n    # Derive expected tenant suffix from bundle ID: com.exchangapay.tst -> tst, com.exchangapay -> prod\n    BUNDLE_ENV=$(echo \"$BUNDLE_ID\" | grep -oE \"\\.(tst|dev)$\" | tr -d '.' || echo \"prod\")\n    if [ \"$ACTIVE_ENV\" != \"$BUNDLE_ENV\" ]; then\n      echo \"error: [H-07/H-13] environments/active.js selects '$ACTIVE_ENV' but CFBundleIdentifier is '$BUNDLE_ID' (expected '$BUNDLE_ENV'). Update active.js and the bundle ID together.\"\n      exit 1\n    fi\n  fi\nfi\n\necho \"[H-07] iOS release guards passed.\"\n";
+		};
 		CCD891920CA4B412BBA9EE26 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -318,6 +332,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6P8DYKFL67;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = exchangapay/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -346,7 +361,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6P8DYKFL67;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = exchangapay/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -362,6 +381,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.exchangapay.tst;
 				PRODUCT_NAME = exchangapay;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRIP_INSTALLED_PRODUCT = YES;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -396,7 +417,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -486,7 +507,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

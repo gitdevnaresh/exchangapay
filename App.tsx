@@ -90,6 +90,26 @@ export default Sentry.wrap(function App() {
       // Crashlytics together. Until it resolves, getTelemetryConsentSync() is
       // false and events are dropped — startup errors are not sent optimistically.
       initializeTelemetry();
+      // M-03: pin expiry telemetry — both platforms, 90-day warning window.
+      // Android <pin-set expiration> silently stops enforcing after the date;
+      // iOS ATS has no expiry and a mismatch bricks the app until an App Store
+      // release. Neither failure is visible without this check.
+      // Dates: Android 2027-06-01, iOS intermediate (GeoTrust TLS RSA CA G1) 2027-11-02.
+      const PIN_EXPIRY_ANDROID = new Date("2027-06-01");
+      const PIN_EXPIRY_IOS = new Date("2027-11-02");
+      const pinExpiry = Platform.OS === "ios" ? PIN_EXPIRY_IOS : PIN_EXPIRY_ANDROID;
+      const pinDaysLeft = Math.floor((pinExpiry.getTime() - Date.now()) / 86400000);
+      if (pinDaysLeft < 90) {
+        log.warn("[M-03] Certificate pin-set expires soon — re-verify SPKI hashes and extend the expiry date", {
+          platform: Platform.OS,
+          expiry: pinExpiry.toISOString().slice(0, 10),
+          daysLeft: pinDaysLeft,
+        });
+        Sentry.captureMessage(
+          `[M-03] Pin-set expires in ${pinDaysLeft} days (${pinExpiry.toISOString().slice(0, 10)})`,
+          "warning"
+        );
+      }
       // H-05: load the at-rest key, then let redux-persist rehydrate. Unlike
       // the integrity probe below this one DOES gate rendering — PersistGate
       // holds its loading component until it resolves — because rehydrating
@@ -152,7 +172,9 @@ export default Sentry.wrap(function App() {
           setVersionInfo(res.data.jsonVersion);
         }
       }
-    } catch (err) { }
+    } catch (err) {
+      log.error("[L-02] checkVersionUpdate failed", err);
+    }
   };
   const checkAppVersion = async () => {
     try {
@@ -167,22 +189,19 @@ export default Sentry.wrap(function App() {
           versionDetailsInfo = filterApplicant[0].applicationInfo;
         }
       }
-      if (
-        versionDetailsInfo &&
-        versionDetailsInfo[
-        Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion"
-        ] > versionName
-      ) {
-        setIsForceUpdate(
-          versionDetailsInfo[
-          Platform.OS === "ios"
-            ? "iosForceUpdateVersion"
-            : "androidForceUpdateVersion"
-          ] > versionName
-        );
+      const currentBuild = parseInt(versionName, 10);
+      const platformKey = Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion";
+      const forceKey = Platform.OS === "ios" ? "iosForceUpdateVersion" : "androidForceUpdateVersion";
+      const remoteBuild = parseInt(versionDetailsInfo?.[platformKey], 10);
+      const forceUpdateBuild = parseInt(versionDetailsInfo?.[forceKey], 10);
+
+      if (versionDetailsInfo && !isNaN(remoteBuild) && remoteBuild > currentBuild) {
+        setIsForceUpdate(!isNaN(forceUpdateBuild) && forceUpdateBuild > currentBuild);
         setIsUpdate(true);
       }
-    } catch (error) { }
+    } catch (error) {
+      log.error("[L-02] checkAppVersion failed", error);
+    }
   };
   const getoAuthConfig = (path: string) => {
     const envList = getAllEnvData();

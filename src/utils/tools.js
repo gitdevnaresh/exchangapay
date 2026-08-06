@@ -1,6 +1,7 @@
 import BlobUtil from "react-native-blob-util";
 import { Alert, Linking, PermissionsAndroid, Platform } from "react-native";
 import Share from "react-native-share";
+import { getUrlExtension, saveToDownloads } from "./fileDownload";
 
 export const downloadFileFromUrl = (path, extension) => {
   const date = new Date();
@@ -131,40 +132,29 @@ export const downloadImage = async (url) => {
   try {
     const isIOS = Platform.OS === "ios";
     const date = new Date();
-    const ext = url.split(".").pop()?.split("?")[0] || "jpg";
-    const fileName = `chat_image_${date.getTime()}.${ext}`;
 
-    // Don't use path to access file directly on Android 13+
-    const path = isIOS
-      ? `${BlobUtil.fs.dirs.DocumentDir}/${fileName}`
-      : `${BlobUtil.fs.dirs.DownloadDir}/${fileName}`;
-
-    const options = {
-      fileCache: true,
-      path: path,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        path: path, // just instructs DownloadManager
-        description: "Image file",
-        mime: `image/${ext}`,
-        title: fileName,
-      },
-    };
-
-    await BlobUtil.config(options).fetch("GET", url);
+    const saved = await saveToDownloads(url, {
+      baseName: `chat_image_${date.getTime()}`,
+      extension: getUrlExtension(url, "jpg"),
+    });
 
     if (isIOS) {
       await Share.open({
-        url: "file://" + path,
-        type: `image/${ext}`,
+        url: "file://" + saved.path,
+        type: saved.mime,
         title: "Save Image",
       });
-    } else {
+    } else if (saved.savedToDownloads) {
       Alert.alert(
         "Download Complete",
         "Image has been saved to your Downloads folder."
       );
+    } else {
+      await Share.open({
+        url: "file://" + saved.path,
+        type: saved.mime,
+        title: "Save Image",
+      });
     }
   } catch (error) {
     if (Platform.OS === "ios") {

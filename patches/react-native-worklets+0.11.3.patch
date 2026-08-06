@@ -1,0 +1,11 @@
+diff --git a/node_modules/react-native-worklets/android/CMakeLists.txt b/node_modules/react-native-worklets/android/CMakeLists.txt
+--- a/node_modules/react-native-worklets/android/CMakeLists.txt
++++ b/node_modules/react-native-worklets/android/CMakeLists.txt
+@@ -1,5 +1,6 @@
+-project(Worklets)
+ cmake_minimum_required(VERSION 3.16)
+ 
++project(Worklets)
++
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+ 

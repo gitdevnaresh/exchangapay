@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import QuickCrypto from 'react-native-quick-crypto';
 import { KEYCHAIN_SERVICES, readSecret, writeSecret } from '../utils/storage/keychainPolicy';
 import moment from 'moment';
 import axios from 'axios';
@@ -17,21 +17,14 @@ export class KommoChatAPI {
         return now.toUTCString().replace(/GMT/, '+0000');
     }
     calculateMD5(body = '') {
-        let bodyString = '';
-
-        if (typeof body === 'object') {
-            bodyString = JSON.stringify(body);
-        } else {
-            bodyString = body.toString();
-        }
-
-        return CryptoJS.MD5(bodyString).toString().toLowerCase();
+        const bodyString = typeof body === 'object' ? JSON.stringify(body) : body.toString();
+        return QuickCrypto.createHash('md5').update(bodyString).digest('hex').toLowerCase();
     };
 
     generateHeaders(body, endpoint, method = 'POST') {
         try {
             const date = moment.utc().format('ddd, DD MMM YYYY HH:mm:ss') + ' GMT';
-            const contentMD5 = CryptoJS.MD5(CryptoJS.enc.Utf8.parse(body)).toString(CryptoJS.enc.Hex);
+            const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
             const signatureString = [
                 method.toUpperCase(),
                 contentMD5,
@@ -40,8 +33,9 @@ export class KommoChatAPI {
                 endpoint
             ].join('\n');
 
-            const signature = CryptoJS.HmacSHA1(signatureString, this.secretKey)
-                .toString(CryptoJS.enc.Hex);
+            const signature = QuickCrypto.createHmac('sha1', this.secretKey)
+                .update(signatureString, 'utf8')
+                .digest('hex');
 
             return {
                 'Date': date,
@@ -186,13 +180,12 @@ export class KommoChatAPI {
         const contentType = 'application/json';
         const path = `/v2/origin/custom/${kommoScopeId}/chats/${conversation_id}/history`;
         const body = '';
-        const contentMD5 = CryptoJS.MD5(body).toString(CryptoJS.enc.Hex);
+        const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
         const date = moment().utc().format('ddd, DD MMM YYYY HH:mm:ss [GMT]');
         const stringToSign = [method, contentMD5, contentType, date, path].join('\n');
-        const signature = CryptoJS.HmacSHA1(
-            CryptoJS.enc.Utf8.parse(stringToSign),
-            CryptoJS.enc.Utf8.parse(secret)
-        ).toString(CryptoJS.enc.Hex);
+        const signature = QuickCrypto.createHmac('sha1', secret)
+            .update(stringToSign, 'utf8')
+            .digest('hex');
         const requestHeaders = {
             'Date': date,
             'Content-Type': contentType,

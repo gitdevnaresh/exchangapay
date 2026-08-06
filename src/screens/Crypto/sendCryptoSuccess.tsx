@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
-import { View, ScrollView, TouchableOpacity, Clipboard, Alert, ImageBackground, SafeAreaView, BackHandler, Linking } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Alert, ImageBackground, SafeAreaView, BackHandler, Linking } from 'react-native';
 import { Image } from 'react-native';
 import DefaultButton from '../../components/DefaultButton';
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -13,7 +13,7 @@ import { commonStyles } from '../../components/CommonStyles';
 import CopyCard from '../../components/CopyCard';
 import { ActivityIndicator } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { s } from '../../constants/theme/scale';
+import { copyEphemeral } from '../../utils/clipboard';
 
 const SendCryptoSuccess = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -69,13 +69,7 @@ const SendCryptoSuccess = React.memo((props: any) => {
         }
     };
 
-    const copyToClipboard = async (text: any) => {
-        try {
-            await Clipboard.setString(text);
-        } catch (error: any) {
-            Alert.alert('Failed to copy text to clipboard:', error);
-        }
-    };
+    const copyToClipboard = (text: string) => copyEphemeral(text, "Transaction Hash");
     return (
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
             <ScrollView>

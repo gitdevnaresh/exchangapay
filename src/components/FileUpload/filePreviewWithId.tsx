@@ -11,8 +11,6 @@ import {
     Image
 } from "react-native";
 import { s } from "react-native-size-matters";
-import RNFS from 'react-native-fs';
-import BlobUtil from "react-native-blob-util";
 import ProfileService from "../../services/profile";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Container from "../Container";
@@ -23,6 +21,12 @@ import { NEW_COLOR } from "../../constants/theme/variables";
 import DefaultButton from "../DefaultButton";
 import { AttachmentIcon } from "../../assets/svg";
 import { requestAndroidPermission } from "../../utils/tools";
+import {
+    getUrlExtension,
+    saveBase64ToDownloads,
+    saveToDownloads,
+    type SavedFile,
+} from "../../utils/fileDownload";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { log } from "../../utils/logger";
 
@@ -123,9 +127,16 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
     //         return false;
     //     }
     // };
-    const getExtensionFromUrl = (filename: any) => {
-        return /[.]/.exec(filename) ? /[^.]+$/.exec(filename) : undefined;
+    const announceSavedFile = async (saved: SavedFile) => {
+        // iOS has no shared Downloads folder, and on Android a file MediaStore
+        // refused is on disk but invisible -- both need the share sheet.
+        if (Platform.OS === "ios" || !saved.savedToDownloads) {
+            await Share.share({ url: `file://${saved.path}` });
+            return;
+        }
+        Alert.alert("Download Complete", `${saved.fileName} was saved to your Downloads folder.`);
     };
+
     const downloadFileWithBlobUtil = async (fileUrl: string) => {
         try {
             if (Platform.OS === "android") {
@@ -136,42 +147,11 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
                 }
             }
 
-            const ext = getExtensionFromUrl(fileUrl);
-            const fileName = `Downloaded_File_${Date.now()}.${ext}`;
-
-            const dir =
-                Platform.OS === "ios"
-                    ? BlobUtil.fs.dirs.DocumentDir
-                    : BlobUtil.fs.dirs.DownloadDir;
-
-            const filePath = `${dir}/${fileName}`;
-
-            const config =
-                Platform.OS === "android"
-                    ? {
-                        fileCache: true,
-                        addAndroidDownloads: {
-                            useDownloadManager: true,
-                            notification: true,
-                            path: filePath,
-                            description: "Downloading file...",
-                            mediaScannable: true,
-                        },
-                    }
-                    : {
-                        fileCache: true,
-                        path: filePath,
-                    };
-
-            const response = await BlobUtil.config(config).fetch("GET", fileUrl);
-
-            if (Platform.OS === "ios") {
-                await Share.share({
-                    url: `file://${response.path()}`,
-                });
-            } else {
-                Alert.alert("Download Complete", `Saved to: ${response.path()}`);
-            }
+            const saved = await saveToDownloads(fileUrl, {
+                baseName: `Downloaded_File_${Date.now()}`,
+                extension: getUrlExtension(fileUrl, "pdf"),
+            });
+            await announceSavedFile(saved);
         } catch (error) {
             log.error("Download Error", error);
             Alert.alert("Download Failed", "Unable to download file.");
@@ -191,20 +171,13 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
                 const mimeType = match[1];
                 const base64Data = match[2];
                 const extension = mimeType.split("/")[1] || "jpg";
-                const fileName = `download_${Date.now()}.${extension}`;
 
-                const path =
-                    Platform.OS === "ios"
-                        ? `${RNFS.TemporaryDirectoryPath}/${fileName}`
-                        : `${RNFS.DownloadDirectoryPath}/${fileName}`;
-
-                await RNFS.writeFile(path, base64Data, "base64");
-
-                if (Platform.OS === "ios") {
-                    await Share.share({ url: `file://${path}` });
-                } else {
-                    Alert.alert("Download Complete", "File saved successfully");
-                }
+                const saved = await saveBase64ToDownloads(base64Data, {
+                    baseName: `download_${Date.now()}`,
+                    extension,
+                    mime: mimeType,
+                });
+                await announceSavedFile(saved);
             } else {
                 // ✅ NORMAL FILE URL DOWNLOAD USING BlobUtil
                 await downloadFileWithBlobUtil(fileUri);

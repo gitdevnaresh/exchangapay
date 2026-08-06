@@ -1,21 +1,35 @@
 {
+  "_comment": [
+    "This is a PLACEHOLDER. Never commit real google-services.json files.",
+    "Obtain the real file from the Firebase console for each environment:",
+    "  TST:  Firebase console → exchangapay-tst  → Project settings → google-services.json",
+    "  PROD: Firebase console → exchangapay-prod → Project settings → google-services.json",
+    "",
+    "File placement (the Google Services Gradle plugin picks these up automatically):",
+    "  android/app/src/debug/google-services.json   ← tst project",
+    "  android/app/src/release/google-services.json ← prod project",
+    "  android/app/google-services.json             ← fallback (keep as this placeholder)",
+    "",
+    "Both per-config files are gitignored. The Gradle H-15 guard will fail a",
+    "production release build if the prod file is missing or still points at the tst project."
+  ],
   "project_info": {
-    "project_number": "244135463456",
-    "project_id": "exchangapay-tst-f570a",
-    "storage_bucket": "exchangapay-tst-f570a.firebasestorage.app"
+    "project_number": "REPLACE_WITH_PROJECT_NUMBER",
+    "project_id": "REPLACE_WITH_PROJECT_ID",
+    "storage_bucket": "REPLACE_WITH_PROJECT_ID.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:244135463456:android:5b3f8e969edb943025ca45",
+        "mobilesdk_app_id": "REPLACE_WITH_MOBILESDK_APP_ID",
         "android_client_info": {
-          "package_name": "com.exchangapay.tst"
+          "package_name": "REPLACE_WITH_PACKAGE_NAME"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB720SuBPKNxHNWKkV61k9fPIuAH-dppp8"
+          "current_key": "REPLACE_WITH_API_KEY"
         }
       ],
       "services": {

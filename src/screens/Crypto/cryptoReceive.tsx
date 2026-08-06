@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, Alert, ImageBackground, BackHandler, Dimensions } from 'react-native';
+import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, ImageBackground, BackHandler, Dimensions } from 'react-native';
 import { Container } from '../../components';
 import CopyCard from '../../components/CopyCard';
 import QRCode from 'react-native-qrcode-svg';
@@ -15,7 +15,7 @@ import { commonStyles } from '../../components/CommonStyles';
 import CryptoServices from '../../services/crypto';
 import SvgFromUrl from '../../components/svgIcon';
 import { s } from '../../constants/theme/scale';
-import Clipboard from "@react-native-clipboard/clipboard";
+import { copyEphemeral } from "../../utils/clipboard";
 import { Overlay } from 'react-native-elements';
 import DefaultButton from '../../components/DefaultButton';
 import ErrorComponent from '../../components/Error';
@@ -108,13 +108,7 @@ const CryptoReceive = React.memo((props: any) => {
         props.navigation.goBack();
 
     };
-    const copyToClipboard = async (text: any) => {
-        try {
-            await Clipboard.setString(text);
-        } catch (error: any) {
-            Alert.alert('Failed to copy text to clipboard:', error);
-        }
-    };
+    const copyToClipboard = (text: string) => copyEphemeral(text, "Wallet Address");
 
     const cryptoList: any = {
         BTC: Images?.coins?.coinbtc,

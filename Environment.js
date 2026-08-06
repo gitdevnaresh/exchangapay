@@ -1,80 +1,74 @@
 /**
- * The app's view of its environment.
+ * App environment — all values come from the .env file loaded at build time
+ * by react-native-config. Switch environments by running:
  *
- * The three environment definitions moved to environments/*.js, and this module
- * reads only the one environments/active.js points at — security finding H-13.
- * A build therefore contains exactly one Auth0 client ID, one issuer and one
- * set of API hosts, rather than the whole tenant layout. Read active.js before
- * changing anything here; it explains the mechanism and what a migration needs.
+ *   npm run env:tst   →  copies .env.tst  to .env, then rebuild
+ *   npm run env:prod  →  copies .env.prod to .env, then rebuild
+ *   npm run env:dev   →  copies .env.dev  to .env, then rebuild
  *
- * The exports below are unchanged, and every call site should keep calling
- * getAllEnvData() with no argument (finding C-05).
+ * The native layer (applicationId, auth0Domain, Firebase) is driven by the
+ * same .env file — see ANDROID_APPLICATION_ID / ANDROID_AUTH0_DOMAIN in
+ * android/app/build.gradle and .env.example.
  */
 
+import Config from "react-native-config";
 import { log } from "./src/utils/logger";
-import activeEnv from "./environments/active";
 
-/**
- * Build-time environment name.
- *
- * APP_ENV is inlined by the bundler once a build-time environment mechanism is
- * in place (react-native-config, or babel-plugin-transform-inline-environment-variables).
- * Neither is installed yet, so this is currently always null. It is read only
- * to detect a *mismatch* with the environment this build actually carries —
- * selecting an environment is environments/active.js's job now, because a value
- * read at runtime cannot remove the other environments from the bundle.
- * The guard on `process` keeps this safe in any JS runtime the bundle may load in.
- */
-const BUILD_ENV =
-  (typeof process !== "undefined" && process.env && process.env.APP_ENV) || null;
+const APP_ENV = Config.APP_ENV;
 
-/**
- * The environment this build targets.
- *
- * DELIBERATELY the test tenant — see security finding C-05 and the notes in
- * environments/active.js. Resolution is single-sourced: this constant is
- * derived from the config that is actually bundled, so the two cannot disagree
- * the way a separate string constant could.
- */
-const DEFAULT_ENV = activeEnv.envName;
-
-if (BUILD_ENV && BUILD_ENV !== DEFAULT_ENV) {
-  // A build script set APP_ENV without repointing environments/active.js. The
-  // bundle physically contains only DEFAULT_ENV, so honouring APP_ENV here is
-  // not possible — say so loudly rather than shipping a build that thinks it is
-  // something it is not.
-  log.warn("[Environment] APP_ENV does not match the bundled environment", {
-    requested: BUILD_ENV,
-    bundled: DEFAULT_ENV,
-  });
+if (!APP_ENV || !["dev", "tst", "prod"].includes(APP_ENV)) {
+  throw new Error(
+    `[Environment] APP_ENV="${APP_ENV}" is invalid. ` +
+      "Set APP_ENV to dev, tst, or prod in your .env file and rebuild."
+  );
 }
 
-const resolveEnvName = (envName) => {
-  if (envName && envName !== DEFAULT_ENV) {
-    // Passing a literal environment name is what allowed the app to straddle
-    // two backends (C-05); now it is also unsatisfiable, since the other
-    // environments are not in the bundle. Warn and serve the bundled one.
-    log.warn("[Environment] Ignoring a request for a non-bundled environment", {
-      requested: envName,
-      bundled: DEFAULT_ENV,
-    });
-  }
-  return DEFAULT_ENV;
+const env = {
+  envName: APP_ENV,
+  oAuthConfig: {
+    issuer: Config.AUTH0_ISSUER,
+    clientId: Config.AUTH0_CLIENT_ID,
+    audience: Config.AUTH0_AUDIENCE,
+    scope: Config.AUTH0_SCOPE,
+  },
+  sentry: {
+    enabled: Config.SENTRY_ENABLED === "true",
+    dsn: Config.SENTRY_DSN,
+    environment: APP_ENV,
+    sendPii: Config.SENTRY_SEND_PII === "true",
+    enableLogs: Config.SENTRY_ENABLE_LOGS === "true",
+    replaysSessionSampleRate: Number(Config.SENTRY_REPLAYS_SESSION_RATE ?? 0),
+    replaysOnErrorSampleRate: Number(Config.SENTRY_REPLAYS_ERROR_RATE ?? 0),
+  },
+  attestation: {
+    playIntegrityCloudProject: Config.PLAY_INTEGRITY_CLOUD_PROJECT ?? "",
+  },
+  apiUrls: {
+    uploadUrl: Config.UPLOAD_URL,
+    cardsUrl: Config.CARDS_URL,
+    walletGridUrl: Config.WALLET_GRID_URL,
+    bankUrl: Config.BANK_URL,
+    walletApiUrl: Config.WALLET_API_URL,
+    authUrl: Config.AUTH_URL,
+    marketUrl: Config.MARKET_URL,
+  },
+  localization: {
+    defaultResourceName: Config.DEFAULT_RESOURCE_NAME,
+  },
 };
 
-/**
- * Returns the config block for the environment this build targets — which is
- * what every call site wants, and what every call site currently does by
- * calling this with no argument. The parameter is retained so existing callers
- * keep compiling; it no longer selects anything.
- */
-export const getAllEnvData = (envName) => {
-  resolveEnvName(envName);
-  return activeEnv;
-};
+// Guard: every required field must be present. A missing value means the .env
+// file is incomplete — fail loudly at startup rather than making a silent
+// request to undefined.
+const REQUIRED = [
+  "AUTH0_ISSUER", "AUTH0_CLIENT_ID", "AUTH0_AUDIENCE",
+  "UPLOAD_URL", "CARDS_URL", "AUTH_URL",
+];
+const missing = REQUIRED.filter((k) => !Config[k]);
+if (missing.length) {
+  log.warn("[Environment] Missing required .env variables", { missing });
+}
 
-/** Name of the environment this build targets, e.g. "tst". */
-export const getCurrentEnvName = () => DEFAULT_ENV;
-
-/** True only for genuine production builds. Use to gate anything env-sensitive. */
-export const isProductionEnv = () => DEFAULT_ENV === "prod";
+export const getAllEnvData = (_envName) => env;
+export const getCurrentEnvName = () => APP_ENV;
+export const isProductionEnv = () => APP_ENV === "prod";

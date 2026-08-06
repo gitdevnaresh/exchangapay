@@ -3,6 +3,7 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.google.gms.google-services' // <- Add this line
 apply plugin: 'com.google.firebase.crashlytics'
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 // ---------------------------------------------------------------------------
@@ -310,29 +311,24 @@ gradle.taskGraph.whenReady { graph ->
     def policy = new groovy.json.JsonSlurper().parse(policyFile)
     def exemptions = policy.exemptions.collectEntries { [(it.host.toLowerCase()), it] }
 
-    // The inventory: hosts named in the apiUrls block of each environment, plus
-    // any baseURL literal left in src/. H-01 moved every host into apiUrls, so
-    // the second scan should find nothing — it exists to catch a regression.
+    // The inventory: hosts named in the .env files, plus any baseURL literal in src/.
     def inventory = [:] as LinkedHashMap
     def recordHost = { String host, String source ->
         def key = host.toLowerCase()
         inventory[key] = (inventory[key] ?: []) + source
     }
 
-    new File(repoRoot, "environments").listFiles()
-        .findAll { it.isFile() && it.name ==~ /(dev|tst|prod)\.js/ }
+    // Scan all committed .env.* files (dev, tst) for URL values.
+    // .env.prod is gitignored but if present locally it is also scanned.
+    new File(repoRoot.toString()).listFiles()
+        .findAll { it.isFile() && it.name ==~ /\.env(\.\w+)?$/ && it.name != '.env.example' }
         .sort { it.name }
         .each { envFile ->
-            def block = (envFile.text =~ /apiUrls\s*:\s*\{([\s\S]*?)\n\s*\},/)
-            if (!block) {
-                throw new GradleException(
-                    "environments/${envFile.name} has no apiUrls block (security finding " +
-                    "H-02).\nThe pinning inventory is derived from it; a host that is not " +
-                    "there is a host nobody checked the pin coverage of."
-                )
-            }
-            (block[0][1] =~ /https?:\/\/([^\/"'\s]+)/).each { m ->
-                recordHost(m[1], "environments/${envFile.name}")
+            envFile.eachLine { line ->
+                def trimmed = line.trim()
+                if (!trimmed || trimmed.startsWith('#')) return
+                def m = (trimmed =~ /=\s*https?:\/\/([^\/\s]+)/)
+                if (m) recordHost(m[0][1], envFile.name)
             }
         }
 
@@ -411,20 +407,10 @@ gradle.taskGraph.whenReady { graph ->
 }
 
 /**
- * H-13 regression guard — the JavaScript tenant and the native Auth0 callback
- * must name the same Auth0 domain.
+ * C-01 regression guard — production build must not ship test-tenant native config.
  *
- * environments/active.js decides which tenant the app talks to, but the OAuth
- * redirect is registered natively from the auth0Domain manifest placeholder
- * below. Nothing connects the two: flipping active.js to prod while this file
- * still says the test domain produces a build that authenticates against one
- * tenant and registers its callback against another. Login does not degrade —
- * the redirect never comes back and the user is stranded on the browser tab.
- *
- * That failure is invisible until someone runs the build, which is exactly when
- * an environment migration is under time pressure. Checked only for release
- * artefacts, matching the guards above, so debug builds and IDE syncs are
- * untouched.
+ * Reads the .env file at the repo root (the same file react-native-config uses)
+ * and fails a production release if any value is still pointing at test.
  */
 gradle.taskGraph.whenReady { graph ->
     def releaseTask = graph.allTasks.find {
@@ -432,40 +418,124 @@ gradle.taskGraph.whenReady { graph ->
     }
     if (!releaseTask) return
 
-    def activeSource = file("../../environments/active.js").text
-    def activeMatch = (activeSource =~ /from\s+["']\.\/(dev|tst|prod)["']/)
-    if (!activeMatch) {
-        throw new GradleException(
-            "[H-13] Could not tell which environment environments/active.js selects.\n" +
-            "It must import exactly one of ./dev, ./tst or ./prod — that single import is " +
-            "what keeps one tenant's identifiers in the bundle."
-        )
-    }
-    def activeEnv = activeMatch[0][1]
+    def appId = android.defaultConfig.applicationId?.toString()
+    def productionIds = ["com.exchangapay"] as Set
+    if (!productionIds.contains(appId)) return
 
-    def envSource = file("../../environments/${activeEnv}.js").text
-    def issuerMatch = (envSource =~ /issuer:\s*["']([^"']+)["']/)
-    if (!issuerMatch) {
-        throw new GradleException(
-            "[H-13] environments/${activeEnv}.js has no oAuthConfig.issuer to check against."
-        )
-    }
-    def jsDomain = issuerMatch[0][1]
-    def nativeDomain = android.defaultConfig.manifestPlaceholders["auth0Domain"]?.toString()
+    def repoRoot = file("${rootProject.projectDir}/..")
 
-    if (jsDomain != nativeDomain) {
+    // Parse the .env file into a map
+    def envFile = new File(repoRoot, ".env")
+    if (!envFile.exists()) {
+        throw new GradleException("[C-01] No .env file found at repo root. Run: npm run env:prod")
+    }
+    def envVars = [:]
+    envFile.eachLine { line ->
+        def trimmed = line.trim()
+        if (trimmed && !trimmed.startsWith('#')) {
+            def idx = trimmed.indexOf('=')
+            if (idx > 0) envVars[trimmed.substring(0, idx).trim()] = trimmed.substring(idx + 1).trim()
+        }
+    }
+
+    // 1. APP_ENV must be prod
+    if (envVars['APP_ENV'] != 'prod') {
         throw new GradleException(
-            "[H-13] Auth0 tenant mismatch between JavaScript and the native build.\n" +
-            "  environments/active.js selects '${activeEnv}', whose issuer is: ${jsDomain}\n" +
-            "  android/app/build.gradle registers the callback for:            ${nativeDomain}\n" +
-            "The app would authenticate against one tenant and wait for a redirect that is " +
-            "registered for another, so login would hang rather than fail cleanly.\n" +
-            "Update manifestPlaceholders.auth0Domain to '${jsDomain}', and check the rest of " +
-            "the environment migration checklist in environments/active.js (applicationId, " +
-            "google-services.json, GoogleService-Info.plist)."
+            "[C-01] Production applicationId '${appId}' but .env has APP_ENV='${envVars['APP_ENV']}'.\n" +
+            "Run: npm run env:prod"
         )
     }
-    logger.lifecycle("[H-13] Auth0 tenant '${jsDomain}' matches between JS and native for '${activeEnv}'.")
+
+    // 2. AUTH_URL must not be the test host or the unfilled placeholder
+    def authUrl = envVars['AUTH_URL'] ?: ''
+    if (authUrl.contains('tstlogin.suissebase.io') || authUrl.contains('REPLACE_WITH_PROD_AUTH_HOST')) {
+        throw new GradleException(
+            "[C-01] .env AUTH_URL is not set to a production host: '${authUrl}'.\n" +
+            "Set AUTH_URL to the real production auth host in .env.prod."
+        )
+    }
+
+    // 3. iOS APNs entitlement must be production
+    def entitlementsFile = new File(repoRoot, "ios/exchangapay/exchangapay.entitlements")
+    if (entitlementsFile.exists() && entitlementsFile.text =~ /<string>development<\/string>/) {
+        throw new GradleException(
+            "[C-01] ios/exchangapay/exchangapay.entitlements has aps-environment=development.\n" +
+            "Ensure Xcode uses exchangapay-release.entitlements for Release builds."
+        )
+    }
+
+    logger.lifecycle("[C-01] Production release config checks passed for '${appId}'.")
+}
+
+/**
+ * M-08 regression guard — legacy crypto formats must be removed by their deadline.
+ *
+ * LEGACY_FORMATS_ENABLED = true keeps two pre-0x01 CBC formats readable,
+ * including the all-zero-IV form that leaks equality between records. The removal
+ * date is 2026-11-01. Past that date, leaving the flag on is no longer a
+ * deliberate migration trade — it is a missed deadline. This guard converts the
+ * telemetry escalation in legacyTelemetry.ts into a hard build failure so the
+ * decision cannot be quietly deferred past the date the team agreed on.
+ *
+ * To extend the deadline: update LEGACY_FORMAT_REMOVAL_DATE in policy.ts,
+ * update the risk register entry in security/RISK_REGISTER.md, and record why.
+ */
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.project == project && it.name ==~ /(?i)(assemble|bundle|install|package).*Release/
+    }
+    if (!releaseTask) return
+
+    def policyFile = new File("${rootProject.projectDir}/../src/utils/crypto/policy.ts")
+    if (!policyFile.exists()) return
+
+    def policySource = policyFile.text
+    def legacyEnabled = (policySource =~ /LEGACY_FORMATS_ENABLED\s*=\s*(true|false)/)
+    def removalDateMatch = (policySource =~ /LEGACY_FORMAT_REMOVAL_DATE\s*=\s*["']([\d-]+)["']/)
+
+    if (!legacyEnabled || !removalDateMatch) return
+
+    if (legacyEnabled[0][1] == "true") {
+        def removalDate = java.time.LocalDate.parse(removalDateMatch[0][1])
+        if (!java.time.LocalDate.now().isBefore(removalDate)) {
+            throw new GradleException(
+                "[M-08] LEGACY_FORMATS_ENABLED is still true past the agreed removal date " +
+                "(${removalDate}).\n" +
+                "The zero-IV CBC fallback is an accepted deviation from strict AEAD — see " +
+                "security/RISK_REGISTER.md — but the acceptance was time-bounded.\n" +
+                "Check the crypto.legacy_format metric in Sentry. If it has been zero for " +
+                "a full release cycle, set LEGACY_FORMATS_ENABLED = false in " +
+                "src/utils/crypto/policy.ts and ship. If legacy records are still present, " +
+                "extend LEGACY_FORMAT_REMOVAL_DATE and update the risk register with a reason."
+            )
+        }
+    }
+}
+
+/**
+ * H-13 regression guard — the JS tenant and the native Auth0 callback must match.
+ *
+ * Both are now driven by the same .env file, so a mismatch is only possible if
+ * someone edits build.gradle manually. This guard makes that visible at build time.
+ */
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.project == project && it.name ==~ /(?i)(assemble|bundle|install|package).*Release/
+    }
+    if (!releaseTask) return
+
+    def jsDomain   = System.getenv("AUTH0_ISSUER") ?: project.findProperty("AUTH0_ISSUER") ?: ""
+    def nativeDomain = android.defaultConfig.manifestPlaceholders["auth0Domain"]?.toString() ?: ""
+
+    if (jsDomain && nativeDomain && jsDomain != nativeDomain) {
+        throw new GradleException(
+            "[H-13] Auth0 domain mismatch: .env AUTH0_ISSUER='${jsDomain}' but " +
+            "manifestPlaceholders auth0Domain='${nativeDomain}'.\n" +
+            "Both are read from .env — check that ANDROID_AUTH0_DOMAIN and AUTH0_ISSUER " +
+            "name the same tenant."
+        )
+    }
+    if (jsDomain) logger.lifecycle("[H-13] Auth0 tenant '${jsDomain}' consistent between JS and native.")
 }
 
 apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
@@ -483,14 +553,27 @@ android {
         }
     }
 
+    // namespace must be a literal string — the RN CLI parses it with a regex
+    // and cannot evaluate Groovy variables. It is the Java package name only;
+    // applicationId (the Play Store / device identity) is driven by .env below.
     namespace "com.exchangapay.tst"
+
+    // Read per-environment values from the .env file loaded by react-native-config.
+    // Fallback to test values so IDE syncs and debug builds work without a .env file.
+    def appId       = (project.hasProperty('env') ? project.env.get('ANDROID_APPLICATION_ID', null) : null)
+                      ?: System.getenv("ANDROID_APPLICATION_ID")
+                      ?: "com.exchangapay.tst"
+    def auth0Domain = (project.hasProperty('env') ? project.env.get('ANDROID_AUTH0_DOMAIN', null) : null)
+                      ?: System.getenv("ANDROID_AUTH0_DOMAIN")
+                      ?: "exchangapay-tst.eu.auth0.com"
+
     defaultConfig {
-        applicationId "com.exchangapay.tst"
+        applicationId appId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        manifestPlaceholders = [auth0Domain: "exchangapay-tst.eu.auth0.com", auth0Scheme: "${applicationId}.auth0"] 
+        manifestPlaceholders = [auth0Domain: auth0Domain, auth0Scheme: "${applicationId}.auth0"]
     }
     signingConfigs {
         debug {

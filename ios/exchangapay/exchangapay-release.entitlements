@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- C-01: production APNs environment. This file is used by Release builds only.
+	     Debug builds use exchangapay.entitlements (aps-environment=development).
+	     Wire this in Xcode: Target → Build Settings → Code Signing Entitlements
+	       Debug   → ios/exchangapay/exchangapay.entitlements
+	       Release → ios/exchangapay/exchangapay-release.entitlements
+	     A development entitlement on a production build causes APNs to silently
+	     reject device token registration — push notifications stop working with
+	     no error visible to the user or in logs. -->
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>

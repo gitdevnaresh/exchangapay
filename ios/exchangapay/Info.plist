@@ -28,8 +28,13 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
+		<!-- L-03: NSAllowsLocalNetworking removed. Setting it true permits cleartext
+		     to any local-network host, which is a broader exemption than this app
+		     needs — there is no local-network feature. Removing it (defaults to
+		     false) keeps the ATS policy consistent with the Android
+		     cleartextTrafficPermitted="false" base config. If a local-network
+		     feature is added in future, re-add this key with a comment explaining
+		     which feature requires it and why HTTPS is not viable. -->
 		<!-- H-03: certificate pinning. Mirrors the Android pin-set in
 		     android/app/src/main/res/xml/network_security_config.xml — the two
 		     MUST be updated together or the platforms diverge silently.
@@ -150,5 +155,29 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<!-- M-07: Universal Links for Auth0 callback. The associated-domains
+	     entitlement must also be added in Xcode (Signing & Capabilities >
+	     Associated Domains > applinks:exchangapay-tst.eu.auth0.com).
+	     Requires apple-app-site-association to be hosted at
+	     https://exchangapay-tst.eu.auth0.com/.well-known/apple-app-site-association
+	     (Auth0 hosts this automatically for custom domains; for auth0.com tenants
+	     it must be enabled in the Auth0 dashboard under
+	     Applications > [app] > Settings > iOS Universal Links).
+	     See security/M07_APPLINKS_SETUP.md. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>CFBundleURLName</key>
+			<string>auth0</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Legacy custom scheme — keep until Universal Links are verified,
+				     then remove this entry. -->
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER).auth0</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
