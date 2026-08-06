@@ -49,17 +49,19 @@ import { NativeModules, Platform } from "react-native";
 import { getAllEnvData } from "../../Environment";
 
 interface AttestationNativeModule {
-  requestToken?: (nonce: string, cloudProjectNumber?: string) => Promise<string>;
+  requestToken?: (
+    nonce: string,
+    cloudProjectNumber?: string
+  ) => Promise<string>;
   attest?: (nonce: string) => Promise<string>;
 }
 
-/** Tokens are short-lived by design; re-request rather than hold one for long. */
-const TOKEN_TTL_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 5000;
 
-let cachedToken: string | null = null;
-let cachedAt = 0;
-let inFlight: Promise<string | null> | null = null;
+// An attestation is tied to one server-issued nonce. Caching it, even briefly,
+// would allow the same assertion to be attached to two sensitive operations and
+// defeats the server's single-use/replay check.
+const inFlightByNonce = new Map<string, Promise<string | null>>();
 
 const getNativeModule = (): AttestationNativeModule | null => {
   const mod =
@@ -92,8 +94,9 @@ const getCloudProjectNumber = (): string | undefined => {
 };
 
 /**
- * Placeholder nonce. Replace with a server-issued, single-use value as soon as
- * the backend endpoint exists — a client-generated nonce does not prevent replay.
+ * Advisory-only fallback for deployments that have not enabled the server
+ * challenge contract yet. It must never be used by an enforcing backend: a
+ * client-generated value cannot make an attestation replay-resistant.
  */
 const generateNonce = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
@@ -123,39 +126,30 @@ const requestToken = async (nonce: string): Promise<string | null> => {
 };
 
 /**
- * Returns a fresh-enough attestation token, or null when attestation is
+ * Returns an attestation bound to `nonce`, or null when attestation is
  * unavailable, unconfigured or failing. Never throws, never rejects.
  *
- * Concurrent callers share one in-flight request — the API interceptor runs on
- * every request and Play Integrity is rate-limited, so fanning out would get the
- * app throttled.
+ * Only concurrent callers for the *same* nonce share work. A distinct
+ * high-risk operation must obtain a fresh assertion, even when it happens less
+ * than a minute after the previous one.
  */
 export const getAttestationToken = async (
   nonce?: string
 ): Promise<string | null> => {
   if (!isAttestationAvailable()) return null;
 
-  const now = Date.now();
-  if (cachedToken && now - cachedAt < TOKEN_TTL_MS) return cachedToken;
-  if (inFlight) return inFlight;
+  const requestNonce = nonce ?? generateNonce();
+  const existing = inFlightByNonce.get(requestNonce);
+  if (existing) return existing;
 
-  inFlight = requestToken(nonce ?? generateNonce())
-    .then((token) => {
-      if (token) {
-        cachedToken = token;
-        cachedAt = Date.now();
-      }
-      return token;
-    })
-    .finally(() => {
-      inFlight = null;
-    });
-
+  const inFlight = requestToken(requestNonce).finally(() => {
+    inFlightByNonce.delete(requestNonce);
+  });
+  inFlightByNonce.set(requestNonce, inFlight);
   return inFlight;
 };
 
-/** Call on logout — the token is bound to a device/session, not to the next user. */
+/** Call on logout — discard pending work tied to the previous user/session. */
 export const clearAttestationToken = (): void => {
-  cachedToken = null;
-  cachedAt = 0;
+  inFlightByNonce.clear();
 };

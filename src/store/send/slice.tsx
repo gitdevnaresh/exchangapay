@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { saveTransfer, getSendListDetails } from "../../store/send/thunk";
+import { getSendListDetails } from "../../store/send/thunk";
 
 const slice = createSlice({
   name: "send",
@@ -11,18 +11,6 @@ const slice = createSlice({
   },
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(saveTransfer.pending, (state) => {
-        state.loading = "pending";
-      })
-      .addCase(saveTransfer.fulfilled, (state, action) => {
-        const { config, ...payloadWithoutNonSerializable } = action.payload;
-        state.transferdetails = payloadWithoutNonSerializable;
-        state.loading = "fulfilled";
-      })
-      .addCase(saveTransfer.rejected, (state) => {
-        state.loading = "rejected";
-      });
     builder
       .addCase(getSendListDetails.pending, (state) => {
         state.loading = "pending";

@@ -538,6 +538,149 @@ gradle.taskGraph.whenReady { graph ->
     if (jsDomain) logger.lifecycle("[H-13] Auth0 tenant '${jsDomain}' consistent between JS and native.")
 }
 
+/**
+ * M-06 permission-footprint guard.
+ *
+ * The audit read AndroidManifest.xml and found microphone and broad storage
+ * access. The manifest was the wrong file to be sure with: it lists what the app
+ * asks for, while the APK ships the MERGED manifest, which is that plus whatever
+ * every AAR declares. In this project that difference is most of the list —
+ * Sumsub contributes microphone, both location permissions and WRITE_SETTINGS,
+ * and ShortcutBadger contributes eighteen launcher badge permissions, none of
+ * which appear anywhere in this repository.
+ *
+ * So this guard reads the merged manifest, after the merge, and holds it against
+ * security/android-permissions.json, where every permission has a reason and a
+ * runtime request path. Two ways to fail:
+ *
+ *   1. A permission is in the APK that the policy does not list. This is the
+ *      `npm install` case — a new dependency widens the footprint and nobody
+ *      notices until an audit.
+ *   2. A permission the policy records as removed is back. tools:node="remove"
+ *      is silent when it stops working: rename the permission, change merge
+ *      order, and the entry is simply ignored. This is how the microphone would
+ *      return without anyone editing a manifest.
+ *
+ * Release builds only, in keeping with the other guards in this file. If the
+ * merged manifest cannot be located the guard warns rather than fails — a
+ * changed AGP output layout should not be able to block a release.
+ */
+tasks.matching { it.name ==~ /(?i)process.*ReleaseMainManifest/ }.configureEach { manifestTask ->
+    manifestTask.doLast {
+        def policyFile = new File("${rootProject.projectDir}/../security/android-permissions.json")
+        if (!policyFile.exists()) {
+            throw new GradleException(
+                "security/android-permissions.json is missing (security finding M-06).\n" +
+                "It is the record of which permissions the APK ships and why. Without it, " +
+                "a permission that arrived with a dependency and a permission someone chose " +
+                "look exactly the same."
+            )
+        }
+        def policy = new groovy.json.JsonSlurper().parse(policyFile)
+
+        // Locate the merged manifest through the task's own outputs rather than a
+        // hardcoded intermediates path, which moves between AGP versions.
+        def candidates = []
+        manifestTask.outputs.files.each { f ->
+            if (f.isDirectory()) {
+                candidates.addAll(fileTree(dir: f, include: "**/AndroidManifest.xml").files)
+            } else if (f.name == "AndroidManifest.xml") {
+                candidates << f
+            }
+        }
+        def merged = candidates.find { it.exists() && it.text.contains("<manifest") }
+        if (!merged) {
+            logger.warn(
+                "[M-06] could not locate the merged manifest among the outputs of " +
+                "${manifestTask.name}; skipping the permission-footprint check. " +
+                "The policy in security/android-permissions.json was NOT verified for this build."
+            )
+            return
+        }
+
+        def appId = android.defaultConfig.applicationId?.toString() ?: ""
+        def declared = (merged.text =~ /<uses-permission(?:-sdk-23)?[^>]*android:name="([^"]+)"/)
+            .collect { it[1] }
+            .collect { appId && it.startsWith("${appId}.") ? '${applicationId}' + it.substring(appId.length()) : it }
+            .unique()
+
+        def documented = policy.permissions.collect { it.name } as Set
+        def removed = policy.removed.collectEntries { [(it.name), it] }
+        def patterns = policy.patterns.collect { [regex: ~(it.match as String), entry: it] }
+
+        // 1. Undocumented — in the APK, not in the policy.
+        def undocumented = declared.findAll { name ->
+            !documented.contains(name) && !patterns.any { name ==~ it.regex }
+        }
+        if (undocumented) {
+            throw new GradleException(
+                "These permissions ship in the APK but are not documented (security finding M-06):\n" +
+                undocumented.collect { "  ${it}" }.join("\n") +
+                "\n\nThey are in the MERGED manifest, so they may come from a dependency rather " +
+                "than from android/app/src/main/AndroidManifest.xml. To find the source:\n" +
+                "  app/build/outputs/logs/manifest-merger-release-report.txt\n\n" +
+                "Then either remove it with tools:node=\"remove\" in the app manifest and add it to\n" +
+                "the \"removed\" list, or add an entry to security/android-permissions.json giving\n" +
+                "its purpose and the code path that requests it at run time."
+            )
+        }
+
+        // 2. Resurrected — the policy says removed, the APK says otherwise.
+        def resurrected = declared.findAll { removed.containsKey(it) }
+        if (resurrected) {
+            throw new GradleException(
+                "These permissions are recorded as removed but are back in the APK " +
+                "(security finding M-06):\n" +
+                resurrected.collect { "  ${it}  <- ${removed[it].why}" }.join("\n") +
+                "\n\nA tools:node=\"remove\" entry in the app manifest has stopped taking effect, " +
+                "or a new dependency declares the permission in a way the removal does not cover.\n" +
+                "If the permission is now genuinely needed, move its entry from \"removed\" to " +
+                "\"permissions\" in security/android-permissions.json and record what requests it."
+            )
+        }
+
+        // 3. An entry with no reason is the omission this guard exists to prevent,
+        //    wearing a label. Same rule the H-02 pinning exemptions are held to.
+        (policy.permissions + policy.removed).each { entry ->
+            if (!entry.why?.trim()) {
+                throw new GradleException(
+                    "The permission policy entry for ${entry.name} has no 'why' " +
+                    "(security finding M-06)."
+                )
+            }
+        }
+        policy.permissions.each { entry ->
+            if (!entry.runtimeRequest?.trim()) {
+                throw new GradleException(
+                    "The permission policy entry for ${entry.name} does not say where it is " +
+                    "requested at run time (security finding M-06). Write 'none' and why, if it " +
+                    "is a normal permission that needs no request."
+                )
+            }
+        }
+
+        // 4. Soft signals: a stale inventory and an overdue review are worth saying
+        //    out loud, but neither is a reason to block a release.
+        def missing = documented.findAll { name ->
+            !name.startsWith('${') && !declared.contains(name)
+        }
+        if (missing) {
+            logger.warn(
+                "[M-06] the policy documents permissions that are no longer in the APK: " +
+                "${missing.join(', ')}. Remove the stale entries so the inventory stays readable."
+            )
+        }
+        if (policy.reviewBy && !java.time.LocalDate.parse(policy.reviewBy as String).isAfter(java.time.LocalDate.now())) {
+            logger.warn(
+                "[M-06] security/android-permissions.json was due for review on ${policy.reviewBy}. " +
+                "Re-check each entry against the features that actually shipped, then extend the date."
+            )
+        }
+
+        logger.lifecycle("[M-06] permission footprint verified: ${declared.size()} permissions, all documented.")
+    }
+}
+
 apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
 android {
     ndkVersion rootProject.ext.ndkVersion

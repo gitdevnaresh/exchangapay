@@ -14,6 +14,7 @@ import CopyCard from '../../components/CopyCard';
 import { ActivityIndicator } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { copyEphemeral } from '../../utils/clipboard';
+import { s } from '../../constants/theme/scale';
 
 const SendCryptoSuccess = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);

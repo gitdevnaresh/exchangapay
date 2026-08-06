@@ -112,21 +112,11 @@ const FilePreviewWithId: React.FC<FilePreviewProps> = ({
         }
     };
 
-    // const requestStoragePermissionForAndroid = async (): Promise<boolean> => {
-    //     try {
-    //         const permission = Platform.Version >= 33
-    //             ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
-    //             : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
-
-    //         const result = await request(permission);
-    //         if (result === RESULTS.GRANTED) return true;
-
-    //         //   showCustomToast({ message: "Storage permission denied.", type: ToastType.ERROR });
-    //         return false;
-    //     } catch (err) {
-    //         return false;
-    //     }
-    // };
+    // M-06: the dead requestStoragePermissionForAndroid() that used to sit here
+    // asked for READ_MEDIA_IMAGES on Android 13+. Downloads go through MediaStore
+    // (saveToDownloads), which needs no permission there, and requestAndroidPermission()
+    // below covers the only case that does — API 24-28. The permission is no longer
+    // declared; see security/android-permissions.json.
     const announceSavedFile = async (saved: SavedFile) => {
         // iOS has no shared Downloads folder, and on Android a file MediaStore
         // refused is on disk but invisible -- both need the share sheet.

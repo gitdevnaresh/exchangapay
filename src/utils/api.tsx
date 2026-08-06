@@ -37,9 +37,6 @@ import {
 const transactionApi = create({
   baseURL: getUrl("walletGridUrl"),
 });
-const transactionBankApi = create({
-  baseURL: getUrl("bankUrl"),
-});
 const authApi = create({
   baseURL: getUrl("authUrl"),
 });
@@ -66,7 +63,7 @@ const cardApi = create({
 
 // Our own backends: bearer token, client IP, device posture, idempotency and
 // redacted error capture.
-[transactionApi, transactionBankApi, authApi, api, cardApi].forEach((instance) =>
+[transactionApi, authApi, api, cardApi].forEach((instance) =>
   applyStandardInterceptors(instance)
 );
 
@@ -79,4 +76,4 @@ applyThirdPartyInterceptors(marketApi);
 // and the token now comes from the single Keychain accessor inside the request
 // interceptor (H-11) rather than a module-level variable that could go stale.
 
-export { transactionApi, authApi, marketApi, api, transactionBankApi, cardApi };
+export { transactionApi, authApi, marketApi, api, cardApi };

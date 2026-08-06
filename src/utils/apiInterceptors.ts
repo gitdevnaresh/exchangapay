@@ -34,6 +34,107 @@ import {
 
 const appName = getApplicationName();
 
+const ATTESTATION_CHALLENGE_HEADER = "X-Device-Attestation-Challenge";
+const ATTESTATION_ACTION_HEADER = "X-Device-Attestation-Action";
+
+type AttestationChallenge = {
+  challengeId: string;
+  nonce: string;
+};
+
+const getAttestationConfig = () => {
+  const env = getAllEnvData() as any;
+  return {
+    enforcementEnabled: env?.attestation?.enforcementEnabled === true,
+    challengePath:
+      env?.attestation?.challengePath ||
+      "api/v1/security/attestation/challenge",
+  };
+};
+
+const createAttestationError = (message: string): Error => {
+  const error: any = new Error(message);
+  error.code = "ERR_DEVICE_ATTESTATION_REQUIRED";
+  error.isDeviceAttestationError = true;
+  return error;
+};
+
+const requestUrl = (config: any, path: string): string => {
+  if (/^https?:\/\//i.test(path)) return path;
+  const baseUrl = String(config?.baseURL || "").replace(/\/+$/, "");
+  if (!baseUrl) {
+    throw createAttestationError(
+      "Unable to obtain a device-attestation challenge"
+    );
+  }
+  return `${baseUrl}/${path.replace(/^\/+/, "")}`;
+};
+
+const requestAction = (config: any): string => {
+  const method = String(config?.method || "POST").toUpperCase();
+  const path = String(config?.url || "")
+    .split(/[?#]/)[0]
+    .replace(/^\/+/, "");
+  return `${method} /${path}`;
+};
+
+/**
+ * Obtains a one-time nonce from the same API host that will consume the
+ * protected request. The request itself intentionally bypasses axios so it
+ * cannot recurse through this interceptor.
+ */
+const getServerAttestationChallenge = async (
+  config: any
+): Promise<AttestationChallenge> => {
+  const { challengePath } = getAttestationConfig();
+  const action = requestAction(config);
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+  if (config?.headers?.Authorization) {
+    headers.Authorization = String(config.headers.Authorization);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(requestUrl(config, challengePath), {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action }),
+    });
+  } catch {
+    throw createAttestationError(
+      "Unable to obtain a device-attestation challenge"
+    );
+  }
+  if (!response.ok) {
+    throw createAttestationError(
+      "Device attestation is unavailable. Please try again."
+    );
+  }
+
+  let payload: any;
+  try {
+    payload = await response.json();
+  } catch {
+    throw createAttestationError(
+      "Invalid device-attestation challenge response"
+    );
+  }
+  if (
+    typeof payload?.challengeId !== "string" ||
+    payload.challengeId.length < 16 ||
+    typeof payload?.nonce !== "string" ||
+    payload.nonce.length < 16
+  ) {
+    throw createAttestationError(
+      "Invalid device-attestation challenge response"
+    );
+  }
+  return { challengeId: payload.challengeId, nonce: payload.nonce };
+};
+
 /**
  * Resolves a base URL from the bundled environment.
  *
@@ -80,12 +181,35 @@ export const applySecurityHeaders = async (config: any) => {
   try {
     config.headers["X-Device-Risk"] = toRiskHeader(getIntegrityReport());
     if (!requiresAttestation(config?.url)) return;
-    const attestation = await getAttestationToken();
+    const { enforcementEnabled } = getAttestationConfig();
+    const challenge = enforcementEnabled
+      ? await getServerAttestationChallenge(config)
+      : null;
+    // A supplied nonce is always server-issued. In advisory mode this remains
+    // compatible with deployments that have not rolled out the endpoint yet;
+    // enforcement mode never permits a client-generated nonce.
+    const attestation = await getAttestationToken(challenge?.nonce);
     if (attestation) {
       config.headers["X-Device-Attestation"] = attestation;
     }
+    if (challenge) {
+      config.headers[ATTESTATION_CHALLENGE_HEADER] = challenge.challengeId;
+      config.headers[ATTESTATION_ACTION_HEADER] = requestAction(config);
+    }
+    if (enforcementEnabled && !attestation) {
+      throw createAttestationError(
+        "Device attestation is unavailable. Please try again on a supported device."
+      );
+    }
   } catch {
-    // Never let device posture break the request path.
+    // The rollout defaults to advisory mode so existing users keep working.
+    // Once the backend challenge endpoint is enabled, missing/invalid
+    // attestation is a hard failure — sending the sensitive request would
+    // recreate the exact bypass this control exists to prevent.
+    if (getAttestationConfig().enforcementEnabled)
+      throw createAttestationError(
+        "Device attestation is required for this action. Please try again."
+      );
   }
 };
 

@@ -44,11 +44,10 @@
   app/build.gradle and __tests__/pinningCoverage.test.ts. Read that file rather than
   trusting this comment to stay current.
 
-  In short, as of 2026-08-05: devapi.exchangapay.com is on a different CA (Sectigo) so
-  it cannot share these pins; Auth0, Sentry, Sumsub and CoinGecko rotate certificates on
-  their own schedule with no notice to us; and the four legacy hosts named in H-02
-  (neobank / neowalletgrid / neowalletapi.azurewebsites.net, tstlogin.suissebase.io)
-  return NXDOMAIN — they cannot be pinned because they no longer exist.
+  In short, the obsolete development, Azure and Suissebase hosts were removed from the
+  app configuration. Auth0, Sentry, Sumsub and CoinGecko remain third-party services
+  with independently rotating certificates; their documented exemptions are reviewed
+  in security/pinning-policy.json.
 
   ANY HOST ADDED TO environments/*.js MUST BE PINNED HERE, ON iOS, OR EXEMPTED.
   Compute the hashes with ./scripts/compute-spki-pins.sh; add to both platforms or the

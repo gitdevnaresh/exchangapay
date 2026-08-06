@@ -1,6 +1,6 @@
 import { get } from "../utils/ApiService";
 // M-09: changePassword was removed. It called api.put() (the unhardened
-// neowalletapi instance — no bearer token, no attestation, no pinning) against
+// legacy API instance — no bearer token, no attestation, no pinning) against
 // a password-change endpoint. Dead code that reaches a security endpoint over
 // an unhardened channel has negative value: a future developer would wire it up
 // and inherit the vulnerability silently.
@@ -15,7 +15,7 @@ import { get } from "../utils/ApiService";
 //   exists, the route just must not bypass it.
 //
 // Backend action required: confirm PUT api/v1/Customer/ChangePWD on
-// neowalletapi.azurewebsites.net requires authentication and step-up.
+// the first-party API requires authentication and step-up.
 // If it does not, that is a Critical backend finding independent of this client.
 const SecurityService = {
   getResetPassword: async () => {

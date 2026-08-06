@@ -388,10 +388,15 @@ export const trimValues = (obj: any) => {
   return trimmedObj;
 };
 
-// Derived from the single source of truth rather than a second hardcoded literal,
-// which could drift out of step with the backend the app is actually talking to
-// and select mainnet address validation against a testnet backend, or vice versa.
-const ENV = getAllEnvData().envName;
+const getRuntimeEnv = (): string => {
+  try {
+    return getAllEnvData().envName;
+  } catch (error) {
+    // During startup the native env module may not yet be ready, so fall back
+    // to the most conservative environment and avoid crashing the bundle.
+    return "tst";
+  }
+};
 
 const mainnetAddressRegex = {
   btc: /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}|bc1p[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58})$/,
@@ -422,8 +427,13 @@ const testnetAddressRegex = {
   "trc-20": /^(T[1-9A-HJ-NP-Za-km-z]{33}|41[a-fA-F0-9]{40})$/, // Tron testnets often use mainnet format
   sol: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, // Solana testnets use mainnet format
 };
-const addressRegex: any =
-  ENV === "tst" || ENV === "prod" ? mainnetAddressRegex : testnetAddressRegex;
+
+const getAddressRegex = (): any => {
+  const envName = getRuntimeEnv();
+  return envName === "tst" || envName === "prod"
+    ? mainnetAddressRegex
+    : testnetAddressRegex;
+};
 
 // Assuming you have an addressRegex object defined somewhere, like:
 // const addressRegex = {
@@ -452,12 +462,12 @@ export const validateCryptoAddress = (
   }
 
   // 3. If the network is NOT TRC-20 or Polygon, allow it by returning true.
-  // This is the main change from the original code.
   if (!networkKey) {
     return true;
   }
 
   // 4. If it IS a network we need to validate, proceed with the regex check.
+  const addressRegex = getAddressRegex();
   const regex = addressRegex[networkKey];
 
   // If for some reason a regex isn't defined for a network we want to validate,

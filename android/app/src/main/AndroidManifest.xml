@@ -1,14 +1,51 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
  xmlns:tools="http://schemas.android.com/tools">
 
+  <!-- ===================================================================
+       M-06 — permission footprint.
+
+       What this file declares is not what the APK ships. Most of the real
+       footprint arrives from AARs the app never names: Sumsub alone contributes
+       microphone, both location permissions and WRITE_SETTINGS, and ShortcutBadger
+       contributes eighteen launcher badge permissions. Reading this file
+       therefore tells you what was asked for, not what was granted — which is
+       how a microphone permission nobody wanted came to be flagged in an audit.
+
+       The record that covers the whole merged manifest, with a purpose and a
+       runtime request path for every permission, is:
+
+           security/android-permissions.json
+
+       It is enforced, not documentation: the release build reads the merged
+       manifest and fails if it contains a permission the policy does not list,
+       or if one of the permissions removed below has come back. Adding a
+       dependency that wants a new permission is now a decision someone records,
+       rather than something that happens by running `npm install`.
+       =================================================================== -->
+
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Document capture and QR scanning. Requested at run time in
+       src/components/qrScanner.tsx and the KYC/profile screens via
+       react-native-permissions PERMISSIONS.ANDROID.CAMERA. -->
   <uses-permission android:name="android.permission.CAMERA" />
-  <!-- The configured KYC and app flows do not record audio. Prevent Sumsub's
-       transitive Android dependency from adding microphone access to the APK. -->
-  <uses-permission
-    android:name="android.permission.RECORD_AUDIO"
-    tools:node="remove" />
-  <!-- Legacy storage permissions are only applicable before Android 13. -->
+
+  <!-- Legacy storage. These two entries exist to CAP declarations the app does
+       not control: react-native-blob-util declares READ_EXTERNAL_STORAGE and
+       react-native-fs declares WRITE_EXTERNAL_STORAGE with no maxSdkVersion at
+       all. tools:replace narrows them to the API levels where they still do
+       something. Deleting these entries does not remove the permissions — it
+       restores the libraries' unbounded versions, which is strictly worse.
+
+       WRITE is live only on API 24-28, where the DownloadManager path in
+       src/utils/tools.js writes into the public Downloads directory; it is
+       requested at run time by requestAndroidPermission() there, which returns
+       early on API 29+. Everything above that goes through MediaStore
+       (src/utils/fileDownload.ts), which needs no permission.
+
+       READ is capped at 32 because READ_MEDIA_IMAGES supersedes it on 33+.
+       Nothing in the app requests it: image selection uses the Android Photo
+       Picker (react-native-image-picker v8 -> AndroidX PickVisualMedia), which
+       grants per-item access without any storage permission. -->
   <uses-permission
     android:name="android.permission.READ_EXTERNAL_STORAGE"
     android:maxSdkVersion="32"
@@ -17,18 +54,54 @@
     android:name="android.permission.WRITE_EXTERNAL_STORAGE"
     android:maxSdkVersion="28"
     tools:replace="android:maxSdkVersion" />
-  <!-- Android 13+ replacement for reading an image selected outside the system picker. -->
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
   <uses-permission android:name="android.permission.VIBRATE"/>
+  <!-- Requested at run time in App.tsx. -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <!-- ===== Removed. Almost all of these are declared by a dependency. =====
+
+       tools:node="remove" is the only way to keep those out of the APK, and each
+       one is a runtime prompt or a Play listing entry the app would otherwise
+       have to justify. If a feature ever needs one back, delete its block here
+       AND add it to security/android-permissions.json with a reason — the
+       release guard fails on a permission that is present but undocumented. -->
+
+  <!-- M-06: microphone. Sumsub declares RECORD_AUDIO for its Video Ident flow,
+       which is not part of the configured KYC journey — no reviewed feature path
+       records audio. Re-enable this only together with that flow. -->
+  <uses-permission
+    android:name="android.permission.RECORD_AUDIO"
+    tools:node="remove" />
+
+  <!-- M-06: photo library. Removed because nothing requests it. The app's only
+       image selection is launchImageLibrary(), which uses the system Photo
+       Picker and returns a URI the app can already read; READ_MEDIA_IMAGES
+       would add an Android 13+ "Photos and videos" prompt that buys the app
+       access to the entire gallery it never reads. Unlike every other entry in
+       this section, this one was declared here rather than by a dependency —
+       removing it removes it outright. -->
+  <uses-permission
+    android:name="android.permission.READ_MEDIA_IMAGES"
+    tools:node="remove" />
+
+  <!-- M-06: WRITE_SETTINGS, from the Sumsub SDK, which annotates it in its own
+       manifest as "Required by older versions of Google Play services to create
+       IID tokens". It lets an app modify system settings and is the most
+       alarming line in the merged manifest of a banking app. Current Play
+       services do not need it, minSdkVersion is 24, and no code in this app
+       opens the settings screen through which a user would grant it. -->
+  <uses-permission
+    android:name="android.permission.WRITE_SETTINGS"
+    tools:node="remove" />
+
   <!-- Local notifications do not need a persistent CPU wake lock. Remove any
        declaration contributed by the legacy notification dependency as well. -->
   <uses-permission
     android:name="android.permission.WAKE_LOCK"
     tools:node="remove" />
-  <!-- These are contributed by SDKs but are not used by the app. Location is
-       not part of the configured KYC flow; notifications do not use alarms;
-       and no overlay window is required. -->
+  <!-- Location is not part of the configured KYC flow (Sumsub declares both);
+       notifications do not use exact alarms; no overlay window is required. -->
   <uses-permission
     android:name="android.permission.ACCESS_COARSE_LOCATION"
     tools:node="remove" />

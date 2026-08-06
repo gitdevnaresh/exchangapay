@@ -10,10 +10,6 @@ AUTH0_SCOPE=openid profile email enroll offline_access
 # ── API hosts ────────────────────────────────────────────────────────────────
 UPLOAD_URL=https://tstapi.exchangapay.com/
 CARDS_URL=https://tstapi.exchangapay.com/
-WALLET_GRID_URL=https://neowalletgrid.azurewebsites.net/
-BANK_URL=https://neobank.azurewebsites.net/
-WALLET_API_URL=https://neowalletapi.azurewebsites.net/
-AUTH_URL=https://tstlogin.suissebase.io
 MARKET_URL=https://api.coingecko.com/
 
 # ── Sentry ───────────────────────────────────────────────────────────────────

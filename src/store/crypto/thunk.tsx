@@ -13,19 +13,6 @@ export const getMarketCoins = async () => {
     };
   }
 };
-export const saveNotes = async (obj: any) => {
-  try {
-    const data = await CryptoServices.saveNotes(obj);
-    return data;
-
-  } catch (error: any) {
-    crashlytics().recordError(error);
-    return {
-      status: false,
-      msg: formatError(error),
-    };
-  }
-};
 export const getCryptoTotalBalance = async () => {
   try {
     const data = await CryptoServices.getCryptoTotalBalance();
@@ -40,17 +27,6 @@ export const getCryptoTotalBalance = async () => {
 export const getCryptoCoinsData = async () => {
   try {
     const data = await CryptoServices.getCryptoCoinsData();
-    return data;
-  } catch (error: any) {
-    crashlytics().recordError(error);
-    return {
-      status: false,
-    };
-  }
-};
-export const getCryptoTransactions = async () => {
-  try {
-    const data = await CryptoServices.getCryptoTransactions();
     return data;
   } catch (error: any) {
     crashlytics().recordError(error);
@@ -96,28 +72,6 @@ export const getCryptoDeposit = async (walletCode: any, network: any) => {
 export const getCommonCrypto = async (network: any) => {
   try {
     const data = await CryptoServices.getCommonCrypto(network);
-    return data;
-  } catch (error: any) {
-    crashlytics().recordError(error);
-    return {
-      status: false,
-    };
-  }
-};
-export const getCryptoTransactionsDownload = async (id: any, type: any) => {
-  try {
-    const data = await CryptoServices.getCryptoTransactionsDownload(id, type);
-    return data;
-  } catch (error: any) {
-    crashlytics().recordError(error);
-    return {
-      status: false,
-    };
-  }
-};
-export const getCryptoTransactionsUpdates = async (id: any) => {
-  try {
-    const data = await CryptoServices.getCryptoTransactionsUpdates(id);
     return data;
   } catch (error: any) {
     crashlytics().recordError(error);

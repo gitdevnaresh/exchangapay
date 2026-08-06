@@ -28,13 +28,33 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
-		<!-- L-03: NSAllowsLocalNetworking removed. Setting it true permits cleartext
-		     to any local-network host, which is a broader exemption than this app
-		     needs — there is no local-network feature. Removing it (defaults to
-		     false) keeps the ATS policy consistent with the Android
-		     cleartextTrafficPermitted="false" base config. If a local-network
-		     feature is added in future, re-add this key with a comment explaining
-		     which feature requires it and why HTTPS is not viable. -->
+		<!-- L-03 / M-07: NSAllowsLocalNetworking is deliberately absent here, and
+		     absent means false. Setting it true permits cleartext HTTP to every
+		     .local name, unqualified hostname and RFC 1918 address — a far broader
+		     exemption than a financial app with two pinned HTTPS hosts has any use
+		     for, and one that would let a future feature (or a dependency) consume
+		     plaintext from an attacker-controlled box on the user's Wi-Fi. Its
+		     absence keeps this policy consistent with the Android
+		     cleartextTrafficPermitted="false" base config.
+
+		     React Native does need it in development: a debug build on a physical
+		     device fetches its bundle and opens its HMR websocket over
+		     http://<mac-lan-ip>:8081. An Info.plist holds one value per key across
+		     all configurations, so that exemption cannot live in this file without
+		     also shipping. It is instead injected into the *built* Info.plist
+		     inside the .app by ios/scripts/ats-local-networking.sh, which runs as
+		     the "[M-07] ATS local networking (Debug only)" build phase and adds the
+		     key only when CONFIGURATION=Debug. For every other configuration the
+		     same script strips the key and fails the build if any cleartext
+		     exemption survives in the built product.
+
+		     Do not add NSAllowsLocalNetworking, or an NSExceptionDomains entry with
+		     NSExceptionAllowsInsecureHTTPLoads, to this file. Two build phases
+		     reject it: the one above, and "[H-07] Release security guards", which
+		     re-reads both this file and the built product before a release build
+		     completes. A genuine local-network feature would need its own narrowly
+		     scoped NSExceptionDomains entry plus a written reason here — not this
+		     key, which opens the whole local network. -->
 		<!-- H-03: certificate pinning. Mirrors the Android pin-set in
 		     android/app/src/main/res/xml/network_security_config.xml — the two
 		     MUST be updated together or the platforms diverge silently.
@@ -43,9 +63,6 @@
 		     Primary is the GeoTrust TLS RSA CA G1 intermediate that issues both
 		     hosts; backup is DigiCert Global Root G2 so a reissue from a different
 		     DigiCert intermediate still validates.
-
-		     devapi.exchangapay.com is intentionally absent: it is issued by Sectigo,
-		     a different CA, and pinning it against these hashes would break it.
 
 		     H-02 — WHAT IS NOT PINNED, AND WHY: security/pinning-policy.json, one
 		     entry per host with a reason and a review date. It is enforced, not

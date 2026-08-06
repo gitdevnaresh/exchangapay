@@ -1,7 +1,7 @@
 
 import { update } from 'lodash';
 import { get, post, put } from '../utils/ApiService';
-import { marketApi, api, transactionApi, transactionBankApi } from '../utils/api';
+import { marketApi, api, transactionApi } from '../utils/api';
 
 
 const CryptoServices = {
@@ -14,23 +14,11 @@ const CryptoServices = {
     getCryptoCoinsData: async () => {
         return api.get(`api/v1/Wallets/CryptoPortFolio/Exchange`)
     },
-    getCryptoTransactions: async () => {
-        return transactionBankApi.get(`api/v1/Bank/CryptoTranscations`)
-    },
     getAllCryptoTransactions: async () => {
         return transactionApi.get(`api/v1/Transaction/Customers/All/All/All/All/All//?page=1&pageSize=10`)
     },
     getCryptoTransactionsDetails: async (id: any, type: any) => {
         return api.get(`api/v1/Transactions/TemplatesTranction/${id}/${type}`)
-    },
-    getCryptoTransactionsUpdates: async (id: any) => {
-        return transactionBankApi.get(`api/v1/Bank/StatusHistory/${id}`)
-    },
-    getCryptoTransactionsDownload: async (id: any, type: any) => {
-        return transactionBankApi.get(`api/v1/Bank/TransationDetailsDownload/${id}/${type}`)
-    },
-    saveNotes: async (body: any) => {
-        return transactionBankApi.put('api/v1/Bank/SaveNotes', body);
     },
     getCryptoWallets: async () => {
         return get(`/api/v1/ExchangeWallet/CryptoWallets`)
@@ -100,7 +88,6 @@ const CryptoServices = {
 
 }
 export default CryptoServices;
-
 
 
 

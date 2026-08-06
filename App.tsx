@@ -49,27 +49,36 @@ import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 import * as Sentry from "@sentry/react-native";
 import { version as appVersion } from './package.json';
 
-const { sentry: sentryConfig } = getAllEnvData();
 const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getBuildNumber()}`;
 
-// H-08: the options — including the beforeSend scrubber, the consent gate and
-// the absence of Session Replay — are built in src/utils/telemetry so they can
-// be asserted by tests rather than reviewed by eye. feedbackIntegration is
-// user-initiated and captures nothing on its own; anything screen-capturing
-// passed here is filtered out by buildSentryOptions.
-if (isSentryEnabled(sentryConfig)) {
-  Sentry.init(
-    buildSentryOptions(sentryConfig, releaseName, [
-      Sentry.feedbackIntegration(),
-    ])
-  );
-}
 // Safety check
 if (!store) {
   log.error("Store is undefined! This will cause the app to crash.");
 }
 
 export default Sentry.wrap(function App() {
+  const [sentryConfig, setSentryConfig] = React.useState<any>(null);
+  const sentryInitialized = React.useRef(false);
+
+  React.useEffect(() => {
+    try {
+      const envData = getAllEnvData();
+      setSentryConfig(envData.sentry);
+    } catch (error) {
+      log.error("Failed to load environment config", error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (sentryConfig && !sentryInitialized.current && isSentryEnabled(sentryConfig)) {
+      Sentry.init(
+        buildSentryOptions(sentryConfig, releaseName, [
+          Sentry.feedbackIntegration(),
+        ])
+      );
+      sentryInitialized.current = true;
+    }
+  }, [sentryConfig]);
   const [theme, setTheme] = React.useState<"light" | "dark">("dark");
   const [isUpdate, setIsUpdate] = React.useState<boolean>(false);
   const [isForceUpdate, setIsForceUpdate] = React.useState<boolean>(false);

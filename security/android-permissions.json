@@ -1,0 +1,201 @@
+{
+  "finding": "M-06",
+  "purpose": [
+    "The permission footprint of the shipped APK, with a reason and a runtime request path for every entry.",
+    "Read android/app/src/main/AndroidManifest.xml and you learn what the app asked for. Read this file and you learn what it ships: most of the list below is contributed by AARs the app never names. Sumsub alone brings microphone, both location permissions and WRITE_SETTINGS; ShortcutBadger brings eighteen launcher badge permissions.",
+    "The release build enforces this file against the MERGED manifest (see the M-06 guard in android/app/build.gradle). A permission that appears without an entry here fails the build, and so does a permission listed under 'removed' that has come back."
+  ],
+  "lastReviewed": "2026-08-06",
+  "reviewBy": "2027-08-06",
+
+  "permissions": [
+    {
+      "name": "android.permission.INTERNET",
+      "declaredBy": "app manifest",
+      "why": "Every API call. Normal permission, granted at install.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.CAMERA",
+      "declaredBy": "app manifest; also Sumsub",
+      "why": "KYC document capture, profile photo, and QR scanning for crypto payee addresses.",
+      "runtimeRequest": "src/components/qrScanner.tsx, src/screens/Addressbook/AddCryptoPayee.tsx, src/screens/Profile/editprofile.tsx, src/screens/Profile/addKycInfomation.tsx, src/screens/cards/kycAddress.tsx, src/components/FileUpload/fileUpload.tsx - react-native-permissions PERMISSIONS.ANDROID.CAMERA"
+    },
+    {
+      "name": "android.permission.READ_EXTERNAL_STORAGE",
+      "declaredBy": "react-native-blob-util (unbounded); capped to maxSdkVersion 32 by the app manifest",
+      "why": "Not used by any app code path - image selection goes through the Android Photo Picker, which needs no permission. The app manifest entry exists only to cap the library's unbounded declaration at the last API level where the permission still means anything (READ_MEDIA_IMAGES supersedes it on 33+). Deleting the app entry restores the library's uncapped version.",
+      "runtimeRequest": "none - never requested",
+      "maxSdkVersion": 32
+    },
+    {
+      "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+      "declaredBy": "react-native-blob-util and react-native-fs (unbounded); capped to maxSdkVersion 28 by the app manifest",
+      "why": "Live only on API 24-28, where downloadFileFromUrl() hands DownloadManager a path in the public Downloads directory. On API 29+ scoped storage applies and the download path switches to MediaStore (src/utils/fileDownload.ts), which needs no permission.",
+      "runtimeRequest": "requestAndroidPermission() in src/utils/tools.js, which returns true immediately on Platform.Version >= 29",
+      "maxSdkVersion": 28
+    },
+    {
+      "name": "android.permission.VIBRATE",
+      "declaredBy": "app manifest",
+      "why": "Notification vibration. Normal permission.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.POST_NOTIFICATIONS",
+      "declaredBy": "app manifest",
+      "why": "Transaction and case-update push notifications on Android 13+.",
+      "runtimeRequest": "App.tsx - PermissionsAndroid.request(POST_NOTIFICATIONS)"
+    },
+    {
+      "name": "android.permission.USE_BIOMETRIC",
+      "declaredBy": "react-native-keychain",
+      "why": "Biometric unlock of the keychain entries holding session material.",
+      "runtimeRequest": "none - the biometric prompt is the grant"
+    },
+    {
+      "name": "android.permission.USE_FINGERPRINT",
+      "declaredBy": "react-native-keychain",
+      "why": "Pre-Android-9 predecessor of USE_BIOMETRIC. Deprecated but harmless; minSdkVersion is 24, so it still applies to part of the supported range.",
+      "runtimeRequest": "none - the biometric prompt is the grant"
+    },
+    {
+      "name": "android.permission.ACCESS_NETWORK_STATE",
+      "declaredBy": "@react-native-community/netinfo; also Sumsub",
+      "why": "Offline detection and retry behaviour. Normal permission.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.ACCESS_WIFI_STATE",
+      "declaredBy": "@react-native-community/netinfo",
+      "why": "Connection-type reporting in NetInfo. Normal permission. Does not expose scan results or SSIDs without location permission, which this app removes.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
+      "declaredBy": "react-native-blob-util",
+      "why": "Lets DownloadManager fetch without forcing a status-bar notification. Normal permission.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.RECEIVE_BOOT_COMPLETED",
+      "declaredBy": "androidx.work:work-runtime (via Firebase messaging)",
+      "why": "Lets WorkManager restore scheduled work after a reboot, which is how FCM retries token registration. Normal permission.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.FOREGROUND_SERVICE",
+      "declaredBy": "androidx.work:work-runtime (via Firebase messaging)",
+      "why": "Required by WorkManager for expedited work. Normal permission.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.NFC",
+      "declaredBy": "com.sumsub.sns:idensic-mobile-sdk",
+      "why": "Sumsub reads the chip in an ePassport or eID when the verification level asks for it. Kept because it is the vendor SDK's own capability and disabling it would break that document type; it is a normal permission with no runtime prompt. Revisit if the Sumsub level in use is confirmed never to read chips.",
+      "runtimeRequest": "none - normal permission, handled inside the Sumsub SDK"
+    },
+    {
+      "name": "android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS",
+      "declaredBy": "app.notifee:core, capped at maxSdkVersion 30 by notifee itself",
+      "why": "Notifee annotates it as a workaround for Xiaomi devices, which otherwise will not show heads-up notifications by default (invertase/notifee#296). Signature-level from API 31, hence the cap; on the range where it applies it only allows collapsing the notification shade.",
+      "runtimeRequest": "none - handled inside notifee",
+      "maxSdkVersion": 30
+    },
+    {
+      "name": "android.permission.ACCESS_NOTIFICATION_POLICY",
+      "declaredBy": "app.notifee:core",
+      "why": "Lets notifee read and set Do Not Disturb behaviour for its notification channels. Normal permission - it grants no access to the content of notifications, the app's own or anyone else's.",
+      "runtimeRequest": "none - normal permission"
+    },
+    {
+      "name": "android.permission.READ_APP_BADGE",
+      "declaredBy": "me.leolin:ShortcutBadger (via react-native-push-notification)",
+      "why": "App icon badge counts. See the badge pattern entry below.",
+      "runtimeRequest": "none"
+    },
+    {
+      "name": "com.google.android.c2dm.permission.RECEIVE",
+      "declaredBy": "com.google.firebase:firebase-messaging",
+      "why": "Receive FCM pushes. Signature-level permission held by Play services.",
+      "runtimeRequest": "none"
+    },
+    {
+      "name": "${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+      "declaredBy": "androidx.core",
+      "why": "AndroidX-generated, app-private permission that keeps dynamically registered receivers from being exported. Defensive, not a capability.",
+      "runtimeRequest": "none"
+    },
+    {
+      "name": "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
+      "declaredBy": "com.android.installreferrer (via Firebase analytics)",
+      "why": "Binds the Play Store install-referrer service for attribution. Signature-level, granted only to Play.",
+      "runtimeRequest": "none"
+    }
+  ],
+
+  "patterns": [
+    {
+      "match": "^(com\\.(android\\.launcher|sec\\.android\\.provider\\.badge|htc\\.launcher|sonyericsson\\.home|sonymobile\\.home|anddoes\\.launcher|majeur\\.launcher|huawei\\.android\\.launcher|oppo\\.launcher)|me\\.everything\\.badger)\\.permission\\..*$",
+      "declaredBy": "me.leolin:ShortcutBadger (via react-native-push-notification)",
+      "why": "Eighteen OEM-specific launcher permissions for setting the app icon badge count. Each is defined by a launcher app, not by Android: they produce no runtime prompt, appear on no Play listing as sensitive, and grant nothing on a device whose launcher does not define them. Kept rather than removed because they are inert and stripping them individually is a maintenance cost with no privacy return. Removing react-native-push-notification, which notifee has largely superseded here, would remove all of them at once - that is the real fix and it is a dependency decision, not a manifest one."
+    }
+  ],
+
+  "removed": [
+    {
+      "name": "android.permission.RECORD_AUDIO",
+      "declaredBy": "com.sumsub.sns:idensic-mobile-sdk",
+      "why": "M-06. Sumsub declares microphone access for its Video Ident flow, which is not part of the configured KYC journey. No reviewed feature path records audio.",
+      "restoreIf": "Video Ident, in-app voice support, or any audio capture is enabled - restore this together with the feature, not ahead of it."
+    },
+    {
+      "name": "android.permission.READ_MEDIA_IMAGES",
+      "declaredBy": "app manifest (nothing else declares it)",
+      "why": "M-06. Nothing requests it. Image selection is launchImageLibrary() from react-native-image-picker v8, which uses the AndroidX Photo Picker (PickVisualMedia) and returns a URI the app can already read. Declaring it added an Android 13+ 'Photos and videos' prompt granting access to the whole gallery for a capability the app already had without it.",
+      "restoreIf": "a feature needs to enumerate or read gallery images outside the system picker - prefer the picker or SAF first."
+    },
+    {
+      "name": "android.permission.WRITE_SETTINGS",
+      "declaredBy": "com.sumsub.sns:idensic-mobile-sdk",
+      "why": "M-06. Annotated in Sumsub's own manifest as 'Required by older versions of Google Play services to create IID tokens'. It permits modifying system settings and is the most alarming line in the merged manifest of a banking app. Current Play services do not need it, minSdkVersion is 24, and no code opens the ACTION_MANAGE_WRITE_SETTINGS screen through which a user would grant it - so it could never have been granted anyway.",
+      "restoreIf": "Sumsub support attributes a concrete failure to its absence."
+    },
+    {
+      "name": "android.permission.WAKE_LOCK",
+      "declaredBy": "legacy notification dependency",
+      "why": "Local notifications do not need a persistent CPU wake lock.",
+      "restoreIf": "a background job needs to hold the CPU awake."
+    },
+    {
+      "name": "android.permission.ACCESS_COARSE_LOCATION",
+      "declaredBy": "com.sumsub.sns:idensic-mobile-sdk",
+      "why": "Location is not part of the configured KYC flow.",
+      "restoreIf": "a Sumsub level requiring geolocation, or a fraud control that needs device location, is enabled."
+    },
+    {
+      "name": "android.permission.ACCESS_FINE_LOCATION",
+      "declaredBy": "com.sumsub.sns:idensic-mobile-sdk",
+      "why": "As above.",
+      "restoreIf": "as above."
+    },
+    {
+      "name": "android.permission.SCHEDULE_EXACT_ALARM",
+      "declaredBy": "notification dependency",
+      "why": "Notifications are push-driven; nothing schedules an exact alarm. Play requires a declared justification for this permission.",
+      "restoreIf": "a feature needs alarm-precision local scheduling."
+    },
+    {
+      "name": "android.permission.SYSTEM_ALERT_WINDOW",
+      "declaredBy": "notification dependency",
+      "why": "No overlay window is drawn. A high-risk permission for a financial app - overlays are the mechanism behind tapjacking.",
+      "restoreIf": "never, without a security review."
+    },
+    {
+      "name": "com.google.android.gms.permission.AD_ID",
+      "declaredBy": "Firebase analytics",
+      "why": "The app does not advertise or use the advertising ID; declaring it triggers a Play Data Safety disclosure that would be inaccurate.",
+      "restoreIf": "advertising attribution is deliberately adopted."
+    }
+  ]
+}
