@@ -239,7 +239,7 @@ const CardBalance = React.memo((props: any) => {
         network: selectedNetwork,
         cuurency: depositData?.cryptoCurrency,
         holderId: depositData?.holderId,
-        amount: topupAmount,
+        amount: parseFloat(topupAmount),
         fee: feeComissionData?.fee,
         estimatedAmount: feeComissionData?.estimatedAmount,
         concurrencyStamp: feeComissionData?.concurrencyStamp || "",

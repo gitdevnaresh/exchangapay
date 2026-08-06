@@ -5,8 +5,10 @@ import {
   Image,
   BackHandler,
   ActivityIndicator,
+  Modal,
   Platform,
   Alert,
+  Text,
   TextInput,
   Keyboard,
 } from "react-native";
@@ -95,6 +97,11 @@ const AddKycInfomation = (props: any) => {
   const [signModelVisible, setSignModelVisible] = useState<boolean>(false);
   const [openSelfiePopup, setOpenSelfiePopup] = useState<boolean>(false);
   const [selfieCameraVisible, setSelfieCameraVisible] = useState<boolean>(false);
+  const [selfiePreview, setSelfiePreview] = useState<{
+    uri: string;
+    name: string;
+    type: string;
+  } | null>(null);
   const [selfieLoadingType, setIsSelfieLoadingType] = useState<string>("");
   const [lists, setLists] = useState<any>({
     countryLookUp: [],
@@ -771,6 +778,19 @@ const AddKycInfomation = (props: any) => {
     } finally {
       setIsSelfieLoading(false);
     }
+  };
+
+  const confirmSelfieUpload = async () => {
+    if (!selfiePreview || isSelfieLoading) return;
+
+    const file = selfiePreview;
+    setSelfiePreview(null);
+    await uploadCapturedSelfie(file);
+  };
+
+  const retakeSelfie = () => {
+    setSelfiePreview(null);
+    setSelfieCameraVisible(true);
   };
 
   const selectBackPhoto = async () => {
@@ -2075,9 +2095,58 @@ const AddKycInfomation = (props: any) => {
         onClose={() => setSelfieCameraVisible(false)}
         onCapture={async (file) => {
           setSelfieCameraVisible(false);
-          await uploadCapturedSelfie(file);
+          setSelfiePreview(file);
         }}
       />
+      <Modal
+        visible={selfiePreview !== null}
+        animationType="fade"
+        statusBarTranslucent
+        presentationStyle="fullScreen"
+        onRequestClose={() => setSelfiePreview(null)}
+      >
+        <View style={styles.selfiePreviewBackdrop}>
+          <TouchableOpacity
+            style={styles.closeSelfiePreviewButton}
+            onPress={() => setSelfiePreview(null)}
+            disabled={isSelfieLoading}
+            accessibilityLabel="Close photo preview"
+          >
+            <Ionicons name="close" size={34} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.selfiePreviewImageContainer}>
+            <Image
+              source={{ uri: selfiePreview?.uri || "" }}
+              style={styles.selfiePreviewImage}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.selfiePreviewActions}>
+            <TouchableOpacity
+              style={styles.retakeSelfieButton}
+              onPress={retakeSelfie}
+              disabled={isSelfieLoading}
+            >
+              <Ionicons name="refresh" size={25} color="#FFFFFF" />
+              <Text style={styles.retakeSelfieText}>Retake</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.uploadSelfieButton}
+              onPress={confirmSelfieUpload}
+              disabled={isSelfieLoading}
+            >
+              {isSelfieLoading ? (
+                <ActivityIndicator color="#111111" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark" size={24} color="#111111" />
+                  <Text style={styles.uploadSelfieText}>Use Photo</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <OverlayPopup
         title={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO}
         isVisible={openSelfiePopup}
@@ -2195,5 +2264,65 @@ const styles = StyleSheet.create({
     flex: 1,
     multiline: false,
     textAlignVertical: "center",
+  },
+  selfiePreviewBackdrop: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+  closeSelfiePreviewButton: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 58 : 34,
+    left: 20,
+    zIndex: 2,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selfiePreviewImageContainer: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+  selfiePreviewImage: {
+    width: "100%",
+    height: "100%",
+  },
+  selfiePreviewActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 120,
+    paddingHorizontal: 28,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 34 : 18,
+    backgroundColor: "#000000",
+  },
+  retakeSelfieButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    paddingHorizontal: 8,
+    paddingVertical: 14,
+  },
+  uploadSelfieButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    minWidth: 164,
+    minHeight: 56,
+    paddingHorizontal: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+  },
+  retakeSelfieText: {
+    color: "#FFFFFF",
+    fontSize: ms(16),
+    fontWeight: "700",
+  },
+  uploadSelfieText: {
+    color: "#111111",
+    fontSize: ms(16),
+    fontWeight: "700",
   },
 });

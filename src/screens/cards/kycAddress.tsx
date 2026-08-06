@@ -38,7 +38,7 @@ import {
   WINDOW_WIDTH,
 } from "../../constants/theme/variables";
 import ProfileService from "../../services/profile";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 import { formatDateMonth, isErrorDispaly } from "../../utils/helpers";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import CustomPicker from "../../components/CustomPicker";
@@ -58,6 +58,7 @@ import { PERMISSIONS, request, RESULTS } from "react-native-permissions";
 import OverlayPopup from "./SelectPopup";
 import { useSelector } from "react-redux";
 import CommonOverlay from "../../components/commonOverlyPopup";
+import SelfieCamera from "../../components/SelfieCamera";
 
 const KycAddress: React.FC<KycAddressProps> = ({
   handleBlur,
@@ -137,6 +138,12 @@ const KycAddress: React.FC<KycAddressProps> = ({
   const [uploadValidation, setUploadValidation] = useState({
     handHoldingIDPhoto: null,
   });
+  const [selfieCameraVisible, setSelfieCameraVisible] = useState(false);
+  const [selfiePreview, setSelfiePreview] = useState<{
+    uri: string;
+    name: string;
+    type: string;
+  } | null>(null);
 
   const signatureRef = useRef<SignatureViewRef>(null);
   useEffect(() => {
@@ -399,10 +406,11 @@ const KycAddress: React.FC<KycAddressProps> = ({
 
         if (!hasPermission) {
           return;
-        } else {
-          result = await launchCamera({ mediaType: FORM_DATA_CONSTANTS?.PHOTO, cameraType: FORM_DATA_CONSTANTS?.FRONT });
+        }
 
-        };
+        setLoadingState((prev) => ({ ...prev, facePopup: false }));
+        setSelfieCameraVisible(true);
+        return;
       } else {
         result = await launchImageLibrary({ mediaType: "photo" });
 
@@ -467,6 +475,40 @@ const KycAddress: React.FC<KycAddressProps> = ({
       ...prev,
       facePopup: !loadingState?.facePopup,
     }));
+  };
+
+  const uploadCapturedSelfie = async () => {
+    if (!selfiePreview || loadingState.faceImage) return;
+
+    const isValid = verifyFileTypes(selfiePreview.name);
+    if (!isValid) {
+      setErrormsg(CREATE_KYC_ADDRESS_CONST.ACCEPTS_ONLY_JPG_OR_PNG_FORMATE);
+      return;
+    }
+
+    setLoadingState((prev) => ({ ...prev, faceImage: true }));
+    try {
+      const uploadData = new FormData();
+      uploadData.append(FORM_DATA_CONSTANTS.DOCUMENT, selfiePreview);
+      const uploadRes = await ProfileService.uploadFile(uploadData);
+
+      if (uploadRes.status === 200) {
+        setFieldValue(FORM_DATA_CONSTANTS.FACE_IMAGE, uploadRes?.data?.[0] || "");
+        setSelfiePreview(null);
+        setErrormsg("");
+      } else {
+        setErrormsg(isErrorDispaly(uploadRes));
+      }
+    } catch (err) {
+      setErrormsg(isErrorDispaly(err));
+    } finally {
+      setLoadingState((prev) => ({ ...prev, faceImage: false }));
+    }
+  };
+
+  const retakeSelfie = () => {
+    setSelfiePreview(null);
+    setSelfieCameraVisible(true);
   };
 
   const titleMapping = {
@@ -2083,6 +2125,64 @@ const KycAddress: React.FC<KycAddressProps> = ({
         loadingType={loadingState?.loadingType}
       />
 
+      <SelfieCamera
+        visible={selfieCameraVisible}
+        onClose={() => setSelfieCameraVisible(false)}
+        onCapture={async (file) => {
+          setSelfieCameraVisible(false);
+          setSelfiePreview(file);
+        }}
+      />
+      <Modal
+        visible={selfiePreview !== null}
+        animationType="fade"
+        statusBarTranslucent
+        presentationStyle="fullScreen"
+        onRequestClose={() => setSelfiePreview(null)}
+      >
+        <View style={styles.selfiePreviewBackdrop}>
+          <TouchableOpacity
+            style={styles.closeSelfiePreviewButton}
+            onPress={() => setSelfiePreview(null)}
+            disabled={loadingState.faceImage}
+            accessibilityLabel="Close photo preview"
+          >
+            <Ionicons name="close" size={34} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.selfiePreviewImageContainer}>
+            <Image
+              source={{ uri: selfiePreview?.uri || "" }}
+              style={styles.selfiePreviewImage}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.selfiePreviewActions}>
+            <TouchableOpacity
+              style={styles.retakeSelfieButton}
+              onPress={retakeSelfie}
+              disabled={loadingState.faceImage}
+            >
+              <Ionicons name="refresh" size={25} color="#FFFFFF" />
+              <Text style={styles.retakeSelfieText}>Retake</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.uploadSelfieButton}
+              onPress={uploadCapturedSelfie}
+              disabled={loadingState.faceImage}
+            >
+              {loadingState.faceImage ? (
+                <ActivityIndicator color="#111111" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark" size={24} color="#111111" />
+                  <Text style={styles.uploadSelfieText}>Use Photo</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <OverlayPopup
         title={PROFILE_CONSTANTS.ADD_YOUR_SIGNATURE}
         isVisible={loadingState?.drawSignModel}
@@ -2189,5 +2289,65 @@ const styles = StyleSheet.create({
     paddingVertical: s(24),
     borderRadius: 25,
     backgroundColor: NEW_COLOR.DARK_BG,
+  },
+  selfiePreviewBackdrop: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+  closeSelfiePreviewButton: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 58 : 34,
+    left: 20,
+    zIndex: 2,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selfiePreviewImageContainer: {
+    flex: 1,
+    backgroundColor: "#000000",
+  },
+  selfiePreviewImage: {
+    width: "100%",
+    height: "100%",
+  },
+  selfiePreviewActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 120,
+    paddingHorizontal: 28,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === "ios" ? 34 : 18,
+    backgroundColor: "#000000",
+  },
+  retakeSelfieButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    paddingHorizontal: 8,
+    paddingVertical: 14,
+  },
+  uploadSelfieButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    minWidth: 164,
+    minHeight: 56,
+    paddingHorizontal: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+  },
+  retakeSelfieText: {
+    color: "#FFFFFF",
+    fontSize: ms(16),
+    fontWeight: "700",
+  },
+  uploadSelfieText: {
+    color: "#111111",
+    fontSize: ms(16),
+    fontWeight: "700",
   },
 });

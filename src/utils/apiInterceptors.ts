@@ -24,7 +24,8 @@ import crashlytics from "@react-native-firebase/crashlytics";
 import { getApplicationName } from "react-native-device-info";
 import store from "../store";
 import * as Sentry from "@sentry/react-native";
-import idempotencyConfig, { fastHash } from "./idempotency";
+import QuickCrypto from "react-native-quick-crypto";
+import idempotencyConfig from "./idempotency";
 import {
   getAttestationToken,
   getIntegrityReport,
@@ -380,7 +381,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const normalizePath = (url: string): string => {
-  const sanitizedUrl = url.split("#")[0];
+  const sanitizedUrl = url.split(/[?#]/, 1)[0];
   const withoutOrigin = sanitizedUrl.replace(/^https?:\/\/[^/]+\/?/, "");
   return withoutOrigin.replace(/^\/+/, "");
 };
@@ -388,28 +389,25 @@ const normalizePath = (url: string): string => {
 const findIdempotencyEntry = (url: string) => {
   const requestPath = normalizePath(url);
   return idempotencyConfig.find((entry) => {
-    if (entry.path.includes("{")) {
-      const regexPath = entry.path.replace(/{[^}]+}/g, "[^/]+");
-      return new RegExp(`^${regexPath}$`, "i").test(requestPath);
-    }
-    return requestPath === entry.path || requestPath.endsWith(entry.path);
+    return requestPath.toLowerCase() === entry.path.toLowerCase();
   });
 };
 
-const buildIdempotencyKey = (
-  userId: string,
-  params: string[],
-  payload: Record<string, unknown>
-) => {
-  const parts = [userId];
-  params.forEach((key) => {
-    const value = payload[key];
-    parts.push(
-      typeof value === "string" || typeof value === "number" ? String(value) : ""
-    );
-  });
-  return fastHash(parts.join(":"));
+/** Cryptographically random RFC 4122 v4 UUID, generated for one new attempt. */
+export const createIdempotencyKey = (): string => {
+  const bytes = Uint8Array.from(QuickCrypto.randomBytes(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };
+
+const hasIdempotencyKey = (headers: any): boolean =>
+  !!(
+    headers?.["X-Idempotency-Key"] ||
+    headers?.["x-idempotency-key"] ||
+    headers?.get?.("X-Idempotency-Key")
+  );
 
 /**
  * X-Idempotency-Key on the money-moving POSTs listed in ./idempotency.
@@ -418,7 +416,7 @@ const buildIdempotencyKey = (
  * not all reachable through the same instance — a retried transfer is a double
  * transfer regardless of which apisauce object issued it.
  */
-export const applyIdempotency = (config: any, userId: string) => {
+export const applyIdempotency = (config: any) => {
   if ((config?.method || "").toLowerCase() !== "post" || !config?.url) {
     return;
   }
@@ -426,12 +424,13 @@ export const applyIdempotency = (config: any, userId: string) => {
   if (!entry) {
     return;
   }
-  const payload = isRecord(config.data) ? config.data : {};
-  config.headers["X-Idempotency-Key"] = buildIdempotencyKey(
-    String(userId),
-    entry.params,
-    payload
-  );
+  config.headers = config.headers || {};
+  // Axios retries reuse the same config (and therefore this header). Never
+  // overwrite it: doing so would turn a retry into a second payment attempt.
+  if (!hasIdempotencyKey(config.headers)) {
+    config.headers["X-Idempotency-Key"] = createIdempotencyKey();
+    
+  }
 };
 
 export interface StandardInterceptorOptions {
@@ -478,7 +477,7 @@ export const applyStandardInterceptors = (
     }
     await applySecurityHeaders(config);
     if (idempotency) {
-      applyIdempotency(config, state?.UserReducer?.userInfo?.id || "");
+      applyIdempotency(config);
     }
     return config;
   });
