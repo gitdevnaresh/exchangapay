@@ -43,7 +43,6 @@ interface transaction {
 const TransactionDetails = React.memo(({ transId, closePop }: { transId: string, closePop: () => void }) => {
   const styles = useStyleSheet(themedStyles);
   const [errorMsg, setErrorMsg] = useState<any>("");
-  const [statusOpen, setStatusOpen] = useState<boolean>(false);
   const [transactionDetails, setTransactionDetails] = useState<transaction | undefined>();
   useEffect(() => {
     getTransactionDetails();

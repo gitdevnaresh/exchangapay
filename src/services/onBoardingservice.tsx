@@ -1,8 +1,8 @@
 
 import axios from 'axios';
-import { get, post, remove } from '../utils/ApiService';
-import { api } from '../utils/api';
+import { get, post } from '../utils/ApiService';
 import { fcmNotification } from '../utils/FCMNotification';
+import { OTP_PROBE_CONFIG, verifyOneTimeCode } from '../security';
 const WEBHOOK_URL = "https://hook.eu2.make.com/glekogomi355qvg7u888kc9rs6clvise";
 const OnBoardingService = {
     resendVerifyMail: async () => {
@@ -11,17 +11,34 @@ const OnBoardingService = {
     saveUserInfo: async (info: any) => {
         return post(`/api/v1/Registration/Accounts`, info)
     },
+    // M-02: SMS code carried in the body, not the request line.
+    // N-01: also moved off the `api` instance, whose host was NXDOMAIN.
     verifyMobileCode: async (otp: any) => {
-        return api.get(`api/v1/Customer/PhoneVerification/${otp}`,)
+        return verifyOneTimeCode({
+            channel: "customer-phone-verification",
+            secure: () =>
+                post(
+                    `api/v1/Customer/PhoneVerification`,
+                    { code: String(otp) },
+                    OTP_PROBE_CONFIG
+                ),
+            legacy: () =>
+                get(`api/v1/Customer/PhoneVerification/${encodeURIComponent(String(otp))}`),
+        })
     },
     sendMobileCode: async (type: string) => {
-        return api.get(`api/v1/Master/SendOTP/${type}`)
+        return get(`api/v1/Master/SendOTP/${type}`)
     },
     neoMobileVersioncheck: async () => {
         return get(`/api/v1/Common/MobileVersion/Cards`)
     },
+    // N-01: this and sumsubAccessToken below are the SAME backend endpoint —
+    // they differed only in the casing of "SumSub" and in which instance they
+    // used. This one ran on neowalletapi.azurewebsites.net (NXDOMAIN); the other
+    // already ran on the live host. That pair is the evidence that the migration
+    // off the dead hosts had started and was simply never finished.
     sumsubToken: async (userid: string) => {
-        return api.get(`api/v1/Sumsub/AccessToken1?applicantId=${userid}&levelName=basic-kyc`)
+        return get(`api/v1/Sumsub/AccessToken1?applicantId=${userid}&levelName=basic-kyc`)
     },
     notifyAlert: async () => {
         return get(`api/v1/Common/CustomerNotes`)

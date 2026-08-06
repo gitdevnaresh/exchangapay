@@ -76,8 +76,14 @@
 
 		     WARNING — unlike Android's <pin-set expiration>, ATS has no expiry and
 		     no fail-open. If these pins stop matching, the iOS app cannot reach the
-		     API at all and the only remedy is an App Store release. Re-verify before
-		     the intermediate expires 2027-11-02:
+		     API at all and the only remedy is an App Store release.
+
+		     M-03 — the expiry date is deliberately NOT repeated here. It lives in
+		     security/pinning-policy.json (pinSet.iosExpiration), which the release
+		     build phase reads to warn ahead of the date and which App.tsx reads to
+		     report the fleet's pin state to Sentry. A date in a comment is the one
+		     copy nothing can check, so it is the copy that goes stale silently while
+		     still looking authoritative. Re-verify the chain with:
 		       ./scripts/compute-spki-pins.sh
 
 		     LAST VERIFIED: 2026-08-05. Both hosts chain through GeoTrust TLS RSA
@@ -172,15 +178,31 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- M-07: Universal Links for Auth0 callback. The associated-domains
-	     entitlement must also be added in Xcode (Signing & Capabilities >
-	     Associated Domains > applinks:exchangapay-tst.eu.auth0.com).
-	     Requires apple-app-site-association to be hosted at
-	     https://exchangapay-tst.eu.auth0.com/.well-known/apple-app-site-association
-	     (Auth0 hosts this automatically for custom domains; for auth0.com tenants
-	     it must be enabled in the Auth0 dashboard under
-	     Applications > [app] > Settings > iOS Universal Links).
-	     See security/M07_APPLINKS_SETUP.md. -->
+	<!-- M-07: Universal Links for the Auth0 callback are NOT ACTIVE on iOS.
+
+	     Unlike Android — which at least declares an autoVerify App Link filter —
+	     nothing in this target requests Universal Links yet. There is no
+	     com.apple.developer.associated-domains entitlement in
+	     exchangapay.entitlements, so the custom scheme below is the ONLY callback
+	     path on iOS, and any app that registers the same scheme can receive the
+	     authorization code. This comment is the whole iOS half of the fix so far.
+
+	     Two independent things are required, and neither is done:
+
+	       1. Auth0 must serve the association file for this tenant. We do not
+	          host it — Auth0 does, at
+	          https://<tenant>/.well-known/apple-app-site-association — once the
+	          Team ID and bundle ID are set in the Auth0 Dashboard under
+	          Advanced Settings > Device Settings > iOS.
+
+	       2. The associated-domains entitlement must be added here AND the
+	          Associated Domains capability enabled on the App ID in the Apple
+	          Developer portal, with provisioning profiles regenerated. Adding the
+	          entitlement without the portal change does not degrade gracefully —
+	          it breaks code signing for every iOS build including CI.
+
+	     Do both in that order. Steps, verification commands and the removal
+	     criteria for the scheme below: security/M07_APPLINKS_SETUP.md -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -190,8 +212,14 @@
 			<string>auth0</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<!-- Legacy custom scheme — keep until Universal Links are verified,
-				     then remove this entry. -->
+				<!-- Legacy custom scheme. Claimable by any app on the device, which is
+				     what M-07 is about — but it is currently the only iOS callback
+				     path, so removing it before Universal Links work would break login
+				     entirely rather than harden it.
+
+				     REMOVAL REVIEW DATE: 2027-02-06, matching the Android legacy
+				     filter. Criteria in security/M07_APPLINKS_SETUP.md — both
+				     platforms should stop depending on custom schemes together. -->
 				<string>$(PRODUCT_BUNDLE_IDENTIFIER).auth0</string>
 			</array>
 		</dict>

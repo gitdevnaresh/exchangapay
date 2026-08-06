@@ -285,6 +285,66 @@ gradle.taskGraph.whenReady { graph ->
         )
     }
 
+    // M-03: the XML attribute above and security/pinning-policy.json must agree.
+    //
+    // An XML attribute cannot import JSON, so the date is necessarily written
+    // twice. What is avoidable is the two copies disagreeing without anyone
+    // noticing — and a disagreement here is invisible by construction, because
+    // whichever copy is stale still looks like a perfectly valid date. So the
+    // build asserts equality rather than trusting that both were updated.
+    //
+    // A missing or unreadable policy fails the build. A guard that silently
+    // skips when it cannot find its input is worse than no guard: it reports
+    // success either way.
+    def repoRoot = file("${rootProject.projectDir}/..")
+    def pinPolicyFile = new File(repoRoot, "security/pinning-policy.json")
+    if (!pinPolicyFile.exists()) {
+        throw new GradleException(
+            "security/pinning-policy.json is missing (security finding M-03).\nIt is the " +
+            "single source of truth for pin-set expiry; the Android pin-set cannot be " +
+            "checked against it."
+        )
+    }
+    def pinPolicyText = pinPolicyFile.text
+    def policyExpiryMatch = (pinPolicyText =~ /"androidExpiration"\s*:\s*"(\d{4}-\d{2}-\d{2})"/)
+    if (!policyExpiryMatch) {
+        throw new GradleException(
+            "security/pinning-policy.json has no pinSet.androidExpiration (security finding M-03).\n" +
+            "It is the source of truth for the <pin-set expiration> attribute in\n" +
+            "src/main/res/xml/network_security_config.xml."
+        )
+    }
+    def policyExpiry = java.time.LocalDate.parse(policyExpiryMatch[0][1])
+    if (policyExpiry != expiry) {
+        throw new GradleException(
+            "Pin-set expiry drift (security finding M-03):\n" +
+            "  src/main/res/xml/network_security_config.xml  <pin-set expiration=\"${expiry}\">\n" +
+            "  security/pinning-policy.json                  androidExpiration = \"${policyExpiry}\"\n" +
+            "These must be identical. security/pinning-policy.json is the source of truth —\n" +
+            "change it there, then copy the value into the XML attribute."
+        )
+    }
+
+    // M-03: warn while the date can still be moved.
+    //
+    // The check above fails the build only once the pin-set has ALREADY lapsed,
+    // by which point every install in the field is running unpinned and the fix
+    // needs a release. This warns during the run-up instead, so the renewal is
+    // scheduled work rather than an incident.
+    def buildWarnMatch = (pinPolicyText =~ /"buildWarnWithinDays"\s*:\s*(\d+)/)
+    def buildWarnDays = buildWarnMatch ? (buildWarnMatch[0][1] as long) : 90L
+    def daysToExpiry = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), expiry)
+    if (daysToExpiry <= buildWarnDays) {
+        logger.warn(
+            "warning: [M-03] Android certificate pin-set expires on ${expiry} (${daysToExpiry} days).\n" +
+            "  Android fails OPEN at that date: pinning silently stops being enforced on every\n" +
+            "  installed app, with no build error and no runtime symptom. Re-verify the SPKI\n" +
+            "  hashes with ./scripts/compute-spki-pins.sh, then extend androidExpiration in\n" +
+            "  security/pinning-policy.json and the matching attribute in\n" +
+            "  src/main/res/xml/network_security_config.xml."
+        )
+    }
+
     // ---------------------------------------------------------------------
     // H-02: pinning COVERAGE, as opposed to pinning construction.
     //
@@ -298,9 +358,8 @@ gradle.taskGraph.whenReady { graph ->
     // host is now a decision someone has to record, not something that happens
     // by typing a URL.
     // ---------------------------------------------------------------------
-    def repoRoot = file("${rootProject.projectDir}/..")
-
-    def policyFile = new File(repoRoot, "security/pinning-policy.json")
+    // repoRoot and the policy file are resolved by the M-03 block above.
+    def policyFile = pinPolicyFile
     if (!policyFile.exists()) {
         throw new GradleException(
             "security/pinning-policy.json is missing (security finding H-02).\nIt is the " +
@@ -536,6 +595,34 @@ gradle.taskGraph.whenReady { graph ->
         )
     }
     if (jsDomain) logger.lifecycle("[H-13] Auth0 tenant '${jsDomain}' consistent between JS and native.")
+
+    // M-07: the legacy custom-scheme callback has a review date.
+    //
+    // The App Link filter in AndroidManifest.xml cannot replace the custom scheme
+    // until it actually verifies on installed devices AND the install base has
+    // turned over — users on older builds still depend on the scheme, and an
+    // update cannot reach someone who has not taken it. So the scheme has to
+    // outlive the migration, and "temporary" quietly becomes permanent.
+    //
+    // A date in a comment is not tracking; nobody rereads a comment. This puts it
+    // in a build log. It is a WARNING and never a failure: the custom scheme
+    // working is the only thing keeping login alive on old installs, so a build
+    // that refused to ship it would cause the exact outage it is meant to avoid.
+    def legacyCallbackReviewDate = java.time.LocalDate.parse("2027-02-06")
+    def manifestText = file("src/main/AndroidManifest.xml").text
+    def legacySchemePresent = manifestText =~ /android:scheme="\$\{auth0Scheme\}"/
+    if (legacySchemePresent && !java.time.LocalDate.now().isBefore(legacyCallbackReviewDate)) {
+        def daysOver = java.time.temporal.ChronoUnit.DAYS.between(
+            legacyCallbackReviewDate, java.time.LocalDate.now())
+        logger.warn(
+            "[M-07] The legacy custom-scheme OAuth callback is still shipping, ${daysOver} day(s) past\n" +
+            "  its ${legacyCallbackReviewDate} review date. Any app on the device can register\n" +
+            "  '\${applicationId}.auth0://callback' and receive the authorization code.\n" +
+            "  Either confirm the removal criteria in security/M07_APPLINKS_SETUP.md and delete the\n" +
+            "  legacy <intent-filter>, or record why not and move the date in that file, this guard\n" +
+            "  and AndroidManifest.xml together."
+        )
+    }
 }
 
 /**

@@ -1,9 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  getAccountInfo,
-  getMemberInfo,
-  clearAuth,
-} from "../../store/auth/thunk";
+import { getMemberInfo, clearAuth } from "../../store/auth/thunk";
 
 interface AuthState {
   user: Record<string, any> | null;
@@ -52,13 +48,10 @@ const slice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(
-        getAccountInfo.fulfilled,
-        (state, action: PayloadAction<any>) => {
-          // Use deep serialization to ensure no mutations
-          state.user = deepSerialize(action.payload);
-        }
-      )
+      // N-01: the getAccountInfo case was removed with its thunk — it was fed by
+      // an OIDC endpoint on a host that does not resolve, and was never
+      // dispatched. `state.user` is left in the interface because clearAuth and
+      // the reducers below still reset it; nothing populates it today.
       .addCase(getMemberInfo.pending, (state) => {
         state.loading = "pending";
       })

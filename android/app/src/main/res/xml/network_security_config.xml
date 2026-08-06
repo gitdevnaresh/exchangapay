@@ -73,6 +73,16 @@
   <domain-config>
     <domain includeSubdomains="false">api.exchangapay.com</domain>
     <domain includeSubdomains="false">tstapi.exchangapay.com</domain>
+    <!-- M-03 — this date MUST equal pinSet.androidExpiration in
+         security/pinning-policy.json, which is the source of truth. An XML
+         attribute cannot read JSON, so the value is necessarily written twice;
+         the H-03 guard in android/app/build.gradle fails the release build if
+         the two ever disagree. Change the policy file first, then copy it here.
+
+         Note this date is EARLIER than the intermediate's real expiry, on
+         purpose. Android fails OPEN here — past this date it silently stops
+         enforcing pinning, with no build error and no runtime symptom — so the
+         date is a review deadline set ahead of the cliff, not the cliff. -->
     <pin-set expiration="2027-06-01">
       <!-- primary: GeoTrust TLS RSA CA G1 (issuing intermediate) -->
       <pin digest="SHA-256">SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</pin>

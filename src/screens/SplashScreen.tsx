@@ -139,7 +139,11 @@ const SplashScreen = React.memo(() => {
     }
   }, [isOnboarding]);
 
-  const getUrl = (path: string) => {
+  // N-01: renamed from `getUrl`. It shadowed the exported getUrl() in
+  // apiInterceptors, which resolves API HOSTS from apiUrls and now throws on an
+  // unknown key — while this one reads oAuthConfig. Two functions with one name
+  // and different maps is how a reader concludes a key is defined when it is not.
+  const getOAuthValue = (path: string) => {
     const envList = getAllEnvData();
     return (envList.oAuthConfig as any)[path];
   };
@@ -154,8 +158,8 @@ const SplashScreen = React.memo(() => {
       setIsNewLogin(true);
 
       const authConfig = {
-        scope: getUrl("scope"),
-        audience: getUrl("audience"),
+        scope: getOAuthValue("scope"),
+        audience: getOAuthValue("audience"),
       };
 
       await authorize(authConfig);
@@ -181,8 +185,8 @@ const SplashScreen = React.memo(() => {
       setIsNewLogin(true);
 
       await authorize({
-        scope: getUrl("scope"),
-        audience: getUrl("audience"),
+        scope: getOAuthValue("scope"),
+        audience: getOAuthValue("audience"),
         additionalParameters: { screen_hint: "signup" },
       });
 

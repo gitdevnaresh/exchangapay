@@ -29,6 +29,9 @@ export {
   readCachedAppLock,
 } from "./appLock";
 
+export { OTP_PROBE_CONFIG, verifyOneTimeCode } from "./otpTransport";
+export type { OneTimeCodeCall } from "./otpTransport";
+
 export { guardHighRiskAction } from "./guard";
 export type { GuardOptions, HighRiskOperation } from "./guard";
 
@@ -50,6 +53,16 @@ export {
   isAttestationAvailable,
 } from "./attestation";
 export { requiresAttestation } from "./attestationPolicy";
+
+// M-03: pin-set expiry telemetry, sourced from security/pinning-policy.json.
+export {
+  buildPinExpiryReport,
+  classifyPinExpiry,
+  daysUntil,
+  getPinExpiry,
+  reportPinExpiry,
+} from "./pinExpiry";
+export type { PinExpiryReport, PinStatus } from "./pinExpiry";
 
 export {
   buildCardHtmlDocument,

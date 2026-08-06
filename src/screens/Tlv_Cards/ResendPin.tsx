@@ -9,7 +9,6 @@ import Feather from "react-native-vector-icons/Feather";
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import DefaultButton from '../../components/DefaultButton';
 import { commonStyles } from '../../components/CommonStyles';
-import { saveResetPin } from '../../store/card/thunk';
 import { useSelector } from 'react-redux';
 import { isErrorDispaly } from '../../utils/helpers';
 import ErrorComponent from '../../components/Error';

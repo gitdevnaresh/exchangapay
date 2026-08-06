@@ -33,16 +33,20 @@ applyStandardInterceptors(uploadapi, {
 // "crashReportingConsent" to "telemetryConsent"; nothing had ever written the
 // old one, so there is no stored value to migrate.
 
-export const get = async (url: string) => {
-  return api.get(url);
+// The optional `config` argument is an axios request config, passed straight
+// through by apisauce. Added for M-02 so the OTP transport can mark its
+// capability probe with `silentStatuses`; every existing call site omits it and
+// is unaffected.
+export const get = async (url: string, params?: any, config?: any) => {
+  return api.get(url, params, config);
 };
 
-export const post = async (url: string, data: any) => {
-  return api.post(url, data);
+export const post = async (url: string, data: any, config?: any) => {
+  return api.post(url, data, config);
 };
 
-export const put = async (url: string, data?: any) => {
-  return api.put(url, data);
+export const put = async (url: string, data?: any, config?: any) => {
+  return api.put(url, data, config);
 };
 
 export const remove = (url: string, data: any) => {

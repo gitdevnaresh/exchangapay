@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Debug entitlements — H-07 / M-07.
+
+	Until now this file was not referenced by any build configuration:
+	CODE_SIGN_ENTITLEMENTS was unset in both Debug and Release, so nothing here
+	reached the built app. It is now wired to the Debug configuration.
+
+	The Release counterpart is exchangapayRelease.entitlements. The two differ in
+	exactly one value — aps-environment — and that difference is the reason there
+	are two files. Keep everything else identical between them; an entitlement
+	that exists only in Debug is one that gets discovered missing in production.
+-->
 <plist version="1.0">
 <dict>
+	<!-- Sandbox APNs. The Release file uses `production`. -->
 	<key>aps-environment</key>
 	<string>development</string>
+
+	<!--
+		M-07: Universal Links for the OAuth callback. Both tenants listed — iOS
+		ignores an applinks domain that does not resolve for this app, so an
+		unmatched entry is inert rather than an error.
+
+		Requires Associated Domains on the App ID and regenerated provisioning
+		profiles, or signing fails. See security/M07_APPLINKS_SETUP.md.
+	-->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:exchangapay.eu.auth0.com</string>
+		<string>applinks:exchangapay-tst.eu.auth0.com</string>
+	</array>
 </dict>
 </plist>

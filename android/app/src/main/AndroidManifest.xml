@@ -126,19 +126,40 @@
            to verify ownership of the domain against the hosted assetlinks.json
            before registering this filter. A verified App Link cannot be claimed
            by another app — unlike the custom scheme below, which any app can
-           register. Requires /.well-known/assetlinks.json to be hosted at
-           https://exchangapay.com (see security/M07_APPLINKS_SETUP.md).
-           The custom-scheme filter below is kept during migration so existing
-           installs continue to work until the App Link is verified. -->
+           register.
+
+           The statement file must be served from the host in the <data> element
+           below, which is ${auth0Domain} — the Auth0 TENANT domain
+           (exchangapay.eu.auth0.com / exchangapay-tst.eu.auth0.com), NOT
+           exchangapay.com. This comment used to name exchangapay.com; hosting it
+           there verifies nothing, because Android never fetches that host. We do
+           not host the file at all: Auth0 serves
+           https://${auth0Domain}/.well-known/assetlinks.json once the package
+           name and signing-key SHA-256 are registered in the Auth0 Dashboard.
+
+           NOT YET VERIFIED — until those Dashboard fields are filled in, this
+           filter is inert and the custom scheme below is still carrying every
+           callback. Setup and verification: security/M07_APPLINKS_SETUP.md -->
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="https" android:host="${auth0Domain}" android:pathPrefix="/android/${applicationId}/callback" />
       </intent-filter>
-      <!-- M-07: Legacy custom-scheme callback. Keep until App Links are verified
-           on all active installs, then remove this filter and the auth0Scheme
-           placeholder in build.gradle. -->
+      <!-- M-07: Legacy custom-scheme callback. Any app on the device can register
+           this same scheme and receive the authorization code, which is the whole
+           reason for the App Link above.
+
+           It is still here on purpose. Removing it before App Links verify on
+           real installs breaks login outright — the callback lands nowhere and
+           the user is stranded in a browser that cannot return to the app. It
+           must outlive the migration, not the declaration.
+
+           REMOVAL REVIEW DATE: 2027-02-06. A decision deadline, not an automatic
+           removal: on that date either the criteria in
+           security/M07_APPLINKS_SETUP.md hold and this filter plus the
+           auth0Scheme placeholder in build.gradle come out, or someone records
+           why not and moves the date. build.gradle warns once it passes. -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />

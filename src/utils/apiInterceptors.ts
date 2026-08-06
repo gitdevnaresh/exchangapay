@@ -17,7 +17,7 @@
 
 import type { ApisauceInstance } from "apisauce";
 import { getAllEnvData, getCurrentEnvName } from "../../Environment";
-import { redact, redactToString } from "./redact";
+import { redact, redactToString, redactUrl } from "./redact";
 import { isTransientTokenFailure, readAccessToken } from "./storage/authTokens";
 import { KEYCHAIN_SERVICES, readSecretValue } from "./storage/keychainPolicy";
 import crashlytics from "@react-native-firebase/crashlytics";
@@ -142,6 +142,28 @@ const getServerAttestationChallenge = async (
  * literal may remain under src/ — a literal cannot be repointed per environment,
  * which is how a test build came to hold production hosts (see H-04 scenario C).
  */
+/**
+ * Resolve a configured API host by key.
+ *
+ * N-01: this used to return `(apiUrls[path] || "").trim()` — an empty string for
+ * a key that does not exist. When the environment source of truth moved from
+ * environments/*.js to .env, three keys stopped being defined and three apisauce
+ * instances were built with a base URL of `""`. Nothing threw, nothing warned,
+ * nothing was logged: axios accepted the empty base URL and resolved every
+ * relative path against a document base that does not exist in a React Native
+ * bundle. The failure surfaced as a spinner, on the dashboard's primary render
+ * path, and only became visible when someone read the config by hand.
+ *
+ * A missing configuration key is a build-time mistake and must behave like one.
+ * Throwing here means it fails in the first `npx jest` run, in the first debug
+ * launch, and in `__tests__/envContract.test.ts` — all of which happen before a
+ * user could ever see it.
+ *
+ * Note this throws at module load for `create({ baseURL: getUrl(...) })`, which
+ * is the intent: a build with an unresolvable host is not a build that should
+ * start and degrade, it is one that should never have got past the first
+ * developer to run it.
+ */
 export const getUrl = (path: string) => {
   // No literal env name: the target is resolved once, in Environment.js. Passing
   // "prod" here while other modules passed "tst" is how the app came to straddle
@@ -151,7 +173,16 @@ export const getUrl = (path: string) => {
   const apiUrls: Record<string, string> = getAllEnvData().apiUrls;
   // trim: leading/trailing whitespace makes axios treat the baseURL as a
   // relative path and resolve it against the bundle's file:// document base
-  return (apiUrls[path] || "").trim();
+  const value = (apiUrls[path] || "").trim();
+  if (!value) {
+    throw new Error(
+      `[Environment] apiUrls.${path} is not defined (security finding N-01). ` +
+        `Add it to the apiUrls block in Environment.js and to every .env file, ` +
+        `then add the host to security/pinning-policy.json or the Android pin-set. ` +
+        `Defined keys: ${Object.keys(apiUrls).join(", ") || "(none)"}.`
+    );
+  }
+  return value;
 };
 
 /**
@@ -245,7 +276,9 @@ const logApiErrorToSentry = async (error: any, userInfo: any) => {
     scope.setUser({ id: userInfo?.userId ?? userInfo?.id ?? 'unknown_user' });
 
     // 2. Set Tags (for filtering and searching in Sentry)
-    scope.setTag('api_endpoint', config?.url ?? 'unknown');
+    // M-02: redactUrl, not config.url. A failed verification carries the OTP in
+    // the path, and a Sentry tag is indexed, searchable and retained for months.
+    scope.setTag('api_endpoint', redactUrl(config?.url));
     scope.setTag('api_method', config?.method?.toUpperCase() ?? 'unknown');
     scope.setTag('api_status_code', response?.status?.toString() ?? 'no_response');
     scope.setTag('app_name', appName);
@@ -259,7 +292,7 @@ const logApiErrorToSentry = async (error: any, userInfo: any) => {
     // 4. Add a Breadcrumb for context within the issue timeline
     Sentry.addBreadcrumb({
       category: 'http.error',
-      message: `API call to ${config?.url} failed with status ${response?.status}`,
+      message: `API call to ${redactUrl(config?.url)} failed with status ${response?.status}`,
       level: 'error',
     });
 
@@ -289,6 +322,19 @@ export const handleErrorCapture = () => async (error: any) => {
   if (error?.isKeychainUnavailable) {
     return Promise.reject(error);
   }
+  // M-02: a caller may declare statuses that are an expected answer rather than
+  // a fault. The only user is the OTP transport, which probes once per session
+  // for the body-based route and reads 404/405/501 as "backend not migrated
+  // yet". Reporting that as a crash would put one manufactured error in every
+  // session's timeline and train the team to ignore this endpoint's reports.
+  // Deliberately narrow: it suppresses the *report*, never the rejection, so
+  // the caller still sees the failure and decides what it means.
+  const silentStatuses: number[] = Array.isArray(error?.config?.silentStatuses)
+    ? error.config.silentStatuses
+    : [];
+  if (error?.response?.status && silentStatuses.includes(error.response.status)) {
+    return Promise.reject(error);
+  }
   const { config, response, message } = error;
   const method = config?.method?.toUpperCase();
   // await was missing, so this was a pending Promise and `userInfo.userId` was
@@ -296,10 +342,12 @@ export const handleErrorCapture = () => async (error: any) => {
   const userInfo: any = await getUserInfo();
 
   // --- 1. Log to Firebase Crashlytics ---
-  crashlytics().log(`API Error at ${config?.url}`);
+  crashlytics().log(`API Error at ${redactUrl(config?.url)}`);
   crashlytics().setUserId(userInfo?.userId ?? "unknown");
   crashlytics().setAttributes({
-    endpoint: config?.url ?? "unknown",
+    // M-02: the raw URL used to be written here. On a mistyped OTP that put the
+    // live code into a Crashlytics attribute, which is exportable to BigQuery.
+    endpoint: redactUrl(config?.url),
     method: method ?? "unknown",
     status: response?.status?.toString() ?? "no response",
     appName,

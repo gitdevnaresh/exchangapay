@@ -33,21 +33,8 @@ export const getMemberInfo = createAsyncThunk(
 
 export const clearAuth = createAsyncThunk("auth/clearAuth", () => {});
 
-export const getAccountInfo = createAsyncThunk(
-  "auth/getAccountInfo",
-  async (_, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await AuthService.getAccountInfo();
-      const userData = extractSerializableData(response);
-
-      // Don't dispatch getMemberInfo here to avoid race conditions
-      // Let the component handle this separately
-
-      // Ensure the data is serializable
-      return JSON.parse(JSON.stringify(userData));
-    } catch (error: any) {
-      crashlytics().recordError(error);
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
+// N-01: the `getAccountInfo` thunk was removed with the service method behind
+// it. It fetched OIDC `/connect/userinfo` from tstlogin.suissebase.io, which is
+// NXDOMAIN, and nothing in src/ ever dispatched it — the `auth.user` slice it
+// filled was permanently null. See src/services/auth.tsx for where identity
+// claims should come from instead.

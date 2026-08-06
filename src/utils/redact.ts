@@ -45,6 +45,32 @@ export const SAFE_KEYS = new Set([
 export const SENSITIVE_KEY =
   /pass|pin|cvv|cvc|card|token|secret|otp|ssn|dob|address|phone|email|name|auth|key|credential|iban|wallet|balance|amount|expiry|cred|jwt|bearer/i;
 
+/**
+ * Path segments after which the rest of the URL is a one-time secret (M-02).
+ *
+ * The finding is that verification codes travel in the request line. Half of
+ * that exposure is the backend's access log and needs a backend change; the
+ * other half is ours and does not: `config.url` was written verbatim into
+ * Crashlytics attributes and a Sentry tag on every failed request, so a
+ * mistyped OTP put the real code into crash reporting — which is exactly the
+ * "readable by every project member, exportable to BigQuery" store C-07 exists
+ * to keep secrets out of. `redactUrl` below closes that half unilaterally.
+ *
+ * The rule is structural rather than a list of known routes. A list is a
+ * deny-list by another name: it is correct only until someone adds
+ * `api/v1/Security/ConfirmEmailCode/{code}` and does not think to update it.
+ * Matching on the *route noun* means a new verification endpoint is covered the
+ * day it is written, without anyone remembering anything.
+ *
+ * The cost is over-redaction — `Master/SendOTP/{type}` loses `{type}` — which
+ * is the right direction to be wrong in for a crash report.
+ */
+const SECRET_ROUTE_MARKER =
+  /verif|otp|authenticat|confirm|activate|reset|recover|challenge/i;
+
+/** Query-parameter names whose values must never reach telemetry. */
+const SECRET_PARAM = /code|nonce|challenge/i;
+
 /** Objects nested deeper than this are dropped entirely rather than walked. */
 const MAX_DEPTH = 4;
 
@@ -82,6 +108,57 @@ export const redact = (value: unknown, depth = 0): unknown => {
     out[key] = isPlainObject(v) || Array.isArray(v) ? redact(v, depth + 1) : v;
   }
   return out;
+};
+
+/**
+ * Strip one-time secrets out of a request URL before it reaches telemetry (M-02).
+ *
+ *   api/v1/Security/PhoneVerification/482913
+ *     -> api/v1/Security/PhoneVerification/[REDACTED]
+ *   api/v1/Security/VerifyGoogleAuthenticator/135790?resend=true
+ *     -> api/v1/Security/VerifyGoogleAuthenticator/[REDACTED]?resend=true
+ *
+ * The endpoint identity survives, so the report still says which call failed —
+ * that is the whole diagnostic value. Only the secret is removed.
+ *
+ * Never throws. A telemetry helper that can throw turns a failed request into a
+ * crashed request.
+ */
+export const redactUrl = (url: unknown): string => {
+  if (typeof url !== "string" || !url) return "unknown";
+  try {
+    const queryStart = url.indexOf("?");
+    const path = queryStart === -1 ? url : url.slice(0, queryStart);
+    const query = queryStart === -1 ? null : url.slice(queryStart + 1);
+
+    let inSecret = false;
+    const safePath = path
+      .split("/")
+      .map((segment) => {
+        if (inSecret && segment) return REDACTED;
+        if (SECRET_ROUTE_MARKER.test(segment)) inSecret = true;
+        return segment;
+      })
+      .join("/");
+
+    if (query === null) return safePath;
+
+    const safeQuery = query
+      .split("&")
+      .map((pair) => {
+        const eq = pair.indexOf("=");
+        if (eq < 0) return pair;
+        const key = pair.slice(0, eq);
+        return SENSITIVE_KEY.test(key) || SECRET_PARAM.test(key)
+          ? `${key}=${REDACTED}`
+          : pair;
+      })
+      .join("&");
+
+    return `${safePath}?${safeQuery}`;
+  } catch {
+    return REDACTED;
+  }
 };
 
 /**

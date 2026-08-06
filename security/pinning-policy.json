@@ -27,6 +27,47 @@
     "still honours user-installed certificates."
   ],
 
+  "pinSet": {
+    "_comment": [
+      "M-03 — the single source of truth for pin-set expiry.",
+      "",
+      "These dates were previously restated in five places: this file's prose,",
+      "the Android <pin-set expiration> attribute, the iOS Info.plist comment,",
+      "the iOS release build phase, and App.tsx. Five copies of a date that must",
+      "move together is a date that eventually moves in four places, and the one",
+      "that is missed fails silently in opposite directions — Android quietly",
+      "stops enforcing pinning, iOS keeps enforcing a pin that no longer matches.",
+      "",
+      "Everything that can read JSON now reads it from here: App.tsx imports this",
+      "file, and the iOS build phase and the Gradle guard parse it. The two that",
+      "cannot read JSON — the Android XML attribute and the Info.plist comment —",
+      "are asserted against it by the Gradle guard and the iOS build phase, so",
+      "drift fails the build instead of shipping.",
+      "",
+      "The keys are flat and uniquely named on purpose: a shell script and a",
+      "Gradle regex have to read them without a JSON parser, and a nested lookup",
+      "in sed is how a guard ends up silently matching nothing.",
+      "",
+      "WHY THE TWO DATES DIFFER — this is not drift:",
+      "  androidExpiration is deliberately EARLIER than the certificate's real",
+      "  expiry. Android fails OPEN at this date, so it is a review deadline set",
+      "  ahead of the cliff, chosen so the pin-set lapses into a build failure",
+      "  while there is still time to act.",
+      "  iosExpiration is the actual GeoTrust TLS RSA CA G1 expiry, because ATS",
+      "  has no expiry of its own and fails CLOSED — once the pin stops matching,",
+      "  the app cannot reach the API at all and the only remedy is an App Store",
+      "  release. There is no fail-open margin to set, only a deadline to beat.",
+      "",
+      "warnWithinDays drives the runtime Sentry signal in src/security/pinExpiry.ts.",
+      "buildWarnWithinDays drives the build-time warnings, and is larger because a",
+      "build is where the date can actually be changed."
+    ],
+    "androidExpiration": "2027-06-01",
+    "iosExpiration": "2027-11-02",
+    "warnWithinDays": 60,
+    "buildWarnWithinDays": 90
+  },
+
   "lastVerified": {
     "date": "2026-08-05",
     "method": "./scripts/compute-spki-pins.sh against the live chains",

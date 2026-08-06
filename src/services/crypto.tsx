@@ -1,7 +1,13 @@
 
 import { update } from 'lodash';
 import { get, post, put } from '../utils/ApiService';
-import { marketApi, api, transactionApi } from '../utils/api';
+import { marketApi } from '../utils/api';
+
+// N-01: `api` (neowalletapi.azurewebsites.net) and `transactionApi`
+// (neowalletgrid.azurewebsites.net) both pointed at hosts that are NXDOMAIN,
+// so every call through them failed. Same paths, live pinned host.
+// marketApi (CoinGecko) resolves and stays where it is — it must keep its
+// third-party interceptor stack, which withholds the bearer token.
 
 
 const CryptoServices = {
@@ -12,13 +18,13 @@ const CryptoServices = {
         return get(`/api/v1/ExchangeWallet/DashBoard/M/WalletInfo`)
     },
     getCryptoCoinsData: async () => {
-        return api.get(`api/v1/Wallets/CryptoPortFolio/Exchange`)
+        return get(`api/v1/Wallets/CryptoPortFolio/Exchange`)
     },
     getAllCryptoTransactions: async () => {
-        return transactionApi.get(`api/v1/Transaction/Customers/All/All/All/All/All//?page=1&pageSize=10`)
+        return get(`api/v1/Transaction/Customers/All/All/All/All/All//?page=1&pageSize=10`)
     },
     getCryptoTransactionsDetails: async (id: any, type: any) => {
-        return api.get(`api/v1/Transactions/TemplatesTranction/${id}/${type}`)
+        return get(`api/v1/Transactions/TemplatesTranction/${id}/${type}`)
     },
     getCryptoWallets: async () => {
         return get(`/api/v1/ExchangeWallet/CryptoWallets`)
@@ -43,7 +49,7 @@ const CryptoServices = {
     getCryptoGrphData: async (coinName: string, currency: string, days: number) => {
     },
     getCryptoTransactionsSearch: async (type: any) => {
-        return api.get(`api/v1/Transactions/Crypto/Transation/${type}`)
+        return get(`api/v1/Transactions/Crypto/Transation/${type}`)
     }, getCurrencyLookup: async () => {
         return get(`api/v1/CardsWallet/CurrencyLookUp`)
     }, putCurrency: async (currency: any) => {

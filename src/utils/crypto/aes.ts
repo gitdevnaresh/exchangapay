@@ -327,7 +327,12 @@ const decryptCBCWith = (cipherBuf: any, iv: any, keyBuf: any): string => {
 const decryptLegacy = (
   cipherText: string,
   format: "v2-hex" | "zero-iv",
-  keyBuf: any
+  keyBuf: any,
+  // M-08: threaded purely so the removal metric can say whether the residue is
+  // the backend's (network) or this device's (at-rest). It never affects which
+  // formats are accepted — see legacyTelemetry.ts for why the distinction
+  // decides whether LEGACY_FORMATS_ENABLED can be flipped at all.
+  context: CryptoContext = "unknown"
 ): string => {
   if (!LEGACY_FORMATS_ENABLED) {
     throw new CryptoError("malformed", `Legacy format "${format}" is no longer accepted`);
@@ -341,7 +346,7 @@ const decryptLegacy = (
       Buffer.from(data.slice(0, 32), "hex"),
       keyBuf
     );
-    recordLegacyFormatDecrypt(format);
+    recordLegacyFormatDecrypt(format, context);
     return plain;
   }
 
@@ -363,11 +368,15 @@ const decryptLegacy = (
       "Legacy zero-IV decrypt produced non-text output; refusing it"
     );
   }
-  recordLegacyFormatDecrypt(format);
+  recordLegacyFormatDecrypt(format, context);
   return plain;
 };
 
-const decryptAnyInner = (cipherText: string, secretKey: SecretKey): string => {
+const decryptAnyInner = (
+  cipherText: string,
+  secretKey: SecretKey,
+  context: CryptoContext = "unknown"
+): string => {
   if (!cipherText) {
     throw new CryptoError("malformed", "Ciphertext is empty");
   }
@@ -393,7 +402,7 @@ const decryptAnyInner = (cipherText: string, secretKey: SecretKey): string => {
       // LEGACY_FORMATS_ENABLED goes false.
       if (LEGACY_FORMATS_ENABLED && bytes.length % AES_BLOCK_SIZE === 0) {
         try {
-          return decryptLegacy(cipherText, "zero-iv", keyBuf);
+          return decryptLegacy(cipherText, "zero-iv", keyBuf, context);
         } catch {
           // Fall through and report the real problem: the tag did not verify.
         }
@@ -417,7 +426,7 @@ const decryptAnyInner = (cipherText: string, secretKey: SecretKey): string => {
 
   if (format === "v2-hex" || format === "zero-iv") {
     try {
-      return decryptLegacy(cipherText, format, keyBuf);
+      return decryptLegacy(cipherText, format, keyBuf, context);
     } catch (error: any) {
       if (error instanceof CryptoError) throw error;
       throw new CryptoError("decrypt-failed", `Legacy decrypt failed: ${error?.message}`);
@@ -444,7 +453,7 @@ export const decryptAny = (
   context: CryptoContext = "unknown"
 ): string => {
   try {
-    return decryptAnyInner(cipherText, secretKey);
+    return decryptAnyInner(cipherText, secretKey, context);
   } catch (error) {
     // This build writes 0x02, but not everything it READS is 0x02 yet: older
     // installs still send CBC and old records are still CBC, and tampering with

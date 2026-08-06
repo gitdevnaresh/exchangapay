@@ -1,30 +1,55 @@
 /**
- * The legacy API layer — security finding H-01.
+ * The legacy API layer — security findings H-01, N-01.
  *
- * This file used to create seven apisauce instances from hardcoded host
- * literals with no interceptors of any kind: no Authorization header, no
- * device-risk header, no attestation, no idempotency key, no redacted error
- * capture, and no way to repoint a host per environment. It was not dead code
- * — nine service modules and the transaction/crypto thunks move bank
- * transfers, balances, account details and payee additions through it, on the
- * dashboard's primary render path.
+ * ===========================================================================
+ * WHAT THIS FILE WAS
+ * ===========================================================================
+ * Seven apisauce instances built from hardcoded host literals with no
+ * interceptors of any kind: no Authorization header, no device-risk header, no
+ * attestation, no idempotency key, no redacted error capture, and no way to
+ * repoint a host per environment (H-01). H-01 attached the shared interceptor
+ * stack and moved the hosts into configuration.
  *
- * Two things changed and nothing else:
+ * ===========================================================================
+ * N-01 — WHY THREE INSTANCES ARE GONE RATHER THAN FIXED
+ * ===========================================================================
+ * Moving the hosts into configuration surfaced something the literals had been
+ * hiding: four of them did not exist.
  *
- *   1. Every base URL is resolved from environments/*.js instead of a literal.
- *   2. Every instance runs the same interceptor stack as ApiService.ts, from
- *      the one place it is now defined (./apiInterceptors).
+ *     neowalletgrid.azurewebsites.net   NXDOMAIN
+ *     neowalletapi.azurewebsites.net    NXDOMAIN
+ *     neobank.azurewebsites.net         NXDOMAIN
+ *     tstlogin.suissebase.io            NXDOMAIN
  *
- * The endpoints, methods and exported names are untouched, so no call site
- * needs to change. This file is still scheduled for deletion — every service
- * should migrate onto ApiService.ts — but until then it is no longer a hole in
- * the controls.
+ * That is the finding recorded in the header of ./scripts/verify-hosts.sh, and
+ * it re-verifies today. These hosts were dead BEFORE the migration — the app
+ * had been calling them for as long as they were hardcoded here, and nothing
+ * said a word, because a request to a host that does not resolve looks exactly
+ * like a request to a host that is briefly down and until H-01 attached a
+ * response interceptor there was no telemetry on these routes at all.
  *
- * NOTE for whoever migrates the services: the exchangapay hosts below now
- * resolve per environment (tst -> tstapi.exchangapay.com), where the literals
- * always pointed at the production host regardless of the build. That is the
- * intended fix for the cross-environment traffic in H-04 scenario C, and it is
- * the one behavioural change here.
+ * So `transactionApi`, `api` and `authApi` were not carrying live traffic that
+ * a config change broke. They were carrying nothing, in every build, for as
+ * long as anyone can see in the history. Restoring the dead hosts to the .env
+ * files would have restored a base URL that resolves to nothing — the calls
+ * would fail exactly as they do now, just with a DNS error instead of an
+ * invalid-URL error, and the dead hosts would be back in the pin inventory.
+ *
+ * Their call sites now go through ApiService.ts, which resolves to the live,
+ * certificate-pinned first-party host. Evidence that this is the right target
+ * rather than a guess: onBoardingservice.tsx already had two functions for the
+ * SAME Sumsub endpoint — `sumsubToken` on the dead host and `sumsubAccessToken`
+ * on ApiService — differing only in the casing of "SumSub". The migration had
+ * started; it was simply never finished.
+ *
+ * ===========================================================================
+ * WHAT REMAINS
+ * ===========================================================================
+ * `cardApi` and `marketApi`, both pointed at hosts that resolve, both covered
+ * by the pin inventory (marketApi via a written exemption). `cardApi` is a
+ * duplicate of the instance inside ApiService.ts and should be folded into it;
+ * that is a mechanical change to its call sites, not a host question, so it is
+ * left for the migration that finishes this file off.
  */
 
 import { create } from "apisauce";
@@ -33,17 +58,6 @@ import {
   applyThirdPartyInterceptors,
   getUrl,
 } from "./apiInterceptors";
-
-const transactionApi = create({
-  baseURL: getUrl("walletGridUrl"),
-});
-const authApi = create({
-  baseURL: getUrl("authUrl"),
-});
-
-const api = create({
-  baseURL: getUrl("walletApiUrl"),
-});
 
 const marketApi = create({
   baseURL: getUrl("marketUrl"),
@@ -61,11 +75,9 @@ const cardApi = create({
 // hardened: an instance with no callers is not a route to secure, it is three
 // more base URLs to keep in the pin inventory.
 
-// Our own backends: bearer token, client IP, device posture, idempotency and
+// Our own backend: bearer token, client IP, device posture, idempotency and
 // redacted error capture.
-[transactionApi, authApi, api, cardApi].forEach((instance) =>
-  applyStandardInterceptors(instance)
-);
+applyStandardInterceptors(cardApi);
 
 // CoinGecko. A third party gets neither our session credential nor our fraud
 // signal — only the error interceptor, so a failed market-data call surfaces in
@@ -76,4 +88,4 @@ applyThirdPartyInterceptors(marketApi);
 // and the token now comes from the single Keychain accessor inside the request
 // interceptor (H-11) rather than a module-level variable that could go stale.
 
-export { transactionApi, authApi, marketApi, api, cardApi };
+export { marketApi, cardApi };

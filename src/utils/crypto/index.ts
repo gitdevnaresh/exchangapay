@@ -19,6 +19,9 @@ export type { CryptoFailure, WireFormat } from "./aes";
 
 export {
   getLegacyFormatCounts,
+  getLegacyFormatTotal,
+  hasNetworkLegacyUsage,
+  legacyFormatsEnabled,
   recordLegacyFormatDecrypt,
   resetLegacyFormatCounts,
 } from "./legacyTelemetry";

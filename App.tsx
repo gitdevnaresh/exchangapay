@@ -43,6 +43,7 @@ import RNBootSplash from "react-native-bootsplash";
 import {
   initializeDeviceIntegrity,
   refreshDeviceIntegrity,
+  reportPinExpiry,
 } from "./src/security";
 import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 
@@ -99,26 +100,12 @@ export default Sentry.wrap(function App() {
       // Crashlytics together. Until it resolves, getTelemetryConsentSync() is
       // false and events are dropped — startup errors are not sent optimistically.
       initializeTelemetry();
-      // M-03: pin expiry telemetry — both platforms, 90-day warning window.
-      // Android <pin-set expiration> silently stops enforcing after the date;
-      // iOS ATS has no expiry and a mismatch bricks the app until an App Store
-      // release. Neither failure is visible without this check.
-      // Dates: Android 2027-06-01, iOS intermediate (GeoTrust TLS RSA CA G1) 2027-11-02.
-      const PIN_EXPIRY_ANDROID = new Date("2027-06-01");
-      const PIN_EXPIRY_IOS = new Date("2027-11-02");
-      const pinExpiry = Platform.OS === "ios" ? PIN_EXPIRY_IOS : PIN_EXPIRY_ANDROID;
-      const pinDaysLeft = Math.floor((pinExpiry.getTime() - Date.now()) / 86400000);
-      if (pinDaysLeft < 90) {
-        log.warn("[M-03] Certificate pin-set expires soon — re-verify SPKI hashes and extend the expiry date", {
-          platform: Platform.OS,
-          expiry: pinExpiry.toISOString().slice(0, 10),
-          daysLeft: pinDaysLeft,
-        });
-        Sentry.captureMessage(
-          `[M-03] Pin-set expires in ${pinDaysLeft} days (${pinExpiry.toISOString().slice(0, 10)})`,
-          "warning"
-        );
-      }
+      // M-03: pin expiry telemetry. The dates used to be hardcoded here, a
+      // fourth copy of two dates that also live in the Android pin-set, the iOS
+      // Info.plist and the iOS build phase. They now come from
+      // security/pinning-policy.json via src/security/pinExpiry.ts, which also
+      // explains why the two platforms carry different dates.
+      reportPinExpiry();
       // H-05: load the at-rest key, then let redux-persist rehydrate. Unlike
       // the integrity probe below this one DOES gate rendering — PersistGate
       // holds its loading component until it resolves — because rehydrating

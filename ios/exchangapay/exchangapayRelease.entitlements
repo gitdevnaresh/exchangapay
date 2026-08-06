@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Release entitlements — H-07 / M-07.
+
+	This file is new because there was nothing to add to. CODE_SIGN_ENTITLEMENTS
+	was not set on EITHER build configuration, so exchangapay.entitlements was an
+	orphan: it existed on disk, and Xcode never read it. The shipped app therefore
+	carried no entitlements at all — no aps-environment, which is why push could
+	only ever have worked by accident, and no associated-domains, which is the
+	iOS half of M-07.
+
+	Two files rather than one, because aps-environment is the one entitlement that
+	must genuinely differ per configuration:
+
+	  exchangapay.entitlements         Debug    aps-environment = development
+	  exchangapayRelease.entitlements  Release  aps-environment = production
+
+	A Release build signed with `development` connects to Apple's sandbox APNs.
+	Tokens minted there are silently rejected by the production gateway, so push
+	fails for every user in a way that looks like a backend fault. The [H-07]
+	build phase asserts this file says `production`.
+-->
+<plist version="1.0">
+<dict>
+	<key>aps-environment</key>
+	<string>production</string>
+
+	<!--
+		M-07: Universal Links for the OAuth callback.
+
+		Both tenants are listed on purpose. iOS ignores an applinks domain that
+		does not resolve for this app, so an unmatched entry is inert rather than
+		an error — and PRODUCT_BUNDLE_IDENTIFIER is currently com.exchangapay.tst
+		in the Release configuration, so listing only the prod domain would leave
+		Universal Links dead in exactly the build this file governs.
+
+		REQUIRES, or the build will not sign:
+		  1. Associated Domains enabled on the App ID at developer.apple.com
+		  2. provisioning profiles regenerated afterwards
+		  3. Team ID + bundle ID registered in the Auth0 Dashboard, so Auth0
+		     serves the apple-app-site-association file
+
+		See security/M07_APPLINKS_SETUP.md.
+	-->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:exchangapay.eu.auth0.com</string>
+		<string>applinks:exchangapay-tst.eu.auth0.com</string>
+	</array>
+</dict>
+</plist>
