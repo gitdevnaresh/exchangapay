@@ -27,7 +27,7 @@ import CryptoServices from "../../services/crypto";
 import { ChevronRight, SendReceive, Wallet } from "../../assets/svg";
 import { setNotificationCount } from "../../redux/Actions/UserActions";
 import NotificationModuleService from "../../services/notification";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../components/ui";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import AccountDeactivatePopup from "../Currencypop/actDeactivatePopup";
 import { AlertItem, CRYPTO_CONSTANTS, CurrencyItem, SecurityInfo } from "./constants";

@@ -1,7 +1,7 @@
 import QuickCrypto from 'react-native-quick-crypto';
 import { KEYCHAIN_SERVICES, readSecret, writeSecret } from '../utils/storage/keychainPolicy';
-import moment from 'moment';
-import axios from 'axios';
+import dayjs from "../utils/dayjs";
+import { kommoHttp } from "../utils/thirdPartyHttp";
 
 export class KommoChatAPI {
     constructor(secretKey, channelId, accountId) {
@@ -23,7 +23,7 @@ export class KommoChatAPI {
 
     generateHeaders(body, endpoint, method = 'POST') {
         try {
-            const date = moment.utc().format('ddd, DD MMM YYYY HH:mm:ss') + ' GMT';
+            const date = dayjs.utc().format('ddd, DD MMM YYYY HH:mm:ss') + ' GMT';
             const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
             const signatureString = [
                 method.toUpperCase(),
@@ -58,7 +58,7 @@ export class KommoChatAPI {
             });
             const endpoint = `/v2/origin/custom/${this.channelId}/connect`;
             const headers = this.generateHeaders(body, endpoint);
-            const response = await axios.post(`${this.baseUrl}${endpoint}`, body, { headers });
+            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, body, { headers });
             const data = response.data;
             if (data.scope_id) {
                 this.scopeId = data.scope_id;
@@ -109,7 +109,7 @@ export class KommoChatAPI {
 
             const endpoint = `/v2/origin/custom/${this.scopeId}/chats`;
             const headers = this.generateHeaders(payload, endpoint);
-            const response = await axios.post(`${this.baseUrl}${endpoint}`, payload, { headers });
+            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, payload, { headers });
             const data = response.data;
             return data;
         } catch (error) {
@@ -159,7 +159,7 @@ export class KommoChatAPI {
         try {
             const endpoint = `/v2/origin/custom/${scopeId}`;
             const headers = this.generateHeaders(messagePayload, endpoint);
-            const response = await axios.post(`${this.baseUrl}${endpoint}`, messagePayload, { headers });
+            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, messagePayload, { headers });
             return { success: true, data: response.data };
 
         } catch (error) {
@@ -181,7 +181,7 @@ export class KommoChatAPI {
         const path = `/v2/origin/custom/${kommoScopeId}/chats/${conversation_id}/history`;
         const body = '';
         const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
-        const date = moment().utc().format('ddd, DD MMM YYYY HH:mm:ss [GMT]');
+        const date = dayjs().utc().format('ddd, DD MMM YYYY HH:mm:ss [GMT]');
         const stringToSign = [method, contentMD5, contentType, date, path].join('\n');
         const signature = QuickCrypto.createHmac('sha1', secret)
             .update(stringToSign, 'utf8')

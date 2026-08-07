@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import DefaultButton from "../../../components/DefaultButton";
 import { commonStyles } from "../../../components/CommonStyles";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../../components/ui";
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../../constants/theme/variables";
 import ParagraphComponent from "../../../components/Paragraph/Paragraph";
 import AntDesign from "react-native-vector-icons/AntDesign";

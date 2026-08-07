@@ -14,7 +14,7 @@ import ErrorComponent from '../../components/Error';
 import NoDataComponent from '../../components/nodata';
 import { CONSTANTS, NotificationDetails } from './constants';
 import RenderHTML from 'react-native-render-html';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import { s } from '../../constants/theme/scale';
 import SvgFromUrl from '../../components/svgIcon';
 import { useIsFocused, useNavigation } from '@react-navigation/native';

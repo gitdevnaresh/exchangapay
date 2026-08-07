@@ -16,7 +16,7 @@ import CryptoServices from '../../services/crypto';
 import SvgFromUrl from '../../components/svgIcon';
 import { s } from '../../constants/theme/scale';
 import { copyEphemeral } from "../../utils/clipboard";
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import DefaultButton from '../../components/DefaultButton';
 import ErrorComponent from '../../components/Error';
 import { isErrorDispaly } from '../../utils/helpers';

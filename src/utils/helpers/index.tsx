@@ -1,7 +1,6 @@
-import dayjs from "dayjs";
+import dayjs from "../dayjs";
 import { Platform } from "react-native";
 import { decode as atob } from "base-64";
-import moment from "moment";
 import Auth0 from "react-native-auth0";
 import { getAllEnvData } from "../../../Environment";
 import store from "../../store";
@@ -532,9 +531,14 @@ export const formateExpiryValidationDate = (inputDate: any): string | null => {
   if (!inputDate) {
     return null;
   }
-  const formattedDate = moment(inputDate, "YYYY/MM/DD").format(
-    "YYYY-MM-DDTHH:mm:ss"
-  );
+  // The API sends this as a string; dayjs' customParseFormat rejects a Date
+  // object when a format is supplied, where moment silently ignored it, so the
+  // format is only applied to the shape it was written for.
+  const parsed =
+    typeof inputDate === "string"
+      ? dayjs(inputDate, "YYYY/MM/DD")
+      : dayjs(inputDate);
+  const formattedDate = parsed.format("YYYY-MM-DDTHH:mm:ss");
   return formattedDate;
 };
 

@@ -23,13 +23,13 @@ import { formatDate, formatDateMonth, formatDateTimeAPI, isErrorDispaly, trimVal
 import Loadding from "../../components/skeleton";
 import ErrorComponent from "../../components/Error";
 import { personalInfoLoader } from "./skeleton_views";
-import SignatureCapture from 'react-native-signature-capture';
+import SignatureScreen, { SignatureViewRef } from "react-native-signature-canvas";
 import RadioButton from "../../components/Button/RadioButton";
 import { PERMISSIONS, request, RESULTS } from "react-native-permissions";
 import { FIELD_CONSTANTS, FORMIK_CONSTANTS, PLACEHOLDER_CONSTANTS, PROFILE_CONSTANTS, UserDetails } from "./constants";
 import OverlayPopup from "../cards/SelectPopup";
 import { CREATE_KYC_ADDRESS_CONST } from "../cards/constant";
-import moment from "moment";
+import dayjs from "../../utils/dayjs";
 
 const EditProfile = (props: any) => {
   const ref = useRef<any>(null);
@@ -58,7 +58,7 @@ const EditProfile = (props: any) => {
   const [passportImg, setPassportImg] = useState<any>("");
   const [selectIdPhoto, setSelectIdPhoto] = useState<any>("");
   const [signPhoto, setSignPhoto] = useState<any>("");
-  const signatureRef = useRef(null);
+  const signatureRef = useRef<SignatureViewRef>(null);
   const [showPicker, setShowPicker] = useState<boolean>(false);
   const [date, setDate] = useState<any>(null);
   const [expiryDatePicker, setExpiryDatePicker] = useState<boolean>(false);
@@ -107,10 +107,13 @@ const EditProfile = (props: any) => {
 
   };
 
-  const handleSaveSignature = (event: any) => {
-    const { pathName, encoded } = event;
-    if (pathName || encoded) {
-      selectSignPhoto(event)
+  // react-native-signature-canvas hands back a `data:image/png;base64,...`
+  // string, where react-native-signature-capture used to hand back
+  // `{ pathName, encoded }`. selectSignPhoto strips the data-URI prefix so the
+  // BytesToImageConveter payload stays byte-identical to what it was before.
+  const handleSaveSignature = async (event: any) => {
+    if (event) {
+      await selectSignPhoto(event);
       togglePopup();
     }
   };
@@ -121,17 +124,24 @@ const EditProfile = (props: any) => {
 
   const saveSign = () => {
     try {
-      signatureRef?.current?.saveImage();
+      signatureRef?.current?.readSignature();
     } catch (error) {
     }
   };
 
   const resetSign = () => {
     try {
-      signatureRef?.current?.resetImage();
+      signatureRef?.current?.clearSignature();
     } catch (error) {
     }
   };
+
+  // Hides the canvas' own footer/border so the existing Save / Reset buttons
+  // below stay the only controls, exactly as with the native capture view.
+  const signatureStyle = `.m-signature-pad {box-shadow: none; border: none; }
+                    .m-signature-pad--body {border: none;}
+                    .m-signature-pad--footer {display: none; margin: 0px;}
+                    body,html {width: 100%; height: 100%;}`;
 
 
 
@@ -411,8 +421,9 @@ const EditProfile = (props: any) => {
 
       setSignPhotoLoading(true);
 
+      const cleanBase64 = String(event ?? "").replace(/^data:image\/\w+;base64,/, "");
       let Obj = {
-        "imageBytes": event.encoded
+        "imageBytes": cleanBase64
       }
       const uploadRes = await ProfileService.uploadSingnitureFile(Obj);
       if (uploadRes.status === 200) {
@@ -465,8 +476,8 @@ const EditProfile = (props: any) => {
       return false;
 
     } else {
-      const today = moment();
-      const birthDate = moment(value);
+      const today = dayjs();
+      const birthDate = dayjs(value);
       return today.diff(birthDate, 'years') >= 18;
     }
 
@@ -1548,16 +1559,16 @@ const EditProfile = (props: any) => {
                                 <View
                                   style={styles.signatureCaptureContainer}
                                 >
-                                  <SignatureCapture
+                                  <SignatureScreen
                                     ref={signatureRef}
-                                    style={styles.signatureCapture}
-                                    onSaveEvent={handleSaveSignature}
-                                    onDragEvent={() => { }}
-                                    showNativeButtons={false}
+                                    onOK={handleSaveSignature}
+                                    onEmpty={() => { }}
+                                    descriptionText={PROFILE_CONSTANTS.SIGN_HERE}
+                                    clearText="Clear"
+                                    confirmText="Save"
+                                    penColor="#000000"
                                     backgroundColor="#ffffff"
-                                    strokeColor="#000000"
-                                    minStrokeWidth={4}
-                                    maxStrokeWidth={4}
+                                    webStyle={signatureStyle}
                                   />
                                 </View>
                                 <View style={[commonStyles.mb24]} />
@@ -1772,16 +1783,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   signatureCaptureContainer: {
+    // The canvas is a WebView and fills its parent, so the height that used to
+    // live on `signatureCapture` has to be on the container now.
+    height: (WINDOW_HEIGHT * 40) / 100,
     alignItems: 'center', borderWidth: 1,
     borderColor: NEW_COLOR.BORDER_GREY,
     borderRadius: 0,
-  },
-  signatureCapture: {
-    width: '100%',
-    height: (WINDOW_HEIGHT * 50) / 100,
-    borderWidth: 1,
-    borderColor: NEW_COLOR.BORDER_GREY,
-    borderRadius: 16,
+    overflow: 'hidden',
   },
   fw400: {
     fontWeight: "400",

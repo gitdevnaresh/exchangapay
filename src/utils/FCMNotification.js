@@ -1,70 +1,52 @@
-import React from 'react';
-import PushNotificationIOS from '@react-native-community/push-notification-ios';
-import PushNotification from 'react-native-push-notification';
+import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import { log } from './logger';
 
+// P-03: this used to run react-native-push-notification and
+// @react-native-community/push-notification-ios alongside @notifee/react-native
+// and @react-native-firebase/messaging — four packages, two of them native, for
+// one job. Notifee already backed the download notifications in
+// src/navigation/AppContainer.tsx and src/screens/Crypto/cryptoCardTransations/DownloadBill.tsx,
+// so display now goes through it on both platforms and transport stays with
+// firebase/messaging. The public shape of this module is unchanged; callers in
+// App.tsx, SplashScreen and the logout paths keep working as they did.
+const DEFAULT_CHANNEL_ID = 'default';
+
 class FCMNotification {
+  // Notifee channel ids we have already created this session. createChannel is
+  // idempotent, but skipping the native round-trip on every message keeps the
+  // foreground handler cheap.
+  createdChannels = new Set();
+
   initiate = onNotificationAction => {
-    // Must be outside of any component LifeCycle (such as `componentDidMount`).
-    PushNotification.configure({
-      // (optional) Called when Token is generated (iOS and Android)
-      onRegister: function (token) {
-        // console.log('TOKEN:', token);
-      },
-
-      // (required) Called when a remote is received or opened, or local notification is opened
-      onNotification: function (notification) {
-        if (notification.userInteraction) {
-          onNotificationAction(notification.data);
-        }
-
-        // process the notification
-
-        // (required) Called when a remote is received or opened, or local notification is opened
-        notification.finish(PushNotificationIOS.FetchResult.NoData);
-      },
-
-      // (optional) Called when Registered Action is pressed and invokeApp is false, if true onNotification will be called (Android)
-      onAction: function (notification) {},
-
-      // (optional) Called when the user fails to register for remote notifications. Typically occurs when APNS is having issues, or the device is a simulator. (iOS)
-      onRegistrationError: function (err) {
-        log.error('[FCMService] register error', err);
-      },
-
-      // IOS ONLY (optional): default: all - Permissions to register.
-      permissions: {
-        alert: true,
-        badge: false,
-        sound: true,
-      },
-
-      // Should the initial notification be popped automatically
-      // default: true
-      popInitialNotification: false,
-
-      /**
-       * (optional) default: true
-       * - Specified if permissions (ios) and token (android and ios) will requested or not,
-       * - if not, you must call PushNotificationsHandler.requestPermissions() later
-       * - if you are not using remote notification or do not have Firebase installed, use this:
-       *     requestPermissions: Platform.OS === 'ios'
-       */
-      requestPermissions: true,
+    // Asks on iOS, and on Android 13+ maps to POST_NOTIFICATIONS. Without this
+    // displayNotification is silently dropped, which is what
+    // PushNotification.configure({ requestPermissions: true }) used to cover.
+    notifee.requestPermission().catch(err => {
+      log.error('[FCMService] permission request failed', err);
     });
+
+    // A tap on a notification we displayed ourselves while the app was in the
+    // foreground. Backgrounded/quit taps arrive through
+    // messaging().onNotificationOpenedApp / getInitialNotification below.
+    this.foregroundEventUnsubscribe = notifee.onForegroundEvent(
+      ({ type, detail }) => {
+        if (type === EventType.PRESS && detail.notification?.data) {
+          onNotificationAction(detail.notification.data);
+        }
+      },
+    );
 
     this.registerServices(onNotificationAction);
   };
 
   registerServices = onNotificationAction => {
     this.fcmForegroundService = messaging().onMessage(async remoteMessage => {
-      // console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
       if (Platform.OS === 'android') {
-        this.showAndroidLocalNotification(remoteMessage);
+        await this.showAndroidLocalNotification(remoteMessage);
       } else {
-        this.showLocalNotification(remoteMessage);
+        await this.showLocalNotification(remoteMessage);
       }
     });
 
@@ -74,7 +56,6 @@ class FCMNotification {
     });
 
     messaging().onNotificationOpenedApp(remoteMessage => {
-      // console.log('Notification caused app to open from background state:', remoteMessage.data);
       onNotificationAction(remoteMessage?.data);
     });
 
@@ -88,7 +69,15 @@ class FCMNotification {
   };
 
   unRegister = () => {
-    PushNotification.unregister();
+    // PushNotification.unregister() dropped the device registration so the
+    // signed-out user stopped receiving pushes. Deleting the FCM token is the
+    // equivalent, and it is what the server keys delivery on.
+    messaging()
+      .deleteToken()
+      .catch(err => {
+        log.error('[FCMService] unRegister failed', err);
+      });
+    notifee.cancelAllNotifications().catch(() => {});
   };
 
   deleteToken = () => {
@@ -114,47 +103,60 @@ class FCMNotification {
       });
   };
 
-  showAndroidLocalNotification = remoteMessage => {
-    const { notification, data, collapseKey } = remoteMessage;
-    PushNotification.createChannel(
-      {
-        channelId: collapseKey, // (required)
-        channelName: collapseKey, // (required)
-        playSound: true,
-        soundName: 'default',
-        importance: 4,
-      },
-      created => {
-        this.showLocalNotification(remoteMessage);
-      }, // (optional) callback returns whether the channel was created, false means it already existed.
-    );
+  ensureChannel = async collapseKey => {
+    const channelId = collapseKey || DEFAULT_CHANNEL_ID;
+    if (this.createdChannels.has(channelId)) {
+      return channelId;
+    }
+    await notifee.createChannel({
+      id: channelId,
+      name: channelId,
+      importance: AndroidImportance.HIGH,
+      sound: 'default',
+    });
+    this.createdChannels.add(channelId);
+    return channelId;
   };
 
-  showLocalNotification = remoteMessage => {
-    const { notification, data, collapseKey } = remoteMessage;
-    PushNotification.localNotification({
-      /* Android Only Properties */
-      channelId: collapseKey, // (required) channelId, if the channel doesn't exist, notification will not trigger.
-      channelName: collapseKey,
-      showWhen: true, // (optional) default: true
-      autoCancel: true, // (optional) default: true
-      largeIcon: 'ic_launcher', // (optional) default: "ic_launcher". Use "" for no large icon.
-      smallIcon: 'ic_launcher', // (optional) default: "ic_notification" with fallback for "ic_launcher". Use "" for default small icon.
-      bigText: notification.body, // (optional) default: "message" prop
-      subText: '', // (optional) default: none
-      data: data,
-      /* iOS only properties */
-      category: '', // (optional) default: empty string
-      // subtitle: "My Notification Subtitle", // (optional) smaller title below notification title
+  showAndroidLocalNotification = remoteMessage => {
+    // Kept as a separate entry point for the callers that already branch on
+    // Platform.OS; the channel work now lives in showLocalNotification.
+    return this.showLocalNotification(remoteMessage);
+  };
 
-      /* iOS and Android properties */
-      id: 0, // (optional) Valid unique 32 bit integer specified as string. default: Autogenerated Unique ID
-      title: notification.title, // (optional)
-      message: notification.body, // (required)
-      userInfo: data, // (optional) default: {} (using null throws a JSON value '<null>' error)
-      soundName: 'default', // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
-      number: 10, // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
-    });
+  showLocalNotification = async remoteMessage => {
+    const { notification, data, collapseKey } = remoteMessage || {};
+    try {
+      const channelId = await this.ensureChannel(collapseKey);
+      // Notifee requires every data value to be a string.
+      const payload = Object.entries(data || {}).reduce((acc, [key, value]) => {
+        acc[key] = typeof value === 'string' ? value : JSON.stringify(value);
+        return acc;
+      }, {});
+
+      await notifee.displayNotification({
+        title: notification?.title,
+        body: notification?.body,
+        data: payload,
+        android: {
+          channelId,
+          smallIcon: 'ic_launcher',
+          largeIcon: 'ic_launcher',
+          showTimestamp: true,
+          autoCancel: true,
+          sound: 'default',
+          importance: AndroidImportance.HIGH,
+          // Without a pressAction the tap does nothing and the notification is
+          // not dismissed — this is what routes it to onForegroundEvent.
+          pressAction: { id: 'default' },
+        },
+        ios: {
+          sound: 'default',
+        },
+      });
+    } catch (err) {
+      log.error('[FCMService] displayNotification failed', err);
+    }
   };
 }
 

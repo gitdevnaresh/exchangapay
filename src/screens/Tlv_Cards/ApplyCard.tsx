@@ -6,7 +6,7 @@ import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/va
 import { ms, s } from '../../constants/theme/scale';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import DefaultButton from '../../components/DefaultButton';
 import { commonStyles } from '../../components/CommonStyles';
 import { isErrorDispaly } from '../../utils/helpers';

@@ -60,7 +60,7 @@ import {
 import OverlayPopup from "../cards/SelectPopup";
 import PhoneCodePicker from "../../components/PhoneCodeSelect";
 import CardsModuleService from "../../services/card";
-import moment from "moment";
+import dayjs from "../../utils/dayjs";
 import { CREATE_KYC_ADDRESS_CONST } from "../cards/constant";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import useMemberLogin from "../../hooks/useMemberLogin";
@@ -653,8 +653,8 @@ const AddKycInfomation = (props: any) => {
     if (!value) {
       return false;
     } else {
-      const today = moment();
-      const birthDate = moment(value);
+      const today = dayjs();
+      const birthDate = dayjs(value);
       return today.diff(birthDate, "years") >= 18;
     }
   };

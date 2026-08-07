@@ -1,5 +1,5 @@
 
-import axios from 'axios';
+import { webhookHttp } from "../utils/thirdPartyHttp";
 import { get, post } from '../utils/ApiService';
 import { fcmNotification } from '../utils/FCMNotification';
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from '../security';
@@ -51,7 +51,7 @@ const OnBoardingService = {
     }, sumsubCompleted: async () => {
         return get(`api/v1/SumSub/getSumsubData`)
     }, sendUserWebhook: async (userData: any) => {
-        const response = await axios.post(WEBHOOK_URL, userData, {
+        const response = await webhookHttp.post(WEBHOOK_URL, userData, {
             headers: { 'Content-Type': 'application/json' }
         });
         return response

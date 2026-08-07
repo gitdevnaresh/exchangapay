@@ -21,7 +21,7 @@ import Authentication from "../Profile/authentication";
 import CoinsDropdown from "../Tlv_Cards/CoinsDropDown";
 import Loadding from "../../components/skeleton";
 import { personalInfoLoader } from "../Profile/skeleton_views";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../components/ui";
 import SendOTP from "../../components/SendOTP";
 import WebView from "react-native-webview"
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";

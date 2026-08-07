@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, useWindowDimensions } from 'react-native';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
 import RenderHtml from 'react-native-render-html';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { commonStyles } from '../../components/CommonStyles';

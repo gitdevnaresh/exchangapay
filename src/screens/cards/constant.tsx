@@ -1,4 +1,4 @@
-import moment from 'moment';
+import dayjs from "../../utils/dayjs";
 import * as Yup from 'yup';
 export interface refKycDetailsInterface {
     firstName: any,
@@ -125,8 +125,8 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
         dob: Yup.date().nullable().required('Is required')
             .test('is-18-years-old', 'You must be at least 18 years old', function (value) {
                 if (!value) return false;
-                const today = moment();
-                const birthDate = moment(value);
+                const today = dayjs();
+                const birthDate = dayjs(value);
                 return today.diff(birthDate, 'years') >= 18;
             }),
     },
@@ -177,7 +177,7 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
     },
     passport: {
         docExpiryDate: Yup.date().required('Is required')
-            .min(moment().add(1, 'day').startOf('day').toDate(), 'Expiry date must be greater than current date.'),
+            .min(dayjs().add(1, 'day').startOf('day').toDate(), 'Expiry date must be greater than current date.'),
         idType: Yup.string().required('Is required'),
         idNumber: Yup.string().required('Is required')
             .matches(/^[a-zA-Z0-9]*$/, "Document Number must contain only characters and numbers")
@@ -326,11 +326,11 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
     issuedate: {
         docissueDate: Yup.date()
             .required('is required.')
-            .max(moment().subtract(1, 'day').endOf('day').toDate(), 'Document issue date cannot be today or in the future.')
+            .max(dayjs().subtract(1, 'day').endOf('day').toDate(), 'Document issue date cannot be today or in the future.')
             .test('before-expiry', ' Document issue date cannot be after expiry date.', function (value) {
                 const { docExpiryDate } = this.parent;
                 if (!value || !docExpiryDate) return true;
-                return moment(value).isSameOrBefore(moment(docExpiryDate), 'day');
+                return dayjs(value).isSameOrBefore(dayjs(docExpiryDate), 'day');
             })
     }
 

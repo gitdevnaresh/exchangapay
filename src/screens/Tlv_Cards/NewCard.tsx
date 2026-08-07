@@ -12,7 +12,6 @@ import { useIsFocused } from "@react-navigation/native";
 import { isErrorDispaly } from "../../utils/helpers";
 import ErrorComponent from "../../components/Error";
 import Loadding from "../../components/skeleton";
-import "moment-timezone";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { ms, s } from "../../constants/theme/scale";

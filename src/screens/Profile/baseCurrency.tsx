@@ -4,7 +4,7 @@ import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../constants/theme/variables";
 import { commonStyles } from "../../components/CommonStyles";
 import DefaultButton from "../../components/DefaultButton";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../components/ui";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import CryptoServices from "../../services/crypto";
 import { s } from "../../constants/theme/scale";

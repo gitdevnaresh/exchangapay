@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import 'moment-timezone';
 import { Container } from '../../../components';
 import { View, SafeAreaView, ScrollView, TouchableOpacity, Animated, BackHandler, Platform } from 'react-native';
 import { NEW_COLOR } from '../../../constants/theme/variables';

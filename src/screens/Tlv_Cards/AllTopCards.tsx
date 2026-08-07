@@ -9,7 +9,6 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { commonStyles } from "../../components/CommonStyles";
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import "moment-timezone";
 import ErrorComponent from '../../components/Error';
 import Loadding from '../../components/skeleton';
 import { sellCoinSelect } from '../Crypto/buySkeleton_views';

@@ -24,7 +24,7 @@ import TextInputField from "../../components/textInput";
 import LabelComponent from "../../components/Paragraph/label";
 import { commonStyles } from "../../components/CommonStyles";
 import Authentication from "./authentication";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../components/ui";
 import ErrorComponent from "../../components/Error";
 import Feather from "react-native-vector-icons/Feather";
 import { isErrorDispaly } from "../../utils/helpers";

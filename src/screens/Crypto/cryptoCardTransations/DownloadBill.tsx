@@ -21,8 +21,7 @@ import DefaultButton from "../../../components/DefaultButton";
 import { commonStyles } from "../../../components/CommonStyles";
 import CardsModuleService from "../../../services/card";
 import { isErrorDispaly } from "../../../utils/helpers";
-import moment from "moment";
-import "moment-timezone";
+import dayjs from "../../../utils/dayjs";
 import notifee, { EventType } from "@notifee/react-native";
 import FileViewer from "react-native-file-viewer";
 import ModalPicker from "../../../components/ModalPicker";
@@ -48,8 +47,8 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
   const [showFromDatePicker, setShowFromDatePicker] = useState<boolean>(false);
   const [fromDate, setFromDate] = useState<any>(new Date());
   const [toDate, setToDate] = useState<any>(new Date());
-  const formattedFromDate = moment(fromDate).format("YYYY-MM-DD");
-  const formattedToDate = moment(toDate).format("YYYY-MM-DD");
+  const formattedFromDate = dayjs(fromDate).format("YYYY-MM-DD");
+  const formattedToDate = dayjs(toDate).format("YYYY-MM-DD");
   const [showToDatePicker, setShowToDatePicker] = useState<boolean>(false);
 
   const data: any = [
@@ -270,7 +269,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     }
   };
   const formateDate = (date: any) => {
-    const formatedDate = moment(date).format("DD/MM/YYYY");
+    const formatedDate = dayjs(date).format("DD/MM/YYYY");
     return formatedDate;
   };
   const handleOpenDatePicker = () => {

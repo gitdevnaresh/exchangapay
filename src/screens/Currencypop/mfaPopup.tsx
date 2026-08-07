@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View ,StyleSheet} from 'react-native';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "../../components/ui";
 import { commonStyles } from '../../components/CommonStyles';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { s } from '../../constants/theme/scale';

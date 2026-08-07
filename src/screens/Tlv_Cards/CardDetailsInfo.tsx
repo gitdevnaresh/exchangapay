@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from "../../constants/theme/variables";
 import { commonStyles } from "../../components/CommonStyles";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "../../components/ui";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { ms, s } from "../../constants/theme/scale";
 import { useSelector } from "react-redux";

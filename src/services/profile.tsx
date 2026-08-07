@@ -1,5 +1,5 @@
 
-import axios from "axios";
+import { webhookHttp } from "../utils/thirdPartyHttp";
 import { fileget, filepost, get, post, put } from "../utils/ApiService";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from "../security";
@@ -101,7 +101,7 @@ const ProfileService = {
     return get(`api/v1/Common/TwoFactorAuthentication/${data}`);
   },
   sendUserWebhook: async (userData: any) => {
-    const response = await axios.post(WEBHOOK_URL, userData, {
+    const response = await webhookHttp.post(WEBHOOK_URL, userData, {
       headers: { 'Content-Type': 'application/json' }
     });
     return response

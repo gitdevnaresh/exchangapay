@@ -7,7 +7,6 @@ import { useIsFocused } from "@react-navigation/native";
 import Loadding from "../../components/skeleton";
 import { CardViewtotalLoader } from "../cards/CardsSkeleton_views";
 import { useSelector } from "react-redux";
-import "moment-timezone";
 import ErrorComponent from "../../components/Error";
 import { NEW_COLOR, WINDOW_WIDTH } from "../../constants/theme/variables";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";

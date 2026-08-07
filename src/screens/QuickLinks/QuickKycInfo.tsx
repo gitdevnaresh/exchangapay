@@ -22,7 +22,7 @@ import {
   isErrorDispaly,
 } from "../../utils/helpers";
 import ErrorComponent from "../../components/Error";
-import moment from "moment";
+import dayjs from "../../utils/dayjs";
 import CardsModuleService from "../../services/card";
 import { useIsFocused } from "@react-navigation/native";
 import Loadding from "../../components/skeleton";
@@ -203,10 +203,10 @@ const QuickKYCInfo = (props: any) => {
     }
     const formattedValues = {
       ...values,
-      dob: (values?.dob !== null && moment(values?.dob).toISOString()) || null,
+      dob: (values?.dob !== null && dayjs(values?.dob).toISOString()) || null,
       docExpiryDate:
         (values?.docExpiryDate !== "" &&
-          moment(values?.docExpiryDate).toISOString()) ||
+          dayjs(values?.docExpiryDate).toISOString()) ||
         null,
       faceImage: (values?.faceImage !== "" && values?.faceImage) || null,
       signature: (values?.signature !== "" && values?.signature) || null,

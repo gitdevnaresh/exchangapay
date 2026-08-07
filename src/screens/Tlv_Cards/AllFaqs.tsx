@@ -7,7 +7,6 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { commonStyles } from "../../components/CommonStyles";
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import "moment-timezone";
 import CardsModuleService from '../../services/card';
 import { isErrorDispaly } from '../../utils/helpers';
 import { CardFAQsLoader } from './CardsSkeleton';

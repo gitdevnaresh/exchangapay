@@ -37,7 +37,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { Formik } from "formik";
 import { FormData, generateValidationSchema } from "./constant";
 import KycAddress from "./kycAddress";
-import moment from "moment";
+import dayjs from "../../utils/dayjs";
 import useMemberLogin from "../../hooks/useMemberLogin";
 import { ReviewImage } from "../../assets/svg/";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
@@ -378,14 +378,14 @@ const ApplyExchangaCard = (props: any) => {
   const handleRedirectToExchangeCard = async (values?: any) => {
     const formattedValues = {
       ...values,
-      dob: (values?.dob !== null && moment(values?.dob).toISOString()) || null,
+      dob: (values?.dob !== null && dayjs(values?.dob).toISOString()) || null,
       docExpiryDate:
         (values?.docExpiryDate !== "" &&
-          moment(values?.docExpiryDate).toISOString()) ||
+          dayjs(values?.docExpiryDate).toISOString()) ||
         null,
       docissueDate:
         (values?.docissueDate !== "" &&
-          moment(values?.docissueDate).toISOString()) ||
+          dayjs(values?.docissueDate).toISOString()) ||
         null,
       faceImage: (values?.faceImage !== "" && values?.faceImage) || null,
       signature: (values?.signature !== "" && values?.signature) || null,
