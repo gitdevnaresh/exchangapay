@@ -6,6 +6,12 @@ const defaultConfig = getDefaultConfig(__dirname);
 
 const config = {
   transformer: {
+    // Spreading the default transformer keeps React Native 0.83's own
+    // `getTransformOptions`, which already returns `inlineRequires: true`
+    // (see @react-native/metro-config/dist/index.js). Audit finding P-05 asked
+    // for inline-requires to be enabled; it is on for every bundle we produce.
+    // Do not replace this spread with a bare object — that silently drops
+    // inline-requires and puts ~200-400ms back on TTI.
     ...defaultConfig.transformer,
     babelTransformerPath: require.resolve("react-native-svg-transformer"),
   },

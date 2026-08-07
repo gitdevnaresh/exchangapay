@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "./ui";
 import { commonStyles } from "./CommonStyles";
 import ParagraphComponent from "./Paragraph/Paragraph";
 import DefaultButton from "./DefaultButton";

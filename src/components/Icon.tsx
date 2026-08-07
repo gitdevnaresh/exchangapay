@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image } from 'react-native-elements';
+import { Image } from "./ui";
 import { SvgUri } from 'react-native-svg';
 
 interface IconImageProps {

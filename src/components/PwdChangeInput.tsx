@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useEffect, useState } from 'react';
 import { StyleSheet, Platform } from 'react-native';
-import { Input, Image } from 'react-native-elements';
+import { Input } from "./ui";
 import { Pressable, View } from 'react-native';
 import Text from '../components/Text';
 import Icons from '../.../../assets/icons';

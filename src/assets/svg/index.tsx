@@ -20,9 +20,6 @@ import PricingIcon from './pricing.svg';
 import LocationIcon from './location.svg';
 import SecurityIcon from './security.svg';
 
-import EpayIcon from './epay.svg';
-import AlipayIcon from './alipay.svg';
-import AmazonIcon from './amazon.svg';
 import NoDataIcon from './no-data.svg';
 import Scanbar from './scaner-barcode.svg';
 import EditIcon from './profile-edit.svg';
@@ -46,7 +43,6 @@ import Sandbox from './sandbox.svg';
 import Arrowdown from './arrowdown.svg';
 import MenuIcon from './menu.svg'
 import ReviewedIcon from './reviewedicon.svg'
-import OnlinePaymentIcon from './onlinepayment.svg'
 import StatusIcon from './statusicon.svg';
 import ExchangapayXLogo from './logox_white.svg';
 import AccountInfoIcon from "./Account_Information.svg";
@@ -54,7 +50,6 @@ import PersonalInfoIcon from "./Personal_Information.svg";
 import KycInfoIcon from "./KYC_Information.svg";
 import ViewIcon from "./Eye.svg";
 import LogoxWhite from "./logox_white.svg";
-import KycImage from "./kycimg.svg";
 import ReviewImage from "./kyc review.svg";
 import DisableIcon from "./disable.svg";
 import Disable from "./disableIcon.svg";
@@ -69,15 +64,11 @@ import AttachmentIcon from "./attachment.svg"
 
 
 export {
-    KycImage,
     LogoxWhite,
     StatusIcon,
     UserGreyWhite,
     WithdrawIcon,
     DepositIcon,
-    AmazonIcon,
-    AlipayIcon,
-    EpayIcon,
     IconRefresh,
     CardFreeze,
     IconDoller,
@@ -119,7 +110,6 @@ export {
     MenuIcon,
     ReviewedIcon,
     Arrowdown,
-    OnlinePaymentIcon,
     ExchangapayXLogo,
     AccountInfoIcon,
     PersonalInfoIcon,

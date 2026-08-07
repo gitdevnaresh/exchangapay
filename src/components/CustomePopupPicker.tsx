@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Overlay } from 'react-native-elements';
+import { Overlay } from "./ui";
 import ParagraphComponent from './Paragraph/Paragraph';
 import LabelComponent from './Paragraph/label';
 import AntDesign from 'react-native-vector-icons/AntDesign';

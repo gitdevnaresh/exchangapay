@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { Overlay } from "react-native-elements";
+import { Overlay } from "./ui";
 import { s } from "../constants/theme/scale";
 import { NEW_COLOR } from "../constants/theme/variables";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
-import { Button } from "react-native-elements";
+import { Button } from "./ui";
 import { ms, s } from "../constants/theme/scale";
 import { NEW_COLOR } from "../constants/theme/variables";
 import AntDesign from "react-native-vector-icons/AntDesign";
