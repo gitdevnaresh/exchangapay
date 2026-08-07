@@ -9,7 +9,7 @@
 # chain for each host with the SHA-256 SPKI hash of every certificate in it.
 #
 #   ./scripts/compute-spki-pins.sh                 every host in the inventory
-#   ./scripts/compute-spki-pins.sh neobank.azurewebsites.net   just this one
+#   ./scripts/compute-spki-pins.sh api.exchangapay.com   just this one
 #
 # WHICH HASH TO PIN: the INTERMEDIATE, not the leaf. A leaf pin breaks on every
 # certificate renewal — the prod leaf expires 2026-12-13. Take a second pin from

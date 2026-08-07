@@ -3,8 +3,7 @@
 # Does every host the app is configured to reach actually exist?
 #
 # This script exists because the answer turned out to be no. Four of the eight
-# hosts in the H-02 inventory — neobank, neowalletgrid and neowalletapi
-# .azurewebsites.net, and tstlogin.suissebase.io — return NXDOMAIN from the
+# previously configured legacy hosts returned NXDOMAIN from the
 # public resolver. The app had been calling them for as long as they were
 # hardcoded in src/utils/api.tsx, and nothing said a word: a request to a host
 # that does not resolve looks exactly like a request to a host that is briefly

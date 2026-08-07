@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exchanga Pay — Mobile Security, VAPT &amp; Performance Audit (v3.0)</title>
+<style>
+:root{
+  --bg:#0f1115; --bg2:#151922; --panel:#171c26; --line:#252c3a;
+  --fg:#dfe4ee; --fg2:#98a2b8; --fg3:#6b7488;
+  --accent:#5b9dff; --accent2:#7c5cff;
+  --crit:#ff4d5e; --high:#ff8a3d; --med:#ffc23d; --ok:#3ddc97;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f7f8fb; --bg2:#ffffff; --panel:#ffffff; --line:#e2e6ee;
+    --fg:#1b2130; --fg2:#5a6478; --fg3:#8791a5;
+    --accent:#2563eb; --accent2:#6d3bd6;
+    --crit:#d92038; --high:#c2600d; --med:#a37400; --ok:#0f8a5f;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:15px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.shell{display:grid;grid-template-columns:296px minmax(0,1fr);gap:0;max-width:1560px;margin:0 auto}
+
+/* ---- sidebar ---- */
+nav{
+  position:sticky;top:0;height:100vh;overflow-y:auto;padding:26px 18px 60px;
+  border-right:1px solid var(--line);background:var(--bg2);
+}
+nav .brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-bottom:4px}
+nav .title{font-size:16px;font-weight:650;line-height:1.35;margin-bottom:18px}
+nav a{display:block;color:var(--fg2);text-decoration:none;padding:5px 10px;border-radius:6px;font-size:13.5px;border-left:2px solid transparent}
+nav a:hover{background:rgba(127,145,180,.10);color:var(--fg)}
+nav a.l3{padding-left:22px;font-size:12.5px;color:var(--fg3)}
+nav a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(91,157,255,.09)}
+
+/* ---- main ---- */
+main{padding:44px 56px 140px;min-width:0}
+.hero{border:1px solid var(--line);background:linear-gradient(160deg,var(--panel),var(--bg2));border-radius:14px;padding:30px 34px;margin-bottom:38px}
+.hero .kicker{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:650}
+.hero h1{margin:.35em 0 .25em;font-size:31px;line-height:1.22;letter-spacing:-.02em;border:0;padding:0}
+.hero p{color:var(--fg2);margin:0;font-size:14.5px}
+.scorebar{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.score{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.score b{display:block;font-size:24px;line-height:1.1;letter-spacing:-.02em}
+.score span{font-size:11.5px;color:var(--fg3);text-transform:uppercase;letter-spacing:.08em}
+.score.crit b{color:var(--crit)} .score.high b{color:var(--high)}
+.score.med b{color:var(--med)} .score.ok b{color:var(--ok)}
+
+h1,h2,h3,h4{line-height:1.28;letter-spacing:-.015em;scroll-margin-top:24px}
+h1{font-size:29px;margin:2.2em 0 .6em}
+h2{font-size:23px;margin:2.4em 0 .7em;padding-bottom:.38em;border-bottom:1px solid var(--line)}
+h3{font-size:18px;margin:2em 0 .55em;color:var(--fg)}
+h4{font-size:15px;margin:1.6em 0 .45em;color:var(--fg2);text-transform:uppercase;letter-spacing:.07em}
+p{margin:.85em 0}
+hr{border:0;border-top:1px solid var(--line);margin:2.6em 0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+a:hover{border-bottom-color:currentColor}
+a.src{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;background:rgba(91,157,255,.10);padding:1px 5px;border-radius:4px}
+strong{font-weight:640;color:var(--fg)}
+ul,ol{padding-left:1.35em;margin:.8em 0}
+li{margin:.32em 0}
+li.task{list-style:none;margin-left:-1.1em}
+li.task .box{display:inline-block;width:13px;height:13px;border:1.5px solid var(--fg3);border-radius:3px;margin-right:9px;vertical-align:-1px}
+li.task .box.on{background:var(--ok);border-color:var(--ok)}
+blockquote{margin:1.4em 0;padding:14px 20px;border-left:3px solid var(--accent2);background:var(--panel);border-radius:0 8px 8px 0;color:var(--fg2)}
+blockquote strong{color:var(--fg)}
+
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:rgba(127,145,180,.14);padding:2px 6px;border-radius:5px;color:var(--fg)}
+pre.code{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:1.2em 0;position:relative}
+pre.code code{background:none;padding:0;font-size:12.8px;line-height:1.6;color:var(--fg2);white-space:pre}
+pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:0;right:0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3);background:var(--bg2);border-left:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0 9px 0 8px;padding:4px 10px}
+
+.tw{overflow-x:auto;margin:1.3em 0;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.6px;min-width:520px}
+th{text-align:left;background:var(--panel);color:var(--fg2);font-weight:620;font-size:11.6px;text-transform:uppercase;letter-spacing:.07em;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(127,145,180,.055)}
+td.c-crit{color:var(--crit);font-weight:600}
+td.c-high{color:var(--high);font-weight:600}
+td.c-med{color:var(--med);font-weight:600}
+td.c-ok{color:var(--ok);font-weight:600}
+
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0px}
+.dot.crit{background:var(--crit);box-shadow:0 0 0 3px rgba(255,77,94,.16)}
+.dot.high{background:var(--high);box-shadow:0 0 0 3px rgba(255,138,61,.16)}
+.dot.med{background:var(--med);box-shadow:0 0 0 3px rgba(255,194,61,.16)}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(61,220,151,.16)}
+.mk{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;border-radius:4px;font-size:11px;font-weight:700;margin-right:6px;vertical-align:-2px}
+.mk.yes{background:rgba(61,220,151,.18);color:var(--ok)}
+.mk.no{background:rgba(255,77,94,.18);color:var(--crit)}
+.mk.warn{background:rgba(255,194,61,.20);color:var(--med)}
+.mk.unk{background:rgba(127,145,180,.20);color:var(--fg3)}
+
+@media (max-width:1080px){
+  .shell{grid-template-columns:1fr}
+  nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);max-height:340px}
+  main{padding:28px 20px 90px}
+  .hero{padding:22px}
+  .hero h1{font-size:24px}
+}
+@media print{
+  nav{display:none} .shell{grid-template-columns:1fr} main{padding:0}
+  body{background:#fff;color:#000} .tw{break-inside:avoid} pre.code{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav>
+  <div class="brand">Security Audit &middot; v3.0</div>
+  <div class="title">Exchanga Pay<br><span style="color:var(--fg3);font-weight:400;font-size:13px">Second Remediation Verification</span></div>
+<a class="l2" href="#table-of-contents">Table of Contents</a>
+<a class="l2" href="#1-executive-summary">Executive Summary</a>
+<a class="l3" href="#11-what-changed-since-v20">1.1 What Changed Since v2.0</a>
+<a class="l3" href="#12-the-headline">1.2 The Headline</a>
+<a class="l3" href="#13-a-real-authentication-bypass-was-found-and-fixed-this-pass">1.3 A Real Authentication Bypass Was Found and Fixed This Pass</a>
+<a class="l3" href="#14-overall-app-health">1.4 Overall App Health</a>
+<a class="l3" href="#15-risk-summary">1.5 Risk Summary</a>
+<a class="l3" href="#16-what-to-do-before-the-next-build">1.6 What To Do Before The Next Build</a>
+<a class="l2" href="#2-remediation-verification-matrix">Remediation Verification Matrix</a>
+<a class="l2" href="#3-verified-fixes-what-closed-this-pass">Verified Fixes — What Closed This Pass</a>
+<a class="l3" href="#n-01-api-base-url-resolution-fixed">N-01 — API Base URL Resolution · ✅ Fixed</a>
+<a class="l3" href="#m-03-pin-expiry-fixed">M-03 — Pin Expiry · ✅ Fixed</a>
+<a class="l3" href="#m-02-otp-transport-client-side-closed">M-02 — OTP Transport · 🟡 Client-Side Closed</a>
+<a class="l3" href="#m-07-app-links-major-progress">M-07 — App Links · 🟡 Major Progress</a>
+<a class="l3" href="#h-07-ios-entitlements-major-progress">H-07 — iOS Entitlements · 🟡 Major Progress</a>
+<a class="l3" href="#other-confirmed-fixes">Other Confirmed Fixes</a>
+<a class="l2" href="#4-newly-identified-findings">Newly Identified Findings</a>
+<a class="l3" href="#n-06-pinning-inventory-mis-modelled-sentry-dsn-key-committed-as-a-host">N-06 — Pinning Inventory Mis-Modelled; Sentry DSN Key Committed as a &quot;Host&quot;</a>
+<a class="l3" href="#n-07-orphan-entitlements-file-with-a-near-identical-name">N-07 — Orphan Entitlements File With a Near-Identical Name</a>
+<a class="l3" href="#n-08-js-yaml-high-severity-cve-in-the-build-chain">N-08 — <code>js-yaml</code> High-Severity CVE in the Build Chain</a>
+<a class="l3" href="#v-01-two-factor-verification-fails-open-found-and-fixed-this-pass-uncommitted">V-01 — Two-Factor Verification Fails Open <em>(found and fixed this pass — uncommitted)</em></a>
+<a class="l2" href="#5-still-open-findings-fix-recommendations">Still-Open Findings &amp; Fix Recommendations</a>
+<a class="l3" href="#h-07-ios-release-signing-partially-fixed-top-blocker">H-07 — iOS Release Signing · 🟡 Partially Fixed · <strong>Top Blocker</strong></a>
+<a class="l3" href="#n-03-test-suite-partially-restored-partially-fixed">N-03 — Test Suite Partially Restored · 🟡 Partially Fixed</a>
+<a class="l3" href="#n-04-host-verification-scripts-still-read-a-deleted-directory-open">N-04 — Host-Verification Scripts Still Read a Deleted Directory · ❌ Open</a>
+<a class="l3" href="#n-05-totp-seed-copied-to-the-clipboard-with-no-expiry-open">N-05 — TOTP Seed Copied to the Clipboard With No Expiry · ❌ Open</a>
+<a class="l3" href="#91-no-request-timeout-open">9.1 — No Request Timeout · ❌ Open</a>
+<a class="l3" href="#m-01-device-attestation-not-enforced-server-side-partially-fixed">M-01 — Device Attestation Not Enforced Server-Side · 🟡 Partially Fixed</a>
+<a class="l3" href="#m-02-otp-transport-client-side-closed-backend-pending">M-02 — OTP Transport · 🟡 Client-Side Closed, Backend Pending</a>
+<a class="l3" href="#m-07-oauth-callback-custom-scheme-partially-fixed">M-07 — OAuth Callback Custom Scheme · 🟡 Partially Fixed</a>
+<a class="l3" href="#c-01-sentry-token-partially-fixed-unchanged">C-01 — Sentry Token · 🟡 Partially Fixed · Unchanged</a>
+<a class="l3" href="#m-08-legacy-zero-iv-crypto-format-open-accepted-deadline-enforced">M-08 — Legacy Zero-IV Crypto Format · ❌ Open (accepted, deadline-enforced)</a>
+<a class="l3" href="#low-severity-register">Low-Severity Register</a>
+<a class="l2" href="#6-vapt-assessment">VAPT Assessment</a>
+<a class="l3" href="#61-authentication-bypass">6.1 Authentication Bypass</a>
+<a class="l3" href="#62-authorization">6.2 Authorization</a>
+<a class="l3" href="#63-api-abuse">6.3 API Abuse</a>
+<a class="l3" href="#64-sensitive-data-exposure">6.4 Sensitive Data Exposure</a>
+<a class="l3" href="#65-mitm-risk">6.5 MITM Risk</a>
+<a class="l3" href="#66-reverse-engineering">6.6 Reverse Engineering</a>
+<a class="l3" href="#67-device-compromise-runtime-manipulation">6.7 Device Compromise &amp; Runtime Manipulation</a>
+<a class="l3" href="#68-token-replay-session-hijacking">6.8 Token Replay &amp; Session Hijacking</a>
+<a class="l2" href="#7-api-security-audit">API Security Audit</a>
+<a class="l2" href="#8-android-security-review">Android Security Review</a>
+<a class="l2" href="#9-ios-security-review">iOS Security Review</a>
+<a class="l2" href="#10-react-native-performance-audit">React Native Performance Audit</a>
+<a class="l3" href="#p-01-flatlist-virtualisation-untuned-high-impact">P-01 — FlatList Virtualisation Untuned · High Impact</a>
+<a class="l3" href="#p-02-65-map-render-loops-in-screens-high-impact">P-02 — 65 <code>.map()</code> Render Loops in Screens · High Impact</a>
+<a class="l3" href="#p-03-duplicate-libraries-inflating-the-bundle-high-impact">P-03 — Duplicate Libraries Inflating the Bundle · High Impact</a>
+<a class="l3" href="#p-04-image-assets-unoptimised-medium-impact">P-04 — Image Assets Unoptimised · Medium Impact</a>
+<a class="l3" href="#p-05-metro-bundle-configuration-medium-impact">P-05 — Metro / Bundle Configuration · Medium Impact</a>
+<a class="l3" href="#p-06-startup-path-congestion-medium-impact">P-06 — Startup Path Congestion · Medium Impact</a>
+<a class="l3" href="#p-07-memoisation-density-low-medium-impact">P-07 — Memoisation Density Low · Medium Impact</a>
+<a class="l3" href="#p-08-excessive-unbounded-api-calls-medium-impact">P-08 — Excessive / Unbounded API Calls · Medium Impact</a>
+<a class="l3" href="#performance-summary">Performance Summary</a>
+<a class="l2" href="#11-architecture-code-quality">Architecture &amp; Code Quality</a>
+<a class="l2" href="#12-dependency-audit">Dependency Audit</a>
+<a class="l3" href="#unmaintained-high-risk">Unmaintained / High-Risk</a>
+<a class="l3" href="#high-trust-dependencies-correctly-pinned">High-Trust Dependencies (correctly pinned)</a>
+<a class="l3" href="#recommendation">Recommendation</a>
+<a class="l2" href="#13-compliance-mapping">Compliance Mapping</a>
+<a class="l3" href="#131-owasp-mobile-top-10-2024">13.1 OWASP Mobile Top 10 (2024)</a>
+<a class="l3" href="#132-owasp-masvs-v21">13.2 OWASP MASVS v2.1</a>
+<a class="l3" href="#133-pci-dss-v40-mobile-scope">13.3 PCI-DSS v4.0 (Mobile Scope)</a>
+<a class="l3" href="#134-fintech-regulatory">13.4 Fintech / Regulatory</a>
+<a class="l2" href="#14-recommendations-roadmap">Recommendations &amp; Roadmap</a>
+<a class="l3" href="#141-immediate-before-the-next-build-p0">14.1 Immediate — Before The Next Build (P0)</a>
+<a class="l3" href="#142-this-sprint-p1">14.2 This Sprint (P1)</a>
+<a class="l3" href="#143-next-sprint-p2">14.3 Next Sprint (P2)</a>
+<a class="l3" href="#144-backlog-p3">14.4 Backlog (P3)</a>
+<a class="l2" href="#15-production-hardening-checklist">Production Hardening Checklist</a>
+<a class="l3" href="#blocking">Blocking</a>
+<a class="l3" href="#secrets-credentials">Secrets &amp; Credentials</a>
+<a class="l3" href="#environment">Environment</a>
+<a class="l3" href="#network">Network</a>
+<a class="l3" href="#application-security">Application Security</a>
+<a class="l3" href="#build-release">Build &amp; Release</a>
+<a class="l3" href="#verification">Verification</a>
+<a class="l2" href="#16-final-scoring">Final Scoring</a>
+<a class="l3" href="#161-security-score-80-10-v20-75-05-v10-70">16.1 Security Score — <strong>8.0 / 10</strong> <em>(v2.0: 7.5 — ↑ 0.5 · v1.0: 7.0)</em></a>
+<a class="l3" href="#162-performance-score-55-10-unchanged">16.2 Performance Score — <strong>5.5 / 10</strong> <em>(unchanged)</em></a>
+<a class="l3" href="#163-maintainability-score-55-10-v20-45-10-v10-50">16.3 Maintainability Score — <strong>5.5 / 10</strong> <em>(v2.0: 4.5 — ↑ 1.0 · v1.0: 5.0)</em></a>
+<a class="l3" href="#164-mobile-security-score-masvs-weighted-80-10-v20-75-05-v10-65">16.4 Mobile Security Score (MASVS-weighted) — <strong>8.0 / 10</strong> <em>(v2.0: 7.5 — ↑ 0.5 · v1.0: 6.5)</em></a>
+<a class="l3" href="#165-overall-risk-rating">16.5 Overall Risk Rating</a>
+<a class="l3" href="#166-closing-assessment">16.6 Closing Assessment</a>
+</nav>
+<main>
+  <div class="hero">
+    <div class="kicker">Second Remediation Verification Pass &middot; v3.0</div>
+    <h1>Exchanga Pay — Mobile Security, VAPT &amp; Performance Audit</h1>
+    <p>React Native 0.83.6 &middot; Hermes &middot; New Architecture &middot; branch <code>rn-0.83-upgrade</code> @ <code>b86c318</code> + working tree &middot; 2026-08-07</p>
+    <div class="scorebar">
+      <div class="score ok"><span>Critical</span><b>0</b></div>
+      <div class="score high"><span>High</span><b>2</b></div>
+      <div class="score med"><span>Medium</span><b>7</b></div>
+      <div class="score"><span>Low / Perf / Arch</span><b>21</b></div>
+      <div class="score med"><span>Composite</span><b>6.8<small style="font-size:13px;color:var(--fg3)">/10</small></b></div>
+      <div class="score med"><span>Risk Rating</span><b style="font-size:17px;padding-top:5px">MEDIUM</b></div>
+    </div>
+    <div class="scorebar" style="margin-top:10px">
+      <div class="score ok"><span>Fully closed</span><b>16</b></div>
+      <div class="score med"><span>Partially closed</span><b>8</b></div>
+      <div class="score high"><span>Still open</span><b>9</b></div>
+      <div class="score ok"><span>Regressed</span><b>0</b></div>
+      <div class="score med"><span>Newly introduced</span><b>3</b></div>
+    </div>
+    <div class="scorebar" style="margin-top:10px">
+      <div class="score ok"><span>Security</span><b>8.0<small style="font-size:13px;color:var(--fg3)">/10</small></b></div>
+      <div class="score med"><span>Performance</span><b>5.5<small style="font-size:13px;color:var(--fg3)">/10</small></b></div>
+      <div class="score med"><span>Maintainability</span><b>5.5<small style="font-size:13px;color:var(--fg3)">/10</small></b></div>
+      <div class="score ok"><span>Mobile Security</span><b>8.0<small style="font-size:13px;color:var(--fg3)">/10</small></b></div>
+    </div>
+  </div>
+
+<h1 id="exchanga-pay-mobile-application-security-vapt-performance-audit">Exchanga Pay — Mobile Application Security, VAPT &amp; Performance Audit</h1>
+<p><strong>Report version:</strong> <strong>3.0 — Second Remediation Verification Pass</strong> <strong>Application:</strong> Exchanga Pay (React Native fintech / crypto-card app) <strong>Repository:</strong> <code>exchangapay_new_dev</code> <strong>Branch:</strong> <code>rn-0.83-upgrade</code> <strong>Baseline audited (v1.0):</strong> <code>c503d94</code> @ 2026-08-05 <strong>First verification pass (v2.0):</strong> <code>608267d</code> + working tree @ 2026-08-06 <strong>Re-audited (v3.0):</strong> <code>b86c318</code> + uncommitted working tree @ 2026-08-07 <strong>Platform stack:</strong> React Native 0.83.6 · React 19.2.0 · Hermes · New Architecture (Fabric) <strong>Audit type:</strong> White-box source review — Mobile Security Architecture, VAPT, API Security, RN Performance <strong>Standards applied:</strong> OWASP MASVS v2.1 · OWASP Mobile Top 10 (2024) · PCI-DSS v4.0 (mobile scope) · NIST SP 800-63B</p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol><li><a href="#1-executive-summary">Executive Summary</a></li><li><a href="#2-remediation-verification-matrix">Remediation Verification Matrix</a></li><li><a href="#3-verified-fixes--what-closed-this-pass">Verified Fixes — What Closed This Pass</a></li><li><a href="#4-newly-identified-findings">Newly Identified Findings</a></li><li><a href="#5-still-open-findings--fix-recommendations">Still-Open Findings &amp; Fix Recommendations</a></li><li><a href="#6-vapt-assessment">VAPT Assessment</a></li><li><a href="#7-api-security-audit">API Security Audit</a></li><li><a href="#8-android-security-review">Android Security Review</a></li><li><a href="#9-ios-security-review">iOS Security Review</a></li><li><a href="#10-react-native-performance-audit">React Native Performance Audit</a></li><li><a href="#11-architecture--code-quality">Architecture &amp; Code Quality</a></li><li><a href="#12-dependency-audit">Dependency Audit</a></li><li><a href="#13-compliance-mapping">Compliance Mapping</a></li><li><a href="#14-recommendations--roadmap">Recommendations &amp; Roadmap</a></li><li><a href="#15-production-hardening-checklist">Production Hardening Checklist</a></li><li><a href="#16-final-scoring">Final Scoring</a></li></ol>
+<hr>
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<h3 id="11-what-changed-since-v20">1.1 What Changed Since v2.0</h3>
+<p>Two commits plus an uncommitted working tree landed between the v2.0 verification pass and this one:</p>
+<div class="tw"><table><thead><tr><th>Commit</th><th>Date</th><th>Scope</th></tr></thead><tbody><tr><td><code>57fb43e</code></td><td>2026-08-06</td><td><strong>The bulk of the v2.0 remediation</strong> — N-01 API-layer resolution, M-02 OTP transport shim, M-03 pin-expiry telemetry, M-07 iOS entitlements, H-07 release guards, <code>redact.ts</code></td></tr><tr><td><code>b86c318</code></td><td>2026-08-06</td><td>M-02 follow-through on the KYC screens; idempotency keys de-derived from payload data</td></tr><tr><td><em>working tree</em></td><td>2026-08-07</td><td>2FA verification <strong>fail-open</strong> fix, <code>profile.tsx</code> migrated off the dead <code>api</code> instance</td></tr></tbody></table></div>
+<p><strong>This pass is a materially better outcome than v2.0.</strong> Every one of the three release-blocking defects v2.0 raised has been addressed, and two of them were addressed by fixing the <em>class</em> of problem rather than the instance:</p>
+<ul><li><strong>N-01 (Critical)</strong> is closed, and closed the right way. Rather than restoring three configuration keys, the team resolved <em>why</em> they were missing — the hosts behind them (<code>neowalletgrid</code>, <code>neowalletapi</code>, <code>neobank</code>.azurewebsites.net, <code>tstlogin.suissebase.io</code>) return NXDOMAIN and had been dead for the entire visible history. The three instances were deleted and their call sites migrated onto <code>ApiService.ts</code>. <code>getUrl()</code> now <strong>throws</strong> on an unknown key, so the failure mode that produced N-01 is now a build-time error rather than a silent empty base URL, and <code>__tests__/envContract.test.ts</code> asserts it.</li><li><strong>N-02 (High)</strong> no longer blocks release builds.</li><li><strong>M-03 (Medium)</strong> is fully closed with a design improvement: <code>security/pinning-policy.json</code> is now the single source of truth for pin expiry, read by the Gradle guard, the Xcode release phase, <em>and</em> runtime telemetry (<code>src/security/pinExpiry.ts</code>, wired at <a href="App.tsx#L108">App.tsx:108</a>). What was a date duplicated in five places is now derived in three.</li><li><strong>M-02 (Medium)</strong> is closed on the client side by a shim (<code>src/security/otpTransport.ts</code>) that calls the body-based route first and falls back to the legacy path form only on 404/405/501 — so the finding closes with a <em>backend deploy</em> rather than a coordinated app release. Paired with <code>redactUrl()</code>, the client-side half of the exposure (OTP codes reaching Crashlytics and Sentry via <code>config.url</code>) is closed today.</li></ul>
+<h3 id="12-the-headline">1.2 The Headline</h3>
+<p><strong>The app is functional again and buildable again. The remaining blockers are all in release engineering, not in application security.</strong></p>
+<p>Of the three v2.0 blockers, one is fully closed (N-01), one is worked around rather than fixed (N-02 — see <strong>N-06</strong>), and one is two-thirds done (N-03 — 40 tests now pass, one suite still cannot execute).</p>
+<p>Three things still stand between this build and a shippable release, and none of them is a code change:</p>
+<ol><li><strong>iOS Release still signs with <code>CODE_SIGN_IDENTITY = &quot;Apple Development&quot;</code></strong> and ships <code>PRODUCT_BUNDLE_IDENTIFIER = com.exchangapay.tst</code> (<a href="ios/exchangapay.xcodeproj/project.pbxproj#L383">project.pbxproj:383, 401</a>). An archive produced from this configuration is not distributable, and if it were, it would carry the test bundle identity. <strong>This is now the single largest blocker</strong> — the entitlements work that landed this pass is correct and complete, and it is gated behind a signing configuration that has not moved since v1.0.</li><li><strong>The Sentry organisation token is still live in git history</strong> (<code>sntrys_eyJpYXQiOjE3NjEzNzQ3NDku…</code>, recoverable from the <code>sentry.properties</code> deletion diff). Removing it from the tree was necessary and is done; rotating it is the part that actually revokes access, and there is no evidence it has happened.</li><li><strong><code>versionCode</code> is still <code>1</code></strong> on both platforms, which — as v2.0 recorded — neuters the force-update control rather than merely deferring a chore.</li></ol>
+<h3 id="13-a-real-authentication-bypass-was-found-and-fixed-this-pass">1.3 A Real Authentication Bypass Was Found and Fixed This Pass</h3>
+<p>Worth calling out separately, because it is the most consequential <em>security</em> change in the window and it is currently <strong>uncommitted</strong>:</p>
+<pre class="code" data-lang="typescript"><code>// src/screens/Profile/authentication.tsx — before
+if (verifedRes?.data) { onSuccess() }        // apisauce resolves rejections too
+// after
+if (verifedRes?.ok &amp;&amp; verifedRes?.data) { onSuccess() }</code></pre>
+<p>apisauce resolves on non-2xx responses. A <code>400 { &quot;message&quot;: &quot;invalid code&quot; }</code> made <code>data</code> truthy, so <strong>an incorrect Google Authenticator code took the success branch</strong> — on <a href="src/screens/Profile/authentication.tsx#L42">authentication.tsx</a> (2FA step-up verification) and on <a href="src/screens/Profile/verifyCode.tsx#L83">verifyCode.tsx</a> (2FA enrolment confirmation). That is a client-side second-factor bypass on the step-up path. Whether it was exploitable end-to-end depends on whether the backend independently re-validates the factor on the <em>next</em> request; the client gate itself was open.</p>
+<p>The fix is correct and matches the fail-closed pattern used in <code>guard.ts</code>. <strong>Commit it.</strong> An uncommitted security fix is one <code>git checkout</code> from being un-fixed, and it is not in any build.</p>
+<p>This finding is recorded as <strong>V-01</strong> and it raises a question the audit cannot answer from source: <code>verifedRes?.data</code> as a success test is an <em>idiom</em> in this codebase. It should be grepped for and audited across every verification, payment-confirmation and permission-check path.</p>
+<h3 id="14-overall-app-health">1.4 Overall App Health</h3>
+<div class="tw"><table><thead><tr><th>Dimension</th><th>v1.0</th><th>v2.0</th><th>v3.0</th><th>Commentary</th></tr></thead><tbody><tr><td>Security posture</td><td>Good, with critical gaps</td><td>Good</td><td><strong>Strong</strong></td><td>Network, storage, crypto, auth all pass; a genuine 2FA bypass caught and fixed</td></tr><tr><td>Functional integrity</td><td>Not assessed</td><td class="c-crit">Broken</td><td><strong>Restored</strong></td><td>N-01 closed; dead hosts retired rather than resurrected</td></tr><tr><td>Release engineering</td><td>Poor</td><td class="c-crit">Blocked</td><td class="c-crit"><strong>Blocked (iOS only)</strong></td><td>Android release path is clean; iOS signing identity and bundle ID are wrong</td></tr><tr><td>Control assurance</td><td>Narrow but deep</td><td>Absent</td><td class="c-med"><strong>Partial</strong></td><td>40 tests execute and pass; 1 suite cannot run; 4 cited suites still absent</td></tr><tr><td>Performance maturity</td><td>Below average</td><td>Below average</td><td><strong>Below average</strong></td><td>No performance work in either pass</td></tr><tr><td>Architecture maturity</td><td>Transitional</td><td>Transitional</td><td class="c-med"><strong>Improving</strong></td><td>Legacy API layer down from 7 instances to 2; both behind one chokepoint</td></tr><tr><td>Supply-chain health</td><td>Good</td><td>Good</td><td><strong>Fair</strong></td><td>New: <code>js-yaml</code> high-severity CVE (build-time only)</td></tr></tbody></table></div>
+<h3 id="15-risk-summary">1.5 Risk Summary</h3>
+<pre class="code"><code>     Critical  0  —                 C-01 partial (history), N-01 CLOSED
+     High      2  ████              H-07 (iOS signing), N-08 (js-yaml CVE, build-time)
+     Medium    7  ██████████████    N-03(p), N-04, N-05, N-06, M-01(p), M-02(p), M-07(p), 9.1
+     Low       9  ██████████████████
+     Perf      8  ████████████████
+     Arch      4  ████████
+     Total    30</code></pre>
+<p><strong>Overall Risk Rating: MEDIUM</strong> <em>(lowered from High)</em></p>
+<p>The Critical band is empty. The two High findings are both narrow and both have a known, mechanical fix. What remains is a long tail of Medium/Low items — the normal shape of a fintech app approaching release, rather than the shape of one with structural defects.</p>
+<p><strong>Not yet production-ready</strong>, but the gap is now measured in hours of release-engineering work rather than in remediation.</p>
+<h3 id="16-what-to-do-before-the-next-build">1.6 What To Do Before The Next Build</h3>
+<ol><li><strong>Commit the 2FA fail-open fix.</strong> It is uncommitted. <strong>(V-01)</strong></li><li>Set iOS Release <code>CODE_SIGN_IDENTITY = &quot;Apple Distribution&quot;</code>, <code>CODE_SIGN_STYLE = Manual</code>, a real <code>PROVISIONING_PROFILE_SPECIFIER</code>, and <code>PRODUCT_BUNDLE_IDENTIFIER = com.exchangapay</code>. <strong>(H-07)</strong></li><li><strong>Rotate the Sentry token</strong> and confirm revocation in the Sentry audit log. <strong>(C-01)</strong></li><li>Add <code>transformIgnorePatterns</code> to <code>jest.config.js</code> so <code>securityInvariants.test.ts</code> executes. <strong>(N-03)</strong></li><li>Repoint <code>scripts/verify-hosts.sh</code> and <code>scripts/compute-spki-pins.sh</code> at <code>.env</code> — both still read the deleted <code>environments/*.js</code>. <strong>(N-04)</strong></li></ol>
+<hr>
+<h2 id="2-remediation-verification-matrix">2. Remediation Verification Matrix</h2>
+<p>Every finding from v1.0 and v2.0, re-tested against <code>b86c318</code> + working tree.</p>
+<div class="tw"><table><thead><tr><th>ID</th><th>Severity</th><th>Title</th><th>v2.0</th><th>v3.0 Status</th><th>Evidence</th></tr></thead><tbody><tr><td><strong>C-01</strong></td><td>Critical</td><td>Sentry org auth token in tree &amp; history</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial — unchanged</strong></td><td>Token absent from both <code>sentry.properties</code>; <code>sntrys_eyJ…</code> still recoverable from the <code>git log -p</code> deletion diff</td></tr><tr><td><strong>H-01</strong></td><td>High</td><td>Legacy API layer bypasses all controls</td><td class="c-crit">🟡 Broken in delivery</td><td class="c-ok">✅ <strong>Fixed</strong></td><td><a href="src/utils/api.tsx">api.tsx</a> now exports 2 instances, both intercepted; 5 dead instances deleted</td></tr><tr><td><strong>H-02</strong></td><td>High</td><td>Pinning covers 2 of 8 hosts</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Inventory is 3 live hosts; Gradle + Xcode parity guards; see <strong>N-06</strong> for a modelling defect</td></tr><tr><td><strong>H-03</strong></td><td>High</td><td>Backend HTML in card-PIN WebView</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td><a href="src/screens/Tlv_Cards/showPin.tsx">showPin.tsx</a> — sanitised, CSP, nav-gated</td></tr><tr><td><strong>H-04</strong></td><td>High</td><td>Test build calls production hosts</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Single <code>.env</code> source; H-13 guard now actually executes and compares <code>APP_ENV</code> vs resolved bundle ID</td></tr><tr><td><strong>H-05</strong></td><td>High</td><td>Force-update path disabled</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial</strong></td><td><code>&lt;ForceUpdate&gt;</code> mounted; still neutered by <strong>L-05</strong> (<code>versionCode 1</code>)</td></tr><tr><td><strong>H-07</strong></td><td>High</td><td>iOS release signing / hardening</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial — major progress</strong></td><td>Entitlements now applied on both configs; <code>aps-environment</code> asserted; <strong>signing identity + bundle ID still wrong</strong></td></tr><tr><td><strong>M-01</strong></td><td>Medium</td><td>Attestation not enforced server-side</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial</strong></td><td><code>ATTESTATION_ENFORCEMENT_ENABLED=false</code> now <strong>explicit</strong> in all 4 <code>.env</code> files; <code>PLAY_INTEGRITY_CLOUD_PROJECT</code> still empty in all 4</td></tr><tr><td><strong>M-02</strong></td><td>Medium</td><td>OTP codes in the URL path via GET</td><td class="c-crit">❌ Open</td><td class="c-med">🟡 <strong>Client-side closed</strong></td><td><a href="src/security/otpTransport.ts">otpTransport.ts</a> dual-route shim + <code>redactUrl</code> + <code>silentStatuses</code> + contract doc + 12 passing tests</td></tr><tr><td><strong>M-03</strong></td><td>Medium</td><td>Pin expiry fails open on Android</td><td class="c-med">🟡 Partial</td><td class="c-ok">✅ <strong>Fixed</strong></td><td><a href="src/security/pinExpiry.ts">pinExpiry.ts</a> wired at <a href="App.tsx#L108">App.tsx:108</a>; <code>pinning-policy.json</code> is now the single source for Gradle, Xcode and runtime</td></tr><tr><td><strong>M-04</strong></td><td>Medium</td><td>Over-broad Android permissions</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>8 permissions removed; policy enforced against the merged manifest</td></tr><tr><td><strong>M-05</strong></td><td>Medium</td><td>Clipboard, no expiry</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial</strong></td><td><code>copyEphemeral</code> on 4 screens; <strong>2FA seed still uncleared</strong> — <strong>N-05</strong></td></tr><tr><td><strong>M-06</strong></td><td>Medium</td><td>Persisted-state secret stripping</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td><code>SENSITIVE_KEY</code> regex + deny-list</td></tr><tr><td><strong>M-07</strong></td><td>Medium</td><td>OAuth callback custom scheme</td><td class="c-med">🟡 Partial</td><td class="c-med">🟡 <strong>Partial — major progress</strong></td><td><a href="security/M07_APPLINKS_SETUP.md">M07_APPLINKS_SETUP.md</a> <strong>now exists</strong> (12 KB); iOS <code>associated-domains</code> wired on <strong>both</strong> configs; external hosting unverified</td></tr><tr><td><strong>M-08</strong></td><td>Medium</td><td>Legacy zero-IV crypto format</td><td class="c-crit">❌ Open (by design)</td><td class="c-crit">❌ <strong>Open (by design)</strong></td><td><code>LEGACY_FORMATS_ENABLED = true</code>; Gradle-enforced deadline 2026-11-01; telemetry live</td></tr><tr><td><strong>M-09</strong></td><td>Medium</td><td>Unauthenticated security endpoints</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Routed through hardened <code>get()</code></td></tr><tr><td><strong>M-10</strong></td><td>Medium</td><td>Zero test coverage</td><td class="c-crit">🔴 Regressed</td><td class="c-med">🟡 <strong>Recovering</strong></td><td>4 suites, 40 tests pass; 1 suite cannot execute — <strong>N-03</strong></td></tr><tr><td><strong>N-01</strong></td><td>Critical</td><td>3 API instances with no base URL</td><td class="c-crit">🔴 Open</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Instances deleted, call sites migrated, <code>getUrl()</code> throws, <code>envContract.test.ts</code> passes</td></tr><tr><td><strong>N-02</strong></td><td>High</td><td>Pinning guard fails every release build</td><td class="c-crit">🔴 Open</td><td class="c-ok">✅ <strong>Fixed (workaround)</strong></td><td>3 exemptions added to <code>pinning-policy.json</code>; regex unchanged — see <strong>N-06</strong></td></tr><tr><td><strong>N-03</strong></td><td>High</td><td>Test suite deleted; comments cite it</td><td class="c-crit">🔴 Open</td><td class="c-med">🟡 <strong>Partial</strong></td><td>4 suites restored (40 tests pass); <code>securityInvariants.test.ts</code> <strong>still fails</strong>; 4 cited suites still absent</td></tr><tr><td><strong>N-04</strong></td><td>Medium</td><td>Host scripts read a deleted directory</td><td class="c-crit">🔴 Open</td><td class="c-crit">❌ <strong>Open — comments only</strong></td><td><a href="scripts/verify-hosts.sh#L41">verify-hosts.sh:41-42</a>, <a href="scripts/compute-spki-pins.sh#L45">compute-spki-pins.sh:45-46</a> still parse <code>environments/*.js</code></td></tr><tr><td><strong>N-05</strong></td><td>Medium</td><td>TOTP seed to clipboard, no expiry</td><td class="c-crit">🔴 Open</td><td class="c-crit">❌ <strong>Open</strong></td><td><a href="src/screens/Profile/verifyCode.tsx#L118">verifyCode.tsx:118-125</a> — core RN <code>Clipboard</code>, no TTL</td></tr><tr><td><strong>N-06</strong></td><td>Medium</td><td><em>(new)</em> Pin inventory mis-modelled; DSN key committed</td><td>—</td><td class="c-crit">🔴 <strong>New</strong></td><td>See §4</td></tr><tr><td><strong>N-07</strong></td><td>Low</td><td><em>(new)</em> Orphan <code>exchangapay-release.entitlements</code></td><td>—</td><td class="c-crit">🔴 <strong>New</strong></td><td>See §4</td></tr><tr><td><strong>N-08</strong></td><td>High</td><td><em>(new)</em> <code>js-yaml</code> CVE-2026-59870</td><td>—</td><td class="c-crit">🔴 <strong>New</strong></td><td><code>npm audit</code>: 1 high (build-time chain)</td></tr><tr><td><strong>V-01</strong></td><td>Critical</td><td><em>(new, fixed)</em> 2FA verification fails open</td><td>—</td><td class="c-ok">✅ <strong>Fixed — uncommitted</strong></td><td>See §1.3</td></tr><tr><td><strong>9.1</strong></td><td>Medium</td><td>No request timeout</td><td class="c-crit">❌ Open</td><td class="c-crit">❌ <strong>Open</strong></td><td>Zero <code>timeout</code> in <code>ApiService.ts</code>, <code>apiInterceptors.ts</code>, <code>api.tsx</code></td></tr><tr><td><strong>L-01</strong></td><td>Low</td><td>Dead code / phantom dependencies</td><td class="c-med">🟡 Improved</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>5 dead API instances + <code>environments/</code> gone; <code>src/redux/</code> remains (A-02)</td></tr><tr><td><strong>L-02</strong></td><td>Low</td><td>Empty catch blocks</td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>—</td></tr><tr><td><strong>L-03</strong></td><td>Low</td><td><code>NSAllowsLocalNetworking</code></td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Debug-only injection, asserted in the built product</td></tr><tr><td><strong>L-04</strong></td><td>Low</td><td><code>any</code> annotations</td><td class="c-crit">❌ Open</td><td class="c-med">🟡 <strong>Improved</strong></td><td>1,086 → 1,045 → <strong>992</strong>; still no <code>tsc --noEmit</code> in any workflow</td></tr><tr><td><strong>L-05</strong></td><td>Low</td><td><code>versionCode</code> never incremented</td><td class="c-crit">❌ Open</td><td class="c-crit">❌ <strong>Open</strong></td><td><a href="android/app/build.gradle#L804">build.gradle:804-805</a>; iOS <code>CURRENT_PROJECT_VERSION = 1</code></td></tr><tr><td><strong>L-06</strong></td><td>Low</td><td>Residual <code>console.log</code></td><td class="c-ok">✅ Fixed</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Remaining hits are commented-out or inside <code>logger.ts</code>; <code>transform-remove-console</code> strips release</td></tr><tr><td><strong>L-07</strong></td><td>Low</td><td>No screenshot-detection telemetry</td><td class="c-crit">❌ Open</td><td class="c-crit">❌ <strong>Open</strong></td><td>Unchanged</td></tr><tr><td><strong>L-08</strong></td><td>Low</td><td>Naming inconsistencies</td><td class="c-crit">❌ Open</td><td class="c-crit">❌ <strong>Open</strong></td><td><code>Tlv_Cards</code>, <code>cryptoCardTransations</code>, <code>encryptionTransfermation</code></td></tr><tr><td><strong>L-09</strong></td><td>Low</td><td>Two parallel push stacks</td><td class="c-crit">❌ Open</td><td class="c-crit">❌ <strong>Open</strong></td><td>4 notification packages</td></tr><tr><td><strong>L-10</strong></td><td>Low</td><td><code>google-services.json</code> placeholder undocumented</td><td class="c-med">🟡</td><td class="c-crit">🟡 <strong>Open</strong></td><td>Retrieval path still unrecorded</td></tr><tr><td><strong>L-11</strong></td><td>Low</td><td>Unenforced coverage threshold</td><td class="c-med">🟡</td><td class="c-crit">🟡 <strong>Open</strong></td><td>40 %/30 % threshold; no run satisfies it</td></tr></tbody></table></div>
+<p><strong>Closure movement this pass:</strong> N-01 ✅ · N-02 ✅ · M-03 ✅ · H-01 ✅ · L-01 ✅ · M-02 🟡→client-closed · M-07 🟡→major · H-07 🟡→major · N-03 🟡 · L-04 🟡 <strong>Net:</strong> 16 fully closed · 8 partially closed · 9 open · 0 regressed · 3 newly introduced</p>
+<hr>
+<h2 id="3-verified-fixes-what-closed-this-pass">3. Verified Fixes — What Closed This Pass</h2>
+<h3 id="n-01-api-base-url-resolution-fixed">N-01 — API Base URL Resolution · ✅ Fixed</h3>
+<p>The v2.0 report offered two remediation options. The team took a third and better one.</p>
+<p>Rather than adding <code>WALLET_GRID_URL</code>, <code>WALLET_API_URL</code> and <code>AUTH_URL</code> back to the <code>.env</code> files, <a href="src/utils/api.tsx">api.tsx</a> now documents — and DNS re-verifies — that the hosts behind those keys do not exist:</p>
+<pre class="code"><code>neowalletgrid.azurewebsites.net   NXDOMAIN
+neowalletapi.azurewebsites.net    NXDOMAIN
+neobank.azurewebsites.net         NXDOMAIN
+tstlogin.suissebase.io            NXDOMAIN</code></pre>
+<p>Restoring the keys would have restored a base URL resolving to nothing and put four dead hosts back into the pin inventory. Instead the three instances were deleted and their call sites migrated onto <code>ApiService.ts</code>, which resolves to the live, pinned first-party host. The corroborating evidence cited in the file is convincing: <code>onBoardingservice.tsx</code> already had two functions for the <em>same</em> Sumsub endpoint — one on the dead host, one on <code>ApiService</code> — differing only in the casing of &quot;SumSub&quot;. The migration had been started years ago and abandoned.</p>
+<p><strong>The class fix matters more than the instance fix.</strong> <code>getUrl()</code> at <a href="src/utils/apiInterceptors.ts#L168">apiInterceptors.ts:168-187</a> now throws with an actionable message naming the finding, the file to edit, and the defined keys:</p>
+<pre class="code" data-lang="typescript"><code>if (!value) {
+  throw new Error(
+    `[Environment] apiUrls.${path} is not defined (security finding N-01). ` +
+    `Add it to the apiUrls block in Environment.js and to every .env file, ` +
+    `then add the host to security/pinning-policy.json or the Android pin-set. ` +
+    `Defined keys: ${Object.keys(apiUrls).join(&quot;, &quot;) || &quot;(none)&quot;}.`
+  );
+}</code></pre>
+<p>Because the instances are created at module load, an undefined key now fails on the first <code>jest</code> run and the first debug launch. <code>__tests__/envContract.test.ts</code> (184 lines) asserts the contract independently. This is exactly the &quot;make the failure mode impossible, not just absent&quot; move the v2.0 report asked for.</p>
+<p><strong>Residual:</strong> <code>cardApi</code> in <code>api.tsx</code> remains a duplicate of the instance inside <code>ApiService.ts</code>. The file itself says so. Folding it in is mechanical and is tracked as A-01.</p>
+<h3 id="m-03-pin-expiry-fixed">M-03 — Pin Expiry · ✅ Fixed</h3>
+<p>Three changes, each addressing a distinct half of the finding:</p>
+<ol><li><strong>Single source of truth.</strong> <code>security/pinning-policy.json</code> now carries <code>pinSet.androidExpiration</code>, <code>pinSet.iosExpiration</code> and <code>buildWarnWithinDays</code>. The Gradle guard reads it and <strong>fails the build on drift</strong> between the JSON and the <code>&lt;pin-set expiration&gt;</code> attribute (<a href="android/app/build.gradle#L288">build.gradle:288-347</a>). The Xcode release phase reads the same file — and, notably, <strong>fails rather than skips</strong> if it cannot: <em>&quot;a guard that silently no-ops when it loses its input reports success either way, which is worse than having no guard at all.&quot;</em> That is the correct lesson drawn from N-04, applied prospectively.</li><li><strong>Runtime telemetry.</strong> <a href="src/security/pinExpiry.ts">src/security/pinExpiry.ts</a> computes days-to-expiry per platform and classifies it; <code>reportPinExpiry()</code> is called at <a href="App.tsx#L108">App.tsx:108</a>. The fleet&#x27;s pin state is now observable rather than inferred — which was the specific ask, since the residual risk is an <em>installed</em> app crossing the date without a release.</li><li><strong>Fail-open made visible.</strong> Android&#x27;s <code>&lt;pin-set&gt;</code> still fails open at the expiry date (that is Android&#x27;s behaviour, not a code choice), but it can no longer do so silently.</li></ol>
+<h3 id="m-02-otp-transport-client-side-closed">M-02 — OTP Transport · 🟡 Client-Side Closed</h3>
+<p><a href="src/security/otpTransport.ts">src/security/otpTransport.ts</a> is the best-reasoned module added in either remediation pass. <code>verifyOneTimeCode()</code> calls the body-based route first and falls back to the legacy path form <strong>only</strong> on 404/405/501, caching the verdict per channel per session, in memory.</p>
+<p>The narrowness of the fallback set is the load-bearing decision, and the file explains it correctly: 400/401/409 mean the backend <em>read</em> the code and rejected it, so a retry burns an attempt and may consume a single-use code; 429 means retrying is precisely wrong; 5xx may mean the code was consumed before the failure; and a network error is no evidence the route is missing, so falling back would convert every flaky connection into a permanent downgrade to the leaky path.</p>
+<p>Applied at both call sites:</p>
+<ul><li><a href="src/services/auth.tsx#L60">auth.tsx:60-72</a> — phone verification</li><li><a href="src/services/profile.tsx#L34">profile.tsx:34-52</a> — Google Authenticator verification (the higher-value one: the path segment there was a <strong>live second factor</strong>)</li></ul>
+<p>Supporting work: <code>silentStatuses</code> added to the axios config type and honoured by <code>handleErrorCapture()</code> so the probe does not manufacture one crash report per session; <code>redactUrl()</code> applied to every Crashlytics attribute and Sentry tag, closing the client-side half of the exposure today; <code>security/M02_OTP_TRANSPORT_CONTRACT.md</code> specifies the backend contract; <code>__tests__/otpTransport.test.ts</code> passes.</p>
+<p><strong>Closes fully when:</strong> the backend ships <code>POST /api/v1/Security/PhoneVerification</code> and <code>PUT /api/v1/Security/VerifyGoogleAuthenticator</code> with the code in the body. No app release is required.</p>
+<h3 id="m-07-app-links-major-progress">M-07 — App Links · 🟡 Major Progress</h3>
+<p><code>security/M07_APPLINKS_SETUP.md</code> — flagged in v2.0 as referenced from three places and non-existent — now exists at 12 KB. The iOS half is wired: <code>com.apple.developer.associated-domains</code> with both Auth0 tenants is present in <strong>both</strong> <code>exchangapay.entitlements</code> (Debug) and <code>exchangapayRelease.entitlements</code> (Release), and both are now actually applied (see H-07).</p>
+<p><strong>Closes when:</strong> <code>assetlinks.json</code> is served from <code>https://exchangapay.eu.auth0.com/.well-known/</code> and the Apple App Site Association file is served for the iOS half — both external to this repository — and the legacy custom-scheme intent filters carry a removal date.</p>
+<h3 id="h-07-ios-entitlements-major-progress">H-07 — iOS Entitlements · 🟡 Major Progress</h3>
+<p>The entitlements defect v2.0 called out as <em>&quot;the app ships with no <code>aps-environment</code>, so push notifications do not work&quot;</em> is fixed, and fixed with an assertion rather than a setting:</p>
+<ul><li><code>CODE_SIGN_ENTITLEMENTS</code> is now set on <strong>both</strong> configurations (<a href="ios/exchangapay.xcodeproj/project.pbxproj#L351">project.pbxproj:351, 382</a>)</li><li>The <code>[H-07]</code> release build phase now <strong>fails</strong> if <code>CODE_SIGN_ENTITLEMENTS</code> is empty, if the file is missing, if <code>aps-environment != production</code>, or if the <em>signed product</em> carries a non-production APNs environment</li><li>The <strong>H-13 tenant guard now actually runs.</strong> v2.0 found it reading <code>environments/active.js</code> (deleted) behind an <code>if [ -f ]</code>, and additionally reading <code>CFBundleIdentifier</code> from the source plist where it is the literal string <code>$(PRODUCT_BUNDLE_IDENTIFIER)</code>. Both defects are fixed: it reads <code>.env</code> via <code>${ENVFILE:-.env}</code>, uses the Xcode-resolved <code>$PRODUCT_BUNDLE_IDENTIFIER</code>, and now actually compares <code>AUTH0_ISSUER</code> against <code>IOS_AUTH0_DOMAIN</code> (v2.0 noted it computed <code>JS_ISSUER</code> and never used it)</li></ul>
+<p><strong>Still open — see §5.</strong></p>
+<h3 id="other-confirmed-fixes">Other Confirmed Fixes</h3>
+<div class="tw"><table><thead><tr><th>ID</th><th>Verification</th></tr></thead><tbody><tr><td><strong>H-01</strong></td><td><code>api.tsx</code> exports <code>marketApi</code> (third-party interceptors only) and <code>cardApi</code> (full stack). No unintercepted instance remains</td></tr><tr><td><strong>L-01</strong></td><td><code>uploadapi</code>, <code>coingico</code>, <code>memberInfoAPI</code>, <code>transactionApi</code>, <code>api</code>, <code>authApi</code>, <code>services/transfer.tsx</code>, <code>environments/</code> all deleted</td></tr><tr><td><strong>L-06</strong></td><td>11 <code>console.log</code> matches remain; all are commented-out lines in <code>FCMNotification.js</code> or the internals of <code>logger.ts</code>. <code>babel.config.js</code> applies <code>transform-remove-console</code> under <code>env.production</code> with no <code>exclude</code> list</td></tr><tr><td><strong>M-01</strong> <em>(partial)</em></td><td><code>ATTESTATION_ENFORCEMENT_ENABLED=false</code> is now <strong>explicitly declared</strong> in <code>.env</code>, <code>.env.dev</code>, <code>.env.tst</code>, <code>.env.prod</code> — the v2.0 ask. State is declared rather than inferred from absence</td></tr><tr><td><strong>Idempotency</strong></td><td><code>b86c318</code> removed payload-derived key composition (<code>fastHash(userId + values)</code>) in favour of the random UUID minted at the chokepoint, and added <code>Bank/Transfer</code>, <code>Cards/TopupCard</code> and <code>Withdraw/Withdraw/Crypto</code> to the covered paths. Correct: a derived key makes two legitimately-identical transfers collide</td></tr></tbody></table></div>
+<hr>
+<h2 id="4-newly-identified-findings">4. Newly Identified Findings</h2>
+<h3 id="n-06-pinning-inventory-mis-modelled-sentry-dsn-key-committed-as-a-host">N-06 — Pinning Inventory Mis-Modelled; Sentry DSN Key Committed as a &quot;Host&quot;</h3>
+<p><strong>Severity:</strong> Medium <strong>Files:</strong> <a href="security/pinning-policy.json">security/pinning-policy.json</a>, <a href="android/app/build.gradle#L380">android/app/build.gradle:380-392</a></p>
+<h4 id="technical-explanation">Technical Explanation</h4>
+<p>N-02 was that the Gradle host-inventory scanner treats <em>every</em> <code>https://</code> value in every <code>.env</code> file as a host the app contacts, so the Auth0 <strong>audience identifier</strong> and the Sentry <strong>DSN</strong> were flagged as unpinned hosts and failed the build.</p>
+<p>The fix applied was to add three exemptions rather than to constrain the regex. The regex at <a href="android/app/build.gradle#L389">build.gradle:389</a> is unchanged:</p>
+<pre class="code" data-lang="groovy"><code>def m = (trimmed =~ /=\s*https?:\/\/([^\/\s]+)/)
+if (m) recordHost(m[0][1], envFile.name)</code></pre>
+<p>The build passes. Three consequences follow:</p>
+<ol><li><strong>The inventory now conflates two different things.</strong> <code>security/pinning-policy.json</code> is the record of <em>which hosts the app talks to and why they are or are not pinned</em>. It now contains three entries that are not hosts the app talks to at all — two Auth0 audience strings (opaque identifiers, never resolved) and one Sentry DSN fragment. A reviewer reading the file to answer &quot;what does this app connect to?&quot; gets a wrong answer, and the exemption mechanism — whose entire purpose is to make an <em>omission</em> and a <em>decision</em> look different — now contains three entries that are neither.</li></ol>
+<ol><li><strong>A Sentry DSN public key is committed in a security policy file:</strong></li></ol>
+<pre class="code" data-lang="json"><code>{
+  &quot;host&quot;: &quot;97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io&quot;,
+  &quot;risk&quot;: &quot;low&quot;,
+  &quot;traffic&quot;: &quot;Sentry DSN userinfo host string in .env files&quot;
+}</code></pre>
+<p>The <code>97c9…</code> segment is the DSN public key. A Sentry DSN is designed to be public — it is embedded in every shipped client and grants only event-submission rights — so this is <strong>not</strong> a credential leak. It is, however, a project-identifying value now duplicated outside <code>.env</code> into a file whose stated purpose is unrelated, where nobody will think to rotate it if the project is ever re-keyed. It is also, plainly, a parsing artefact recorded as a security decision.</p>
+<ol><li><strong>The next <code>SENTRY_DSN</code> or <code>AUTH0_AUDIENCE</code> change silently re-breaks the build</strong>, because the exemption is keyed on the exact string.</li></ol>
+<h4 id="attack-scenario">Attack Scenario</h4>
+<p>Not directly exploitable. The risk is control degradation: an inventory that contains non-hosts trains reviewers to skim the exemption list, which is the precondition for a genuinely unpinned host slipping through it. This is the same failure mode as v1.0&#x27;s C-01 (<code># NO SECRETS IN THIS FILE</code> above a secret) and v2.0&#x27;s N-03 (comments citing tests that do not exist) — the third instance in this repository of a control asserting something that is not true.</p>
+<h4 id="recommended-remediation">Recommended Remediation</h4>
+<p>Constrain the scanner to keys that actually name a network host, and strip DSN userinfo:</p>
+<pre class="code" data-lang="groovy"><code>// Only URL-valued keys. AUTH0_AUDIENCE is an opaque identifier and SENTRY_DSN
+// carries a userinfo segment; neither is a host this app resolves.
+def m = (trimmed =~ /^([A-Z0-9_]+)\s*=\s*https?:\/\/(?:[^@\/\s]*@)?([^\/\s:]+)/)
+if (m &amp;&amp; m[0][1] ==~ /.*(_URL|_HOST|_ENDPOINT|_BASE)$/) {
+    recordHost(m[0][2], envFile.name)
+}</code></pre>
+<p>Then delete the three artefact exemptions from <code>pinning-policy.json</code>. Verify with <code>./gradlew :app:assembleRelease</code> and confirm the inventory reports exactly <code>api.exchangapay.com</code>, <code>tstapi.exchangapay.com</code>, <code>api.coingecko.com</code>.</p>
+<h4 id="best-practice">Best Practice</h4>
+<p>An exemption list should only ever contain entries a human decided about. If a guard produces entries a human would not have written, fix the guard — an exemption added to silence a false positive is indistinguishable, six months later, from an exemption added to silence a true one.</p>
+<hr>
+<h3 id="n-07-orphan-entitlements-file-with-a-near-identical-name">N-07 — Orphan Entitlements File With a Near-Identical Name</h3>
+<p><strong>Severity:</strong> Low <strong>Files:</strong> <code>ios/exchangapay/exchangapay-release.entitlements</code> (orphan), <code>ios/exchangapay/exchangapayRelease.entitlements</code> (live)</p>
+<h4 id="technical-explanation">Technical Explanation</h4>
+<p>Three entitlements files exist:</p>
+<div class="tw"><table><thead><tr><th>File</th><th>Referenced by</th><th>Contents</th></tr></thead><tbody><tr><td><code>exchangapay.entitlements</code></td><td>Debug config</td><td><code>aps-environment=development</code> + associated-domains</td></tr><tr><td><code>exchangapayRelease.entitlements</code></td><td>Release config</td><td><code>aps-environment=production</code> + associated-domains</td></tr><tr><td><code>exchangapay-release.entitlements</code></td><td><strong>nothing</strong></td><td><code>aps-environment=production</code>, <strong>no associated-domains</strong></td></tr></tbody></table></div>
+<p>The hyphenated file was created during the <code>ff2959d</code> remediation, superseded by the camel-case one in <code>57fb43e</code>, and never deleted. The two names differ by one hyphen, and the orphan is <strong>missing <code>associated-domains</code></strong> — so a well-intentioned &quot;fix the inconsistent naming&quot; commit that repoints <code>CODE_SIGN_ENTITLEMENTS</code> at the hyphenated file would silently disable Universal Links on iOS while passing every existing guard (the <code>[H-07]</code> phase checks <code>aps-environment</code>, which the orphan has, but does not check <code>associated-domains</code>).</p>
+<h4 id="recommended-remediation">Recommended Remediation</h4>
+<pre class="code" data-lang="bash"><code>git rm ios/exchangapay/exchangapay-release.entitlements</code></pre>
+<p>And extend the <code>[H-07]</code> build phase to assert the entitlement that is currently unchecked:</p>
+<pre class="code" data-lang="bash"><code>DOMAINS=$(plutil -extract com.apple.developer.associated-domains json -o - &quot;$ENTITLEMENTS_SRC&quot; 2&gt;/dev/null) || DOMAINS=&quot;&quot;
+if ! echo &quot;$DOMAINS&quot; | grep -q &quot;applinks:&quot;; then
+  echo &quot;error: [H-07/M-07] $CODE_SIGN_ENTITLEMENTS declares no applinks: associated domain. The Universal Links OAuth callback (M-07) will not work and the custom scheme remains the only path.&quot;
+  exit 1
+fi</code></pre>
+<hr>
+<h3 id="n-08-js-yaml-high-severity-cve-in-the-build-chain">N-08 — <code>js-yaml</code> High-Severity CVE in the Build Chain</h3>
+<p><strong>Severity:</strong> High (build-time) / Low (runtime) <strong>Advisory:</strong> GHSA-5p4m-2wfm-xmqj — CVE-2026-59870, quadratic CPU consumption in <code>!!omap</code> resolution</p>
+<h4 id="technical-explanation">Technical Explanation</h4>
+<p><code>npm audit</code> reported <strong>0 vulnerabilities</strong> at <code>608267d</code>. It now reports <strong>1 high</strong>:</p>
+<pre class="code"><code>js-yaml  3.0.0 - 3.15.0 || 4.0.0 - 4.3.0   High
+node_modules/@istanbuljs/load-nyc-config/node_modules/js-yaml
+node_modules/js-yaml</code></pre>
+<p>Both paths are build/test tooling (Babel config loading, Istanbul coverage). <code>js-yaml</code> is not reachable from the shipped Hermes bundle — no application code imports it, and neither entry point is bundled by Metro. The runtime exposure is nil.</p>
+<p>The <strong>build-time</strong> exposure is real but narrow: a malicious YAML document processed by the toolchain causes quadratic CPU consumption. That requires an attacker-supplied YAML file entering the build, which in practice means a compromised dependency or a hostile PR — a scenario that has worse consequences than a CPU stall.</p>
+<h4 id="recommended-remediation">Recommended Remediation</h4>
+<pre class="code" data-lang="bash"><code>npm audit fix          # non-breaking; both paths are transitive dev deps
+npm audit --audit-level=high   # confirm clean</code></pre>
+<p>Then commit the resulting <code>package-lock.json</code>. Note this finding appeared <strong>within one day</strong> of a clean audit — which is the argument for the scheduled dependency review recommended in §12, and for adding <code>npm audit --audit-level=high</code> to the release checklist as a hard stop rather than an informational step.</p>
+<hr>
+<h3 id="v-01-two-factor-verification-fails-open-found-and-fixed-this-pass-uncommitted">V-01 — Two-Factor Verification Fails Open <em>(found and fixed this pass — uncommitted)</em></h3>
+<p><strong>Severity:</strong> Critical (as it existed) · ✅ Fixed in the working tree <strong>Files:</strong> <a href="src/screens/Profile/authentication.tsx#L42">src/screens/Profile/authentication.tsx:42</a>, <a href="src/screens/Profile/verifyCode.tsx#L83">src/screens/Profile/verifyCode.tsx:83</a></p>
+<h4 id="technical-explanation">Technical Explanation</h4>
+<p>apisauce <strong>resolves</strong> on non-2xx responses rather than rejecting — the response object carries <code>ok: false</code> and a <code>data</code> payload holding the error body. Both 2FA screens gated success on <code>data</code> alone:</p>
+<pre class="code" data-lang="typescript"><code>const verifedRes = await ProfileService.varificationGoogleAuthenticate(value.code);
+if (verifedRes?.data) { onSuccess() }</code></pre>
+<p>A <code>400 { &quot;message&quot;: &quot;Invalid code&quot; }</code> produced a truthy <code>data</code>, so the success branch ran. On <code>authentication.tsx</code> that is the <strong>2FA step-up verification</strong> used to gate sensitive profile operations; on <code>verifyCode.tsx</code> it is 2FA <strong>enrolment confirmation</strong>, so enrolment could complete without the user ever proving they had successfully configured their authenticator app — leaving an account with 2FA marked enabled and a seed the user cannot produce codes for.</p>
+<h4 id="attack-scenario">Attack Scenario</h4>
+<p>An attacker with a session but not the second factor (stolen unlocked device, hijacked session, shoulder-surfed password on a shared handset) enters any six digits at the step-up prompt. The backend rejects; the client accepts; the guarded operation proceeds. Whether the operation itself then succeeds depends entirely on whether the backend independently re-checks the factor on the follow-up request — which this audit cannot determine from source and which <strong>must be confirmed</strong>.</p>
+<h4 id="exploitation-possibility">Exploitation Possibility</h4>
+<p><strong>High</strong>, and requiring no tooling — the bypass is reachable from the app&#x27;s own UI by typing a wrong code.</p>
+<h4 id="risk-impact">Risk Impact</h4>
+<p>Second-factor bypass on the step-up path; false-positive 2FA enrolment leaving accounts in a state where the recorded second factor does not work.</p>
+<h4 id="remediation-applied">Remediation Applied</h4>
+<pre class="code" data-lang="typescript"><code>if (verifedRes?.ok &amp;&amp; verifedRes?.data) { onSuccess() }</code></pre>
+<p>Correct, and consistent with <code>guard.ts</code>, which fails closed on every high-risk path.</p>
+<h4 id="required-follow-up">Required Follow-Up</h4>
+<ol><li><strong>Commit this.</strong> It is uncommitted and therefore in no build.</li><li><strong>Audit the idiom repository-wide.</strong> <code>res.data</code> as a success predicate is a pattern here, not a one-off. Grep every verification, payment-confirmation and permission-check path:</li></ol>
+<pre class="code" data-lang="bash"><code>grep -rn &quot;Res\?\.data\|res\?\.data&quot; src/screens src/store --include=&quot;*.tsx&quot; | grep -v &quot;\.ok&quot;</code></pre>
+<ol><li><strong>Add a lint rule or a test</strong> asserting that any branch gated on an apisauce response also tests <code>ok</code>. This is the third distinct fail-open defect found across three audits (app-lock field name in v1.0, attestation advisory mode in v2.0, this one) — the pattern is worth a mechanical check.</li><li><strong>Confirm with the backend</strong> that <code>VerifyGoogleAuthenticator</code> and every step-up-gated operation re-validate the factor server-side. If they do, this was defence-in-depth failing; if they do not, it was an exploitable authentication bypass.</li></ol>
+<hr>
+<h2 id="5-still-open-findings-fix-recommendations">5. Still-Open Findings &amp; Fix Recommendations</h2>
+<h3 id="h-07-ios-release-signing-partially-fixed-top-blocker">H-07 — iOS Release Signing · 🟡 Partially Fixed · <strong>Top Blocker</strong></h3>
+<p><strong>Fixed this pass:</strong> entitlements applied on both configs, <code>aps-environment</code> asserted in both the source file and the signed product, H-13 tenant guard repointed at <code>.env</code> and now genuinely executing, <code>associated-domains</code> present.</p>
+<p><strong>Still open — four items, all in the Release build configuration:</strong></p>
+<div class="tw"><table><thead><tr><th>Issue</th><th>Evidence</th><th>Impact</th></tr></thead><tbody><tr><td>Release signs with a <strong>development</strong> identity</td><td><a href="ios/exchangapay.xcodeproj/project.pbxproj#L383">project.pbxproj:383</a> — <code>CODE_SIGN_IDENTITY = &quot;Apple Development&quot;</code> at target level, overriding the project-level <code>&quot;iPhone Distribution&quot;</code> at line 529</td><td>Cannot produce a distributable archive. A build that &quot;succeeds&quot; is not shippable</td></tr><tr><td><code>CODE_SIGN_STYLE = Automatic</code>, <code>PROVISIONING_PROFILE_SPECIFIER = &quot;&quot;</code></td><td><a href="ios/exchangapay.xcodeproj/project.pbxproj#L384">project.pbxproj:384, 403</a></td><td>Automatic signing selects whatever profile the signing machine happens to hold — the release identity becomes a property of the laptop, not the repository</td></tr><tr><td><strong>Release ships the test bundle ID</strong></td><td><a href="ios/exchangapay.xcodeproj/project.pbxproj#L401">project.pbxproj:401</a> — <code>PRODUCT_BUNDLE_IDENTIFIER = com.exchangapay.tst</code></td><td>iOS release builds carry the test identity. <code>IOS_BUNDLE_ID</code> in <code>.env</code> drives nothing on iOS. Note the H-13 guard <em>will</em> now catch this — it compares <code>APP_ENV</code> against the bundle ID — so a prod build fails loudly rather than shipping wrong. The guard works; the setting is still wrong</td></tr><tr><td><code>CURRENT_PROJECT_VERSION = 1</code></td><td><a href="ios/exchangapay.xcodeproj/project.pbxproj#L352">project.pbxproj:352, 385</a></td><td>L-05; blocks App Store upload after the first submission and neuters force-update</td></tr></tbody></table></div>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code"><code># Target → Build Settings → Release
+CODE_SIGN_IDENTITY[sdk=iphoneos*] = &quot;Apple Distribution&quot;
+CODE_SIGN_STYLE                   = Manual
+PROVISIONING_PROFILE_SPECIFIER    = &quot;Exchanga Pay App Store&quot;
+PRODUCT_BUNDLE_IDENTIFIER         = $(EXCHANGA_BUNDLE_ID)   # from an xcconfig fed by .env
+CURRENT_PROJECT_VERSION           = $(BUILD_NUMBER)         # from CI
+
+# Target → Build Settings → Debug  (already correct)
+CODE_SIGN_ENTITLEMENTS            = exchangapay/exchangapay.entitlements</code></pre>
+<p>Then extend the <code>[H-07]</code> phase with the assertion that would have caught this — the same &quot;assert the control&quot; pattern used for entitlements and APNs:</p>
+<pre class="code" data-lang="bash"><code>if [ &quot;$CONFIGURATION&quot; = &quot;Release&quot; ]; then
+  case &quot;$CODE_SIGN_IDENTITY&quot; in
+    *Distribution*) ;;
+    *) echo &quot;error: [H-07] Release CODE_SIGN_IDENTITY is &#x27;$CODE_SIGN_IDENTITY&#x27;; a distributable archive requires an Apple Distribution identity.&quot;; exit 1 ;;
+  esac
+fi</code></pre>
+<p><strong>Best practice:</strong> every setting the release depends on should be asserted by the release itself. This repository does that well for ATS, pinning, entitlements and APNs; signing identity is the one remaining setting where a wrong value produces a green build.</p>
+<hr>
+<h3 id="n-03-test-suite-partially-restored-partially-fixed">N-03 — Test Suite Partially Restored · 🟡 Partially Fixed</h3>
+<p><strong>Fixed:</strong> four suites exist and 40 tests pass —</p>
+<pre class="code"><code>__tests__/envContract.test.ts          184 lines   ✅ pass
+__tests__/legacyCryptoTelemetry.test.ts 155 lines  ✅ pass
+__tests__/otpTransport.test.ts         141 lines   ✅ pass
+__tests__/securityInvariants.test.ts   171 lines   ❌ FAILS TO EXECUTE
+
+Test Suites: 1 failed, 3 passed, 4 total
+Tests:       40 passed, 40 total</code></pre>
+<p><strong>Still open — two items:</strong></p>
+<ol><li><strong><code>securityInvariants.test.ts</code> cannot run.</strong> The exact <code>transformIgnorePatterns</code> defect v2.0 recorded:</li></ol>
+<pre class="code"><code>SyntaxError: Unexpected token &#x27;export&#x27;
+  node_modules/@sentry/react-native/dist/js/index.js:1
+  at src/utils/logger.ts:24 → storage/keychainPolicy.ts:45 → crypto/persistKey.ts:42
+     → helpers/encryptionTransfermation.tsx:29 → __tests__/securityInvariants.test.ts:15</code></pre>
+<p>This is the suite covering the persisted-state secret stripping (M-06) and keychain policy — the storage controls. <strong>A suite that does not execute is indistinguishable from a suite that does not exist</strong>, and <code>jest</code> exits non-zero, so any future CI gate will red on this.</p>
+<ol><li><strong>Four cited suites still do not exist.</strong> Source comments and policy files still name them as the enforcement mechanism for controls:</li></ol>
+<div class="tw"><table><thead><tr><th>Cited file</th><th>Cited from</th><th>Control it claims to enforce</th></tr></thead><tbody><tr><td><code>__tests__/apiLayerHardening.test.ts</code></td><td>5 places incl. <a href="src/utils/apiInterceptors.ts#L13">apiInterceptors.ts:13</a></td><td>&quot;every exported instance went through <code>applyStandardInterceptors()</code>&quot;</td></tr><tr><td><code>__tests__/pinningCoverage.test.ts</code></td><td>6 places</td><td>Pin inventory coverage</td></tr><tr><td><code>__tests__/keychainPolicy.test.ts</code></td><td>3 places</td><td>Keychain accessibility invariants</td></tr><tr><td><code>__tests__/storagePolicy.test.ts</code></td><td>3 places</td><td>Storage policy</td></tr></tbody></table></div>
+<p>The comment in <code>apiInterceptors.ts</code> is the sharpest example: <em>&quot;<code>__tests__/apiLayerHardening.test.ts</code> asserts that every exported instance actually went through <code>applyStandardInterceptors()</code>, so a new instance cannot quietly opt out.&quot;</em> Nothing asserts that. A new instance can quietly opt out, and the comment stops the next reviewer from checking.</p>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code" data-lang="javascript"><code>// jest.config.js
+module.exports = {
+  preset: &#x27;react-native&#x27;,
+  transformIgnorePatterns: [
+    &#x27;node_modules/(?!(?:@react-native|react-native|@sentry/react-native|&#x27; +
+    &#x27;@react-native-firebase|react-native-.*|@react-navigation)/)&#x27;,
+  ],
+  setupFilesAfterEnv: [&#x27;&lt;rootDir&gt;/jest.setup.js&#x27;],
+  collectCoverageFrom: [&#x27;src/**/*.{ts,tsx}&#x27;, &#x27;!src/assets/**&#x27;],
+  coverageThreshold: { global: { lines: 40, branches: 30 } },
+};</code></pre>
+<p>Then write the four cited suites — <code>apiLayerHardening</code> first, since it is the one guarding the chokepoint that H-01 exists to create. Each is a source-shape assertion, not a behavioural test; they are short:</p>
+<pre class="code" data-lang="typescript"><code>// __tests__/apiLayerHardening.test.ts — sketch
+it(&quot;every apisauce instance passes through an interceptor applier&quot;, () =&gt; {
+  const src = fs.readFileSync(&quot;src/utils/api.tsx&quot;, &quot;utf8&quot;);
+  const created = [...src.matchAll(/const (\w+) = create\(/g)].map(m =&gt; m[1]);
+  created.forEach(name =&gt; {
+    expect(src).toMatch(
+      new RegExp(`apply(Standard|ThirdParty)Interceptors\\(${name}`)
+    );
+  });
+});</code></pre>
+<p>And add the meta-test v2.0 recommended, which closes the whole class:</p>
+<pre class="code" data-lang="typescript"><code>it(&quot;every __tests__/ reference in a source comment resolves to a real file&quot;, () =&gt; {
+  const refs = execSync(
+    &quot;grep -rhoE &#x27;__tests__/[A-Za-z0-9._]+&#x27; src android ios security || true&quot;
+  ).toString().split(&quot;\n&quot;).filter(Boolean).map(s =&gt; s.replace(/\.$/, &quot;&quot;));
+  [...new Set(refs)].forEach(ref =&gt; expect(fs.existsSync(ref)).toBe(true));
+});</code></pre>
+<p>Twenty lines. It converts a documentation claim into a checkable one, and it would have caught this finding in both v2.0 and v3.0.</p>
+<hr>
+<h3 id="n-04-host-verification-scripts-still-read-a-deleted-directory-open">N-04 — Host-Verification Scripts Still Read a Deleted Directory · ❌ Open</h3>
+<p>Both scripts had their <strong>header comments</strong> updated in the working tree; neither had its <strong>body</strong> changed.</p>
+<pre class="code" data-lang="bash"><code># scripts/verify-hosts.sh:41-42
+&#x27; &quot;$REPO_ROOT&quot;/environments/dev.js &quot;$REPO_ROOT&quot;/environments/tst.js \
+  &quot;$REPO_ROOT&quot;/environments/prod.js 2&gt;/dev/null | sort -u
+
+# scripts/compute-spki-pins.sh:45-46
+&#x27; &quot;$REPO_ROOT&quot;/environments/dev.js &quot;$REPO_ROOT&quot;/environments/tst.js \
+  &quot;$REPO_ROOT&quot;/environments/prod.js 2&gt;/dev/null</code></pre>
+<p><code>environments/</code> was deleted in <code>ff2959d</code>. The <code>2&gt;/dev/null</code> swallows the missing-file error, the awk block matches nothing, and both scripts <strong>exit 0 having verified nothing</strong>. <code>verify-hosts.sh</code> is on the production hardening checklist as the control that proves every configured host resolves; it currently proves nothing and says so with a zero exit code.</p>
+<p>This is the same failure mode as the pre-fix H-13 guard, and it is worth noting the Xcode release phase learned the lesson explicitly this pass (<em>&quot;a build that cannot read it FAILS rather than skipping the check&quot;</em>) while these two scripts did not.</p>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code" data-lang="bash"><code># scripts/verify-hosts.sh — replace the awk-over-environments block
+collect_hosts() {
+  local found
+  found=$(grep -hoE &#x27;^[A-Z0-9_]+(_URL|_HOST|_ENDPOINT|_BASE)\s*=\s*https?://[^/[:space:]]+&#x27; \
+            &quot;$REPO_ROOT&quot;/.env &quot;$REPO_ROOT&quot;/.env.dev &quot;$REPO_ROOT&quot;/.env.tst &quot;$REPO_ROOT&quot;/.env.prod 2&gt;/dev/null \
+          | sed -E &#x27;s|.*https?://||&#x27; | sort -u)
+  if [ -z &quot;$found&quot; ]; then
+    echo &quot;error: host inventory is empty. Expected *_URL keys in .env* — has the&quot; &gt;&amp;2
+    echo &quot;       environment source of truth moved again? Refusing to report success.&quot; &gt;&amp;2
+    exit 1
+  fi
+  printf &#x27;%s\n&#x27; &quot;$found&quot;
+}</code></pre>
+<p>Apply the same non-empty guard to <code>compute-spki-pins.sh</code> (which already has the <em>message</em> at line 113 — <code>&quot;No hosts found. Is environments/*.js missing its apiUrls block?&quot;</code> — but reaches it only after the same silent-empty path, and the message names the wrong file).</p>
+<p><strong>Best practice:</strong> any script whose job is to enumerate something must treat an empty enumeration as an error. &quot;Found nothing&quot; and &quot;verified everything&quot; must never share an exit code.</p>
+<hr>
+<h3 id="n-05-totp-seed-copied-to-the-clipboard-with-no-expiry-open">N-05 — TOTP Seed Copied to the Clipboard With No Expiry · ❌ Open</h3>
+<pre class="code" data-lang="typescript"><code>// src/screens/Profile/verifyCode.tsx:118-125
+const copyToClipboard = async () =&gt; {
+  const text: string = extractSecretFromOTPAuthURI(data);   // the raw TOTP seed
+  try {
+    await Clipboard.setString(text);                        // core RN Clipboard, no TTL
+  } catch (error: any) { … }
+};</code></pre>
+<p>Two problems, both unchanged since v2.0:</p>
+<ol><li><strong>It uses core React Native&#x27;s <code>Clipboard</code></strong> (imported from <code>react-native</code> at line 10) rather than the project&#x27;s own <a href="src/utils/clipboard.ts"><code>copyEphemeral</code></a> helper. Four other screens use <code>copyEphemeral</code> correctly; this one — the single most sensitive value the app ever places on the clipboard — does not.</li><li><strong>The value is a TOTP shared secret</strong>, not a wallet address. A wallet address on the clipboard risks a swap attack; a TOTP seed on the clipboard risks <em>permanent second-factor compromise</em>, because it does not expire, cannot be rotated without re-enrolment, and generates valid codes forever. On Android 10+ any foreground app can read the clipboard; on iOS the general pasteboard is readable by any app the user foregrounds, and Universal Clipboard syncs it to every device on the same Apple ID.</li></ol>
+<p><code>myReferral.tsx</code> also uses core <code>Clipboard</code> — low sensitivity (a referral code), but the same import should be banned uniformly rather than case-by-case.</p>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code" data-lang="typescript"><code>import { copyEphemeral } from &quot;../../utils/clipboard&quot;;
+
+const copyToClipboard = () =&gt; {
+  const text = extractSecretFromOTPAuthURI(data);
+  // 30 s, not the 60 s default: a TOTP seed does not expire and cannot be
+  // rotated without re-enrolment, so the exposure window should be the
+  // shortest one that still lets a user paste into an authenticator app.
+  copyEphemeral(text, &quot;Authenticator secret&quot;, 30_000);
+};</code></pre>
+<p>Then ban the core import so this cannot recur:</p>
+<pre class="code" data-lang="javascript"><code>// .eslintrc.js
+rules: {
+  &quot;no-restricted-imports&quot;: [&quot;error&quot;, {
+    paths: [{
+      name: &quot;react-native&quot;,
+      importNames: [&quot;Clipboard&quot;],
+      message: &quot;Use copyEphemeral from src/utils/clipboard.ts — clipboard writes must auto-clear (M-05, N-05).&quot;,
+    }],
+  }],
+}</code></pre>
+<p><strong>Best practice:</strong> prefer offering the QR code alone and removing the copy affordance entirely for the seed. If a user can scan it, they never need it on the clipboard; if they cannot scan it (same-device enrolment), a 30-second window is the compromise.</p>
+<hr>
+<h3 id="91-no-request-timeout-open">9.1 — No Request Timeout · ❌ Open</h3>
+<p>Re-verified: <strong>zero</strong> <code>timeout</code> configuration anywhere in <code>ApiService.ts</code>, <code>apiInterceptors.ts</code> or <code>api.tsx</code>. Axios defaults to no timeout, so a hung TCP connection blocks indefinitely.</p>
+<p>The workaround still exists and still documents the gap: <a href="src/security/appLock.ts#L48">appLock.ts:48</a> — <em>&quot;ApiService sets no timeout on anything (audit finding M-03, still open)&quot;</em>. That comment now also carries a stale finding ID (it is 9.1, not M-03, and M-03 is closed).</p>
+<p>This interacts with the startup path: <code>checkVersionUpdate()</code> runs before the dashboard renders and has no timeout, so a network black-hole stalls first paint indefinitely.</p>
+<h4 id="recommended-fix-one-line-at-the-chokepoint">Recommended Fix — one line at the chokepoint</h4>
+<pre class="code" data-lang="typescript"><code>// src/utils/apiInterceptors.ts — inside applyStandardInterceptors
+instance.axiosInstance.defaults.timeout = 30_000;
+
+// and per-request for interactive paths, inside the request interceptor:
+config.timeout ??= /Login|Dashboard|SecurityInformation|VersionCheck/.test(config.url ?? &quot;&quot;)
+  ? 10_000
+  : 30_000;</code></pre>
+<p>Pair with <code>429</code> / <code>Retry-After</code> handling, which is also absent at the interceptor. <code>helpers/index.tsx:255</code> maps 429 to a <em>user message</em> — good — but nothing enforces a backoff, so the UI is free to let the user retry immediately and turn a soft limit into an incident:</p>
+<pre class="code" data-lang="typescript"><code>instance.axiosInstance.interceptors.response.use(undefined, async (error) =&gt; {
+  if (error?.response?.status === 429) {
+    const retryAfter = Number(error.response.headers?.[&quot;retry-after&quot;]) || 0;
+    error.retryAfterMs = Math.min(retryAfter * 1000 || 5_000, 60_000);
+    error.isRateLimited = true;      // let the UI disable the submit button
+  }
+  return handleErrorCapture()(error);
+});</code></pre>
+<p>Add bounded retry (2 attempts, exponential backoff + jitter) on <strong>idempotent GETs only</strong> — never on money-movement POSTs. Their idempotency keys make a retry safe server-side, but whether to submit twice should remain the backend&#x27;s decision, not a client-side default.</p>
+<hr>
+<h3 id="m-01-device-attestation-not-enforced-server-side-partially-fixed">M-01 — Device Attestation Not Enforced Server-Side · 🟡 Partially Fixed</h3>
+<p><strong>Fixed this pass:</strong> <code>ATTESTATION_ENFORCEMENT_ENABLED=false</code> is now explicitly declared in all four <code>.env</code> files with an explanatory comment referencing <code>security/ATTESTATION_BACKEND_CONTRACT.md</code> — the v2.0 ask. The state is declared rather than inferred from absence.</p>
+<p><strong>Still open — two items:</strong></p>
+<ol><li><strong><code>PLAY_INTEGRITY_CLOUD_PROJECT</code> is empty in all four <code>.env</code> files.</strong> Play Integrity cannot produce a verdict without a cloud project number, so on Android the attestation path is inert in every build — <code>getAttestationToken()</code> returns nothing and <code>X-Device-Attestation</code> is never attached. iOS App Attest is unaffected. <strong>The single highest-value one-line change on this list:</strong> set the project number and the Android half of the control starts producing data immediately, in advisory mode, at zero risk.</li><li><strong>The backend does not verify.</strong> Until it rejects on a bad verdict, <code>X-Device-Attestation</code> is cargo. The client sequencing (client first, flag off, backend second) is correct.</li></ol>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code" data-lang="bash"><code># .env, .env.dev, .env.tst, .env.prod
+PLAY_INTEGRITY_CLOUD_PROJECT=&lt;GCP project number from Play Console → App integrity&gt;</code></pre>
+<p>Then deploy the backend contract, watch the verdict distribution in advisory mode for one release cycle, and only then flip <code>ATTESTATION_ENFORCEMENT_ENABLED=true</code> — enabling enforcement before you know the false-positive rate locks out real users on the day of the deploy.</p>
+<hr>
+<h3 id="m-02-otp-transport-client-side-closed-backend-pending">M-02 — OTP Transport · 🟡 Client-Side Closed, Backend Pending</h3>
+<p>Client work is complete and well built (§3). The finding closes when the backend ships the two body-based routes specified in <a href="security/M02_OTP_TRANSPORT_CONTRACT.md">security/M02_OTP_TRANSPORT_CONTRACT.md</a>.</p>
+<p><strong>Watch for the closure signal:</strong> the shim emits a Sentry breadcrumb <code>security.m02</code> and a <code>log.warn</code> the first time per session it falls back. When that breadcrumb stops appearing across the fleet, the finding is closed in production — no app release needed. Add a Sentry alert on the <em>absence</em> of it after the backend deploy, and a dashboard on its rate before.</p>
+<p><strong>Backend must also confirm:</strong> single-use enforcement, ≤5-minute TTL, ~5 attempts per identity per 15 minutes, and that the request <strong>body</strong> is excluded from access logging (moving the code from the URL to the body accomplishes nothing if the gateway logs bodies).</p>
+<hr>
+<h3 id="m-07-oauth-callback-custom-scheme-partially-fixed">M-07 — OAuth Callback Custom Scheme · 🟡 Partially Fixed</h3>
+<p>Both in-repo halves are now done: the setup document exists, and the iOS <code>associated-domains</code> entitlement is present and applied on both configurations.</p>
+<p><strong>Still open — external and unverifiable from source:</strong></p>
+<ol><li><code>https://exchangapay.eu.auth0.com/.well-known/assetlinks.json</code> must serve the app&#x27;s package name and signing-certificate SHA-256 fingerprint, or <code>android:autoVerify=&quot;true&quot;</code> fails verification and the App Link intent filter is inert.</li><li>The Apple App Site Association file must be served for the iOS half.</li><li>The legacy custom-scheme intent filters (<code>$(PRODUCT_BUNDLE_IDENTIFIER).auth0</code>) are correctly retained during migration but carry <strong>no removal date</strong>.</li></ol>
+<p>Until (1) and (2) are verified live, the custom scheme is still the only working callback path and any app on the device can register it. PKCE (enforced by <code>react-native-auth0</code> v5) reduces this from account takeover to denial-of-login, since the intercepted code is useless without the verifier.</p>
+<h4 id="recommended-fix">Recommended Fix</h4>
+<pre class="code" data-lang="bash"><code># Verify Android App Link association (must return the app&#x27;s package + fingerprint)
+curl -s https://exchangapay.eu.auth0.com/.well-known/assetlinks.json | jq
+# Verify on-device after install
+adb shell pm get-app-links com.exchangapay
+# Expect: com.exchangapay.eu.auth0.com: verified</code></pre>
+<p>Record the verification date in <code>security/M07_APPLINKS_SETUP.md</code>, add a <code>removeBy</code> date for the custom-scheme filters, and add the <code>adb pm get-app-links</code> check to the release checklist — App Link verification can silently regress when the signing certificate changes.</p>
+<hr>
+<h3 id="c-01-sentry-token-partially-fixed-unchanged">C-01 — Sentry Token · 🟡 Partially Fixed · Unchanged</h3>
+<p>Removal from the tree is confirmed and correct. The token remains recoverable:</p>
+<pre class="code" data-lang="bash"><code>$ git log --all -p -- android/sentry.properties ios/sentry.properties | grep &#x27;^-.*auth\.token&#x27;
+-auth.token=sntrys_eyJpYXQiOjE3NjEzNzQ3NDkuOTE0MjI0LCJ1cmwiOiJodHRwczovL3NlbnRyeS5pbyIs…</code></pre>
+<p>The decoded payload names org <code>exchangapay</code> and region <code>us.sentry.io</code>. Anyone with repository access — including anyone who has ever cloned it — holds a live organisation token.</p>
+<p><strong>Removing a secret from HEAD does not revoke it. Only rotation does.</strong> There is no evidence of rotation in this window.</p>
+<h4 id="recommended-fix-in-order">Recommended Fix, in order</h4>
+<ol><li><strong>Rotate now.</strong> Sentry → Settings → Auth Tokens → revoke, issue a new one. Confirm the old token&#x27;s revocation in the Sentry audit log — that is the step that actually closes the finding.</li><li>Supply the new token via <code>SENTRY_AUTH_TOKEN</code> in the build environment (CI secret / <code>~/.sentryclirc</code>), never in a tracked file. <code>.gitignore:85</code> already documents this path.</li><li>Purge history with <code>git filter-repo --replace-text</code>, <strong>including the tracked audit artefacts</strong> — <code>SECURITY_AUDIT_REPORT.md</code> and <code>.html</code> quote the token verbatim, so a history purge that only targets <code>sentry.properties</code> leaves it in the tree.</li><li>Install a <code>gitleaks</code> pre-commit hook and add a <code>gitleaks detect</code> step to CI.</li></ol>
+<hr>
+<h3 id="m-08-legacy-zero-iv-crypto-format-open-accepted-deadline-enforced">M-08 — Legacy Zero-IV Crypto Format · ❌ Open (accepted, deadline-enforced)</h3>
+<p><code>LEGACY_FORMATS_ENABLED = true</code> in <a href="src/utils/crypto/policy.ts#L58">policy.ts:58</a>. A deliberate migration trade with a Gradle-enforced hard deadline of <strong>2026-11-01</strong>, live telemetry via <code>legacyTelemetry.ts</code> (now 144 lines, expanded this pass), a documented three-step exit, and a passing test suite.</p>
+<p>Well managed. The only action is to watch the <code>crypto.legacy_format</code> metric and hold the date. <strong>Flip the flag once the metric reaches zero; do not wait for the deadline</strong> — a deadline is a backstop, not a plan.</p>
+<hr>
+<h3 id="low-severity-register">Low-Severity Register</h3>
+<div class="tw"><table><thead><tr><th>ID</th><th>Status</th><th>Note &amp; fix</th></tr></thead><tbody><tr><td><strong>L-04</strong></td><td class="c-med">🟡 Improved</td><td>1,045 → <strong>992</strong> <code>: any</code>. <code>tsc --noEmit</code> still runs nowhere. <em>Fix:</em> add it to the release procedure, enable <code>@typescript-eslint</code> type-aware rules, and start with a typed <code>ApiUrlKey</code> union — the change that would have made N-01 a compile error</td></tr><tr><td><strong>L-05</strong></td><td class="c-crit">❌ Open</td><td><code>versionCode 1</code> / <code>versionName &quot;1.0&quot;</code> / iOS <code>CURRENT_PROJECT_VERSION = 1</code>. <strong>Still neuters H-05:</strong> <code>checkAppVersion()</code> compares <code>DeviceInfo.getBuildNumber()</code> (always 1) against the remote build number, so once the remote value exceeds 1 <em>every</em> install is permanently flagged out-of-date. <em>Fix:</em> drive both from one incrementing CI variable</td></tr><tr><td><strong>L-07</strong></td><td class="c-crit">❌ Open</td><td>No screenshot-detection telemetry on iOS. <em>Fix:</em> observe <code>UIApplication.userDidTakeScreenshotNotification</code> and emit a Sentry breadcrumb on the card-PIN and seed screens</td></tr><tr><td><strong>L-08</strong></td><td class="c-crit">❌ Open</td><td><code>Tlv_Cards</code>, <code>cryptoCardTransations</code>, <code>encryptionTransfermation</code>, <code>onBoardingservice</code>. <em>Fix:</em> rename in one mechanical commit, separate from any behavioural change</td></tr><tr><td><strong>L-09</strong></td><td class="c-crit">❌ Open</td><td>Four notification packages: <code>react-native-push-notification</code> 8.1.1 (archived, locally patched), <code>@notifee/react-native</code>, <code>@react-native-firebase/messaging</code>, <code>@react-native-community/push-notification-ios</code>. <em>Fix:</em> consolidate on <code>@notifee</code> + <code>firebase/messaging</code>; removes an unmaintained dependency and a patch</td></tr><tr><td><strong>L-10</strong></td><td class="c-crit">🟡 Open</td><td><code>google-services.json</code> is a <code>REPLACE_WITH_*</code> placeholder and gitignored — correct hygiene, but no build succeeds without out-of-band injection and nothing documents the retrieval path. <em>Fix:</em> record it in the README and keep the real file in the team secret store</td></tr><tr><td><strong>L-11</strong></td><td class="c-crit">🟡 Open</td><td><code>jest.config.js</code> declares 40 %/30 % coverage thresholds. With 4 suites over 327 source files, no run satisfies them — a threshold nothing enforces is a claim, not a control. <em>Fix:</em> set the threshold to current measured coverage and ratchet upward, so it starts binding immediately</td></tr><tr><td><strong>L-12</strong> <em>(new)</em></td><td class="c-crit">🟡 Open</td><td>Stale finding IDs in source comments — <a href="src/security/appLock.ts#L48">appLock.ts:48</a> cites &quot;audit finding M-03&quot; for the missing timeout, which is finding 9.1; M-03 is now closed. <em>Fix:</em> correct the reference when the timeout lands</td></tr></tbody></table></div>
+<hr>
+<h2 id="6-vapt-assessment">6. VAPT Assessment</h2>
+<p>Re-tested against <code>b86c318</code> + working tree.</p>
+<h3 id="61-authentication-bypass">6.1 Authentication Bypass</h3>
+<div class="tw"><table><thead><tr><th>Vector</th><th>v2.0</th><th>v3.0</th><th>Notes</th></tr></thead><tbody><tr><td><strong>2FA verification accepts a wrong code</strong></td><td>not detected</td><td class="c-ok">✅ <strong>Closed (uncommitted)</strong></td><td><strong>V-01</strong> — apisauce resolves non-2xx; <code>data</code> alone was the success test</td></tr><tr><td>App-lock gate reads a non-existent field</td><td class="c-ok">✅ Closed</td><td class="c-ok">✅ Closed</td><td><code>appLock.ts</code> — correct field, cached, fails safe</td></tr><tr><td>Biometric step-up fails open</td><td class="c-ok">✅ Closed</td><td class="c-ok">✅ Closed</td><td><code>guard.ts</code> fails closed on high-risk operations</td></tr><tr><td>OAuth callback interception via claimable scheme</td><td class="c-med">🟡 Android only</td><td class="c-med">🟡 <strong>Both mitigated in-app; unverified externally</strong></td><td>iOS entitlement now present; assetlinks/AASA hosting unconfirmed (M-07)</td></tr><tr><td>Unauthenticated security endpoints</td><td class="c-ok">✅ Closed</td><td class="c-ok">✅ Closed</td><td>M-09</td></tr><tr><td>Legacy API layer with no bearer token</td><td class="c-ok">✅ by design</td><td class="c-ok">✅ <strong>Closed in delivery</strong></td><td>N-01 resolved; all remaining instances intercepted</td></tr></tbody></table></div>
+<p><strong>Residual:</strong> until <code>assetlinks.json</code> and the AASA file are verified live, an app registering <code>com.exchangapay.tst.auth0</code> can still receive the authorization code. PKCE reduces this to denial-of-login rather than takeover. Severity: Medium, both platforms until verification is confirmed.</p>
+<p><strong>Priority:</strong> V-01&#x27;s underlying idiom (<code>res.data</code> as a success predicate) must be audited across every gate in the app. One instance was found by inspection; the pattern is repository-wide.</p>
+<h3 id="62-authorization">6.2 Authorization</h3>
+<p>Unchanged in design and correct: client-side authorization is advisory by construction, and <code>X-Device-Risk</code> is explicitly documented as a fraud <em>signal</em>, never an authorization decision.</p>
+<p><strong>Backend-dependent items this audit cannot resolve from source, in priority order:</strong></p>
+<ol><li><strong>Does the backend independently re-validate the second factor</strong> on operations gated by the step-up prompt? (V-01 — this determines whether the client bypass was exploitable end-to-end.)</li><li>Does <code>PUT api/v1/Customer/ChangePWD</code> require authentication and step-up? (M-09.)</li><li>Does the backend enforce single-use + TTL + rate limiting on verification codes? (M-02.)</li><li>Will the backend reject on a bad attestation verdict? (M-01.)</li></ol>
+<h3 id="63-api-abuse">6.3 API Abuse</h3>
+<div class="tw"><table><thead><tr><th>Control</th><th>v2.0</th><th>v3.0</th></tr></thead><tbody><tr><td>Rate limiting</td><td class="c-crit">❌</td><td class="c-med">🟡 User-facing 429 message exists; <strong>no client-side backoff enforcement</strong></td></tr><tr><td>Idempotency on money movement</td><td class="c-ok">✅</td><td class="c-ok">✅ <strong>Improved</strong> — keys now random rather than payload-derived; 3 more paths covered</td></tr><tr><td>Request timeout</td><td class="c-crit">❌</td><td class="c-crit">❌ Open (9.1)</td></tr><tr><td>Retry with backoff</td><td class="c-crit">❌</td><td class="c-crit">❌ Not implemented</td></tr><tr><td>Attestation on high-risk paths</td><td class="c-med">🟡</td><td class="c-med">🟡 Client complete; <strong>inert on Android</strong> (empty <code>PLAY_INTEGRITY_CLOUD_PROJECT</code>)</td></tr></tbody></table></div>
+<p>The idempotency change in <code>b86c318</code> is a genuine correctness improvement, not just hygiene. Deriving the key from <code>userId + cardId + amount</code> meant two legitimately identical transfers — the same amount to the same payee twice, which users do — collided on one key and the second was silently swallowed by the backend as a duplicate. A random key per attempt, reused on retry but never on a new attempt, is the correct semantics.</p>
+<h3 id="64-sensitive-data-exposure">6.4 Sensitive Data Exposure</h3>
+<div class="tw"><table><thead><tr><th>Vector</th><th>Status</th></tr></thead><tbody><tr><td>Secrets in git</td><td class="c-med">🟡 Removed from tree, <strong>still in history</strong> (C-01)</td></tr><tr><td>Persisted Redux state</td><td class="c-ok">✅ AES-GCM + regex-based secret strip (M-06)</td></tr><tr><td>Keychain accessibility</td><td class="c-ok">✅ <code>_THIS_DEVICE_ONLY</code> on every write</td></tr><tr><td>Android backup / device transfer</td><td class="c-ok">✅ <code>allowBackup=&quot;false&quot;</code> + <code>data_extraction_rules.xml</code></td></tr><tr><td>Clipboard — crypto addresses</td><td class="c-ok">✅ 60 s auto-clear on 4 screens</td></tr><tr><td>Clipboard — <strong>2FA seed</strong></td><td class="c-crit">❌ <strong>Open (N-05)</strong></td></tr><tr><td><strong>OTP codes in telemetry</strong></td><td class="c-ok">✅ <strong>Closed</strong> — <code>redactUrl()</code> on every Crashlytics attribute and Sentry tag</td></tr><tr><td>Telemetry redaction</td><td class="c-ok">✅ Allow-list based (<code>redact.ts</code>, 77 lines added this pass)</td></tr><tr><td>Screenshots</td><td class="c-ok">✅ <code>FLAG_SECURE</code> + iOS snapshot overlay; ❌ no detection telemetry (L-07)</td></tr><tr><td>Logs</td><td class="c-ok">✅ <code>console.*</code> stripped in release with no <code>exclude</code> list</td></tr></tbody></table></div>
+<h3 id="65-mitm-risk">6.5 MITM Risk</h3>
+<p><strong>Materially strong.</strong> The host inventory is three live hosts (<code>api.exchangapay.com</code>, <code>tstapi.exchangapay.com</code>, <code>api.coingecko.com</code>), both first-party hosts pinned on <strong>both</strong> platforms with a verified backup pin, a parity check preventing drift between the Android and iOS pin-sets, a build-time drift check against <code>pinning-policy.json</code>, and — new this pass — runtime expiry telemetry.</p>
+<p><strong>Residual attack surface:</strong></p>
+<ul><li>CoinGecko is unpinned and third-party. Compromise yields misstated coin prices only; no credential reaches it, enforced by <code>applyThirdPartyInterceptors</code>. Accepted, documented, correct.</li><li>Auth0, Sentry and Sumsub carry their own transports. The Sumsub exemption is the most material — that path carries identity documents — and is correctly flagged Medium in the policy with &quot;revisit if the SDK exposes a pinning hook&quot;.</li><li><strong>N-06</strong>: the exemption list now contains three parsing artefacts, which degrades the reviewability of exactly this control.</li><li>Android&#x27;s pin-set still fails open at expiry (platform behaviour), but is now observable at runtime.</li></ul>
+<h3 id="66-reverse-engineering">6.6 Reverse Engineering</h3>
+<p>R8 with <code>proguard-android-optimize.txt</code>, <code>minifyEnabled = true</code>, <code>shrinkResources = true</code>, <code>-assumenosideeffects</code> Log stripping, 134 lines of keep rules appropriately scoped to reflection-dependent libraries. iOS strips symbols and enables hardened runtime.</p>
+<p><strong>Residual:</strong> no anti-tamper, no integrity self-check, no string obfuscation. For an app rendering card PINs, a commercial RASP layer is worth evaluating — and the architecture already anticipates it: <code>src/security/index.ts</code> documents that swapping the detection backend &quot;stays a one-file change.&quot;</p>
+<h3 id="67-device-compromise-runtime-manipulation">6.7 Device Compromise &amp; Runtime Manipulation</h3>
+<p>Root/jailbreak detection via <code>deviceIntegrity.ts</code> with a signal taxonomy, re-evaluated on foreground. Play Integrity and App Attest are wired. The verdict is used only as a risk signal for high-risk operations — correct, since a compromised device controls the process producing the verdict.</p>
+<p><strong>Residual:</strong> without server-side enforcement (M-01), a modified app strips <code>X-Device-Risk</code> and the backend cannot tell. <strong>And on Android the control is currently inert regardless</strong>, because <code>PLAY_INTEGRITY_CLOUD_PROJECT</code> is empty in every environment — so even a cooperative client produces no attestation token. That one-line configuration change is the highest-value item in this section.</p>
+<h3 id="68-token-replay-session-hijacking">6.8 Token Replay &amp; Session Hijacking</h3>
+<p>Access and refresh tokens split across Keychain entries with different accessibility, <code>_THIS_DEVICE_ONLY</code>, a transient-vs-absent failure taxonomy preventing spurious logout, <code>cleanupLegacyTokenStorage()</code> erasing plaintext tokens from earlier builds. Idempotency keys on money-moving POSTs, now randomly generated.</p>
+<p><strong>Residual:</strong> no token binding to device attestation (blocked on M-01); no anomaly signal on refresh; no client-side backoff on 429 during a refresh storm.</p>
+<hr>
+<h2 id="7-api-security-audit">7. API Security Audit</h2>
+<div class="tw"><table><thead><tr><th>Control</th><th>v1.0</th><th>v2.0</th><th>v3.0</th><th>Evidence</th></tr></thead><tbody><tr><td>Single outbound chokepoint</td><td class="c-crit">❌ Two layers</td><td class="c-ok">✅ Design</td><td class="c-ok">✅ <strong>Design + delivery</strong></td><td><a href="src/utils/apiInterceptors.ts">apiInterceptors.ts</a>; <code>api.tsx</code> down to 2 instances</td></tr><tr><td><code>Authorization: Bearer</code> on first-party calls</td><td class="c-crit">❌</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>applyStandardInterceptors</code></td></tr><tr><td>Third-party credential withholding</td><td class="c-crit">❌</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>applyThirdPartyInterceptors</code> — <code>marketApi</code> gets error capture only</td></tr><tr><td>Keychain-unavailable handling</td><td class="c-med">🟡</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>isTransientTokenFailure</code></td></tr><tr><td><code>X-Device-Risk</code></td><td class="c-med">🟡</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Never sent to third parties</td></tr><tr><td><code>X-Device-Attestation</code> + server nonce</td><td class="c-med">🟡</td><td class="c-ok">✅ client</td><td class="c-med">🟡 <strong>inert on Android</strong></td><td>Empty <code>PLAY_INTEGRITY_CLOUD_PROJECT</code></td></tr><tr><td><code>X-Idempotency-Key</code></td><td class="c-med">🟡</td><td class="c-ok">✅</td><td class="c-ok">✅ <strong>Improved</strong></td><td>Random per attempt; 6 money-moving paths</td></tr><tr><td>Redacted error telemetry</td><td class="c-med">🟡</td><td class="c-ok">✅</td><td class="c-ok">✅ <strong>Improved</strong></td><td><code>redactUrl</code> added — closes the OTP-in-telemetry leak</td></tr><tr><td>HTTPS enforcement</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>NSC + ATS, cleartext <code>false</code> on both</td></tr><tr><td>Base URL resolution</td><td class="c-crit">❌ Hardcoded</td><td class="c-crit">🔴 Broken</td><td class="c-ok">✅ <strong>Fixed + fails loudly</strong></td><td><code>getUrl()</code> throws on unknown key</td></tr><tr><td><strong>Sensitive data in URL path</strong></td><td class="c-crit">❌</td><td class="c-crit">❌</td><td class="c-med">🟡 <strong>Client-side closed</strong></td><td><code>otpTransport.ts</code> dual-route shim</td></tr><tr><td>Request timeout</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td>§9.1</td></tr><tr><td>Retry / backoff</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td>—</td></tr><tr><td><code>429</code> / <code>Retry-After</code> handling</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td class="c-med">🟡 Message only, no backoff</td><td><code>helpers/index.tsx:255</code></td></tr><tr><td>Response schema validation</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td>Untyped <code>res.data</code> throughout — <strong>and V-01 shows the cost</strong>: <code>data</code> truthiness was mistaken for success</td></tr></tbody></table></div>
+<p><strong>The last row is no longer cosmetic.</strong> V-01 is precisely what happens when an untyped <code>res.data</code> is the contract. A discriminated response type — <code>{ ok: true; data: T } | { ok: false; problem: string }</code> — makes <code>if (res.data)</code> a compile error and the bypass unwritable. That is the single highest-leverage type-safety investment available in this codebase, and it targets L-04 at the place where it has already caused a security defect.</p>
+<hr>
+<h2 id="8-android-security-review">8. Android Security Review</h2>
+<div class="tw"><table><thead><tr><th>Check</th><th>v2.0</th><th>v3.0</th><th>Evidence</th></tr></thead><tbody><tr><td><code>allowBackup=&quot;false&quot;</code></td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>&lt;application&gt;</code></td></tr><tr><td><code>dataExtractionRules</code></td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Cloud backup + device transfer excluded</td></tr><tr><td>Cleartext traffic</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>cleartextTrafficPermitted=&quot;false&quot;</code> in <code>&lt;base-config&gt;</code></td></tr><tr><td>User trust anchors</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>system</code> only; Gradle guard rejects <code>src=&quot;user&quot;</code></td></tr><tr><td>Certificate pinning</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Intermediate + root backup, <code>expiration</code> drift-checked against <code>pinning-policy.json</code></td></tr><tr><td>Pin coverage enforcement</td><td class="c-med">🟡 False positives</td><td class="c-ok">✅ <strong>Build passes</strong></td><td>Via exemptions — modelling defect <strong>N-06</strong></td></tr><tr><td><strong>Pin expiry</strong></td><td class="c-med">🟡 Fails open, unmonitored</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Build-time drift check + 90-day warning + runtime telemetry</td></tr><tr><td>Exported components</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Only <code>MainActivity</code> (<code>exported=&quot;true&quot;</code>, required for LAUNCHER)</td></tr><tr><td>Permissions</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>8 removed via <code>tools:node=&quot;remove&quot;</code>; policy enforced against the <strong>merged</strong> manifest</td></tr><tr><td>R8 / obfuscation</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>minifyEnabled</code> + <code>shrinkResources</code> + 134 keep rules</td></tr><tr><td>Release signing enforcement</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Fails the build rather than falling back to the debug keystore</td></tr><tr><td>Root detection</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>deviceIntegrity.ts</code> + foreground re-check</td></tr><tr><td><strong>Play Integrity</strong></td><td class="c-med">🟡</td><td class="c-crit">❌ <strong>Inert</strong></td><td><code>PLAY_INTEGRITY_CLOUD_PROJECT</code> empty in <strong>all four</strong> <code>.env</code> files</td></tr><tr><td>Firebase config exposure</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Gitignored; H-15 guard blocks a test project in prod builds</td></tr><tr><td><code>FLAG_SECURE</code></td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Set before <code>super.onCreate</code></td></tr><tr><td>App Links</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td><code>autoVerify=&quot;true&quot;</code> present; setup doc written; hosting unverified</td></tr><tr><td><code>versionCode</code> increment</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td>Stuck at 1 (L-05)</td></tr></tbody></table></div>
+<p><strong>Android is now the stronger platform.</strong> Its guards are wired into a build system that runs them, the pin-expiry loop is closed end-to-end, and the permission policy is enforced against the merged manifest rather than the source. Two gaps remain: <code>PLAY_INTEGRITY_CLOUD_PROJECT</code> (one line) and <code>versionCode</code> (one line).</p>
+<hr>
+<h2 id="9-ios-security-review">9. iOS Security Review</h2>
+<div class="tw"><table><thead><tr><th>Check</th><th>v2.0</th><th>v3.0</th><th>Evidence</th></tr></thead><tbody><tr><td><code>NSAllowsArbitraryLoads</code></td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>false</code>, asserted by the release phase</td></tr><tr><td><code>NSAllowsLocalNetworking</code></td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Debug-only injection; asserted absent in <strong>both</strong> the source and built plists</td></tr><tr><td>Certificate pinning (ATS)</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>NSPinnedCAIdentities</code>, ≥2 SPKI hashes, mirrors Android</td></tr><tr><td>Pin expiry</td><td class="c-med">🟡 Date in 3 places</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Derived from <code>pinning-policy.json</code>; the guard <strong>fails</strong> if it cannot read it</td></tr><tr><td>Keychain</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Single accessor, <code>_THIS_DEVICE_ONLY</code></td></tr><tr><td>Jailbreak detection</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Shared <code>deviceIntegrity.ts</code></td></tr><tr><td>App Attest</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Native module present and reachable</td></tr><tr><td>Snapshot / capture protection</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>Synchronous overlay on resign-active</td></tr><tr><td><strong>Code signing entitlements</strong></td><td class="c-crit">❌ Unset</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Set on both configs; guard fails if empty, missing, or non-production APNs</td></tr><tr><td><strong><code>associated-domains</code></strong></td><td class="c-crit">❌ Absent</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Both Auth0 tenants, both configs</td></tr><tr><td><strong>H-13 tenant guard</strong></td><td class="c-crit">❌ Dead code</td><td class="c-ok">✅ <strong>Fixed</strong></td><td>Reads <code>.env</code>; uses the resolved bundle ID; now actually compares the issuer</td></tr><tr><td><strong>Release code-sign identity</strong></td><td class="c-crit">❌</td><td class="c-crit">❌ <strong>Open</strong></td><td><code>&quot;Apple Development&quot;</code> at target level</td></tr><tr><td><strong>Release bundle ID</strong></td><td class="c-crit">❌</td><td class="c-crit">❌ <strong>Open</strong></td><td><code>com.exchangapay.tst</code> in the Release config</td></tr><tr><td>Signing style / profile</td><td>not assessed</td><td class="c-crit">❌ <strong>Open</strong></td><td><code>Automatic</code> + empty <code>PROVISIONING_PROFILE_SPECIFIER</code></td></tr><tr><td>Orphan entitlements file</td><td>not assessed</td><td class="c-crit">🔴 <strong>New</strong></td><td><strong>N-07</strong></td></tr><tr><td>Usage descriptions</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td><code>NSMicrophoneUsageDescription</code> / <code>NSLocationWhenInUseUsageDescription</code> still declared although Android removed both as unused — verify Sumsub actually needs them</td></tr><tr><td>Hardened runtime / symbol stripping</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>ENABLE_HARDENED_RUNTIME</code>, <code>STRIP_INSTALLED_PRODUCT</code>, <code>COPY_PHASE_STRIP</code></td></tr><tr><td><code>CURRENT_PROJECT_VERSION</code></td><td class="c-crit">❌</td><td class="c-crit">❌</td><td><code>1</code> (L-05)</td></tr></tbody></table></div>
+<p><strong>iOS closed the harder half and left the easier half open.</strong> Entitlements, APNs environment, associated domains and the tenant-consistency guard — the items requiring judgement — are all correct now, and each is asserted by a build phase that fails rather than warns. What remains is four build-setting values, none of which needs a decision, all of which block distribution.</p>
+<hr>
+<h2 id="10-react-native-performance-audit">10. React Native Performance Audit</h2>
+<p>No performance work landed in either remediation pass. All v1.0 findings stand; measurements re-taken at <code>b86c318</code>.</p>
+<h3 id="p-01-flatlist-virtualisation-untuned-high-impact">P-01 — FlatList Virtualisation Untuned · High Impact</h3>
+<p><strong>14</strong> <code>&lt;FlatList&gt;</code> usages; <strong>1</strong> virtualisation prop across the entire codebase. No <code>removeClippedSubviews</code>, <code>initialNumToRender</code>, <code>maxToRenderPerBatch</code>, <code>windowSize</code> or <code>getItemLayout</code> on the transaction lists — the longest lists in the app.</p>
+<pre class="code" data-lang="tsx"><code>&lt;FlatList
+  data={transactions}
+  keyExtractor={(item) =&gt; item.transactionId}
+  renderItem={renderTransaction}
+  initialNumToRender={10}
+  maxToRenderPerBatch={10}
+  windowSize={7}
+  removeClippedSubviews={Platform.OS === &#x27;android&#x27;}
+  getItemLayout={(_, index) =&gt; ({ length: ROW_H, offset: ROW_H * index, index })}
+/&gt;</code></pre>
+<p><code>getItemLayout</code> is the highest-leverage single change for fixed-height rows — it removes layout measurement from the scroll path entirely.</p>
+<h3 id="p-02-65-map-render-loops-in-screens-high-impact">P-02 — 65 <code>.map()</code> Render Loops in Screens · High Impact</h3>
+<p>Unchanged. Each is an unvirtualised list rendering every element regardless of viewport. Convert any collection that can exceed ~20 items to <code>FlatList</code>.</p>
+<h3 id="p-03-duplicate-libraries-inflating-the-bundle-high-impact">P-03 — Duplicate Libraries Inflating the Bundle · High Impact</h3>
+<div class="tw"><table><thead><tr><th>Overlap</th><th>Packages</th><th>Action</th></tr></thead><tbody><tr><td>Date</td><td><code>moment</code> + <code>moment-timezone</code> + <code>dayjs</code></td><td>Standardise on <code>dayjs</code> (~2 KB vs ~290 KB)</td></tr><tr><td>UI kit</td><td><code>@ui-kitten/components</code> + <code>react-native-elements</code></td><td>Pick one</td></tr><tr><td>Signature</td><td><code>react-native-signature-canvas</code> + <code>react-native-signature-capture</code></td><td>Remove the unused one</td></tr><tr><td>Push</td><td>4 packages (L-09)</td><td>Consolidate on <code>@notifee</code> + <code>firebase/messaging</code></td></tr><tr><td>HTTP</td><td><code>apisauce</code> + <code>axios</code></td><td><code>apisauce</code> wraps <code>axios</code>; direct <code>axios</code> use is redundant</td></tr></tbody></table></div>
+<h3 id="p-04-image-assets-unoptimised-medium-impact">P-04 — Image Assets Unoptimised · Medium Impact</h3>
+<p><code>src/assets</code> is <strong>12 MB</strong> across 327 source files. Multiple onboarding PNGs exceed 200 KB at <code>@2x</code>/<code>@3x</code>. Run through <code>sharp</code>/<code>squoosh</code>, convert photographic assets to WebP (RN 0.83 supports it on both platforms), and lazy-load the onboarding carousel.</p>
+<h3 id="p-05-metro-bundle-configuration-medium-impact">P-05 — Metro / Bundle Configuration · Medium Impact</h3>
+<p><code>metro.config.js</code> is 618 bytes — SVG transformer only. Enable inline-requires to defer module evaluation off the startup path:</p>
+<pre class="code" data-lang="javascript"><code>transformer: {
+  getTransformOptions: async () =&gt; ({
+    transform: { experimentalImportSupport: false, inlineRequires: true },
+  }),
+},</code></pre>
+<p>With 327 source files and a Redux store initialised at import time, inline-requires typically cuts 200–400 ms from TTI.</p>
+<h3 id="p-06-startup-path-congestion-medium-impact">P-06 — Startup Path Congestion · Medium Impact</h3>
+<p><code>App.tsx</code> runs, before first paint: environment load, Sentry init, persistence bootstrap, legacy-token cleanup, device-integrity probe, version check, app-lock fetch, and — new this pass — <code>reportPinExpiry()</code>. The pin-expiry call is synchronous, local and cheap (it reads a bundled JSON date), so it adds no measurable cost.</p>
+<p>The remaining risk is unchanged and is <code>checkVersionUpdate</code> — a network call with <strong>no timeout</strong> (9.1) on the pre-dashboard path. A network black-hole stalls first paint indefinitely. Fixing 9.1 fixes this too.</p>
+<h3 id="p-07-memoisation-density-low-medium-impact">P-07 — Memoisation Density Low · Medium Impact</h3>
+<p><strong>92</strong> memoisation call sites across 327 files (98 at v2.0 — the drop reflects deleted dead code, not removed memoisation). <code>showPin.tsx</code> demonstrates the right pattern (<code>React.memo</code> + <code>useMemo</code> on the sanitised document, with a comment explaining why). Profile the dashboard and transaction list with the React DevTools profiler before broad application.</p>
+<h3 id="p-08-excessive-unbounded-api-calls-medium-impact">P-08 — Excessive / Unbounded API Calls · Medium Impact</h3>
+<p><code>getMarketCoins</code> requests <code>per_page=1000</code> from CoinGecko on the crypto screen — roughly 1 MB of JSON parsed on the JS thread to render maybe 20 visible rows. Reduce to <code>per_page=50</code> with pagination, and cache with a TTL.</p>
+<h3 id="performance-summary">Performance Summary</h3>
+<div class="tw"><table><thead><tr><th>Area</th><th>Score</th><th>Trend</th></tr></thead><tbody><tr><td>List virtualisation</td><td>2/10</td><td>→</td></tr><tr><td>Bundle composition</td><td>4/10</td><td>→</td></tr><tr><td>Asset pipeline</td><td>3/10</td><td>→</td></tr><tr><td>Startup path</td><td>5/10</td><td>→</td></tr><tr><td>Render optimisation</td><td>5/10</td><td>→</td></tr><tr><td>Network efficiency</td><td>5/10</td><td>↑ (N-01 closed — requests now reach a live host; still no timeout)</td></tr></tbody></table></div>
+<hr>
+<h2 id="11-architecture-code-quality">11. Architecture &amp; Code Quality</h2>
+<div class="tw"><table><thead><tr><th>ID</th><th>Finding</th><th>v2.0</th><th>v3.0</th></tr></thead><tbody><tr><td>A-01</td><td>Two parallel API layers</td><td class="c-med">🟡 Shared interceptors</td><td class="c-med">🟡 <strong>Improved</strong> — <code>api.tsx</code> down from 7 instances to 2; <code>cardApi</code> duplicates <code>ApiService</code>, deletion is mechanical</td></tr><tr><td>A-02</td><td>Two parallel state systems (<code>src/redux/</code> + <code>src/store/</code>)</td><td class="c-crit">❌</td><td class="c-crit">❌ Unchanged</td></tr><tr><td>A-03</td><td>Screens contain business logic</td><td class="c-crit">❌</td><td class="c-crit">❌ Unchanged — and V-01 is a direct consequence: the 2FA success predicate lives in a screen</td></tr><tr><td>A-04</td><td>Error handling</td><td class="c-ok">✅</td><td class="c-ok">✅ Improved — <code>silentStatuses</code> adds a principled way to suppress a <em>report</em> without suppressing a <em>rejection</em></td></tr><tr><td>A-05</td><td>Logging strategy</td><td class="c-ok">✅</td><td class="c-ok">✅ Centralised <code>log.*</code>; <code>redact.ts</code> and <code>redactUrl</code> extend it</td></tr><tr><td>A-06</td><td>Type safety</td><td class="c-crit">❌ 1,045 <code>any</code></td><td class="c-med">🟡 <strong>992</strong> — but V-01 demonstrates the cost is now realised, not theoretical</td></tr><tr><td>A-07</td><td>Documentation asserts controls that do not exist</td><td class="c-crit">🔴 New</td><td class="c-med">🟡 <strong>Improving</strong> — <code>envContract</code>, <code>otpTransport</code>, <code>legacyCryptoTelemetry</code> now exist and pass; 4 cited suites still absent</td></tr><tr><td>A-08 <em>(new)</em></td><td><strong>Guards that lose their input must fail, not skip</strong></td><td>—</td><td class="c-med">🟡 Learned in Xcode, <strong>not applied to <code>scripts/</code></strong> — see N-04</td></tr></tbody></table></div>
+<p><strong>On A-07 and A-08 together.</strong> This codebase&#x27;s comments are unusually good — they explain <em>why</em>, name the finding, and record what was tried and rejected. That quality is exactly what makes an untrue comment dangerous: when <code>apiInterceptors.ts</code> says <code>__tests__/apiLayerHardening.test.ts</code> &quot;asserts that every exported instance actually went through <code>applyStandardInterceptors()</code>&quot;, the comment does not merely fail to help, it stops the next reviewer from checking.</p>
+<p>The encouraging signal is that the team drew the right general lesson this pass and wrote it down in the Xcode guard: <em>&quot;a guard that silently no-ops when it loses its input reports success either way, which is worse than having no guard at all.&quot;</em> That is precisely right — and it is the exact defect still present in <code>verify-hosts.sh</code> and <code>compute-spki-pins.sh</code> (N-04), which had their comments corrected and their bodies left alone. The lesson was learned in one place and not propagated to the other.</p>
+<p><strong>Recommendation, unchanged and now twice-justified:</strong> add the meta-test that greps source comments for <code>__tests__/...</code> references and fails on any that do not resolve. Twenty lines; it converts a documentation claim into a checkable one and would have caught this finding in both passes.</p>
+<hr>
+<h2 id="12-dependency-audit">12. Dependency Audit</h2>
+<p><code>npm audit</code>: <strong>1 high severity vulnerability</strong> (<code>js-yaml</code>, CVE-2026-59870 — see <strong>N-08</strong>) across 796 installed packages, verified at <code>b86c318</code>. This was 0 at <code>608267d</code> — a one-day-old regression, and the argument for a scheduled review rather than an audit-triggered one.</p>
+<h3 id="unmaintained-high-risk">Unmaintained / High-Risk</h3>
+<div class="tw"><table><thead><tr><th>Package</th><th>Version</th><th>Concern</th></tr></thead><tbody><tr><td><code>js-yaml</code> (transitive)</td><td>≤4.3.0</td><td><strong>CVE-2026-59870, high.</strong> Build-time only. <code>npm audit fix</code></td></tr><tr><td><code>react-native-push-notification</code></td><td>8.1.1</td><td>Archived upstream; locally patched. Replace with <code>@notifee</code> (already present)</td></tr><tr><td><code>react-native-signature-capture</code></td><td>0.4.12</td><td>No release in 5+ years</td></tr><tr><td><code>react-native-elements</code></td><td>3.4.3</td><td>Superseded by <code>@rneui</code>; duplicated by <code>@ui-kitten</code></td></tr><tr><td><code>moment</code> / <code>moment-timezone</code></td><td>2.30.1 / 0.6.3</td><td>Maintenance mode; <code>dayjs</code> already a dependency</td></tr><tr><td><code>react-native-chart-kit</code></td><td>6.12.0</td><td>Sparse maintenance</td></tr><tr><td><code>babel-plugin-module-resolver</code></td><td>4.1.0</td><td>Declared as a <strong>runtime</strong> dependency; belongs in <code>devDependencies</code></td></tr></tbody></table></div>
+<h3 id="high-trust-dependencies-correctly-pinned">High-Trust Dependencies (correctly pinned)</h3>
+<p><code>react-native-keychain</code> 10, <code>react-native-quick-crypto</code> 1.1.6, <code>react-native-auth0</code> 5.10, <code>@sumsub/react-native-mobilesdk-module</code> 1.37.1, <code>react-native-biometrics</code> 3.0.1 (patched). Five local patches under <code>patches/</code> — each should carry a header comment stating what it changes and the upstream issue, so patch rebasing during the next RN upgrade is not archaeology.</p>
+<p>The <code>overrides</code> block in <code>package.json</code> is well used — <code>brace-expansion</code>, <code>sharp</code>, <code>fast-xml-parser</code> and <code>uuid</code> are all pinned forward past known advisories. Add <code>js-yaml</code> to it if <code>npm audit fix</code> cannot resolve both paths cleanly.</p>
+<h3 id="recommendation">Recommendation</h3>
+<p>Add <code>npm audit --audit-level=high</code> to the release checklist as a <strong>hard stop</strong>, and schedule a monthly dependency review. With a near-clean baseline the marginal cost is minutes; N-08 appeared within 24 hours of a clean audit, which sets the detection lag at &quot;next audit&quot; today and &quot;next review&quot; with the change in place.</p>
+<hr>
+<h2 id="13-compliance-mapping">13. Compliance Mapping</h2>
+<h3 id="131-owasp-mobile-top-10-2024">13.1 OWASP Mobile Top 10 (2024)</h3>
+<div class="tw"><table><thead><tr><th>Risk</th><th>v1.0</th><th>v2.0</th><th>v3.0</th><th>Note</th></tr></thead><tbody><tr><td>M1 Improper Credential Usage</td><td class="c-crit">⚠️ Fail</td><td class="c-med">🟡</td><td class="c-med">🟡 <strong>Partial</strong></td><td>Token removed from tree; <strong>history + rotation outstanding</strong> (C-01)</td></tr><tr><td>M2 Inadequate Supply Chain Security</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>1 high CVE (build-time); no SBOM, no scheduled review</td></tr><tr><td>M3 Insecure Auth/Authz</td><td class="c-med">🟡</td><td class="c-ok">✅</td><td class="c-ok">🟡 → ✅ <strong>on commit</strong></td><td>V-01 was a live 2FA bypass; fix is correct but <strong>uncommitted</strong></td></tr><tr><td>M4 Insufficient Input/Output Validation</td><td class="c-crit">⚠️ Fail</td><td class="c-ok">✅</td><td class="c-ok">✅ Pass</td><td>H-03 closed</td></tr><tr><td>M5 Insecure Communication</td><td class="c-crit">⚠️ Fail</td><td class="c-ok">✅</td><td class="c-ok">✅ <strong>Pass</strong></td><td>Pinning on all first-party hosts, both platforms, expiry closed-loop</td></tr><tr><td>M6 Inadequate Privacy Controls</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>Redaction now covers URLs; N-05 clipboard gap remains</td></tr><tr><td>M7 Insufficient Binary Protection</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>R8 + strip; no RASP/anti-tamper</td></tr><tr><td>M8 Security Misconfiguration</td><td class="c-med">🟡</td><td class="c-crit">⚠️ <strong>Fail</strong></td><td class="c-med">🟡 <strong>Partial</strong></td><td>N-01 and iOS entitlements closed; <strong>iOS signing identity + bundle ID still wrong</strong></td></tr><tr><td>M9 Insecure Data Storage</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td class="c-ok">✅ Pass</td><td>Plus <code>data_extraction_rules.xml</code></td></tr><tr><td>M10 Insufficient Cryptography</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td class="c-ok">✅ Pass</td><td>AES-GCM + AAD; legacy format deadline-enforced with live telemetry</td></tr></tbody></table></div>
+<h3 id="132-owasp-masvs-v21">13.2 OWASP MASVS v2.1</h3>
+<div class="tw"><table><thead><tr><th>Control</th><th>v1.0</th><th>v2.0</th><th>v3.0</th></tr></thead><tbody><tr><td>MASVS-STORAGE-1 / -2</td><td class="c-ok">✅ / 🟡</td><td class="c-ok">✅ / 🟡</td><td class="c-ok">✅ / 🟡 (N-05)</td></tr><tr><td>MASVS-CRYPTO-1 / -2</td><td class="c-ok">✅ / 🟡</td><td class="c-ok">✅ / 🟡</td><td class="c-ok">✅ / 🟡 (M-08, deadline-managed)</td></tr><tr><td>MASVS-AUTH-1 / -2 / -3</td><td class="c-med">🟡</td><td class="c-ok">✅ / ✅ / 🟡</td><td class="c-ok">✅ / ✅ / 🟡 (V-01 on commit)</td></tr><tr><td>MASVS-NETWORK-1</td><td class="c-crit">⚠️</td><td class="c-ok">✅</td><td class="c-ok">✅</td></tr><tr><td>MASVS-NETWORK-2</td><td class="c-crit">⚠️</td><td class="c-ok">✅</td><td class="c-ok">✅ <strong>(strengthened — expiry closed-loop)</strong></td></tr><tr><td>MASVS-PLATFORM-1 / -2 / -3</td><td class="c-ok">🟡 / ⚠️ / ✅</td><td class="c-ok">✅ / ✅ / ✅</td><td class="c-ok">✅ / ✅ / ✅</td></tr><tr><td>MASVS-CODE-1</td><td class="c-med">🟡</td><td class="c-crit">⚠️ <strong>Fail</strong></td><td class="c-med">🟡 <strong>Partial</strong> (40 tests execute; 1 suite cannot)</td></tr><tr><td>MASVS-CODE-2 / -3 / -4</td><td class="c-ok">✅ / ✅ / 🟡</td><td class="c-ok">✅ / ✅ / ⚠️</td><td class="c-ok">✅ / ✅ / ✅ <strong>(N-01 closed)</strong></td></tr><tr><td>MASVS-RESILIENCE-1 / -2 / -3 / -4</td><td class="c-ok">✅ / 🟡 / ✅ / 🟡</td><td class="c-ok">✅ / 🟡 / ✅ / 🟡</td><td class="c-ok">✅ / 🟡 / ✅ / 🟡</td></tr><tr><td>MASVS-PRIVACY-1 / -2 / -3</td><td class="c-med">🟡</td><td class="c-ok">✅ / ✅ / 🟡</td><td class="c-ok">✅ / ✅ / 🟡</td></tr></tbody></table></div>
+<h3 id="133-pci-dss-v40-mobile-scope">13.3 PCI-DSS v4.0 (Mobile Scope)</h3>
+<div class="tw"><table><thead><tr><th>Req</th><th>v2.0</th><th>v3.0</th><th>Note</th></tr></thead><tbody><tr><td>3.2.1 — no sensitive auth data after authorization</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>PIN rendered in a CSP-locked WebView; nothing persisted</td></tr><tr><td>3.5.1 — PAN rendered unreadable</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td><code>pan</code> caught by <code>SENSITIVE_KEY</code> (M-06)</td></tr><tr><td>4.2.1 — strong cryptography in transit</td><td class="c-ok">✅</td><td class="c-ok">✅</td><td>TLS + pinning, both platforms, expiry monitored</td></tr><tr><td>6.2.4 — secure development practices</td><td class="c-crit">⚠️</td><td class="c-med">🟡</td><td>Test gate partially restored; build guards still manually triggered</td></tr><tr><td>6.3.3 — patch management</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>1 high CVE open; no scheduled review</td></tr><tr><td>8.3.1 / 8.6.2 — no embedded credentials</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>Removed from tree; <strong>present in git history and in tracked report artefacts</strong></td></tr><tr><td>10.2 — audit logging</td><td class="c-med">🟡</td><td class="c-med">🟡</td><td>Client telemetry now redacts URLs; backend log hygiene still unverified (M-02)</td></tr><tr><td>11.3.1 — internal vulnerability scanning</td><td class="c-crit">❌</td><td class="c-crit">❌</td><td>No SAST/DAST performed on the mobile codebase</td></tr></tbody></table></div>
+<h3 id="134-fintech-regulatory">13.4 Fintech / Regulatory</h3>
+<p><strong>Strong:</strong> at-rest encryption with AAD, device-bound keys, biometric step-up failing closed, screenshot prevention, backup/transfer exclusion, permission minimisation with an enforced policy, certificate pinning with a monitored expiry loop, redacted telemetry, idempotent money movement.</p>
+<p><strong>Weak:</strong> a second-factor bypass fixed but uncommitted, an unrotated credential in git history, incomplete automated verification (impairs demonstrable testing), and an iOS release configuration that cannot produce a distributable, correctly-identified build.</p>
+<hr>
+<h2 id="14-recommendations-roadmap">14. Recommendations &amp; Roadmap</h2>
+<h3 id="141-immediate-before-the-next-build-p0">14.1 Immediate — Before The Next Build (P0)</h3>
+<div class="tw"><table><thead><tr><th>#</th><th>Action</th><th>Finding</th><th>Effort</th></tr></thead><tbody><tr><td>1</td><td><strong>Commit the 2FA fail-open fix</strong> in <code>authentication.tsx</code> and <code>verifyCode.tsx</code></td><td>V-01</td><td>2 min</td></tr><tr><td>2</td><td>Grep the codebase for <code>res.data</code>-as-success on every verification / payment / permission gate</td><td>V-01</td><td>1 h</td></tr><tr><td>3</td><td><strong>Rotate the Sentry token</strong>; confirm revocation in the Sentry audit log</td><td>C-01</td><td>15 min</td></tr><tr><td>4</td><td>iOS Release: <code>Apple Distribution</code> identity, <code>Manual</code> style, real provisioning profile, <code>com.exchangapay</code> bundle ID</td><td>H-07</td><td>30 min</td></tr><tr><td>5</td><td>Set <code>PLAY_INTEGRITY_CLOUD_PROJECT</code> in all four <code>.env</code> files</td><td>M-01</td><td>5 min</td></tr><tr><td>6</td><td><code>npm audit fix</code>; commit the lockfile</td><td>N-08</td><td>10 min</td></tr><tr><td>7</td><td>Add <code>transformIgnorePatterns</code> to <code>jest.config.js</code> so <code>securityInvariants.test.ts</code> runs</td><td>N-03</td><td>15 min</td></tr></tbody></table></div>
+<h3 id="142-this-sprint-p1">14.2 This Sprint (P1)</h3>
+<div class="tw"><table><thead><tr><th>#</th><th>Action</th><th>Finding</th></tr></thead><tbody><tr><td>8</td><td>Repoint <code>verify-hosts.sh</code> + <code>compute-spki-pins.sh</code> at <code>.env</code>; <strong>make an empty inventory exit non-zero</strong></td><td>N-04</td></tr><tr><td>9</td><td>Route the 2FA seed through <code>copyEphemeral(…, 30_000)</code>; ban core <code>Clipboard</code> via <code>no-restricted-imports</code></td><td>N-05</td></tr><tr><td>10</td><td>Add a 30 s default request timeout + <code>429</code>/<code>Retry-After</code> backoff at the chokepoint</td><td>9.1</td></tr><tr><td>11</td><td>Constrain the Gradle host-inventory regex to <code>*_URL/_HOST/_ENDPOINT</code> keys; delete the 3 artefact exemptions</td><td>N-06</td></tr><tr><td>12</td><td>Write <code>apiLayerHardening</code>, <code>pinningCoverage</code>, <code>keychainPolicy</code>, <code>storagePolicy</code> suites</td><td>N-03</td></tr><tr><td>13</td><td>Add the meta-test asserting every <code>__tests__/…</code> comment reference resolves</td><td>A-07</td></tr><tr><td>14</td><td>Delete the orphan <code>exchangapay-release.entitlements</code>; assert <code>associated-domains</code> in the <code>[H-07]</code> phase</td><td>N-07</td></tr><tr><td>15</td><td>Drive <code>versionCode</code> / <code>CURRENT_PROJECT_VERSION</code> from one incrementing CI variable</td><td>L-05, H-05</td></tr><tr><td>16</td><td>Make <code>npm test</code>, <code>npm run lint</code>, <code>npx tsc --noEmit</code>, <code>npm audit --audit-level=high</code> mandatory release steps</td><td>N-03, L-04, N-08</td></tr><tr><td>17</td><td>Add a <code>gitleaks</code> pre-commit hook; purge C-01 from history <strong>and from the tracked report artefacts</strong></td><td>C-01</td></tr><tr><td>18</td><td>Verify <code>assetlinks.json</code> + AASA hosting; record the date; set a <code>removeBy</code> for the custom-scheme filters</td><td>M-07</td></tr></tbody></table></div>
+<h3 id="143-next-sprint-p2">14.3 Next Sprint (P2)</h3>
+<ol><li>Deploy the M-02 body-based routes; alert on the disappearance of the <code>security.m02</code> breadcrumb (M-02)</li><li>Deploy the backend attestation contract; watch verdicts in advisory mode for one release cycle before flipping enforcement (M-01)</li><li>Introduce a discriminated API response type; make <code>if (res.data)</code> a compile error (A-06, V-01)</li><li>Set iOS <code>PRODUCT_BUNDLE_IDENTIFIER</code> from <code>.env</code> via an xcconfig so the H-13 guard has nothing left to catch (H-07)</li><li>FlatList virtualisation props + <code>getItemLayout</code> on all transaction lists (P-01)</li><li>Metro <code>inlineRequires</code>; image pipeline through <code>sharp</code>/WebP (P-04, P-05)</li><li>Delete <code>src/utils/api.tsx</code> — fold <code>cardApi</code> into <code>ApiService.ts</code> (A-01)</li><li>Consolidate duplicate libraries: dates, UI kit, push, signature (P-03, L-09)</li><li>Reduce <code>getMarketCoins</code> from <code>per_page=1000</code> to 50 with pagination and a TTL cache (P-08)</li></ol>
+<h3 id="144-backlog-p3">14.4 Backlog (P3)</h3>
+<ol><li>Retire <code>src/redux/</code> in favour of <code>src/store/</code> (A-02)</li><li>Enable <code>@typescript-eslint</code> type-aware rules; drive <code>any</code> down from 992 (L-04)</li><li>Screenshot-detection telemetry on iOS for the PIN and seed screens (L-07)</li><li>Rename <code>Tlv_Cards</code>, <code>cryptoCardTransations</code>, <code>encryptionTransfermation</code>, <code>onBoardingservice</code> (L-08)</li><li>Evaluate a commercial RASP layer (M7)</li><li>Flip <code>LEGACY_FORMATS_ENABLED=false</code> once the metric reaches zero — before 2026-11-01 (M-08)</li><li>Remove <code>NSMicrophoneUsageDescription</code> / <code>NSLocationWhenInUseUsageDescription</code> if Sumsub does not need them (iOS privacy labels)</li><li>SBOM generation + a scheduled monthly dependency review</li></ol>
+<hr>
+<h2 id="15-production-hardening-checklist">15. Production Hardening Checklist</h2>
+<h3 id="blocking">Blocking</h3>
+<ul><li class="task"><span class="box"></span><strong>V-01</strong> — the 2FA fail-open fix is committed and present in the build</li><li class="task"><span class="box"></span><strong>V-01</strong> — backend confirms it re-validates the second factor server-side on every step-up-gated operation</li><li class="task"><span class="box"></span><strong>C-01</strong> — Sentry token rotated (confirmed in the Sentry audit log)</li><li class="task"><span class="box"></span><strong>H-07</strong> — iOS Release signs with <code>Apple Distribution</code> and a real provisioning profile</li><li class="task"><span class="box"></span><strong>H-07</strong> — iOS Release <code>PRODUCT_BUNDLE_IDENTIFIER</code> is <code>com.exchangapay</code></li><li class="task"><span class="box"></span><strong>N-03</strong> — <code>npx jest</code> exits 0; all four suites execute</li><li class="task"><span class="box"></span><strong>N-08</strong> — <code>npm audit --audit-level=high</code> is clean</li><li class="task"><span class="box"></span><strong>L-05</strong> — <code>versionCode</code> / <code>CURRENT_PROJECT_VERSION</code> incremented for this release</li></ul>
+<h3 id="secrets-credentials">Secrets &amp; Credentials</h3>
+<ul><li class="task"><span class="box on"></span>No <code>auth.token</code> in either <code>sentry.properties</code> — verified</li><li class="task"><span class="box"></span><code>SENTRY_AUTH_TOKEN</code> supplied from the build environment (CI secret or gitignored <code>~/.sentryclirc</code>)</li><li class="task"><span class="box"></span>Git history purged of the token, <strong>including <code>SECURITY_AUDIT_REPORT.md</code> / <code>.html</code></strong></li><li class="task"><span class="box"></span><code>gitleaks</code> pre-commit hook installed; <code>gitleaks detect</code> in CI</li><li class="task"><span class="box"></span><code>google-services.json</code> / <code>GoogleService-Info.plist</code> retrieved from the team secret store; retrieval path in the README</li></ul>
+<h3 id="environment">Environment</h3>
+<ul><li class="task"><span class="box"></span><code>npm run env:prod</code> executed; <code>.env</code> shows <code>APP_ENV=prod</code></li><li class="task"><span class="box"></span>Android <code>applicationId</code> = <code>com.exchangapay</code>; Auth0 domain = <code>exchangapay.eu.auth0.com</code></li><li class="task"><span class="box"></span>iOS <code>PRODUCT_BUNDLE_IDENTIFIER</code> = <code>com.exchangapay</code> in the <strong>Release</strong> config</li><li class="task"><span class="box"></span><code>PLAY_INTEGRITY_CLOUD_PROJECT</code> set in every <code>.env</code></li><li class="task"><span class="box on"></span><code>ATTESTATION_ENFORCEMENT_ENABLED</code> present and explicit in every <code>.env</code> — verified</li><li class="task"><span class="box"></span>Firebase production project wired (H-15 guard passes)</li></ul>
+<h3 id="network">Network</h3>
+<ul><li class="task"><span class="box"></span><code>./scripts/verify-hosts.sh</code> (repointed) resolves every host and <strong>exits non-zero on an empty inventory</strong></li><li class="task"><span class="box"></span>Every <code>*_URL</code> host pinned on Android <strong>and</strong> iOS, or exempt with an unexpired <code>reviewBy</code></li><li class="task"><span class="box"></span>The exemption list contains only real hosts (N-06)</li><li class="task"><span class="box"></span>Pins re-verified against live chains within 30 days of release</li><li class="task"><span class="box on"></span><code>cleartextTrafficPermitted=&quot;false&quot;</code>; <code>NSAllowsArbitraryLoads=false</code>; no <code>NSAllowsLocalNetworking</code> in the built product — verified</li><li class="task"><span class="box"></span><code>adb shell pm get-app-links com.exchangapay</code> reports <code>verified</code></li></ul>
+<h3 id="application-security">Application Security</h3>
+<ul><li class="task"><span class="box on"></span><code>FLAG_SECURE</code> set before <code>super.onCreate</code>; iOS snapshot overlay present — verified in source</li><li class="task"><span class="box"></span>Root/jailbreak detection verified on a rooted device and a jailbroken device</li><li class="task"><span class="box"></span>Biometric step-up fails closed — verified by disabling biometrics mid-flow</li><li class="task"><span class="box"></span><strong>2FA verification rejects a wrong code</strong> — verified by typing one (V-01)</li><li class="task"><span class="box"></span>Card-PIN WebView renders sanitised HTML — verified with a hostile payload</li><li class="task"><span class="box"></span>Clipboard clears for addresses <strong>and the 2FA seed</strong> (N-05)</li><li class="task"><span class="box"></span>Force-update verified end-to-end <strong>with a real incrementing <code>versionCode</code></strong></li><li class="task"><span class="box"></span>Push notifications received on a TestFlight build (proves the entitlements fix end-to-end)</li></ul>
+<h3 id="build-release">Build &amp; Release</h3>
+<ul><li class="task"><span class="box"></span><code>versionCode</code> / <code>CURRENT_PROJECT_VERSION</code> incremented</li><li class="task"><span class="box on"></span>R8 enabled (<code>minifyEnabled</code> + <code>shrinkResources</code>) — verified</li><li class="task"><span class="box"></span>Mapping file uploaded to Crashlytics and Sentry</li><li class="task"><span class="box"></span>iOS symbols stripped; dSYMs uploaded</li><li class="task"><span class="box"></span><code>./gradlew :app:assembleRelease</code> passes on a clean checkout</li><li class="task"><span class="box"></span>All Xcode <code>[H-07]</code> release guards pass</li></ul>
+<h3 id="verification">Verification</h3>
+<ul><li class="task"><span class="box"></span><code>npx tsc --noEmit</code> clean</li><li class="task"><span class="box"></span><code>npm run lint</code> clean</li><li class="task"><span class="box"></span><code>npm test</code> passes — all four suites execute</li><li class="task"><span class="box"></span><code>npm audit --audit-level=high</code> clean</li><li class="task"><span class="box"></span>Backend confirms: second factor re-validated server-side; <code>ChangePWD</code> requires auth + step-up; verification codes single-use with TTL and rate limiting; request bodies excluded from access logs; attestation tokens verified and rejected on a bad verdict</li></ul>
+<hr>
+<h2 id="16-final-scoring">16. Final Scoring</h2>
+<h3 id="161-security-score-80-10-v20-75-05-v10-70">16.1 Security Score — <strong>8.0 / 10</strong> <em>(v2.0: 7.5 — ↑ 0.5 · v1.0: 7.0)</em></h3>
+<div class="tw"><table><thead><tr><th>Dimension</th><th>Weight</th><th>v1.0</th><th>v2.0</th><th>v3.0</th></tr></thead><tbody><tr><td>Cryptography &amp; storage</td><td>20 %</td><td>9.0</td><td>9.0</td><td>9.0</td></tr><tr><td>Network security</td><td>20 %</td><td>5.0</td><td>9.0</td><td><strong>9.5</strong></td></tr><tr><td>Authentication &amp; session</td><td>15 %</td><td>7.5</td><td>8.5</td><td><strong>8.0</strong></td></tr><tr><td>Platform hardening</td><td>15 %</td><td>8.0</td><td>8.5</td><td><strong>8.5</strong></td></tr><tr><td>Secrets management</td><td>10 %</td><td>2.0</td><td>6.0</td><td>6.0</td></tr><tr><td>API security</td><td>10 %</td><td>5.0</td><td>8.0</td><td><strong>8.5</strong></td></tr><tr><td>Verification &amp; assurance</td><td>10 %</td><td>6.0</td><td>2.0</td><td><strong>5.5</strong></td></tr></tbody></table></div>
+<p><strong>Network security</strong> rises to 9.5: pinning coverage, cross-platform parity, build-time drift detection and runtime expiry telemetry now form a closed loop, and the host inventory is down to three live hosts.</p>
+<p><strong>Authentication &amp; session</strong> <em>falls</em> 0.5 despite the fix. V-01 was a real, UI-reachable second-factor bypass that shipped and was not caught by any of the three audits until this one. The fix is correct — but it is uncommitted, and the underlying idiom (<code>res.data</code> as a success predicate) has not been audited elsewhere. The score returns to 8.5+ on commit plus a completed sweep.</p>
+<p><strong>Verification &amp; assurance</strong> recovers from 2.0 to 5.5: 40 tests execute and pass, <code>getUrl()</code> fails loudly, the pin-expiry loop is closed, and the Xcode guards fail rather than skip. It is not higher because one suite still cannot run and four cited suites still do not exist.</p>
+<p><strong>Secrets management</strong> is unchanged at 6.0 and will not move until the token is rotated. Removing a secret from HEAD is hygiene; rotation is the control.</p>
+<h3 id="162-performance-score-55-10-unchanged">16.2 Performance Score — <strong>5.5 / 10</strong> <em>(unchanged)</em></h3>
+<p>No performance work in either remediation pass. Virtualisation, bundle composition and the asset pipeline remain untuned. N-01&#x27;s closure means requests now reach live hosts, which improves real-world responsiveness materially — but that is a correctness fix, not a performance one.</p>
+<h3 id="163-maintainability-score-55-10-v20-45-10-v10-50">16.3 Maintainability Score — <strong>5.5 / 10</strong> <em>(v2.0: 4.5 — ↑ 1.0 · v1.0: 5.0)</em></h3>
+<p><strong>Improved:</strong> five dead API instances and the <code>environments/</code> directory deleted; one HTTP chokepoint that now genuinely serves everything; the pin-expiry date derived from one source instead of duplicated five ways; <code>any</code> down to 992; four test suites restored; and — most valuable — <code>getUrl()</code> converted from silent-empty to loud-throw, which is the difference between a codebase that hides mistakes and one that surfaces them.</p>
+<p><strong>Still weak:</strong> two state systems, business logic in screens (which is <em>where V-01 lived</em>), four test suites cited but absent, <code>tsc --noEmit</code> unrun, and two shell scripts whose comments were corrected while their bodies were not.</p>
+<h3 id="164-mobile-security-score-masvs-weighted-80-10-v20-75-05-v10-65">16.4 Mobile Security Score (MASVS-weighted) — <strong>8.0 / 10</strong> <em>(v2.0: 7.5 — ↑ 0.5 · v1.0: 6.5)</em></h3>
+<p>MASVS-NETWORK-2 strengthened by the closed-loop expiry monitoring; MASVS-CODE-4 moves to passing with N-01 closed; MASVS-CODE-1 recovers from failing to partial; MASVS-PLATFORM fully passing on both platforms now that the iOS entitlements are applied. Held back by MASVS-AUTH-3 (V-01 uncommitted) and MASVS-STORAGE-2 (N-05).</p>
+<h3 id="165-overall-risk-rating">16.5 Overall Risk Rating</h3>
+<pre class="code"><code>Before remediation      (v1.0):   MEDIUM-HIGH
+First verification      (v2.0):   HIGH
+Second verification     (v3.0):   MEDIUM          ← current</code></pre>
+<p>The Critical band is empty for the first time across three audits. Both High findings are narrow: one is four build-setting values in an Xcode configuration, the other is a build-time-only dependency CVE with a one-command fix.</p>
+<p>The trajectory is what matters. v2.0&#x27;s rating rose because a good remediation was delivered badly — the fixes were sound and the delivery introduced a Critical regression, a build blocker and the loss of the test layer. <strong>v3.0&#x27;s rating falls because this pass fixed the delivery without weakening the fixes</strong>, and in three cases (N-01, M-02, M-03) replaced a point fix with a structural one that makes the same class of defect harder to reintroduce.</p>
+<h3 id="166-closing-assessment">16.6 Closing Assessment</h3>
+<p>The most useful thing to record about this pass is the pattern in <em>how</em> the findings were closed.</p>
+<p>v2.0 asked for three things and got better than it asked for in each:</p>
+<div class="tw"><table><thead><tr><th>v2.0 asked for</th><th>What was delivered</th></tr></thead><tbody><tr><td>Restore three missing <code>apiUrls</code> keys</td><td>Investigated <em>why</em> they were missing, found the hosts were dead, deleted the instances, migrated the call sites — <strong>and made <code>getUrl()</code> throw</strong>, so the failure mode is now impossible rather than merely absent</td></tr><tr><td>Add pin-expiry telemetry</td><td>Made <code>pinning-policy.json</code> the single source of truth for Gradle, Xcode <strong>and</strong> runtime, eliminating a date duplicated five ways</td></tr><tr><td>Move OTP codes to the request body</td><td>Built a transport shim that closes the finding on a <strong>backend deploy</strong> rather than a coordinated release, plus <code>redactUrl</code> closing the client-side half immediately</td></tr></tbody></table></div>
+<p>That is the difference between fixing findings and fixing the conditions that produce them, and it is a meaningful step up from the v2.0 pass.</p>
+<p>The counter-pattern is equally instructive and is now the main thing holding the score down. Three defects in this pass share one shape — <strong>the comment was updated and the code was not</strong>:</p>
+<div class="tw"><table><thead><tr><th>Defect</th><th>Comment says</th><th>Code does</th></tr></thead><tbody><tr><td>N-04</td><td>Header rewritten to drop the <code>environments/*.js</code> reference</td><td>Body still parses <code>environments/dev.js</code>, exits 0 having verified nothing</td></tr><tr><td>N-06</td><td>Exemption entries claim a considered security decision</td><td>Three are parsing artefacts from an unfixed regex</td></tr><tr><td>N-03</td><td>Five comments cite <code>apiLayerHardening.test.ts</code> as the enforcement mechanism</td><td>The file does not exist</td></tr></tbody></table></div>
+<p>The Xcode guard added this pass states the correct principle explicitly — <em>&quot;a guard that silently no-ops when it loses its input reports success either way, which is worse than having no guard at all&quot;</em> — and that principle was not carried across to the two shell scripts sitting in the same repository with the same defect. The lesson is written down. It needs to be applied where it already applies.</p>
+<p><strong>One structural change closes this class permanently:</strong> the twenty-line meta-test that greps source comments for <code>__tests__/…</code> references and fails on any that do not resolve. Generalise it slightly — assert that every script named in the hardening checklist exits non-zero on empty output, and that every exemption in <code>pinning-policy.json</code> names a host that appears in a <code>*_URL</code> key — and every &quot;the comment is true&quot; claim in this repository becomes a checkable one.</p>
+<p><strong>Recommended sequence:</strong> commit V-01 and rotate the Sentry token today (both are minutes, both are currently exposed). Fix the four iOS signing values and set <code>PLAY_INTEGRITY_CLOUD_PROJECT</code> this week — that unblocks distribution and activates the Android attestation path. Restore the four cited test suites and add the meta-test before the next remediation pass. Then re-audit: on that trajectory the next pass should be scoring 8.5+ with an empty High band.</p>
+</main>
+</div>
+<script>
+// highlight the nav entry for the section currently in view
+const links = [...document.querySelectorAll('nav a')];
+const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    links.forEach(a => a.classList.remove('active'));
+    const a = map.get(e.target.id);
+    if (a) { a.classList.add('active'); }
+  });
+}, { rootMargin: '0px 0px -78% 0px', threshold: 0 });
+document.querySelectorAll('h2[id],h3[id]').forEach(h => obs.observe(h));
+</script>
+</body>
+</html>
