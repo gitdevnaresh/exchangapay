@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, Platform, BackHandler, Dimensions } from 'react-native';
+import { View, FlatList, SafeAreaView, TouchableOpacity, Image, Platform, BackHandler, Dimensions } from 'react-native';
 import Container from '../../components/Container';
 import { text } from '../../constants/theme/mixins';
 import { isErrorDispaly } from '../../utils/helpers';
@@ -17,6 +17,7 @@ import SendCryptoServices from '../../services/sendcrypto';
 import SvgFromUrl from '../../components/svgIcon';
 import NoDataComponent from '../../components/nodata';
 import { sellCoinSelect } from '../Crypto/buySkeleton_views';
+import { LIST_PERF_PICKER } from '../../constants/listPerformance';
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
@@ -60,45 +61,49 @@ const SelectCrypto = React.memo((props: any) => {
         </View>
     );
 
-    const groupByAlphabet = () => {
-        const sortedData = cryptoCoinData.sort((a: any, b: any) => a.walletCode.localeCompare(b.walletCode));
-        let groupedData: any = {};
+    // P-02: the alphabetical grouping never rendered a letter header — the group
+    // objects only ever affected sort order — so the visible output is a flat,
+    // walletCode-sorted list. Sorting once here lets FlatList virtualise it
+    // instead of a ScrollView mounting every supported coin at once.
+    //
+    // The copy also matters: the old code called .sort() straight on the state
+    // array, mutating React state in place.
+    const sortedCoinData = useMemo(() => {
+        if (!Array.isArray(cryptoCoinData)) {
+            return [];
+        }
+        return [...cryptoCoinData].sort((a: any, b: any) =>
+            String(a?.walletCode ?? '').localeCompare(String(b?.walletCode ?? '')),
+        );
+    }, [cryptoCoinData]);
 
-        sortedData.forEach(item => {
-            const firstLetter = item.walletCode?.charAt(0).toUpperCase();
-            if (!groupedData[firstLetter]) {
-                groupedData[firstLetter] = [];
-            }
-            groupedData[firstLetter].push(item);
-        });
-        return Object.keys(groupedData).map(letter => (
-            <View key={letter}>
-                {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
-                {groupedData[letter].map((item: any) => (
-                    <View key={item.walletCode} style={{ marginBottom: 12 }}>
-                        <TouchableOpacity onPress={() => handleBuyCryptoCoinSlct(item)} activeOpacity={0.7}>
-                            <View style={[commonStyles.dflex, styles.rowStyle, commonStyles.alignCenter]}>
-                                <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-                                    <View style={styles.icon}>
-                                        {item.logo && <SvgFromUrl
-                                            uri={item.logo}
-                                            width={40}
-                                            height={40}
-                                        />}
-                                        {!item.logo && <Image source={cryptoList[item?.walletCode]} style={{ width: s(42), height: s(42) }} />}
-                                    </View>
-                                    <View>
-                                        <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={item?.walletCode} />
-                                        {item?.walletName && <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textGrey]} text={item?.walletName} />}
-                                    </View>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
+    const keyExtractor = useCallback(
+        (item: any, index: number) => String(item?.id ?? item?.walletCode ?? index),
+        [],
+    );
+
+    const renderCoinItem = useCallback(({ item }: { item: any }) => (
+        <View style={{ marginBottom: 12 }}>
+            <TouchableOpacity onPress={() => handleBuyCryptoCoinSlct(item)} activeOpacity={0.7}>
+                <View style={[commonStyles.dflex, styles.rowStyle, commonStyles.alignCenter]}>
+                    <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                        <View style={styles.icon}>
+                            {item.logo && <SvgFromUrl
+                                uri={item.logo}
+                                width={40}
+                                height={40}
+                            />}
+                            {!item.logo && <Image source={cryptoList[item?.walletCode]} style={{ width: s(42), height: s(42) }} />}
+                        </View>
+                        <View>
+                            <ParagraphComponent style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack]} text={item?.walletCode} />
+                            {item?.walletName && <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textGrey]} text={item?.walletName} />}
+                        </View>
                     </View>
-                ))}
-            </View>
-        ));
-    };
+                </View>
+            </TouchableOpacity>
+        </View>
+    ), [styles]);
 
     const getCryptoWallets = async () => {
         setWalletDataLoading(true);
@@ -145,32 +150,45 @@ const SelectCrypto = React.memo((props: any) => {
         EUR: Images?.coins.coineusdc
     };
 
+    // Passed to FlatList as an *element*, not a component function: a fresh
+    // function identity on every render would remount the search TextInput and
+    // drop whatever the user had typed.
+    const ListHeader = (
+        <>
+            <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter]}>
+                <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                    <TouchableOpacity style={[styles.pr16]} onPress={handleGoBack} activeOpacity={0.7}>
+                        <View>
+                            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                        </View>
+                    </TouchableOpacity>
+                    <ParagraphComponent text='Crypto Coin' style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                </View>
+            </View>
+            {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
+            <View style={styles.searchSpace}>{SearchBoxComponent}</View>
+        </>
+    );
+
     return (
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-            <ScrollView>
-                <Container style={[commonStyles.container, commonStyles.flex1]}>
-                    <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter]}>
-                        <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-                            <TouchableOpacity style={[styles.pr16]} onPress={handleGoBack} activeOpacity={0.7}>
-                                <View>
-                                    <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                                </View>
-                            </TouchableOpacity>
-                            <ParagraphComponent text='Crypto Coin' style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
-                        </View>
-                    </View>
-                    {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
-                    <View style={styles.searchSpace}>{SearchBoxComponent}</View>
-                    {walletDtaLoading ? (
-                        <Loadding contenthtml={sellCoinSelectLoader} />
-                    ) : (
-                        <>
-                            {groupByAlphabet()}
-                            {(!cryptoCoinData || cryptoCoinData?.length < 1) && <NoDataComponent />}
-                        </>
-                    )}
-                </Container>
-            </ScrollView>
+            <Container style={[commonStyles.container, commonStyles.flex1]}>
+                <FlatList
+                    testID="crypto-coin-list"
+                    data={walletDtaLoading ? [] : sortedCoinData}
+                    renderItem={renderCoinItem}
+                    keyExtractor={keyExtractor}
+                    ListHeaderComponent={ListHeader}
+                    ListEmptyComponent={
+                        walletDtaLoading
+                            ? <Loadding contenthtml={sellCoinSelectLoader} />
+                            : <NoDataComponent />
+                    }
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    {...LIST_PERF_PICKER}
+                />
+            </Container>
         </SafeAreaView>
     );
 });

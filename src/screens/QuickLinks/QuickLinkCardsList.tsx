@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, ScrollView, BackHandler, Image } from 'react-native';
+import { View, TouchableOpacity, SafeAreaView, FlatList, BackHandler, Image } from 'react-native';
 import { isErrorDispaly } from '../../utils/helpers';
 import { Container } from '../../components';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -16,6 +16,7 @@ import CardsModuleService from '../../services/card';
 import NoDataComponent from '../../components/nodata';
 import { useIsFocused } from '@react-navigation/native';
 import { s } from '../../constants/theme/scale';
+import { LIST_PERF_PAGINATED } from '../../constants/listPerformance';
 
 const QuickCardsList = (props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -69,57 +70,62 @@ const QuickCardsList = (props: any) => {
     const handleCloseError = () => {
         setErrormsg('')
     };
-    return (
-        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView >
-                <Container style={[commonStyles.container]} >
-                    {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
-                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                        <TouchableOpacity style={[]} onPress={handleBack} >
-                            <View>
-                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                            </View>
-                        </TouchableOpacity>
-                        <ParagraphComponent text="Select Card" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+    // P-02: this card list used to be a .map() inside a ScrollView, mounting
+    // every card the link exposes at once. FlatList mounts only the rows near
+    // the viewport.
+    const keyExtractor = (item: any, index: number) => String(item?.id ?? index);
+
+    const renderCardItem = ({ item, index }: { item: any; index: number }) => (
+        <>
+            <TouchableOpacity onPress={() => { handleGetCardsById(item) }} activeOpacity={0.8} >
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12,]}>
+                    <View style={[commonStyles.relative,]}>
+                        <Image style={[styles.cardRotate]} source={{ uri: item?.logo }} />
                     </View>
 
-                    <View style={[commonStyles.mb43]} />
-                    {cardsLoading &&
-                        <Loadding contenthtml={CardListLoader} />}
-                    {cardsList?.length > 0 &&
-                        <View style={[styles.sectionStyle]}>
+                    <View style={commonStyles.flex1}>
+                        <ParagraphComponent style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw600, commonStyles.mb4]} text={item?.cardName} numberOfLines={1} />
+                        <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw500, { color: item?.status === "Approved" ? NEW_COLOR.TEXT_GREEN : NEW_COLOR.TEXT_YELLOW }]} text={item?.status} numberOfLines={1} />
+                    </View>
+                </View>
+            </TouchableOpacity>
 
-                            {cardsList?.map((item: any, index: any) => (
-                                <>
-                                    <TouchableOpacity onPress={() => { handleGetCardsById(item) }} activeOpacity={0.8} >
-                                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12,]}>
-                                            <View style={[commonStyles.relative,]}>
-                                                <Image style={[styles.cardRotate]} source={{ uri: item?.logo }} />
-                                            </View>
+            {index !== cardsList?.length - 1 && <View style={[commonStyles.hLine, { marginVertical: 12 }]} />}
+        </>
+    );
 
-                                            <View style={commonStyles.flex1}>
-                                                <ParagraphComponent style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw600, commonStyles.mb4]} text={item?.cardName} numberOfLines={1} />
-                                                <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw500, { color: item?.status === "Approved" ? NEW_COLOR.TEXT_GREEN : NEW_COLOR.TEXT_YELLOW }]} text={item?.status} numberOfLines={1} />
-                                            </View>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    {index !== cardsList?.length - 1 && <View style={[commonStyles.hLine, { marginVertical: 12 }]} />}
-
-                                </>
-
-
-                            ))}
-
+    return (
+        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
+            <Container style={[commonStyles.container]} >
+                {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
+                    <TouchableOpacity style={[]} onPress={handleBack} >
+                        <View>
+                            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                         </View>
-                    }
-                    {!cardsLoading && cardsList?.length < 1 && <View>
-                        <NoDataComponent Description={"NO DATA"} />
-                    </View>}
+                    </TouchableOpacity>
+                    <ParagraphComponent text="Select Card" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                </View>
 
-
-                </Container>
-            </ScrollView>
+                <View style={[commonStyles.mb43]} />
+                {cardsLoading &&
+                    <Loadding contenthtml={CardListLoader} />}
+                {cardsList?.length > 0 &&
+                    <FlatList
+                        testID="quick-link-cards-list"
+                        style={commonStyles.flex1}
+                        contentContainerStyle={[styles.sectionStyle]}
+                        data={cardsList}
+                        renderItem={renderCardItem}
+                        keyExtractor={keyExtractor}
+                        showsVerticalScrollIndicator={false}
+                        {...LIST_PERF_PAGINATED}
+                    />
+                }
+                {!cardsLoading && cardsList?.length < 1 && <View>
+                    <NoDataComponent Description={"NO DATA"} />
+                </View>}
+            </Container>
         </SafeAreaView>
     );
 };

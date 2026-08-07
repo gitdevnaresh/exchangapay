@@ -17,6 +17,7 @@ import ParagraphComponent from "../../../../components/Paragraph/Paragraph";
 import DefaultButton from "../../../../components/DefaultButton";
 import { ChatIcon } from "../../../../assets/svg";
 import FilePreviewWithId from "../../../../components/FileUpload/filePreviewWithId";
+import { LIST_PERF_CHAT } from "../../../../constants/listPerformance";
 
 const ItemSeparator = React.memo(() => {
   return <View style={[commonStyles.mb20]} />;
@@ -122,6 +123,12 @@ const CaseViewDetails: React.FC<any> = (props) => {
 
     return grouped;
   }, [data?.caseDetails]);
+
+  // P-01: the list is `inverted`, so it needs the reversed array. Building it
+  // inline gave the FlatList a new `data` identity on every render, which
+  // re-rendered every mounted cell. Memoised on the same source as groupedData.
+  const invertedData = useMemo(() => groupedData.slice().reverse(), [groupedData]);
+
   const getDateLabel = (dateString: string) => {
     const messageDate = new Date(dateString);
     const today = new Date();
@@ -179,8 +186,11 @@ const CaseViewDetails: React.FC<any> = (props) => {
             ) : (
               <FlatList
                 inverted={true}
+                // P-01: inverted list — removeClippedSubviews is deliberately
+                // off in LIST_PERF_CHAT, it produces blank cells here.
+                {...LIST_PERF_CHAT}
                 style={[commonStyles.flex1]}
-                data={groupedData.slice().reverse()}
+                data={invertedData}
                 keyExtractor={(item) => item?.id}
                 renderItem={({ item }) => {
                   if (item?.type === 'date') {

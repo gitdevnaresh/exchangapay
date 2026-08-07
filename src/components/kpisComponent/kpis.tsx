@@ -64,8 +64,11 @@ const KpiComponent = ({
                         </View>
                     )}
 
-                    {/* Other items - 2 columns */}
-                    {otherItems.length > 0 && (
+                    {/* Other items - 2 columns.
+                        P-01: intentionally left on the RN defaults — this is a
+                        fixed 2-column KPI grid of a handful of tiles, rendered
+                        inside a non-scrolling View. There is no window to cap. */}
+                    {otherItems?.length > 0 && (
                         <FlatList
                             data={otherItems}
                             keyExtractor={(item: KpiItem, index: number) => item.id?.toString() ?? index.toString()}

@@ -39,7 +39,13 @@ const Authentication = React.memo(({ isSucess, isClose, isVisable = true }): any
         try {
             setSaveLoading(true);
             const verifedRes = await ProfileService.varificationGoogleAuthenticate(value.code);
-            if (verifedRes?.data) {
+            // M-02 (adjacent): this used to gate on `verifedRes?.data` alone.
+            // apisauce resolves rejections too — a 400 "invalid code" carrying
+            // any error body made `data` truthy, so a wrong 2FA code took the
+            // success branch. Require `ok` (a 2xx) as well: a verification
+            // check must fail closed, matching guard.ts on every other
+            // high-risk path.
+            if (verifedRes?.ok && verifedRes?.data) {
                 if (isSucess && typeof isSucess === 'function') { isSucess() }
             } else {
                 setErrormsg('Invalid code!');

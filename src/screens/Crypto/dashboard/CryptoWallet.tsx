@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, Image, BackHandler } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, SafeAreaView, FlatList, TouchableOpacity, Image, BackHandler } from 'react-native';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../../components';
 import { NEW_COLOR } from '../../../constants/theme/variables';
@@ -17,6 +17,7 @@ import { s } from '../../../constants/theme/scale';
 import { useIsFocused } from '@react-navigation/native';
 import Loadding from '../../../components/skeleton';
 import { sellCoinSelect } from '../buySkeleton_views';
+import { LIST_PERF_PAGINATED } from '../../../constants/listPerformance';
 
 const CryptoWallet = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -71,60 +72,80 @@ const CryptoWallet = React.memo((props: any) => {
         )
     };
 
-    return (
+    // P-02: wallets are one row per coin *per network*, so this list grows well
+    // past a viewport. It used to be a .map() inside a ScrollView, mounting
+    // every row up front; FlatList mounts only what is near the viewport.
+    const keyExtractor = useCallback(
+        (item: any, index: number) =>
+            String(item?.id ?? `${item?.walletCode}-${item?.network}` ?? index),
+        [],
+    );
 
-        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView >
-                <Container style={[commonStyles.container,]}>
-                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16, commonStyles.justifyContent]}>
-                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                            <TouchableOpacity style={[]} onPress={handleGoBack} >
-                                <View>
-                                    <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                                </View>
-                            </TouchableOpacity>
-                            <ParagraphComponent text="Crypto Wallet" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
-                        </View>
-                        <TouchableOpacity activeOpacity={0.6} onPress={getCryptoReceiveData}>
-                            <IconRefresh height={s(24)} width={s(24)} />
-                        </TouchableOpacity>
+    const renderWalletItem = useCallback(({ item }: { item: any }) => (
+        <>
+            <TouchableOpacity onPress={() => { handleCryptoWalletView(item) }} activeOpacity={0.9} >
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, styles.rowStyle]}>
+
+                    <View>
+                        {item.logo && <SvgFromUrl
+                            uri={item.logo}
+                            width={36}
+                            height={36}
+                        />}
+                        {!item.logo && <Image source={CoinImages.coins['coine' + item?.walletCode?.toLowerCase()] || CoinImages.coins.coinbtc} style={{ width: 40, height: 40 }} />}
                     </View>
-                    {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
-                    <View style={[commonStyles.mb43]} />
+                    <View style={[commonStyles.flex1,]}>
+                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.flex1,]}>
+                            <ParagraphComponent text={`${item.walletCode} (${item.network}) `} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw600, commonStyles.flex1,]} numberOfLines={1} />
+                            <ParagraphComponent text={`${formatCurrency(item.avilable || 0, 2)}`} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw600, commonStyles.textRight, { marginTop: -3 }]} numberOfLines={1} />
 
-                    {receiveCoinsDataLoading && <Loadding contenthtml={cryptoWalletSkeltons} />}
-                    {(!receiveCoinsDataLoading && receiveCoinsData.length > 0) && receiveCoinsData.map((item: any, index: number) => (
+                        </View>
+                    </View>
+                </View>
+            </TouchableOpacity>
+            <View style={[commonStyles.mb20]} />
+        </>
+    ), [styles]);
 
-                        <>
-                            <TouchableOpacity onPress={() => { handleCryptoWalletView(item) }} activeOpacity={0.9} >
-                                <View key={index} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, styles.rowStyle]}>
+    const ListHeader = (
+        <>
+            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16, commonStyles.justifyContent]}>
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
+                    <TouchableOpacity style={[]} onPress={handleGoBack} >
+                        <View>
+                            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                        </View>
+                    </TouchableOpacity>
+                    <ParagraphComponent text="Crypto Wallet" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                </View>
+                <TouchableOpacity activeOpacity={0.6} onPress={getCryptoReceiveData}>
+                    <IconRefresh height={s(24)} width={s(24)} />
+                </TouchableOpacity>
+            </View>
+            {errormsg && <ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} />}
+            <View style={[commonStyles.mb43]} />
+        </>
+    );
 
-                                    <View>
-                                        {item.logo && <SvgFromUrl
-                                            uri={item.logo}
-                                            width={36}
-                                            height={36}
-                                        />}
-                                        {!item.logo && <Image source={CoinImages.coins['coine' + item?.walletCode?.toLowerCase()] || CoinImages.coins.coinbtc} style={{ width: 40, height: 40 }} />}
-                                    </View>
-                                    <View style={[commonStyles.flex1,]}>
-                                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.flex1,]}>
-                                            <ParagraphComponent text={`${item.walletCode} (${item.network}) `} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw600, commonStyles.flex1,]} numberOfLines={1} />
-                                            <ParagraphComponent text={`${formatCurrency(item.avilable || 0, 2)}`} style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw600, commonStyles.textRight, { marginTop: -3 }]} numberOfLines={1} />
-
-                                        </View>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                            <View style={[commonStyles.mb20]} />
-                        </>
-
-                    ))}
-                    {!receiveCoinsDataLoading && receiveCoinsData?.length < 1 && <><NoDataComponent /></>}
-                </Container>
-            </ScrollView>
+    return (
+        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
+            <Container style={[commonStyles.container,]}>
+                <FlatList
+                    testID="crypto-wallet-list"
+                    data={receiveCoinsDataLoading ? [] : (receiveCoinsData || [])}
+                    renderItem={renderWalletItem}
+                    keyExtractor={keyExtractor}
+                    ListHeaderComponent={ListHeader}
+                    ListEmptyComponent={
+                        receiveCoinsDataLoading
+                            ? <Loadding contenthtml={cryptoWalletSkeltons} />
+                            : <NoDataComponent />
+                    }
+                    showsVerticalScrollIndicator={false}
+                    {...LIST_PERF_PAGINATED}
+                />
+            </Container>
         </SafeAreaView>
-
     )
 });
 

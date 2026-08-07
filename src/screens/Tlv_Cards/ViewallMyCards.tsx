@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, ScrollView, Image, BackHandler } from 'react-native';
+import { View, TouchableOpacity, SafeAreaView, FlatList, Image, BackHandler } from 'react-native';
 import { isErrorDispaly } from '../../utils/helpers';
 import { Container } from '../../components';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -16,6 +16,7 @@ import NoDataComponent from '../../components/nodata';
 import { ChevronRight } from '../../assets/svg';
 import { useIsFocused } from '@react-navigation/native';
 import { s } from '../../constants/theme/scale';
+import { LIST_PERF_PAGINATED } from '../../constants/listPerformance';
 
 const ViewallMyCards = (props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -100,53 +101,62 @@ const ViewallMyCards = (props: any) => {
     };
 
 
+    // P-02: this card list used to be a .map() inside a ScrollView, mounting
+    // every card the customer holds at once. FlatList mounts only the rows near
+    // the viewport.
+    const keyExtractor = (item: any, index: number) => String(item?.id ?? index);
+
+    const renderCardItem = ({ item }: { item: any }) => (
+        <>
+            <TouchableOpacity style={[styles.sectionStyle, commonStyles.relative, { paddingTop: 22 }]} onPress={() => handleGetCardsById(item)} activeOpacity={0.8} >
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.flex1]}>
+                    <View style={[commonStyles.relative, { marginRight: 6 }]}>
+                        <Image style={[styles.cardRotate]} source={{ uri: item?.logo }} />
+                    </View>
+                    <View style={commonStyles.flex1}>
+                        <ParagraphComponent style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw600, commonStyles.mb8]} text={`${item?.cardName}`} numberOfLines={1} />
+                        <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textGrey, commonStyles.mb8]} text={` ${item?.supportedFlatforms || ''}`} numberOfLines={1} />
+                    </View>
+                    <ChevronRight />
+                </View>
+                <View style={[styles.badgeStyle, { backgroundColor: StatusColors[item?.status?.toLowerCase()] || NEW_COLOR.BG_CANCEL }]}>
+                    <ParagraphComponent style={[commonStyles.fw600, commonStyles.textAlwaysWhite, commonStyles?.toCapitalize, { marginBottom: 2, fontSize: 8 }]} text={item?.status} />
+                </View>
+            </TouchableOpacity>
+            <View style={[{ marginVertical: 6 }]} />
+        </>
+    );
+
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView >
-                <Container style={[commonStyles.container]} >
-                    {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
-                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                        <TouchableOpacity style={[]} onPress={handleBack} >
-                            <View>
-                                <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                            </View>
-                        </TouchableOpacity>
-                        <ParagraphComponent text="All My Cards" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
-                    </View>
-                    <View style={[commonStyles.mb43]} />
-                    {cardsLoading && (
-                        <Loadding contenthtml={CardListLoader} />)}
-                    {!cardsLoading && <>{myCardsData?.length > 0 &&
-                        <View >
-                            {myCardsData?.map((item: any, i: any) => {
-                                return (<>
-                                    <TouchableOpacity style={[styles.sectionStyle, commonStyles.relative, { paddingTop: 22 }]} onPress={() => handleGetCardsById(item)} activeOpacity={0.8} >
-                                        <View key={i} style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.flex1]}>
-                                            <View style={[commonStyles.relative, { marginRight: 6 }]}>
-                                                <Image style={[styles.cardRotate]} source={{ uri: item?.logo }} />
-                                            </View>
-                                            <View style={commonStyles.flex1}>
-                                                <ParagraphComponent style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw600, commonStyles.mb8]} text={`${item?.cardName}`} numberOfLines={1} />
-                                                <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textGrey, commonStyles.mb8]} text={` ${item?.supportedFlatforms || ''}`} numberOfLines={1} />
-                                            </View>
-                                            <ChevronRight />
-                                        </View>
-                                        <View style={[styles.badgeStyle, { backgroundColor: StatusColors[item?.status?.toLowerCase()] || NEW_COLOR.BG_CANCEL }]}>
-                                            <ParagraphComponent style={[commonStyles.fw600, commonStyles.textAlwaysWhite, commonStyles?.toCapitalize, { marginBottom: 2, fontSize: 8 }]} text={item?.status} />
-                                        </View>
-                                    </TouchableOpacity>
-                                    <View style={[{ marginVertical: 6 }]} />
-                                </>
-                                );
-                            })}
-                        </View>}
-                        {myCardsData?.length < 1 && <View>
-                            <NoDataComponent Description={"No data available"} />
-                        </View>}
-                    </>
-                    }
-                </Container>
-            </ScrollView>
+            <Container style={[commonStyles.container]} >
+                {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
+                <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
+                    <TouchableOpacity style={[]} onPress={handleBack} >
+                        <View>
+                            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                        </View>
+                    </TouchableOpacity>
+                    <ParagraphComponent text="All My Cards" style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                </View>
+                <View style={[commonStyles.mb43]} />
+                {cardsLoading && (
+                    <Loadding contenthtml={CardListLoader} />)}
+                {!cardsLoading && <>{myCardsData?.length > 0 &&
+                    <FlatList
+                        testID="all-my-cards-list"
+                        data={myCardsData}
+                        renderItem={renderCardItem}
+                        keyExtractor={keyExtractor}
+                        showsVerticalScrollIndicator={false}
+                        {...LIST_PERF_PAGINATED}
+                    />}
+                    {myCardsData?.length < 1 && <View>
+                        <NoDataComponent Description={"No data available"} />
+                    </View>}
+                </>
+                }
+            </Container>
         </SafeAreaView>
     );
 };

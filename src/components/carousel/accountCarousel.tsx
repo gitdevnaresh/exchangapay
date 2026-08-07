@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, View, Dimensions } from "react-native";
 import { s } from "../../constants/theme/scale";
+import { horizontalItemLayout } from "../../constants/listPerformance";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -43,6 +44,14 @@ const AutoSlideCarousel = ({
             renderItem={({ item }) => (
                 <View style={{ width, height }}>{item}</View>
             )}
+            // P-01: every page is exactly `width` wide, so layout can be
+            // computed instead of measured. This also makes the auto-slide
+            // scrollToIndex reliable for slides outside the render window —
+            // without getItemLayout it silently fails once windowing is on.
+            getItemLayout={horizontalItemLayout(width)}
+            initialNumToRender={1}
+            maxToRenderPerBatch={2}
+            windowSize={3}
         />
     );
 };

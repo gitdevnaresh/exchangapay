@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container, } from '../../components';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, BackHandler, Linking } from 'react-native';
+import { View, SafeAreaView, ScrollView, FlatList, TouchableOpacity, BackHandler, Linking } from 'react-native';
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/variables';
 import { commonStyles } from '../../components/CommonStyles';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -21,6 +21,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import CardsModuleService from '../../services/card';
 import { log } from '../../utils/logger';
 import { sanitizeNotesHtml } from '../../security';
+import { LIST_PERF_PAGINATED } from '../../constants/listPerformance';
 
 const Notifications = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -153,99 +154,109 @@ const Notifications = React.memo((props: any) => {
         return icon && icon.logo || "https://swokistoragespace.blob.core.windows.net/images/withdraw.svg";
     };
 
+    // P-02: getAllNotification() is unpaginated, so this list is as long as the
+    // account's history. It used to be a .map() inside a ScrollView, mounting
+    // every notification at once; FlatList mounts only what is near the
+    // viewport.
+    const keyExtractor = useCallback(
+        (item: any, index: number) => String(item?.id ?? index),
+        [],
+    );
+
+    const renderNotification = useCallback(({ item, index }: { item: any; index: number }) => (
+            <View style={commonStyles.flex1}>
+                {item.notificationType === CONSTANTS.NOTICES && (
+                    <TouchableOpacity style={commonStyles.flex1} onPress={() => handleOpenNotePopUp(item.message)}>
+                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.flex1]}>
+                            <View style={[styles.circle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
+                                <SvgFromUrl
+                                    uri={"https://swokistoragespace.blob.core.windows.net/images/Notifications-icon.svg"}
+                                    width={s(26)}
+                                    height={s(24)}
+
+                                />
+                            </View>
+                            <View style={commonStyles.flex1}>
+                                <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.flex1, commonStyles.gap10]}>
+                                    <ParagraphComponent
+                                        style={[commonStyles.fs14, commonStyles.fw700, commonStyles.textBlack, commonStyles.flex1]}
+                                        text={item?.actionBy}
+                                        numberOfLines={2}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                        {index !== allNttDetails.length - 1 && (
+                            <View style={[styles.hrLine, { marginVertical: 12 }]} />
+                        )}
+                    </TouchableOpacity>
+                ) || (
+                        <View style={commonStyles.flex1}>
+                            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.flex1]}>
+                                <View>
+
+                                    <SvgFromUrl
+                                        uri={getIconUrl(item?.actionBy)}
+                                        width={s(42)}
+                                        height={s(42)}
+                                    />
+                                </View>
+                                <View style={commonStyles.flex1}>
+                                    <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.flex1, commonStyles.gap10]}>
+                                        <ParagraphComponent
+                                            style={[commonStyles.fs14, commonStyles.fw700, commonStyles.textBlack, commonStyles.flex1]}
+                                            text={item.actionBy}
+                                            numberOfLines={2}
+                                        />
+                                        <ParagraphComponent
+                                            style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textGrey]}
+                                            text={formatDateLocal(item.notifiedDate)}
+                                        />
+                                    </View>
+                                    <ParagraphComponent
+                                        style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textGrey]}
+                                        text={item.message}
+                                    />
+                                </View>
+                            </View>
+                            {index !== allNttDetails.length - 1 && (
+                                <View style={[styles.hrLine, { marginVertical: 12 }]} />
+                            )}
+                        </View>
+                    )}
+            </View>
+    ), [styles, allNttDetails.length]);
+
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView>
-                <Container style={commonStyles.container}>
-                    <View>
-                        <View style={[commonStyles.dflex, commonStyles.mb36, commonStyles.alignCenter, commonStyles.gap10]}>
-                            <TouchableOpacity onPress={handleGoBack}>
-                                <AntDesign name={CONSTANTS.ARROW_LEFT} size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                            </TouchableOpacity>
-                            <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} text={CONSTANTS.NOTIFICATIONS} />
-                        </View>
-                        {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
-                        {nttLoading && (
-                            <View style={[commonStyles.flex1]}>
-                                <Loadding contenthtml={PersonalInfoLoader} />
-                            </View>
-                        )}
-                        {!nttLoading && allNttDetails.length > 0 && (
-                            <View style={commonStyles.sectionStyle}>
-                                {allNttDetails?.map((item: any, index: any) => {
-                                    const truncatedContent = item.notificationType === CONSTANTS.NOTICES && truncateHTML(item?.message);
-                                    return (
-                                        <View key={item.id} style={commonStyles.flex1}>
-                                            {item.notificationType === CONSTANTS.NOTICES && (
-                                                <TouchableOpacity style={commonStyles.flex1} onPress={() => handleOpenNotePopUp(item.message)}>
-                                                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.flex1]}>
-                                                        <View style={[styles.circle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
-                                                            <SvgFromUrl
-                                                                uri={"https://swokistoragespace.blob.core.windows.net/images/Notifications-icon.svg"}
-                                                                width={s(26)}
-                                                                height={s(24)}
-
-                                                            />
-                                                        </View>
-                                                        <View style={commonStyles.flex1}>
-                                                            <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.flex1, commonStyles.gap10]}>
-                                                                <ParagraphComponent
-                                                                    style={[commonStyles.fs14, commonStyles.fw700, commonStyles.textBlack, commonStyles.flex1]}
-                                                                    text={item?.actionBy}
-                                                                    numberOfLines={2}
-                                                                />
-                                                            </View>
-                                                        </View>
-                                                    </View>
-                                                    {index !== allNttDetails.length - 1 && (
-                                                        <View style={[styles.hrLine, { marginVertical: 12 }]} />
-                                                    )}
-                                                </TouchableOpacity>
-                                            ) || (
-                                                    <View style={commonStyles.flex1}>
-                                                        <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.flex1]}>
-                                                            <View>
-
-                                                                <SvgFromUrl
-                                                                    uri={getIconUrl(item?.actionBy)}
-                                                                    width={s(42)}
-                                                                    height={s(42)}
-                                                                />
-                                                            </View>
-                                                            <View style={commonStyles.flex1}>
-                                                                <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.flex1, commonStyles.gap10]}>
-                                                                    <ParagraphComponent
-                                                                        style={[commonStyles.fs14, commonStyles.fw700, commonStyles.textBlack, commonStyles.flex1]}
-                                                                        text={item.actionBy}
-                                                                        numberOfLines={2}
-                                                                    />
-                                                                    <ParagraphComponent
-                                                                        style={[commonStyles.fs14, commonStyles.fw400, commonStyles.textGrey]}
-                                                                        text={formatDateLocal(item.notifiedDate)}
-                                                                    />
-                                                                </View>
-                                                                <ParagraphComponent
-                                                                    style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textGrey]}
-                                                                    text={item.message}
-                                                                />
-                                                            </View>
-                                                        </View>
-                                                        {index !== allNttDetails.length - 1 && (
-                                                            <View style={[styles.hrLine, { marginVertical: 12 }]} />
-                                                        )}
-                                                    </View>
-                                                )}
-                                        </View>
-                                    )
-                                })}
-                            </View>
-                        )}
-
-                        {!nttLoading && allNttDetails.length < 1
-                            && (<NoDataComponent Description={CONSTANTS.NO_NOTIFICATION_AVAILABLE} />)}
+            <Container style={commonStyles.container}>
+                <View style={[commonStyles.dflex, commonStyles.mb36, commonStyles.alignCenter, commonStyles.gap10]}>
+                    <TouchableOpacity onPress={handleGoBack}>
+                        <AntDesign name={CONSTANTS.ARROW_LEFT} size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                    </TouchableOpacity>
+                    <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} text={CONSTANTS.NOTIFICATIONS} />
+                </View>
+                {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
+                {nttLoading && (
+                    <View style={[commonStyles.flex1]}>
+                        <Loadding contenthtml={PersonalInfoLoader} />
                     </View>
-                </Container>
-            </ScrollView>
+                )}
+                {!nttLoading && allNttDetails.length < 1
+                    && (<NoDataComponent Description={CONSTANTS.NO_NOTIFICATION_AVAILABLE} />)}
+                {!nttLoading && allNttDetails.length > 0 && (
+                    <FlatList
+                        testID="notifications-list"
+                        style={commonStyles.flex1}
+                        contentContainerStyle={commonStyles.sectionStyle}
+                        data={allNttDetails}
+                        renderItem={renderNotification}
+                        keyExtractor={keyExtractor}
+                        showsVerticalScrollIndicator={false}
+                        {...LIST_PERF_PAGINATED}
+                    />
+                )}
+            </Container>
 
             {notePopVisble && <Overlay onBackdropPress={handleOpenNotePopUp} overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 50, height: WINDOW_HEIGHT / 2 }]} isVisible={notePopVisble}>
                 <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap10, commonStyles.justifyContent, commonStyles.mb14]}>

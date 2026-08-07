@@ -8,6 +8,7 @@ import ParagraphComponent from './Paragraph/Paragraph';
 import { commonStyles } from './CommonStyles';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { SvgUri } from 'react-native-svg';
+import { LIST_PERF_PICKER } from '../constants/listPerformance';
 
 interface PickerProps {
   changeModalVisible: any,
@@ -98,8 +99,12 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
         </View>
         <View >{SearchBoxComponent}</View>
         <View style={[commonStyles.mb16]} />
-        <View >
+        {/* P-01: flex1 bounds the list's height. Without it the FlatList sizes
+            itself to its content, which means it lays out every row up front
+            and the windowing props below can never take effect. */}
+        <View style={commonStyles.flex1}>
           <FlatList
+            {...LIST_PERF_PICKER}
             contentContainerStyle={{ gap: 10, paddingBottom: 150 }}
             data={countryList}
             showsVerticalScrollIndicator={false}

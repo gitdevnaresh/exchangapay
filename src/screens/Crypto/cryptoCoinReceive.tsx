@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
-import { View, ScrollView, SafeAreaView, TouchableOpacity, Image, BackHandler, Dimensions } from 'react-native';
+import { View, FlatList, SafeAreaView, TouchableOpacity, Image, BackHandler, Dimensions } from 'react-native';
 import { Container } from '../../components';
 import { formatCurrency, isErrorDispaly } from '../../utils/helpers';
 import { ms, s } from '../../constants/theme/scale';
@@ -18,6 +18,7 @@ import CryptoServices from '../../services/crypto';
 import SvgFromUrl from '../../components/svgIcon';
 import { useIsFocused } from '@react-navigation/native';
 import NoDataComponent from '../../components/nodata';
+import { LIST_PERF_PICKER } from '../../constants/listPerformance';
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
@@ -99,73 +100,82 @@ const CryptoCoinReceive = React.memo((props: any) => {
         USDC: Images?.coins.coineusdc
     }
 
-    return (
+    // P-02: this list used to be a .map() inside a ScrollView, so every wallet
+    // the backend returned was mounted at once. FlatList only mounts the rows
+    // near the viewport.
+    const keyExtractor = useCallback(
+        (item: any, index: number) => String(item?.id ?? item?.walletCode ?? index),
+        [],
+    );
 
-        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView>
-                <Container style={[commonStyles.container, commonStyles.flex1]}>
-                    <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter, commonStyles.mb43]}>
-                        <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-                            <TouchableOpacity style={[styles.pr16,]} onPress={handleGoBack}>
-                                <View>
-                                    <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
-                                </View>
-                            </TouchableOpacity>
-                            <ParagraphComponent text='Withdraw' style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+    const renderCoinItem = useCallback(({ item }: { item: any }) => (
+        <View style={commonStyles.mt16}>
+            <TouchableOpacity onPress={() => handleBuyCryptoCoinSlct(item)} activeOpacity={0.8}>
+                <View style={[commonStyles.dflex, styles.rowStyle, commonStyles.alignCenter, commonStyles.justifyContent]}>
+                    <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                        <View style={[styles.icon,]}>
+                            {item.logo && <SvgFromUrl
+                                uri={item.logo}
+                                width={40}
+                                height={40}
+                            />}
+                            {!item.logo && <Image source={cryptoList[item?.walletCode]} style={{ width: 40, height: 40 }} />}
                         </View>
+                        <View>
+                            <ParagraphComponent text={item?.walletCode} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack,]} />
+
+                        </View>
+                    </View>
+                    <View>
+                        <ParagraphComponent text={`${formatCurrency(item?.avilable || 0, 2)}`} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textRight, commonStyles.textBlack,]} />
 
                     </View>
-                    {errormsg && <View style={commonStyles.mb16}><ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} /></View>}
-                    <View style={commonStyles.mb16}>{SearchBoxComponent}</View>
-                    {receiveCoinsDataLoading ? (
-                        <Loadding contenthtml={sellCoinSelectLoader} />
-                    ) : (
-                        <>
-                            {receiveCoinsData?.length > 0 &&
-                                <View>
-                                    {receiveCoinsData?.map((item: any, index: any) => {
-                                        return (
+                </View>
+            </TouchableOpacity>
+        </View>
+    ), [styles]);
 
-                                            <View style={commonStyles.mt16}>
-                                                <TouchableOpacity onPress={() => handleBuyCryptoCoinSlct(item)} activeOpacity={0.8} key={index}>
-                                                    <View style={[commonStyles.dflex, styles.rowStyle, commonStyles.alignCenter, commonStyles.justifyContent]}>
-                                                        <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
-                                                            <View style={[styles.icon,]}>
-                                                                {item.logo && <SvgFromUrl
-                                                                    uri={item.logo}
-                                                                    width={40}
-                                                                    height={40}
-                                                                />}
-                                                                {!item.logo && <Image source={cryptoList[item?.walletCode]} style={{ width: 40, height: 40 }} />}
-                                                            </View>
-                                                            <View>
-                                                                <ParagraphComponent text={item?.walletCode} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textBlack,]} />
+    // Passed to FlatList as an *element*, not a component function: a fresh
+    // function identity on every render would remount the search TextInput and
+    // drop whatever the user had typed.
+    const ListHeader = (
+        <>
+            <View style={[commonStyles.dflex, commonStyles.justifyContent, commonStyles.alignCenter, commonStyles.mb43]}>
+                <View style={[commonStyles.dflex, commonStyles.alignCenter]}>
+                    <TouchableOpacity style={[styles.pr16,]} onPress={handleGoBack}>
+                        <View>
+                            <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
+                        </View>
+                    </TouchableOpacity>
+                    <ParagraphComponent text='Withdraw' style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]} />
+                </View>
 
-                                                            </View>
-                                                        </View>
-                                                        <View>
-                                                            <ParagraphComponent text={`${formatCurrency(item?.avilable || 0, 2)}`} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textRight, commonStyles.textBlack,]} />
+            </View>
+            {errormsg && <View style={commonStyles.mb16}><ErrorComponent message={errormsg} onClose={() => setErrormsg(null)} /></View>}
+            <View style={commonStyles.mb16}>{SearchBoxComponent}</View>
+        </>
+    );
 
-                                                        </View>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            </View>
-
-                                        )
-                                    })}
-                                </View>
-                            }
-                            {receiveCoinsData?.length < 1 && <View>
-                                <NoDataComponent />
-                            </View>
-                            }
-                        </>
-                    )}
-
-                </Container>
-            </ScrollView>
+    return (
+        <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
+            <Container style={[commonStyles.container, commonStyles.flex1]}>
+                <FlatList
+                    testID="receive-coin-list"
+                    data={receiveCoinsDataLoading ? [] : (receiveCoinsData || [])}
+                    renderItem={renderCoinItem}
+                    keyExtractor={keyExtractor}
+                    ListHeaderComponent={ListHeader}
+                    ListEmptyComponent={
+                        receiveCoinsDataLoading
+                            ? <Loadding contenthtml={sellCoinSelectLoader} />
+                            : <View><NoDataComponent /></View>
+                    }
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    {...LIST_PERF_PICKER}
+                />
+            </Container>
         </SafeAreaView>
-
     )
 })
 

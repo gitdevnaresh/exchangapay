@@ -197,6 +197,16 @@ const MyReferrals = (props: any) => {
                     <ParagraphComponent style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw700]} text={PROFILE_CONSTANTS.REFERRALS_S} />
                     <View style={[commonStyles.mt10, commonStyles.mb16]}>
                         <View style={[]}>
+                            {/* P-01: intentionally left on the RN defaults.
+                                This list is nested inside the screen's
+                                ScrollView, so it never receives scroll events
+                                — capping the render window here would leave
+                                rows permanently blank, and pagination already
+                                depends on onEndReached firing from that
+                                unbounded layout. Virtualising it needs the
+                                outer ScrollView removed first (the header
+                                would move into ListHeaderComponent), which is
+                                a separate change. */}
                             <FlatList
                                 data={referralsList}
                                 renderItem={renderItem}

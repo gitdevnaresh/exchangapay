@@ -13,6 +13,7 @@ import { commonStyles } from "../../../components/CommonStyles";
 import { sellCoinSelect } from "../buySkeleton_views";
 import Loadding from "../../../components/skeleton";
 import { useIsFocused } from "@react-navigation/native";
+import { LIST_PERF_NO_CLIP } from "../../../constants/listPerformance";
 
 
 const EXChangaApplicationRecords = React.memo((props: any) => {
@@ -181,6 +182,10 @@ const EXChangaApplicationRecords = React.memo((props: any) => {
           onEndReachedThreshold={0.1}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={() => <>{!transLoading && <NoDataComponent />}</>}
+          // P-01: LIST_PERF_NO_CLIP, not the clipping preset — the status
+          // badge sits at top:-52, outside the row bounds, and Android's
+          // removeClippedSubviews would clip it away.
+          {...LIST_PERF_NO_CLIP}
         />
       </View>
     </View>

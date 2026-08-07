@@ -80,7 +80,10 @@ const VerifyCode = React.memo((props: any) => {
       try {
         setSaveLoading(true);
         const verifedRes = await ProfileService.varificationGoogleAuthenticate(value.code);
-        if (verifedRes.data) {
+        // M-02 (adjacent): `data` alone was truthy on a 400 rejection body, so
+        // a wrong code enabled 2FA. Require a 2xx as well — see the same fix in
+        // authentication.tsx.
+        if (verifedRes?.ok && verifedRes?.data) {
           enableGoogleAuth();
         } else {
           setErrormsg('Invalid code!');

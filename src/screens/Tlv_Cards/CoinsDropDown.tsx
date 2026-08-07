@@ -1,5 +1,5 @@
 import {
-    ScrollView,
+    FlatList,
     StyleSheet,
     TouchableOpacity,
     View,
@@ -12,6 +12,7 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import { s } from "../../constants/theme/scale";
 import NoDataComponent from "../../components/nodata";
 import { useEffect, useState } from "react";
+import { LIST_PERF_PICKER } from "../../constants/listPerformance";
 
 const CoinsDropdown = (props: any) => {
     const [selected, setIsSelected] = useState(props?.selected);
@@ -23,24 +24,32 @@ const CoinsDropdown = (props: any) => {
                 <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text={`Select ${props?.label || ""}`} />
                 <AntDesign onPress={() => props?.modelvisible()} name="close" size={22} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
             </View>
-            <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
-                <View style={[commonStyles.mb12]}>
-                    {props?.coinsList?.length > 0 && <View style={[commonStyles.gap10]}>
-                        {props?.coinsList?.map((item: any) => {
-                            return (
-                                <>
-                                    <TouchableOpacity style={[styles.optiopStyle, { backgroundColor: selected === (item?.name || item?.walletCode) && NEW_COLOR.OVERLAY_BG || "transparent", }]} activeOpacity={0.8} onPress={() => { 
-                                        props?.handleSelect(item[props?.fieldName] || (props?.optional === true && item || item?.name)||item?.walletCode); 
-                                        setIsSelected(item[props?.fieldName] || item?.name) }}>
-                                        <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text={item[props?.fieldName] || item?.name || item?.walletCode} />
-                                    </TouchableOpacity>
-
-                                </>)
-                        })}
-                    </View>}
-                    {props?.coinsList?.length <= 0 && <NoDataComponent />}
-                </View>
-            </ScrollView>
+            <FlatList
+                testID="coins-dropdown-list"
+                // P-02: this dropdown is reused for coin/network/currency lists,
+                // any of which can run to hundreds of rows. It used to .map()
+                // inside a ScrollView, mounting the whole list; FlatList mounts
+                // only the rows near the viewport. maxHeight bounds the popup so
+                // the virtualised list has a viewport to measure against.
+                style={{ maxHeight: WINDOW_HEIGHT * 0.6 }}
+                contentContainerStyle={[commonStyles.mb12, commonStyles.gap10]}
+                data={props?.coinsList || []}
+                keyExtractor={(item: any, index: number) =>
+                    String(item?.id ?? item?.[props?.fieldName] ?? item?.name ?? item?.walletCode ?? index)
+                }
+                renderItem={({ item }: { item: any }) => (
+                    <TouchableOpacity style={[styles.optiopStyle, { backgroundColor: selected === (item?.name || item?.walletCode) && NEW_COLOR.OVERLAY_BG || "transparent", }]} activeOpacity={0.8} onPress={() => {
+                        props?.handleSelect(item[props?.fieldName] || (props?.optional === true && item || item?.name) || item?.walletCode);
+                        setIsSelected(item[props?.fieldName] || item?.name)
+                    }}>
+                        <ParagraphComponent style={[commonStyles.fs16, commonStyles.fw800, commonStyles.textBlack,]} text={item[props?.fieldName] || item?.name || item?.walletCode} />
+                    </TouchableOpacity>
+                )}
+                ListEmptyComponent={<NoDataComponent />}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                {...LIST_PERF_PICKER}
+            />
         </Overlay>)
 }
 export default CoinsDropdown;

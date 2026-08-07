@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, ScrollView, Image, StyleSheet, SafeAreaView, TextInput } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView, TextInput } from 'react-native';
+import { LIST_PERF_PICKER } from '../constants/listPerformance';
 import { NEW_COLOR } from '../constants/theme/variables';
 import { ms, s } from '../constants/theme/scale';
 import Icons from '../assets/icons';
@@ -70,47 +71,65 @@ const DeafultList: React.FC<DeafultListProps> = ({ changeModalVisible, data = []
 
 
 
+    /**
+     * P-01: this used to be a header block plus a FlatList inside a ScrollView.
+     * A VirtualizedList nested in a ScrollView cannot virtualise at all — it
+     * gets unbounded height and mounts every row. Moving the header into
+     * ListHeaderComponent keeps the exact same scroll behaviour (the header
+     * still scrolls away with the list) while letting the FlatList own the
+     * scroll view.
+     *
+     * Passed as an element, not a component function: an inline
+     * `() => <View/>` would be a new component type on every keystroke and
+     * would unmount/remount the search TextInput, losing focus.
+     */
+    const listHeader = (
+        <View>
+            <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
+                <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
+                    <AntDesign
+                        name="arrowleft"
+                        size={22}
+                        color={NEW_COLOR.TEXT_BLACK}
+                        style={{ marginTop: 3 }}
+                    />
+                </TouchableOpacity>
+                <ParagraphComponent
+                    style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]}
+                    text={modalTitle ? modalTitle : "Select"}
+                />
+            </View>
+            <View style={isPayeeAdd && [commonStyles.dflex, commonStyles.alignCenter]}>
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        style={styles.searchInput}
+                        onChangeText={handleChangeSearch}
+                        placeholder="Search"
+                        placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
+                    />
+                    <TouchableOpacity onPress={() => handleChangeSearch(searchKey)} style={styles.searchIconBg} activeOpacity={0.8}>
+                        <AntDesign name="search1" size={16} style={styles.searchIcon} />
+                    </TouchableOpacity>
+                </View>
+                {isPayeeAdd &&
+                    <View >
+                        <TouchableOpacity style={styles.addIconContainer} onPress={onPressAddPayee}>
+                            <AntDesign name="plus" size={s(24)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
+                        </TouchableOpacity>
+
+                    </View>}
+            </View>
+            <View style={commonStyles.mb16} />
+        </View>
+    );
+
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <ScrollView>
-                <View style={[commonStyles.flex1, commonStyles.p24]}>
-                    <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.mb43]}>
-                        <TouchableOpacity onPress={backArrowButtonHandler} activeOpacity={0.8}>
-                            <AntDesign
-                                name="arrowleft"
-                                size={22}
-                                color={NEW_COLOR.TEXT_BLACK}
-                                style={{ marginTop: 3 }}
-                            />
-                        </TouchableOpacity>
-                        <ParagraphComponent
-                            style={[commonStyles.fs16, commonStyles.textBlack, commonStyles.fw800]}
-                            text={modalTitle ? modalTitle : "Select"}
-                        />
-                    </View>
-                    <View style={isPayeeAdd && [commonStyles.dflex, commonStyles.alignCenter]}>
-                        <View style={styles.searchContainer}>
-                            <TextInput
-                                style={styles.searchInput}
-                                onChangeText={handleChangeSearch}
-                                placeholder="Search"
-                                placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
-                            />
-                            <TouchableOpacity onPress={() => handleChangeSearch(searchKey)} style={styles.searchIconBg} activeOpacity={0.8}>
-                                <AntDesign name="search1" size={16} style={styles.searchIcon} />
-                            </TouchableOpacity>
-                        </View>
-                        {isPayeeAdd &&
-                            <View >
-                                <TouchableOpacity style={styles.addIconContainer} onPress={onPressAddPayee}>
-                                    <AntDesign name="plus" size={s(24)} color={NEW_COLOR.TEXT_ALWAYS_WHITE} />
-                                </TouchableOpacity>
-
-                            </View>}
-                    </View>
-                    <View style={commonStyles.mb16} />
-                    <View>
+            <View style={[commonStyles.flex1, commonStyles.p24]}>
                         <FlatList
+                            {...LIST_PERF_PICKER}
+                            keyboardShouldPersistTaps="handled"
+                            ListHeaderComponent={listHeader}
                             contentContainerStyle={{ gap: 10 }}
                             data={listData}
                             renderItem={({ item }) => (
@@ -155,9 +174,7 @@ const DeafultList: React.FC<DeafultListProps> = ({ changeModalVisible, data = []
                                 </View>
                             )}
                         />
-                    </View>
-                </View>
-            </ScrollView>
+            </View>
         </SafeAreaView>
     );
 };

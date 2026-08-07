@@ -10,6 +10,7 @@ import PageHeader from "../../../../components/pageHeader/pageHeader";
 import Loadding from "../../../../components/skeleton";
 import { Container } from "../../../../components";
 import ErrorComponent from "../../../../components/Error";
+import { LIST_PERF_NO_CLIP } from "../../../../constants/listPerformance";
 
 interface Item {
   title?: string;
@@ -180,8 +181,11 @@ const SupportAllCases: React.FC<any> = () => {
           onEndReached={loadMoreData}
           ListFooterComponent={renderFooter}
           onEndReachedThreshold={0.1}
-          removeClippedSubviews={false}
           contentContainerStyle={{ paddingBottom: 100 }}
+          // P-01: batching only. removeClippedSubviews stays false — it was
+          // already explicitly disabled here, so LIST_PERF_NO_CLIP preserves
+          // that while capping the render window.
+          {...LIST_PERF_NO_CLIP}
         />)}
       </Container>
 

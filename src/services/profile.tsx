@@ -1,8 +1,8 @@
 
 import axios from "axios";
 import { fileget, filepost, get, post, put } from "../utils/ApiService";
-import { api } from "../utils/api";
 import crashlytics from "@react-native-firebase/crashlytics";
+import { OTP_PROBE_CONFIG, verifyOneTimeCode } from "../security";
 const WEBHOOK_URL = "https://hook.eu2.make.com/glekogomi355qvg7u888kc9rs6clvise";
 const ProfileService = {
   uploadFile: async (imgdata: any) => {
@@ -16,7 +16,8 @@ const ProfileService = {
   },
   partnerRefferel: async () => {
     try {
-      const data: any = await api.get(
+      // N-01: was `api` (neowalletapi.azurewebsites.net, NXDOMAIN).
+      const data: any = await get(
         `api/v1/Partner/getReferralDetails/customer`
       );
       return data;
@@ -30,11 +31,24 @@ const ProfileService = {
   getSeccurityInfo: async () => {
     return get(`api/v1/Security/SecurityInformation`);
   },
+  // M-02: the value in this path was a live TOTP code — a second factor, not a
+  // one-shot SMS digit. Body first, legacy path only until the backend route
+  // exists. See src/security/otpTransport.ts.
   varificationGoogleAuthenticate: async (code: number) => {
-    return put(
-      `api/v1/Security/VerifyGoogleAuthenticator/${code}`,
-      null
-    );
+    return verifyOneTimeCode({
+      channel: "google-authenticator-verification",
+      secure: () =>
+        put(
+          `api/v1/Security/VerifyGoogleAuthenticator`,
+          { code: String(code) },
+          OTP_PROBE_CONFIG
+        ),
+      legacy: () =>
+        put(
+          `api/v1/Security/VerifyGoogleAuthenticator/${encodeURIComponent(String(code))}`,
+          null
+        ),
+    });
   },
   setGoogleAuthenticateSwitch: async () => {
     return put(`api/v1/Security/EnableGoogleAuth`, {});

@@ -19,6 +19,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import ProfileService from '../../services/profile';
 import { PROFILE_CONSTANTS } from '../Profile/constants';
 import { downloadImage } from '../../utils/tools';
+import { LIST_PERF_CHAT } from '../../constants/listPerformance';
 
 
 const KommoChatScreen = (props: any) => {
@@ -442,6 +443,11 @@ const KommoChatScreen = (props: any) => {
                                 flatListRef.current?.scrollToEnd({ animated: true });
                             }
                         }}
+                        // P-01: message bubbles are variable height (text vs
+                        // image), so window capping only — no getItemLayout.
+                        // Clipping stays off: this list is auto-scrolled to the
+                        // end and clipped cells show up as blank bubbles.
+                        {...LIST_PERF_CHAT}
                     />
                 ) || (
                         <View style={[commonStyles.flex1, commonStyles.alignCenter, commonStyles.justifyCenter]}>

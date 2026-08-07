@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Content } from "../../../components";
 import { View, TouchableOpacity, Dimensions } from "react-native";
@@ -16,7 +16,24 @@ import TransactionDetails from "./transactionDetails";
 import Badge from "../../../components/badge/badge";
 import SvgFromUrl from "../../../components/svgIcon";
 import ConsumeTransactionDetails from "./ConsumeTransactionDetails";
+import { LIST_PERF_PAGINATED } from "../../../constants/listPerformance";
 
+
+// Hoisted out of the component: it is a constant lookup table, and rebuilding
+// it per render would force the memoised renderItem to be rebuilt too.
+const badgeColor = {
+  approved: NEW_COLOR.BG_GREEN,
+  completed: NEW_COLOR.BG_GREEN,
+  pending: NEW_COLOR.BG_YELLOW,
+  submitted: NEW_COLOR.BG_BLUE,
+  failed: NEW_COLOR.BG_RED,
+  fail: NEW_COLOR.BG_RED,
+  rejected: NEW_COLOR.BG_RED,
+  finished: NEW_COLOR.BG_GREEN,
+  freezed: NEW_COLOR.TEXT_GREY,
+  unfreezed: NEW_COLOR.BG_GREEN,
+  cancelled: NEW_COLOR.BG_RED,
+}
 
 const EXChangaTransactionHistory = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -79,35 +96,24 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
     }
   };
 
-  const toggleOverlay = (item: any) => {
+  // Functional updaters so this stays referentially stable — renderItem is
+  // memoised now and would otherwise close over a stale visibility flag.
+  const toggleOverlay = useCallback((item: any) => {
     if (item?.action?.toLowerCase() === "consume") {
-      setIsConsumeDetailsVisible(!isConsumeDetailsVisible);
+      setIsConsumeDetailsVisible(prev => !prev);
       setTranasctionId(item.id);
     } else {
-      setIsCommonVisible(!isCommonVisible);
+      setIsCommonVisible(prev => !prev);
       setTranasctionId(item.id);
     }
 
 
-  };
+  }, []);
   const closePop = () => {
     setIsCommonVisible(false);
     setIsConsumeDetailsVisible(false);
 
   };
-  const badgeColor = {
-    approved: NEW_COLOR.BG_GREEN,
-    completed: NEW_COLOR.BG_GREEN,
-    pending: NEW_COLOR.BG_YELLOW,
-    submitted: NEW_COLOR.BG_BLUE,
-    failed: NEW_COLOR.BG_RED,
-    fail: NEW_COLOR.BG_RED,
-    rejected: NEW_COLOR.BG_RED,
-    finished: NEW_COLOR.BG_GREEN,
-    freezed: NEW_COLOR.TEXT_GREY,
-    unfreezed: NEW_COLOR.BG_GREEN,
-    cancelled: NEW_COLOR.BG_RED,
-  }
   const getTransactionTypes = async () => {
     try {
       const response = await CardsModuleService.customerTransactionTypes();
@@ -122,21 +128,31 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
 
     }
   };
-  const getIconUrl = (action: string, currencyType?: string) => {
+  // Built once per icon fetch instead of doing a linear find() inside every
+  // row on every scroll frame.
+  const iconsByName = useMemo(() => {
+    const map = new Map<string, string>();
+    (iconsList || []).forEach((iconItem: any) => {
+      if (iconItem?.name) map.set(iconItem.name, iconItem.logo);
+    });
+    return map;
+  }, [iconsList]);
+
+  const getIconUrl = useCallback((action: string, currencyType?: string): any => {
     let actionKey = action;
     if (action === "TopUp") {
       if (currencyType === "Fiat") actionKey = "TopupFiat";
       else if (currencyType === "Crypto") actionKey = "TopupCrypto";
     }
-    if (iconsList?.length > 0) {
-      const icon = iconsList?.find(iconItem => iconItem.name === actionKey);
-      return icon ? icon.logo : "https://swokistoragespace.blob.core.windows.net/images/send.svg";
+    if (iconsByName.size > 0) {
+      return iconsByName.get(actionKey) || "https://swokistoragespace.blob.core.windows.net/images/send.svg";
     }
-  };
+    return undefined;
+  }, [iconsByName]);
 
 
 
-  const renderItem = ({ item, index }: any) => {
+  const renderItem = useCallback(({ item, index }: any) => {
     return (
       <>
         <TouchableOpacity activeOpacity={1} onPress={() => toggleOverlay(item)}>
@@ -188,7 +204,7 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
       </>
 
     )
-  };
+  }, [getIconUrl, isPad, styles, toggleOverlay, transactionData.length]);
 
   const renderFooter = () => {
     if (!transLoading) return null;
@@ -240,6 +256,9 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
           onEndReachedThreshold={0.1}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={() => <>{!transLoading && <NoDataComponent />}</>}
+          // P-01: rows are variable height (the post-settlement line is
+          // conditional), so no getItemLayout here — cap the window instead.
+          {...LIST_PERF_PAGINATED}
         />
       </View>
 

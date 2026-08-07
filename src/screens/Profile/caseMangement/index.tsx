@@ -172,6 +172,10 @@ const CaseManagement = (props: any) => {
             {error && <ErrorComponent message={error} onClose={handleCloseError} />}
           </View>
           {!casesDataLoading && (<View>
+            {/* P-01: intentionally left on the RN defaults — scrollEnabled is
+                false and the outer ScrollView owns the scroll, so this list
+                must render all of its rows. Capping the window would blank
+                everything past the first batch. */}
             <FlatList
               contentContainerStyle={{ paddingBottom: s(70) }}
               data={casesData ?? []}

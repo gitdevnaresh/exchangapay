@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     SafeAreaView,
     View,
@@ -25,6 +25,7 @@ import TextInputField from "../../components/textInput";
 import { CryptoPayee } from "./constants";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import { IconRefresh } from "../../assets/svg";
+import { LIST_PERF_NO_CLIP } from "../../constants/listPerformance";
 
 const { width } = Dimensions.get("window");
 const isPad = width > 600;
@@ -212,13 +213,19 @@ const CryptoPayeesList = (props: any) => {
         setErrormsg("");
     };
 
-    const sections = [];
-    if (verifiedPayees.length > 0) {
-        sections.push({ title: "Ready to Use", data: verifiedPayees });
-    }
-    if (unverifiedPayees.length > 0) {
-        sections.push({ title: "Request to Email Verification", data: unverifiedPayees });
-    };
+    // P-01: memoised so the SectionList keeps a stable `sections` identity.
+    // Rebuilding it inline made every mounted row re-render on every parent
+    // render (search keystrokes, refresh, pagination).
+    const sections = useMemo(() => {
+        const next = [];
+        if (verifiedPayees.length > 0) {
+            next.push({ title: "Ready to Use", data: verifiedPayees });
+        }
+        if (unverifiedPayees.length > 0) {
+            next.push({ title: "Request to Email Verification", data: unverifiedPayees });
+        }
+        return next;
+    }, [verifiedPayees, unverifiedPayees]);
     const handleRefresh = () => {
         setVerifiedPayees([]);
         setUnverifiedPayees([]);
@@ -270,6 +277,10 @@ const CryptoPayeesList = (props: any) => {
                     ListFooterComponent={loading ? <Loadding contenthtml={skeletonLoader} /> : null}
                     ListEmptyComponent={!loading && sections.length === 0 ? <NoDataComponent /> : null}
                     stickySectionHeadersEnabled={false}
+                    // P-01: LIST_PERF_NO_CLIP — the state badge is positioned
+                    // at top:-40, outside the row, so Android clipping would
+                    // hide it.
+                    {...LIST_PERF_NO_CLIP}
                 />
             </Container>
         </SafeAreaView>

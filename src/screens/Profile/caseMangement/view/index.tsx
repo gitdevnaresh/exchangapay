@@ -178,6 +178,10 @@ const SupportCaseView = (props: any) => {
                 <ParagraphComponent text={"Request for Document"} style={[commonStyles.sectiontitle]} />
                 <View style={[commonStyles.mb12]} />
               </View>}
+            {/* P-01: intentionally left on the RN defaults — scrollEnabled is
+                false and the outer ScrollView owns the scroll, so this list
+                must render all of its rows. It is also a short, bounded list
+                (the checked documents of a single case). */}
             <FlatList
               data={data?.caseDetails?.details?.filter((item: ItemCommonModelInterface) => item?.isChecked)}
               renderItem={({ item, index }) => (
