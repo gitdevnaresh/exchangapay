@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import { isErrorDispaly } from '../../utils/helpers';
 import ErrorComponent from '../../components/Error';
 import { ms, s, screenHeight } from '../../constants/theme/scale';

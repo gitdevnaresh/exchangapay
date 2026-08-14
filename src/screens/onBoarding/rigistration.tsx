@@ -9,7 +9,7 @@ import DefaultButton from "../../components/DefaultButton";
 import { isErrorDispaly, trimValues } from '../../utils/helpers';
 import CustomPicker from "../../components/CustomPicker";
 import ErrorComponent from '../../components/Error';
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import { useSelector } from 'react-redux';
 import { useNavigation } from "@react-navigation/native";
 import { commonStyles } from '../../components/CommonStyles';

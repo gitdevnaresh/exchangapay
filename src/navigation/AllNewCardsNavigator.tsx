@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ApplyCardStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import ApplyCard from '../screens/Tlv_Cards/ApplyCard';
+import ApplyCard from '../screens/TlvCards/ApplyCard';
  
 const Stack = createNativeStackNavigator<ApplyCardStackParamList>();
 

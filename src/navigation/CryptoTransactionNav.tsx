@@ -3,7 +3,7 @@ import React from 'react';
 import {CrypoTransactionStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import CrypoTransaction from '../screens/Crypto/cryptoTransations/Transaction';
-import CryptoCardsTransaction from '../screens/Crypto/cryptoCardTransations/CryptoCardsTransaction';
+import CryptoCardsTransaction from '../screens/Crypto/cryptoCardTransactions/CryptoCardsTransaction';
  
 const Stack = createNativeStackNavigator<CrypoTransactionStackParamList>();
 

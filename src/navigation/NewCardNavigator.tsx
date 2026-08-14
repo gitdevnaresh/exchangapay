@@ -2,7 +2,7 @@ import React from 'react';
 
 import {NewCardStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import NewCard from '../screens/Tlv_Cards/NewCard'
+import NewCard from '../screens/TlvCards/NewCard'
  
 const Stack = createNativeStackNavigator<NewCardStackParamList>();
 

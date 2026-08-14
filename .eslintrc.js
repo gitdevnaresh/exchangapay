@@ -19,6 +19,28 @@ module.exports = {
     // M-16: nothing may call console directly. Logging goes through
     // src/utils/logger.ts, which gates on __DEV__ and redacts structured data.
     "no-console": "error",
+
+    // M-05 / N-05: every clipboard write must auto-clear. Both the deprecated
+    // core `Clipboard` and the community module bypass the TTL, so neither may
+    // be imported outside src/utils/clipboard.ts.
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "react-native",
+            importNames: ["Clipboard"],
+            message:
+              "Use copyEphemeral from src/utils/clipboard.ts — clipboard writes must auto-clear (M-05, N-05).",
+          },
+          {
+            name: "@react-native-clipboard/clipboard",
+            message:
+              "Use copyEphemeral from src/utils/clipboard.ts — clipboard writes must auto-clear (M-05, N-05).",
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {
@@ -26,6 +48,13 @@ module.exports = {
       // and stripped from release bundles by transform-remove-console anyway.
       files: ["src/utils/logger.ts"],
       rules: { "no-console": "off" },
+    },
+    {
+      // clipboard.ts is the one module allowed to touch the clipboard directly
+      // — it is what applies the TTL. Tests need the same access to assert
+      // against the fake pasteboard in __mocks__.
+      files: ["src/utils/clipboard.ts", "src/**/__tests__/**"],
+      rules: { "no-restricted-imports": "off" },
     },
   ],
   ignorePatterns: [

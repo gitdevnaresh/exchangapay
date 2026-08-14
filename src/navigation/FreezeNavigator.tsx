@@ -2,7 +2,7 @@ import React from 'react';
 
 import {FreezeUnFreezeStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import FreezeComponent from '../screens/Tlv_Cards/Freeze';
+import FreezeComponent from '../screens/TlvCards/Freeze';
  
 const Stack = createNativeStackNavigator<FreezeUnFreezeStackParamList>();
 

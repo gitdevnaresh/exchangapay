@@ -7,7 +7,7 @@ import { log } from './logger';
 // @react-native-community/push-notification-ios alongside @notifee/react-native
 // and @react-native-firebase/messaging — four packages, two of them native, for
 // one job. Notifee already backed the download notifications in
-// src/navigation/AppContainer.tsx and src/screens/Crypto/cryptoCardTransations/DownloadBill.tsx,
+// src/navigation/AppContainer.tsx and src/screens/Crypto/cryptoCardTransactions/DownloadBill.tsx,
 // so display now goes through it on both platforms and transport stays with
 // firebase/messaging. The public shape of this module is unchanged; callers in
 // App.tsx, SplashScreen and the logout paths keep working as they did.

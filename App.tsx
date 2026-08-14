@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import {
   AppState,
-  LogBox,
+  
   PermissionsAndroid,
   Platform,
   StatusBar,
@@ -26,7 +26,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AssetsIconsPack from "./src/assets/AssetsIconsPack";
 import DeviceInfo from "react-native-device-info";
 import store, { persistor, startPersistence } from "./src/store";
-import OnBoardingService from "./src/services/onBoardingservice";
+import OnBoardingService from "./src/services/onBoardingService";
 import crashlytics from "@react-native-firebase/crashlytics";
 import messaging from "@react-native-firebase/messaging";
 import ForceUpdate from "./src/screens/UpdateScreens/ForceUpdate";

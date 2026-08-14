@@ -6,7 +6,7 @@ import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
 import RenderHtml from 'react-native-render-html';
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/variables';
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import crashlytics from '@react-native-firebase/crashlytics';
 import DefaultButton from '../../components/DefaultButton';
 import { ms } from '../../constants/theme/scale';

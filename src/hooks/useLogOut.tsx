@@ -8,7 +8,7 @@ import AuthService from "../services/auth";
 import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
-import OnBoardingService from "../services/onBoardingservice";
+import OnBoardingService from "../services/onBoardingService";
 import { clearDecryptCache } from "./useEncryption_Decryption";
 import { clearAttestationToken, clearBiometricKeys, clearCachedAppLock } from "../security";
 import { persistor } from "../store";

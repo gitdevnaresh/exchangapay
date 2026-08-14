@@ -28,7 +28,7 @@ import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
 import { fcmNotification } from '../../utils/FCMNotification';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 const PhoneOtpVerification = () => {
     const [errorMsg, setErrorMsg] = useState<any>('');

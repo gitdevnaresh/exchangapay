@@ -24,7 +24,7 @@ import { fcmNotification } from '../../utils/FCMNotification';
 import { useAuth0 } from 'react-native-auth0';
 import CommonPopup from '../../components/commonPopup';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 
 

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ReplaceCardStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import ReplaceCardComponent from '../screens/Tlv_Cards/ReplaceCard';
+import ReplaceCardComponent from '../screens/TlvCards/ReplaceCard';
  
 const Stack = createNativeStackNavigator<ReplaceCardStackParamList>();
 

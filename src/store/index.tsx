@@ -10,7 +10,7 @@ import auth from "./auth/slice";
 import send from "./send/slice";
 import sendcrypto from "./sendCrypto/slice";
 import UserReducer from "../redux/Reducer/UserReducer";
-import encryptTransform from "../utils/helpers/encryptionTransfermation";
+import encryptTransform from "../utils/helpers/encryptionTransformation";
 
 const keychainStorage = createKeychainStorage();
 
@@ -19,7 +19,7 @@ const keychainStorage = createKeychainStorage();
 // The transform below was previously commented out with "temporarily disable to
 // debug redux-persist issue". The issue was that the transform was `async`, and
 // redux-persist applies transforms synchronously — see the header of
-// encryptionTransfermation.tsx. It is synchronous now, and re-enabled.
+// encryptionTransformation.tsx. It is synchronous now, and re-enabled.
 const persistConfig = {
   key: "root",
   storage: keychainStorage,

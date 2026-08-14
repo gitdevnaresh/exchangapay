@@ -14,7 +14,7 @@ import { formatCurrency, isErrorDispaly } from "../../utils/helpers";
 import CardsModuleService from "../../services/card";
 import ErrorComponent from "../../components/Error";
 import { setPersonalInfo } from "../../redux/Actions/UserActions";
-import CoinsDropdown from "../Tlv_Cards/CoinsDropDown";
+import CoinsDropdown from "../TlvCards/CoinsDropDown";
 import SendCryptoServices from "../../services/sendcrypto";
 import CryptoServices from "../../services/crypto";
 import CustomErrorComponent from "../../components/CustomError";

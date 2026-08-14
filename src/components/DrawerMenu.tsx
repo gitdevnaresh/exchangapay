@@ -54,7 +54,7 @@ import useEncryptDecrypt from "../hooks/useEncryption_Decryption";
 import CryptoServices from "../services/crypto";
 import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
 import { isErrorDispaly } from "../utils/helpers";
-import OnBoardingService from "../services/onBoardingservice";
+import OnBoardingService from "../services/onBoardingService";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");

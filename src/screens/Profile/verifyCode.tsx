@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
-  Clipboard,
   ImageBackground,
   BackHandler,
   Linking
@@ -32,6 +31,7 @@ import { isErrorDispaly } from "../../utils/helpers";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import LabelComponent from "../../components/Paragraph/label";
 import CommonPopup from "../../components/commonPopup";
+import { copyEphemeral } from "../../utils/clipboard";
 import { set } from "lodash";
 
 const VerifyCode = React.memo((props: any) => {
@@ -115,13 +115,19 @@ const VerifyCode = React.memo((props: any) => {
       setSaveLoading(false);
     }
   };
-  const copyToClipboard = async () => {
-    const text: string = extractSecretFromOTPAuthURI(data);
-    try {
-      await Clipboard.setString(text);
-    } catch (error: any) {
-      Alert.alert('Failed to copy text to clipboard:', error);
+  // N-05: the TOTP shared secret must never sit on the clipboard indefinitely.
+  // It does not expire and cannot be rotated without re-enrolment, so a copy
+  // that survives is permanent second-factor compromise (any foreground app can
+  // read the clipboard on Android 10+, and iOS syncs it via Universal
+  // Clipboard). 30 s rather than the 60 s default: the shortest window that
+  // still lets a user paste into an authenticator app.
+  const copyToClipboard = () => {
+    const text = extractSecretFromOTPAuthURI(data);
+    if (!text) {
+      Alert.alert("Copy", "Failed to copy the setup key. Please scan the QR code instead.");
+      return;
     }
+    copyEphemeral(text, "Authenticator secret", 30_000);
   };
   const dispatch = useDispatch();
   const getMemDetails = async () => {

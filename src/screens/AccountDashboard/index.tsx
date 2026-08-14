@@ -4,13 +4,13 @@ import { StyleService, useStyleSheet, TopNavigation } from "@ui-kitten/component
 import { s } from "../../constants/theme/scale";
 import { NEW_COLOR } from "../../constants/theme/variables";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import NewCard from "../Tlv_Cards/NewCard";
+import NewCard from "../TlvCards/NewCard";
 import Crypto from "./Crypto";
 import { useSelector, useDispatch } from "react-redux";
 import { TouchableWebElement } from "@ui-kitten/components/devsupport";
 import { commonStyles } from "../../components/CommonStyles";
 import { BellIcon, LogoxWhite } from "../../assets/svg";
-import CryptoCardsTransaction from "../Crypto/cryptoCardTransations/CryptoCardsTransaction";
+import CryptoCardsTransaction from "../Crypto/cryptoCardTransactions/CryptoCardsTransaction";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import NotifyAlerts from "./notifyAlerts";

@@ -18,7 +18,7 @@ import CryptoServices from "../../services/crypto";
 import SendCryptoServices from "../../services/sendcrypto";
 import QRCodeScanner from "../../components/qrScanner";
 import Authentication from "../Profile/authentication";
-import CoinsDropdown from "../Tlv_Cards/CoinsDropDown";
+import CoinsDropdown from "../TlvCards/CoinsDropDown";
 import Loadding from "../../components/skeleton";
 import { personalInfoLoader } from "../Profile/skeleton_views";
 import { Overlay } from "../../components/ui";

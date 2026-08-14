@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ReportLossStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import ReportLossComponent from '../screens/Tlv_Cards/ReportLoss';
+import ReportLossComponent from '../screens/TlvCards/ReportLoss';
  
 const Stack = createNativeStackNavigator<ReportLossStackParamList>();
 

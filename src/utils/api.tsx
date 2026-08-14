@@ -37,7 +37,7 @@
  *
  * Their call sites now go through ApiService.ts, which resolves to the live,
  * certificate-pinned first-party host. Evidence that this is the right target
- * rather than a guess: onBoardingservice.tsx already had two functions for the
+ * rather than a guess: onBoardingService.tsx already had two functions for the
  * SAME Sumsub endpoint — `sumsubToken` on the dead host and `sumsubAccessToken`
  * on ApiService — differing only in the casing of "SumSub". The migration had
  * started; it was simply never finished.

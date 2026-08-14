@@ -2,7 +2,7 @@ import React from 'react';
 
 import {CardBalanceStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import CardBalance from '../screens/Tlv_Cards/CardBalance';
+import CardBalance from '../screens/TlvCards/CardBalance';
  
 const Stack = createNativeStackNavigator<CardBalanceStackParamList>();
 

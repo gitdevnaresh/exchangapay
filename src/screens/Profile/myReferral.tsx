@@ -6,7 +6,7 @@ import { s } from '../../constants/theme/scale';
 import { referralDetailsSkelton } from "./skeleton_views";
 import ProfileService from "../../services/profile";
 import CopyCard from "../../components/CopyCard";
-import { Clipboard } from "react-native";
+import { copyEphemeral } from "../../utils/clipboard";
 import Loadding from "../../components/skeleton";
 import { useSelector } from "react-redux";
 import { formatOnlyDateLocal, isErrorDispaly } from "../../utils/helpers";
@@ -86,11 +86,8 @@ const MyReferrals = (props: any) => {
 
     };
 
-    const copyToClipboard = async () => {
-        try {
-            await Clipboard.setString(reffInfo?.referralCode);
-        } catch (error: any) {
-        }
+    const copyToClipboard = () => {
+        copyEphemeral(reffInfo?.referralCode, "Referral code");
     };
 
 

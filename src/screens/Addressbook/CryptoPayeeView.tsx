@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { SafeAreaView, ScrollView, View, TouchableOpacity, ImageBackground, Switch, Image, Dimensions, Alert, Share, BackHandler } from 'react-native';
+import { SafeAreaView, ScrollView, View, TouchableOpacity, ImageBackground, Switch, Image, Dimensions, Share, BackHandler } from 'react-native';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
 import QRCode from 'react-native-qrcode-svg';
@@ -23,7 +23,7 @@ import CommonPopup from '../../components/commonPopup';
 import DefaultButton from '../../components/DefaultButton';
 import NoDataComponent from '../../components/nodata';
 import { PayeeViewLoaders } from './constants';
-import Clipboard from '@react-native-clipboard/clipboard';
+import { copyEphemeral } from '../../utils/clipboard';
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const cryptoListImages: any = {
@@ -77,14 +77,7 @@ const PayeeDetailsView = (props: any) => {
     //     return () => BackHandler.removeEventListener("hardwareBackPress", handleGoBack);
     // }, [handleGoBack]);
 
-    const copyToClipboard = async (text: any) => {
-        try {
-            await Clipboard.setString(text);
-        } catch (error: any) {
-            Error
-            Alert.alert('Copy ', 'Failed to copy address to clipboard.');
-        }
-    };
+    const copyToClipboard = (text: any) => copyEphemeral(text, "Wallet Address");
 
     const onShare = async () => {
         try {

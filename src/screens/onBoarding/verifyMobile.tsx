@@ -6,7 +6,7 @@ import { ActivityIndicator } from 'react-native';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { ms, screenHeight } from '../../constants/theme/scale';
 import Timer from '../../components/timer';
-import OnBoardingService from '../../services/onBoardingservice';
+import OnBoardingService from '../../services/onBoardingService';
 import ErrorComponent from '../../components/Error';
 import { isErrorDispaly } from '../../utils/helpers';
 import DefaultButton from '../../components/DefaultButton';

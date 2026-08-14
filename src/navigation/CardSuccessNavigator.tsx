@@ -2,7 +2,7 @@ import React from 'react';
 
 import { CardSuccessStackParamList} from './navigation-types';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import CardSuccess from '../screens/Tlv_Cards/CardSuccess';
+import CardSuccess from '../screens/TlvCards/CardSuccess';
 import ToBeReviewedStep from '../screens/cards/ToBeReviewed';
  
 const Stack = createNativeStackNavigator<CardSuccessStackParamList>();
