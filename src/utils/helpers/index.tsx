@@ -363,6 +363,25 @@ export const checkValidationNumber = (newValue: any) => {
   return newValue;
 };
 
+
+export const toISOOrNull = (value: any): string | null => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.toISOString() : null;
+};
+
+
+export const parseDecryptedDate = (value: any): Date | null => {
+  if (!value) return null;
+  const parsed =
+    typeof value === "string" && value.includes("/")
+      ? // Only the slash shape needs the explicit format — this is the case
+        // new Date() gets wrong under Hermes.
+        dayjs(value, "YYYY/MM/DD")
+      :dayjs(new Date(value));
+  return parsed.isValid() ? parsed.toDate() : null;
+};
+
 export const formatDateTimeAPI = (date: any) => {
   if (date !== null) {
     return dayjs(new Date(date)).format("YYYY-MM-DDT00:00:00");
@@ -538,8 +557,16 @@ export const formateExpiryValidationDate = (inputDate: any): string | null => {
     typeof inputDate === "string"
       ? dayjs(inputDate, "YYYY/MM/DD")
       : dayjs(inputDate);
-  const formattedDate = parsed.format("YYYY-MM-DDTHH:mm:ss");
-  return formattedDate;
+  // dayjs' .format() on an invalid date returns the literal STRING "Invalid
+  // Date" rather than failing. That string is truthy and not "", so it walked
+  // past every `x !== ""` guard downstream and reached dayjs(x).toISOString(),
+  // which throws RangeError. Returning null instead stops the bad value at
+  // source: callers already write `... || null`, so null is the shape they
+  // expect, and `new Date(null)` is epoch rather than an Invalid Date.
+  if (!parsed.isValid()) {
+    return null;
+  }
+  return parsed.format("YYYY-MM-DDTHH:mm:ss");
 };
 
 export const formatTimestamp = (date: Date) => {

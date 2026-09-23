@@ -20,9 +20,10 @@ import {
   formatDateTimeAPI,
   formateExpiryValidationDate,
   isErrorDispaly,
+  parseDecryptedDate,
+  toISOOrNull,
 } from "../../utils/helpers";
 import ErrorComponent from "../../components/Error";
-import dayjs from "../../utils/dayjs";
 import CardsModuleService from "../../services/card";
 import { useIsFocused } from "@react-navigation/native";
 import Loadding from "../../components/skeleton";
@@ -146,7 +147,7 @@ const QuickKYCInfo = (props: any) => {
           mobile: decryptAES(response?.data?.mobile),
           postalCode: decryptAES(response?.data?.postalCode),
           mobileCode: decryptAES(response?.data?.mobileCode),
-          dob: (response.data?.dob && new Date(response.data?.dob)) || null,
+          dob: parseDecryptedDate(response.data?.dob),
           docExpiryDate:
             (decryptAES(response.data?.docExpiryDate) &&
               formateExpiryValidationDate(
@@ -169,7 +170,7 @@ const QuickKYCInfo = (props: any) => {
           mobile: decryptAES(response?.data?.mobile),
           postalCode: decryptAES(response?.data?.postalCode),
           mobileCode: decryptAES(response?.data?.mobileCode),
-          dob: (response.data?.dob && new Date(response.data?.dob)) || null,
+          dob: parseDecryptedDate(response.data?.dob),
           docExpiryDate:
             (decryptAES(response.data?.docExpiryDate) &&
               formateExpiryValidationDate(
@@ -195,7 +196,10 @@ const QuickKYCInfo = (props: any) => {
 
   const handleCustomerCardsWallet = async (values?: any) => {
     setBtnLoading(true);
-    if (values?.docExpiryDate && new Date(values?.docExpiryDate) < new Date()) {
+    const expiry = values?.docExpiryDate
+      ? parseDecryptedDate(values?.docExpiryDate)
+      : null;
+    if (values?.docExpiryDate && (!expiry || expiry < new Date())) {
       setBtnLoading(false);
       setErrormsg(CREATE_KYC_ADDRESS_CONST.EXPIRY_DATE_VALIDATION_VALIDATION);
       ref?.current?.scrollTo({ y: 0, animated: true });
@@ -203,11 +207,8 @@ const QuickKYCInfo = (props: any) => {
     }
     const formattedValues = {
       ...values,
-      dob: (values?.dob !== null && dayjs(values?.dob).toISOString()) || null,
-      docExpiryDate:
-        (values?.docExpiryDate !== "" &&
-          dayjs(values?.docExpiryDate).toISOString()) ||
-        null,
+      dob: toISOOrNull(values?.dob),
+      docExpiryDate: toISOOrNull(values?.docExpiryDate),
       faceImage: (values?.faceImage !== "" && values?.faceImage) || null,
       signature: (values?.signature !== "" && values?.signature) || null,
       profilePicBack:

@@ -132,3 +132,9 @@
     public static *** v(...);
     public static *** i(...);
 }
+
+# react-native-config reads the .env values (APP_ENV, AUTH0_*, API URLs) from
+# BuildConfig by reflection, so R8 sees no callers and strips the class. Without
+# this rule every Config value is undefined in release and the app exits at
+# launch with 'APP_ENV="undefined" is invalid'.
+-keep class com.exchangapay.tst.BuildConfig { *; }

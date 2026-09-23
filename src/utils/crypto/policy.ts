@@ -15,18 +15,22 @@
  *   1. (done) Client DECRYPT accepts 0x02. Shipping this first means the backend
  *      can start emitting GCM the moment it is ready, without waiting on an app
  *      release or on user update adoption.
- *   2. (done) Backend ships GCM encrypt + decrypt.
- *   3. (done) Flip this flag to `true` and ship. Client requests are now
- *      authenticated: every outbound field carries a tag, so a modified request
- *      is rejected by the server instead of silently decrypting to something the
- *      attacker chose. This is the step that closes H-06 for network traffic.
+ *   2. (PENDING) Backend ships GCM decrypt. The deployed `DecryptString` (the
+ *      `sk` / SecretKey path) reads only 0x01 and zero-IV — its GCM code exists
+ *      only in `DecryptClaims`, under a different key and without the AAD below.
+ *      Every 0x02 field this app sent was rejected by the server.
+ *   3. Flip this flag back to `true` and ship, only AFTER step 2 is live. Client
+ *      requests are then authenticated: every outbound field carries a tag, so a
+ *      modified request is rejected by the server instead of silently decrypting
+ *      to something the attacker chose. This is the step that closes H-06 for
+ *      network traffic.
  *   4. Backend drops 0x01 acceptance once telemetry shows no old clients left.
  *      Until then the server must keep reading BOTH formats — installs that have
  *      not updated are still sending CBC, and cutting them off logs them out.
  *
- * Do not set this back to `false` as a "safe" rollback: reads accept every
- * format on both sides, so a client on GCM and a client on CBC both work. The
- * only thing reverting achieves is putting requests back on a malleable cipher.
+ * Currently `false` so requests go out as 0x01, the format the admin web app
+ * already uses successfully against the same backend. Reads are unaffected:
+ * the app still decrypts every format, including 0x02.
  *
  * NOTE for the backend implementer: the single version byte (0x02) is passed as
  * the GCM *associated data*. It is authenticated but not encrypted. Without it,
@@ -34,7 +38,7 @@
  * unauthenticated CBC parser. In .NET this is the `associatedData` parameter of
  * `AesGcm.Encrypt` / `AesGcm.Decrypt`.
  */
-export const BACKEND_SUPPORTS_AEAD = true;
+export const BACKEND_SUPPORTS_AEAD = false;
 
 /**
  * At-rest encryption (redux-persist -> Keychain) never leaves the device, so it

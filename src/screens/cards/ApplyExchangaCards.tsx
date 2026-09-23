@@ -7,13 +7,8 @@ import {
   ScrollView,
   SafeAreaView,
   BackHandler,
-  KeyboardAvoidingView,
   Dimensions,
-  Keyboard,
-  KeyboardEvent,
-  Platform,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -28,6 +23,8 @@ import {
   formatDateTimeAPI,
   formateExpiryValidationDate,
   isErrorDispaly,
+  parseDecryptedDate,
+  toISOOrNull,
 } from "../../utils/helpers";
 import CardsModuleService from "../../services/card";
 import { ExchangeCardViewLoader } from "./CardsSkeleton_views";
@@ -37,7 +34,6 @@ import { useIsFocused } from "@react-navigation/native";
 import { Formik } from "formik";
 import { FormData, generateValidationSchema } from "./constant";
 import KycAddress from "./kycAddress";
-import dayjs from "../../utils/dayjs";
 import useMemberLogin from "../../hooks/useMemberLogin";
 import { ReviewImage } from "../../assets/svg/";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
@@ -101,8 +97,6 @@ const ApplyExchangaCard = (props: any) => {
   const [kycReqList, setKycReqList] = useState([]);
   const [btnLoader, setBtnLoader] = useState(false);
   const { encryptAES, decryptAES } = useEncryptDecrypt();
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const insets = useSafeAreaInsets();
 
   const [initialValues, setIntialValues] = useState<any>({
     firstName: "",
@@ -236,22 +230,16 @@ const ApplyExchangaCard = (props: any) => {
             mobileCode: decryptAES(
               props?.route?.params?.kycFormData?.mobileCode
             ),
-            docExpiryDate:
-              (decryptAES(props?.route?.params?.kycFormData?.docExpiryDate) &&
-                new Date(
-                  decryptAES(props?.route?.params?.kycFormData?.docExpiryDate)
-                )) ||
-              null,
+            docExpiryDate: parseDecryptedDate(
+              decryptAES(props?.route?.params?.kycFormData?.docExpiryDate)
+            ),
             emergencyContactName:
               decryptAES(
                 props?.route?.params?.kycFormData?.emergencyContactName
               ) || null,
-            docissueDate:
-              (decryptAES(props?.route?.params?.kycFormData?.docissueDate) &&
-                new Date(
-                  decryptAES(props?.route?.params?.kycFormData?.docissueDate)
-                )) ||
-              null,
+            docissueDate: parseDecryptedDate(
+              decryptAES(props?.route?.params?.kycFormData?.docissueDate)
+            ),
             expectedMonthlyVolume: props?.route?.params?.kycFormData
               ?.expectedMonthlyVolume
               ? props?.route?.params?.kycFormData?.expectedMonthlyVolume?.toString()
@@ -278,12 +266,9 @@ const ApplyExchangaCard = (props: any) => {
               decryptAES(
                 props?.route?.params?.kycFormData?.emergencyContactName
               ) || null,
-            docissueDate:
-              (decryptAES(props?.route?.params?.kycFormData?.docissueDate) &&
-                new Date(
-                  decryptAES(props?.route?.params?.kycFormData?.docissueDate)
-                )) ||
-              null,
+            docissueDate: parseDecryptedDate(
+              decryptAES(props?.route?.params?.kycFormData?.docissueDate)
+            ),
             expectedMonthlyVolume: props?.route?.params?.kycFormData
               ?.expectedMonthlyVolume
               ? props?.route?.params?.kycFormData?.expectedMonthlyVolume?.toString()
@@ -303,7 +288,7 @@ const ApplyExchangaCard = (props: any) => {
             mobile: decryptAES(response?.data?.mobile),
             postalCode: decryptAES(response?.data?.postalCode),
             mobileCode: decryptAES(response?.data?.mobileCode),
-            dob: (response.data?.dob && new Date(response.data?.dob)) || null,
+            dob: parseDecryptedDate(response.data?.dob),
             emergencyContactName:
               decryptAES(response.data?.emergencyContactName) || null,
             docExpiryDate:
@@ -315,10 +300,9 @@ const ApplyExchangaCard = (props: any) => {
             idType:
               (response?.data?.idType === null && "passport") ||
               response?.data?.idType,
-            docissueDate:
-              (decryptAES(response?.data?.docissueDate) &&
-                new Date(decryptAES(response.data?.docissueDate))) ||
-              null,
+            docissueDate: parseDecryptedDate(
+              decryptAES(response?.data?.docissueDate)
+            ),
             expectedMonthlyVolume: response?.data?.expectedMonthlyVolume
               ? response?.data?.expectedMonthlyVolume?.toString()
               : "",
@@ -337,7 +321,7 @@ const ApplyExchangaCard = (props: any) => {
             mobile: decryptAES(response?.data?.mobile),
             postalCode: decryptAES(response?.data?.postalCode),
             mobileCode: decryptAES(response?.data?.mobileCode),
-            dob: (response.data?.dob && new Date(response.data?.dob)) || null,
+            dob: parseDecryptedDate(response.data?.dob),
             emergencyContactName:
               decryptAES(response.data?.emergencyContactName) || null,
             docExpiryDate:
@@ -349,12 +333,9 @@ const ApplyExchangaCard = (props: any) => {
             idType:
               (response?.data?.idType === null && "passport") ||
               response?.data?.idType,
-            docissueDate:
-              (decryptAES(props?.route?.params?.kycFormData?.docissueDate) &&
-                new Date(
-                  decryptAES(props?.route?.params?.kycFormData?.docissueDate)
-                )) ||
-              null,
+            docissueDate: parseDecryptedDate(
+              decryptAES(props?.route?.params?.kycFormData?.docissueDate)
+            ),
             expectedMonthlyVolume: response.data?.expectedMonthlyVolume
               ? response.data?.expectedMonthlyVolume?.toString()
               : "",
@@ -378,15 +359,9 @@ const ApplyExchangaCard = (props: any) => {
   const handleRedirectToExchangeCard = async (values?: any) => {
     const formattedValues = {
       ...values,
-      dob: (values?.dob !== null && dayjs(values?.dob).toISOString()) || null,
-      docExpiryDate:
-        (values?.docExpiryDate !== "" &&
-          dayjs(values?.docExpiryDate).toISOString()) ||
-        null,
-      docissueDate:
-        (values?.docissueDate !== "" &&
-          dayjs(values?.docissueDate).toISOString()) ||
-        null,
+      dob: toISOOrNull(values?.dob),
+      docExpiryDate: toISOOrNull(values?.docExpiryDate),
+      docissueDate: toISOOrNull(values?.docissueDate),
       faceImage: (values?.faceImage !== "" && values?.faceImage) || null,
       signature: (values?.signature !== "" && values?.signature) || null,
       profilePicBack:

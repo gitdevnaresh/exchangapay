@@ -17,7 +17,12 @@ const initialState: AuthState = {
 const deepSerialize = (obj: any): any => {
   if (obj === null || obj === undefined) return obj;
   if (typeof obj !== "object") return obj;
-  if (obj instanceof Date) return obj.toISOString();
+  // An Invalid Date is still `instanceof Date`, and .toISOString() throws on
+  // one. This line sits ABOVE the try/catch below, so that throw was not caught
+  // and a single bad date anywhere in auth state took the whole persist down.
+  if (obj instanceof Date) {
+    return isNaN(obj.getTime()) ? null : obj.toISOString();
+  }
   if (Array.isArray(obj)) return obj.map(deepSerialize);
 
   // For objects, try JSON serialization first (safer for redux-persist)

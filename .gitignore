@@ -145,6 +145,7 @@ dist
 #   ios/GoogleService-Info.plist
 android/app/google-services.json
 ios/GoogleService-Info.plist
+android/app/src/*/google-services.json
 
 # TernJS port file
 .tern-port

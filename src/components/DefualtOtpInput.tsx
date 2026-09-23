@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, TextInput, StyleSheet, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
 import Text from './Text'; // Assuming './Text' is a valid custom component
 import { NEW_COLOR } from '../constants/theme/variables'; // Assuming these are valid imports
 import { text } from '../constants/theme/mixins';
@@ -108,6 +108,7 @@ const DefaultOtpInput: React.FC<OtpEntryProps> = ({
                         value={value?.[i] || ''}
                         onChangeText={(text) => handleChange(text, i)}
                         onKeyPress={(e) => handleKeyPress(e, i)}
+                        selectTextOnFocus
                         // *** CRITICAL FIX FOR PASTING ***
                         // The first input can accept the full length of the OTP for pasting.
                         // Subsequent inputs only accept 1 character.
@@ -136,6 +137,13 @@ const styles = StyleSheet.create({
         width: s(45),
         height: s(46),
         textAlign: 'center',
+        textAlignVertical: 'center',
+        // Android adds default padding + font padding to TextInput, which shifts
+        // the digit up/down inside the small box on real devices.
+        padding: 0,
+        paddingVertical: 0,
+        paddingHorizontal: 0,
+        includeFontPadding: false,
         fontSize: s(20),
         fontWeight: '500',
         backgroundColor: '#463C4D',
