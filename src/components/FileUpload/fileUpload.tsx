@@ -25,6 +25,7 @@ import { isErrorDispaly } from '../../utils/helpers';
 import { downloadImage } from '../../utils/tools';
 import { Container } from '../index';
 import OverlayPopup from '../../screens/cards/SelectPopup';
+import { REMOTE_ASSETS } from '../../constants';
 
 type Props = {
     onUploadSuccess: (file: {
@@ -181,7 +182,7 @@ const CommonUploadAttachment = ({ onUploadSuccess, uploadApi }: Props) => {
 
                 {!loadingState.attchmentLoadibng && !previewUri && (
                     <SvgFromUri
-                        uri="https://prdexchangapaystorage.blob.core.windows.net/images/upload.svg"
+                        uri={REMOTE_ASSETS.upload}
                         width={s(120)}
                         height={s(120)}
                     />

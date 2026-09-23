@@ -22,6 +22,7 @@ import useLogout from '../../hooks/useLogOut';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import { log } from '../../utils/logger';
 import { sanitizeNotesHtml } from '../../security';
+import { REMOTE_ASSETS } from '../../constants';
 
 const SuspectedFraud = () => {
     const styles = useStyleSheet(themedStyles);
@@ -99,7 +100,7 @@ const SuspectedFraud = () => {
                 <Container style={commonStyles.container}>
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
                         <SvgUri
-                            uri={REGISTRATION_CONSTATNTS.EXCHANGAPAY_LOGO}
+                            uri={REMOTE_ASSETS.logoOrange}
                             width={s(61)}
                             height={s(56)}
                         />

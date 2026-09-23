@@ -17,6 +17,7 @@ import Badge from "../../../components/badge/badge";
 import SvgFromUrl from "../../../components/svgIcon";
 import ConsumeTransactionDetails from "./ConsumeTransactionDetails";
 import { LIST_PERF_PAGINATED } from "../../../constants/listPerformance";
+import { REMOTE_ASSETS } from '../../../constants';
 
 
 // Hoisted out of the component: it is a constant lookup table, and rebuilding
@@ -145,7 +146,7 @@ const EXChangaTransactionHistory = React.memo((props: any) => {
       else if (currencyType === "Crypto") actionKey = "TopupCrypto";
     }
     if (iconsByName.size > 0) {
-      return iconsByName.get(actionKey) || "https://swokistoragespace.blob.core.windows.net/images/send.svg";
+      return iconsByName.get(actionKey) || REMOTE_ASSETS.send;
     }
     return undefined;
   }, [iconsByName]);

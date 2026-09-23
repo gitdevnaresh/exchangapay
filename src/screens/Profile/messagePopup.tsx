@@ -17,6 +17,7 @@ import ErrorComponent from '../../components/Error';
 import { SvgUri } from 'react-native-svg';
 import { sanitizeNotesHtml } from '../../security';
 import { log } from '../../utils/logger';
+import { REMOTE_ASSETS } from '../../constants';
 
 
 const MessagePopUp = (props: any) => {
@@ -106,7 +107,7 @@ const MessagePopUp = (props: any) => {
 
                 <View >
                   <SvgUri
-                    uri={"https://prdexchangapaystorage.blob.core.windows.net/images/logox_orange.svg"}
+                    uri={REMOTE_ASSETS.logoOrange}
                     width={s(61)}
                     height={s(55)}
                   />

@@ -22,6 +22,7 @@ import CardsModuleService from '../../services/card';
 import { log } from '../../utils/logger';
 import { sanitizeNotesHtml } from '../../security';
 import { LIST_PERF_PAGINATED } from '../../constants/listPerformance';
+import { REMOTE_ASSETS } from '../../constants';
 
 const Notifications = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -151,7 +152,7 @@ const Notifications = React.memo((props: any) => {
     const getIconUrl = (action: string) => {
         let actionKey = action?.trim()
         const icon = iconsList?.find(iconItem => actionKey?.toLowerCase()?.includes(iconItem.name?.toLowerCase()));
-        return icon && icon.logo || "https://swokistoragespace.blob.core.windows.net/images/withdraw.svg";
+        return icon && icon.logo || REMOTE_ASSETS.withdraw;
     };
 
     // P-02: getAllNotification() is unpaginated, so this list is as long as the
@@ -170,7 +171,7 @@ const Notifications = React.memo((props: any) => {
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap12, commonStyles.flex1]}>
                             <View style={[styles.circle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter]}>
                                 <SvgFromUrl
-                                    uri={"https://swokistoragespace.blob.core.windows.net/images/Notifications-icon.svg"}
+                                    uri={REMOTE_ASSETS.notifications}
                                     width={s(26)}
                                     height={s(24)}
 

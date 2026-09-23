@@ -24,13 +24,14 @@ import DefaultButton from '../../components/DefaultButton';
 import NoDataComponent from '../../components/nodata';
 import { PayeeViewLoaders } from './constants';
 import { copyEphemeral } from '../../utils/clipboard';
+import { REMOTE_ASSETS } from '../../constants';
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
 const cryptoListImages: any = {
     BTC: Images?.coins?.coinbtc,
     ETH: Images?.coins?.coineth,
-    USDT: "https://prdexchangapaystorage.blob.core.windows.net/images/usdt.svg",
-    USDC: "https://prdexchangapaystorage.blob.core.windows.net/images/usdc.svg",
+    USDT: REMOTE_ASSETS.usdt,
+    USDC: REMOTE_ASSETS.usdc,
 
 };
 

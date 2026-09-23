@@ -26,6 +26,7 @@ import CommonPopup from '../../components/commonPopup';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import OnBoardingService from '../../services/onBoardingService';
 import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
+import { REMOTE_ASSETS } from '../../constants';
 
 
 const RigistrationReferral = () => {
@@ -201,7 +202,7 @@ const RigistrationReferral = () => {
 
                                 <View >
                                     <SvgUri
-                                        uri={"https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg"}
+                                        uri={REMOTE_ASSETS.logoOrange}
                                         width={s(61)}
                                         height={s(55)}
                                     />

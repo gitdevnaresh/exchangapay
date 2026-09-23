@@ -26,6 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RenderHTML from "react-native-render-html";
 import { log } from "../../utils/logger";
 import { sanitizeNotesHtml } from "../../security";
+import { REMOTE_ASSETS } from "../../constants";
 
 const UnderReview = () => {
   const styles = useStyleSheet(themedStyles);
@@ -126,7 +127,7 @@ const UnderReview = () => {
             ]}
           >
             <SvgUri
-              uri={REGISTRATION_CONSTATNTS.EXCHANGAPAY_LOGO}
+              uri={REMOTE_ASSETS.logoOrange}
               width={s(61)}
               height={s(56)}
             />

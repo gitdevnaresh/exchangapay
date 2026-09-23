@@ -32,6 +32,7 @@ import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import useSendUserWebhook from "../../hooks/useSendUserWebhook";
 import useLogout from "../../hooks/useLogOut";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { REMOTE_ASSETS } from "../../constants";
 
 const AddUserDetails = (props: any) => {
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
@@ -98,7 +99,7 @@ const AddUserDetails = (props: any) => {
             >
               <View>
                 <SvgUri
-                  uri={USER_CONSTANTS?.EXCHANGAPAY_LOGO}
+                  uri={REMOTE_ASSETS.logoOrange}
                   width={s(61)}
                   height={s(55)}
                 />

@@ -30,6 +30,7 @@ import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
 import OnBoardingService from '../../services/onBoardingService';
 import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
+import { REMOTE_ASSETS } from '../../constants';
 const PhoneOtpVerification = () => {
     const [errorMsg, setErrorMsg] = useState<any>('');
     const [resendTimer, setResendTimer] = useState(0);
@@ -277,7 +278,7 @@ const PhoneOtpVerification = () => {
                             }
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
                                 <SvgUri
-                                    uri={REGISTRATION_CONSTATNTS.EXCHANGAPAY_LOGO}
+                                    uri={REMOTE_ASSETS.logoOrange}
                                     width={s(61)}
                                     height={s(56)}
                                 />

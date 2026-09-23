@@ -22,6 +22,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { downloadImage } from '../../../../../utils/tools';
 import { SvgFromUri } from 'react-native-svg';
+import { REMOTE_ASSETS } from '../../../../../constants';
 
 const messageValidationSchema = Yup.object().shape({
   reply: Yup.string().trim().required("Is Required"),
@@ -391,7 +392,7 @@ const SendReplay = (props: any) => {
 
                             <SvgFromUri
                               style={[commonStyles.mxAuto, commonStyles.myAuto, { borderRadius: 16, }]}
-                              uri={"https://prdexchangapaystorage.blob.core.windows.net/images/uploadicon.svg"}
+                              uri={REMOTE_ASSETS.uploadIcon}
                               width={s(120)}
                               height={s(120)}
                             />

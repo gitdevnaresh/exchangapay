@@ -22,6 +22,7 @@ import { fcmNotification } from '../../utils/FCMNotification';
 import { useAuth0 } from 'react-native-auth0';
 import DeviceInfo from 'react-native-device-info';
 import { isSumsubKyc } from '../../../Environment';
+import { REMOTE_ASSETS } from '../../constants';
 
 
 const ChooseAccountType = React.memo((props: any) => {
@@ -163,7 +164,7 @@ const ChooseAccountType = React.memo((props: any) => {
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
                                 <View >
                                     <SvgUri
-                                        uri={ACCOUNT_CONSTATNTS.EXCHNAGAPAY_LOGO}
+                                        uri={REMOTE_ASSETS.logoOrange}
                                         width={s(61)}
                                         height={s(55)}
                                     />

@@ -15,6 +15,7 @@ import {
     CARD_HTML_WEBVIEW_PROPS,
     isCardHtmlNavigationAllowed,
 } from "../../security";
+import { REMOTE_ASSETS } from "../../constants";
 
 
 const CardPin = React.memo((props: any) => {
@@ -48,10 +49,10 @@ const CardPin = React.memo((props: any) => {
                 </View>
                 <View style={[styles.greybg, commonStyles.p16]}>
 
-                    <SvgUri width={WINDOW_WIDTH / 2} style={[commonStyles.mxAuto, commonStyles.mb10]} uri={"https://swokistoragespace.blob.core.windows.net/images/card_holding.svg"} />
+                    <SvgUri width={WINDOW_WIDTH / 2} style={[commonStyles.mxAuto, commonStyles.mb10]} uri={REMOTE_ASSETS.cardHolding} />
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                            <SvgUri width={36} height={36} uri={"https://swokistoragespace.blob.core.windows.net/images/card_orange.svg"} />
+                            <SvgUri width={36} height={36} uri={REMOTE_ASSETS.cardOrange} />
                             <ParagraphComponent text={"Card Number"} style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textGrey]} />
                         </View>
                         <ParagraphComponent text={getPin?.cardNumber} style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textBlack]} />
@@ -59,7 +60,7 @@ const CardPin = React.memo((props: any) => {
                     <View style={[commonStyles.hLineSolid, commonStyles.mx10]} />
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8]}>
-                            <SvgUri width={36} height={36} uri={"https://swokistoragespace.blob.core.windows.net/images/pinshow.svg"} />
+                            <SvgUri width={36} height={36} uri={REMOTE_ASSETS.pinShow} />
                             <ParagraphComponent text={"Pin Number"} style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textGrey]} />
                         </View>
                         <ParagraphComponent text={getPin?.pin} style={[commonStyles.fs16, commonStyles.fw500, commonStyles.textBlack]} />

@@ -1,10 +1,11 @@
 import * as Yup from "yup";
+import { REMOTE_ASSETS } from '../../constants';
 export const CONSTANTS = {
     SPLASH_SCREEN: "SplashScreen",
     APPROVED: "Approved",
     DASHBOARD: "Dashboard",
     TRANSPARENT: "transparent",
-    EXCHNAGE_LOGO: "https://swokistoragespace.blob.core.windows.net/images/logox_white.svg",
+    EXCHNAGE_LOGO: REMOTE_ASSETS.logoWhite,
     EXCHANGA_PAY: "Exchanga Pay",
     DRAWER_MODEL: 'DrawerModal',
     COVER: "cover",
@@ -23,7 +24,7 @@ export const REFERRAL_CONSTANTS = {
     IS_REQUIRED: "Is Required",
     DASHBOARD: "Dashboard",
     HANDLED: "handled",
-    EXCHANGAPAY_LOGO: "https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg",
+    EXCHANGAPAY_LOGO: REMOTE_ASSETS.logoOrange,
     EXCHANGA_PAY: 'Exchanga Pay',
     ENTER_YOUR_REFFERAL_CODE: "Enter  Your Referral Code",
     REQUIRED_STAR: ' *',
@@ -58,7 +59,6 @@ export const REGISTRATION_CONSTATNTS = {
     SUCCESSFULLY: "SuccessFully",
     RESEND_OTP: "Resend OTP",
     EXCHANGA_PAY: 'Exchanga Pay',
-    EXCHANGAPAY_LOGO: "https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg",
     COMPLETE_YOUR_PROFILE: "Complete your profile",
     BUSINESS: 'Business',
     FIRST_NAME: 'First Name',
@@ -88,7 +88,7 @@ export const REGISTRATION_CONSTATNTS = {
 };
 
 export const EMAIL_CONSTANTS = {
-    EXCHANGAPAY_LOGO: "https://swokistoragespace.blob.core.windows.net/images/success_image.png",
+    EXCHANGAPAY_LOGO: REMOTE_ASSETS.success,
     VERIFY_YOUR_EMAIL: " Verify your email !",
     SMALL: 'small',
     WE_HAVE_SENT_A_VERIFICATION_LINK_TO_YOUR_EMAIL_PLEASE_CHECK_YOUR_INBOX_AND_CLICK_THE_LINK_TO_VERIFY_YOUR_EMAIL_ADDRESS_THANK_YOU: "We’ve sent a verification link to your email. Please check your inbox and click the link to verify your email address. Thank you!",
@@ -100,7 +100,7 @@ export const EMAIL_CONSTANTS = {
 };
 
 export const ACCOUNT_CONSTATNTS = {
-    EXCHNAGAPAY_LOGO: "https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg",
+    EXCHNAGAPAY_LOGO: REMOTE_ASSETS.logoOrange,
     EXCHNAGA_PAY: 'Exchanga Pay',
     PERSONAL: "Personal",
     REGISTRATION_REFERRAL: "rigistrationreferral",
@@ -123,7 +123,7 @@ export const USER_CONSTANTS = {
     AGE_VALIDATION: "You must be at least 18 years old",
     CONFIRM_BUTTON: "Confirm and Continue",
     NAVIGATION_TARGET: "NextScreen",
-    EXCHANGAPAY_LOGO: "https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg",
+    EXCHANGAPAY_LOGO: REMOTE_ASSETS.logoOrange,
     EXCHANGA_PAY: "Exchanga Pay",
     ENTER_FIRST_NAME: "Enter Your First Name",
     ENTER_LAST_NAME: "Enter Your Last Name",

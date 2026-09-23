@@ -24,6 +24,7 @@ import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { REMOTE_ASSETS } from '../../constants';
 
 
 const VerifyEmail = () => {
@@ -121,7 +122,7 @@ const VerifyEmail = () => {
 
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto, commonStyles.mb43]}>
                         <SvgUri
-                            uri={"https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg"}
+                            uri={REMOTE_ASSETS.logoOrange}
                             width={s(61)}
                             height={s(55)}
                         />
@@ -136,7 +137,7 @@ const VerifyEmail = () => {
                         <View style={[styles.textCenter, styles.auto, styles.dFlex, styles.justifyContentCenter,]}>
                             <Image
                                 style={{ height: s(100), width: s(100) }}
-                                source={{ uri: EMAIL_CONSTANTS.EXCHANGAPAY_LOGO }}
+                                source={{ uri: REMOTE_ASSETS.success }}
                             />
 
 

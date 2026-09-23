@@ -25,6 +25,7 @@ import { EditIcon } from '../../assets/svg';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { REGISTRATION_CONSTATNTS } from './constants';
 import useMemberLogin from '../../hooks/useMemberLogin';
+import { REMOTE_ASSETS } from '../../constants';
 
 const RigisterCustomer = (props: any) => {
     const fname = useRef(null);
@@ -365,7 +366,7 @@ const RigisterCustomer = (props: any) => {
                             <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.mxAuto]}>
                                 <View >
                                     <SvgUri
-                                        uri={"https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg"}
+                                        uri={REMOTE_ASSETS.logoOrange}
                                         width={s(61)}
                                         height={s(55)}
                                     />
