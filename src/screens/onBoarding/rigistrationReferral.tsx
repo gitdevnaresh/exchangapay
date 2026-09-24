@@ -7,8 +7,7 @@ import { NEW_COLOR } from "../../constants/theme/variables";
 import DefaultButton from "../../components/DefaultButton";
 import { isErrorDispaly } from '../../utils/helpers';
 import ErrorComponent from '../../components/Error';
-import { useDispatch, useSelector } from 'react-redux';
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useSelector } from 'react-redux';
 import { commonStyles } from '../../components/CommonStyles';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import LabelComponent from '../../components/Paragraph/label';
@@ -18,30 +17,23 @@ import { SvgUri } from 'react-native-svg';
 import TextInputField from '../../components/textInput';
 import { EMAIL_CONSTANTS, REFERRAL_CONSTANTS } from './constants';
 import useMemberLogin from '../../hooks/useMemberLogin';
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import DeviceInfo from 'react-native-device-info';
-import { fcmNotification } from '../../utils/FCMNotification';
-import { useAuth0 } from 'react-native-auth0';
 import CommonPopup from '../../components/commonPopup';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
-import OnBoardingService from '../../services/onBoardingService';
-import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 import { REMOTE_ASSETS } from '../../constants';
+import useLogout from '../../hooks/useLogOut';
 
 
 const RigistrationReferral = () => {
     const styles = useStyleSheet(themedStyles);
     const [errormsg, setErrormsg] = useState<string>("");
     const userprofile = useSelector((state: any) => state.UserReducer?.userInfo);
-    const navigation = useNavigation<any>();
+    const { logout } = useLogout();
     const [saveLoading, setSaveLoading] = useState<boolean>(false);
     const [customerName, setCustomerName] = useState<string>("");
     const [referralCode, setReferralCode] = useState<string | number>("");
     const [requiredMsg, setRequiredMsg] = useState("");
     const [isValid, setIsValid] = useState<any>(null);
     const { getMemDetails } = useMemberLogin();
-    const { clearSession } = useAuth0();
-    const dispatch = useDispatch();
     const [popupVisible, setPopupVisible] = useState<boolean>(false);
     const [referral, setReferral] = useState<any>({
         isReferralMandatory: userprofile?.isReferralMandatory,
@@ -75,35 +67,8 @@ const RigistrationReferral = () => {
 
     };
 
-    const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-            "id": "",
-            "state": "",
-            "countryName": "",
-            "ipAddress": ip,
-            "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-        }
-        const actionRes = await AuthService.logOutLog(obj);
-
-    }
     const handleLgout = async () => {
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        const response = await OnBoardingService.updateFcmToken();
-        // H-11: clear every keychain service, not the two this path happened to know about.
-        await clearAllSecureEntries();
-        logOutLogData()
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
-
+        await logout();
     };
 
 

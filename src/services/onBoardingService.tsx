@@ -1,7 +1,7 @@
 
 import { webhookHttp } from "../utils/thirdPartyHttp";
 import { get, post } from '../utils/ApiService';
-import { fcmNotification } from '../utils/FCMNotification';
+import messaging from '@react-native-firebase/messaging';
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from '../security';
 const WEBHOOK_URL = "https://hook.eu2.make.com/glekogomi355qvg7u888kc9rs6clvise";
 const OnBoardingService = {
@@ -57,9 +57,12 @@ const OnBoardingService = {
         return response
     },
     updateFcmToken: async () => {
-        const token = fcmNotification.createtoken((token: string) => {
-            return token;
-        })
+        let token: string | undefined;
+        try {
+            token = await messaging().getToken();
+        } catch {
+            token = undefined;
+        }
         const data = post(`/api/v1/Notification/DeleteUserToken`, { token: token });
         return data
 

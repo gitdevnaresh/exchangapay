@@ -7,22 +7,20 @@ import { commonStyles } from '../../components/CommonStyles';
 import { SvgUri } from 'react-native-svg';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import AuthService from '../../services/auth';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 import { isErrorDispaly } from '../../utils/helpers';
 import { AccountType, CustomerAccount, LoadersState } from './rigistrationInterfaces';
-import { ACCOUNT_CONSTATNTS, EMAIL_CONSTANTS } from './constants';
+import { ACCOUNT_CONSTATNTS } from './constants';
 import DefaultButton from '../../components/DefaultButton';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import Loadding from '../../components/skeleton';
 import { accountTypeSkelton } from '../Crypto/buySkeleton_views';
 import NoDataComponent from '../../components/nodata';
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import { fcmNotification } from '../../utils/FCMNotification';
-import { useAuth0 } from 'react-native-auth0';
-import DeviceInfo from 'react-native-device-info';
+import { setUserInfo } from '../../redux/Actions/UserActions';
 import { isSumsubKyc } from '../../../Environment';
 import { REMOTE_ASSETS } from '../../constants';
+import useLogout from '../../hooks/useLogOut';
 
 
 const ChooseAccountType = React.memo((props: any) => {
@@ -31,7 +29,7 @@ const ChooseAccountType = React.memo((props: any) => {
     const [selectedAccount, setSelectedAccount] = useState<AccountType>({ accountType: "", cardType: "", description: "", account: "" });
     const [loaders, setLoaders] = useState<LoadersState>({ isAccountSelected: false, isBtnLoading: false, isDataLoading: false });
     const [accountTypesLists, setAccountTypesList] = useState<AccountType[]>([]);
-    const { clearSession } = useAuth0();
+    const { logout } = useLogout();
     const dispatch = useDispatch<any>();
     const accountSkeltons = accountTypeSkelton(2);
     useEffect(() => {
@@ -125,33 +123,8 @@ const ChooseAccountType = React.memo((props: any) => {
     };
 
 
-    const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-            "id": "",
-            "state": "",
-            "countryName": "",
-            "ipAddress": ip,
-            "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-        }
-        const actionRes = await AuthService.logOutLog(obj);
-
-    };
-
-
     const handleLgout = async () => {
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        logOutLogData()
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
+        await logout();
     };
 
 

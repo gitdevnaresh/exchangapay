@@ -3,28 +3,20 @@ import { View } from 'react-native';
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import { useDispatch } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
-import { useAuth0 } from "react-native-auth0";
 import ParagraphComponent from '../../components/Paragraph/Paragraph'
 import { commonStyles } from '../../components/CommonStyles';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { CONSTANTS } from './constants';
+import useLogout from '../../hooks/useLogOut';
 const ActionRestricted = () => {
   const styles = useStyleSheet(themedStyles);
-  const dispatch = useDispatch();
-  const navigation = useNavigation<any>();
-  const { clearSession } = useAuth0();
+  const { logout } = useLogout();
 
 
 
   const handleLgout = async () => {
-    dispatch(setUserInfo(""));
-    dispatch(isLogin(false));
-    await clearSession();
-    navigation.navigate(CONSTANTS.SPLASH_SCREEN);
+    await logout();
   };
 
 

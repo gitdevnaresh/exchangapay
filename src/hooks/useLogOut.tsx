@@ -8,20 +8,41 @@ import AuthService from "../services/auth";
 import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
 import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
+import { readRefreshToken } from "../utils/storage/authTokens";
 import OnBoardingService from "../services/onBoardingService";
 import { clearDecryptCache } from "./useEncryption_Decryption";
 import { clearAttestationToken, clearBiometricKeys, clearCachedAppLock } from "../security";
 import { persistor } from "../store";
 import { rotatePersistKey } from "../utils/crypto/persistKey";
+import { log } from "../utils/logger";
 
 
 interface LogoutOptions {
     clearCookies?: boolean;
 }
 
+const LOGOUT_NETWORK_TIMEOUT_MS = 5000;
+
+const withTimeout = <T,>(promise: Promise<T>, ms = LOGOUT_NETWORK_TIMEOUT_MS): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("timeout")), ms);
+        promise.then(
+            value => { clearTimeout(timer); resolve(value); },
+            error => { clearTimeout(timer); reject(error); },
+        );
+    });
+
+const attempt = async (label: string, work: () => Promise<unknown> | unknown) => {
+    try {
+        await work();
+    } catch (error: any) {
+        log.warn("[logout] step failed; continuing", { step: label, error: error?.message });
+    }
+};
+
 const useLogout = () => {
     const dispatch = useDispatch();
-    const { clearSession } = useAuth0();
+    const { clearCredentials, revokeRefreshToken } = useAuth0();
     const navigation = useNavigation<any>();
     const { userInfo } = useSelector((state: any) => state.UserReducer);
 
@@ -40,47 +61,49 @@ const useLogout = () => {
 
     const logout = async (options?: LogoutOptions) => {
         const { clearCookies = true } = options || {};
-        if (clearCookies) {
-            await Cookies.clearAll();
-        };
-        // Drop memoized plaintext so decrypted PII does not outlive the session
-        clearDecryptCache();
-        // H-04: the attestation token is bound to this device/session, not to
-        // whoever signs in next.
-        clearAttestationToken();
-        // H-14: the biometric key pair is registered against one account. The
-        // next person to sign in on this handset must not inherit it.
-        await clearBiometricKeys();
-        // The app-open lock is a per-account setting; the next user signing in
-        // on this handset gets their own, not this one's.
-        await clearCachedAppLock();
-        // Clear Redux state
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        await clearSession();
-        const response = await OnBoardingService.updateFcmToken();
-        if (userInfo) {
-            await logOutLogData();
+        try {
+            await attempt("fcmToken", () => withTimeout(OnBoardingService.updateFcmToken()));
+            if (userInfo) {
+                await attempt("logoutLog", () => withTimeout(logOutLogData()));
+            }
+            await attempt("revokeRefreshToken", async () => {
+                const { status, value } = await readRefreshToken();
+                if (status === "ok" && value) {
+                    await withTimeout(revokeRefreshToken({ refreshToken: value }));
+                }
+            });
+        } finally {
+            // Drop memoized plaintext so decrypted PII does not outlive the session
+            clearDecryptCache();
+            // The attestation token belongs to this session, not the next user.
+            clearAttestationToken();
+            await attempt("auth0Credentials", clearCredentials);
+            // Clears every Keychain service listed in keychainPolicy.ts.
+            await attempt("secureEntries", clearAllSecureEntries);
+            await attempt("persistPurge", () => persistor.purge());
+            // Rotate after the purge so any leftover copy becomes unreadable.
+            await attempt("persistKey", rotatePersistKey);
+            // The biometric key pair must not carry over to the next user.
+            await attempt("biometricKeys", clearBiometricKeys);
+            // The app-open lock is a per-account setting.
+            await attempt("appLockCache", clearCachedAppLock);
+
+            if (clearCookies) {
+                await attempt("cookies", () => Cookies.clearAll());
+                await attempt("webkitCookies", () => Cookies.clearAll(true));
+            }
+
+            // Clear Redux state
+            dispatch(setUserInfo(""));
+            dispatch(isLogin(false));
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: DRAWER_CONSTATNTS.SPLASH_SCREEN }],
+                })
+            );
+            await attempt("fcmUnregister", () => fcmNotification.unRegister());
         }
-        // H-05 / H-11: logout previously reset two Keychain services and left
-        // the rest behind, so the member record, the persisted state blob, its
-        // encryption key and the chat identifiers all survived sign-out and
-        // lived on until the next login happened to overwrite them. One call,
-        // driven by the inventory in keychainPolicy.ts, so a service added
-        // later is cleared without anyone remembering to come back here.
-        await clearAllSecureEntries();
-        await persistor.purge();
-        // Rotate after the purge: if the purge is interrupted, or a copy of the
-        // blob survives in a backup or a forensic image, the leftovers become
-        // unreadable rather than merely deleted.
-        await rotatePersistKey();
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: DRAWER_CONSTATNTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
     };
 
     return { logout };

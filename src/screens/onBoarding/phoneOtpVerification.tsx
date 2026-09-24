@@ -15,34 +15,26 @@ import { NEW_COLOR } from '../../constants/theme/variables';
 import DefaultButton from '../../components/DefaultButton';
 import { StyleService } from '@ui-kitten/components';
 import AuthService from '../../services/auth';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import InputDefault from '../../components/DefaultFiat';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useAuth0 } from 'react-native-auth0';
 import { EMAIL_CONSTANTS, REGISTRATION_CONSTATNTS } from './constants';
 import DefaultOtpInput from '../../components/DefualtOtpInput';
 import useMemberLogin from '../../hooks/useMemberLogin';
-import DeviceInfo from 'react-native-device-info';
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import { fcmNotification } from '../../utils/FCMNotification';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
-import OnBoardingService from '../../services/onBoardingService';
-import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 import { REMOTE_ASSETS } from '../../constants';
+import useLogout from '../../hooks/useLogOut';
 const PhoneOtpVerification = () => {
     const [errorMsg, setErrorMsg] = useState<any>('');
     const [resendTimer, setResendTimer] = useState(0);
     const [isOtpScreen, setIsOtpScreen] = useState(false); // State to toggle between phone number and OTP fields
     const timerInterval = useRef<any>(null);
-    const navigation = useNavigation<any>();
+    const { logout } = useLogout();
     const [initialValues, setInitValues] = useState<any>({ phoneNumber: '', phoneCode: '', phoneOTP: '' });
     const [countryCodelist, setCountryCodelist] = useState<any>([]);
     const userprofile = useSelector((state: any) => state.UserReducer?.userInfo);
     const { getMemDetails } = useMemberLogin();
-    const dispatch = useDispatch();
-    const { clearSession } = useAuth0();
     const { encryptAES, decryptAES } = useEncryptDecrypt();
     const { sendWebhook } = useSendUserWebhook();
     const formikRef = useRef<FormikProps<any>>(null);
@@ -221,35 +213,8 @@ const PhoneOtpVerification = () => {
         .toString()
         .padStart(2, '0')}`;
 
-    const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-            "id": "",
-            "state": "",
-            "countryName": "",
-            "ipAddress": ip,
-            "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-        }
-        const actionRes = await AuthService.logOutLog(obj);
-
-    };
-
     const handleLgout = async () => {
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        const response = await OnBoardingService.updateFcmToken();
-        // H-11: clear every keychain service, not the two this path happened to know about.
-        await clearAllSecureEntries();
-        logOutLogData()
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
+        await logout();
     };
 
     const onChangePhoneCode = (setFieldValue: any, values: any) => {

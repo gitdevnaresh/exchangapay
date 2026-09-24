@@ -6,25 +6,19 @@ import OnBoardingService from '../../services/onBoardingService';
 import { isErrorDispaly } from '../../utils/helpers';
 import ErrorComponent from '../../components/Error';
 import { ms, s, screenHeight } from '../../constants/theme/scale';
-import { useDispatch, useSelector } from 'react-redux';
-import AuthService from '../../services/auth';
-import { isLogin, setUserInfo } from "../../redux/Actions/UserActions";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useSelector } from 'react-redux';
 import DefaultButton from "../../components/DefaultButton";
 import { commonStyles } from '../../components/CommonStyles';
-import { fcmNotification } from '../../utils/FCMNotification';
-import { useAuth0 } from 'react-native-auth0';
-import DeviceInfo from 'react-native-device-info';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { EMAIL_CONSTANTS, REGISTRATION_CONSTATNTS, USER_CONSTANTS } from './constants';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import CommonPopup from '../../components/commonPopup';
 import { SvgUri } from 'react-native-svg';
-import { clearAllSecureEntries } from "../../utils/storage/keychainPolicy";
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { REMOTE_ASSETS } from '../../constants';
+import useLogout from '../../hooks/useLogOut';
 
 
 const VerifyEmail = () => {
@@ -32,11 +26,9 @@ const VerifyEmail = () => {
     const [errorMsg, setErrorMsg] = useState<string>('');
     const [loadMail, setLoadMail] = useState<boolean>(false);
     const email = useSelector((state: any) => state.UserReducer?.userInfo?.email);
-    const dispatch = useDispatch();
-    const navigation = useNavigation();
+    const { logout } = useLogout();
     const [btnLoader, setBtnLoader] = useState<boolean>(false);
     const [popupVisible, setPopupVisible] = useState<boolean>(false);
-    const { clearSession } = useAuth0();
     const { getMemDetails } = useMemberLogin();
     const { decryptAES } = useEncryptDecrypt();
 
@@ -72,39 +64,8 @@ const VerifyEmail = () => {
         }
 
     };
-    const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-            "id": "",
-            "state": "",
-            "countryName": "",
-            "ipAddress": ip,
-            "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-        }
-        const actionRes = await AuthService.logOutLog(obj);
-
-    }
     const handleLgout = async () => {
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        await logOutLogData();
-        const response = OnBoardingService.updateFcmToken();
-        // H-11: this used to overwrite the token entry with empty strings,
-        // which leaves a live record behind (and, before the split, an empty
-        // refresh token that would have clobbered a good one). Clearing the
-        // entries is what sign-out means.
-        await clearAllSecureEntries();
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
-
-
+        await logout();
     };
 
     const handleCloseError = () => {

@@ -6,60 +6,19 @@ import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { s } from '../../constants/theme/scale';
 import {NEW_COLOR, WINDOW_WIDTH } from "../../constants/theme/variables";
 import DefaultButton from '../../components/DefaultButton';
-import DeviceInfo from 'react-native-device-info';
-import AuthService from '../../services/auth';
-import { useDispatch } from 'react-redux';
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useAuth0 } from 'react-native-auth0';
-import { fcmNotification } from '../../utils/FCMNotification';
-import { post } from '../../utils/ApiService';
 import AntDesign from "react-native-vector-icons/AntDesign";
+import useLogout from '../../hooks/useLogOut';
 const MFAPopup = ({isVisible,handleClose}:any) => {
-const dispatch=useDispatch();
-const navigation=useNavigation();
-const { clearSession } = useAuth0();
+const { logout } = useLogout();
 const [isBtnLoading,setIsBtnLoading]=useState<boolean>(false)
- const updateFcmToken = async () => {
-    fcmNotification.createtoken((token: string) => {
-      post( `/api/v1/Notification/DeleteUserToken`,
-        {
-          token: token,
-        }
-      )
-    });
-  };
-
-
     const handleLgout = async () => {
         setIsBtnLoading(true)
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        logOutLogData()
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 1,
-            routes: [{ name: "SplashScreen" }],
-          })
-        );
-        fcmNotification.unRegister();
-        updateFcmToken()
-        setIsBtnLoading(false)
-      };
-      const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-          "id": "",
-          "state": "",
-          "countryName": "",
-          "ipAddress": ip,
-          "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
+        try {
+            await logout();
+        } finally {
+            setIsBtnLoading(false)
         }
-        const actionRes = await AuthService.logOutLog(obj);
-    
-      };
+    };
 
     return (
         <Overlay onBackdropPress={handleClose} overlayStyle={[styles.overlayContent, { width: WINDOW_WIDTH - 30 }]} isVisible={isVisible}>

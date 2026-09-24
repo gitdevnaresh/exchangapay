@@ -5,9 +5,7 @@ import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import AuthService from '../../services/auth';
-import { isLogin, setUserInfo } from '../../redux/Actions/UserActions';
-import { useDispatch, useSelector } from 'react-redux';
-import { CommonActions, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';
@@ -20,30 +18,27 @@ import { isErrorDispaly } from '../../utils/helpers';
 import { progressSkeltons } from '../Profile/skeleton_views';
 import Loadding from '../../components/skeleton';
 import { IconRefresh, LogoxWhite } from '../../assets/svg';
-import { fcmNotification } from '../../utils/FCMNotification';
-import DeviceInfo from 'react-native-device-info';
-import { useAuth0 } from 'react-native-auth0';
 import useMemberLogin from '../../hooks/useMemberLogin';
 import { log } from '../../utils/logger';
 import { sanitizeNotesHtml } from '../../security';
+import useLogout from '../../hooks/useLogOut';
 
 
 const AccountProgress = (props: any) => {
   const styles = useStyleSheet(themedStyles);
   const navigation = useNavigation();
+  const { logout } = useLogout();
   const [saveLoading, setSaveLoading] = useState<boolean>(false)
   const [htmlContent, setHtmlContent] = useState<any>({});
   const [errorMsg, setErrorMsg] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const isFocused = useIsFocused();
-  const dispatch = useDispatch();
   const skeltons = progressSkeltons();
   // H-03: customerNotes() is backend HTML. See src/security/htmlPolicy.ts.
   const notesHtml = React.useMemo(
     () => sanitizeNotesHtml(htmlContent?.message),
     [htmlContent?.message]
   );
-  const { clearSession } = useAuth0();
   const { getMemDetails } = useMemberLogin();
   useEffect(() => {
     handleGetCustomerNotes();
@@ -87,31 +82,8 @@ const AccountProgress = (props: any) => {
 
 
 
-  const logOutLogData = async () => {
-    const ip = await DeviceInfo.getIpAddress();
-    const deviceName = await DeviceInfo.getDeviceName();
-    const obj = {
-      "id": "",
-      "state": "",
-      "countryName": "",
-      "ipAddress": ip,
-      "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-    }
-    const actionRes = await AuthService.logOutLog(obj);
-
-  }
   const handleLgout = async () => {
-    await clearSession();
-    dispatch(setUserInfo(""));
-    dispatch(isLogin(false));
-    logOutLogData()
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 1,
-        routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-      })
-    );
-    fcmNotification.unRegister();
+    await logout();
   };
 
   const handleRefresh = async () => {

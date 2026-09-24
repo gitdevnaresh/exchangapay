@@ -13,23 +13,20 @@ import { commonStyles } from './CommonStyles';
 import DefaultButton from './DefaultButton';
 import { WINDOW_HEIGHT } from '../constants/theme/variables';
 import { EMAIL_CONSTANTS } from '../screens/onBoarding/constants';
-import { useAuth0 } from 'react-native-auth0';
-import { isCardKycCompleted, isLogin, setUserInfo } from '../redux/Actions/UserActions';
-import { fcmNotification } from '../utils/FCMNotification';
-import DeviceInfo from 'react-native-device-info';
+import { isCardKycCompleted, setUserInfo } from '../redux/Actions/UserActions';
 import AuthService from '../services/auth';
 import useEncryptDecrypt from '../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../hooks/useSendUserWebhook';
-import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
+import useLogout from "../hooks/useLogOut";
 
 const SumsubCompnent = (props: any) => {
     const navigation = useNavigation<any>();
+    const { logout } = useLogout();
     const isFocused = useIsFocused();
     const [errorMsg, setErrorMsg] = useState<any>("");
     const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
     const sdkInstance = useRef<any>(null);
     const [isDismissed, setIsDismissed] = useState<boolean>(false);
-    const { clearSession } = useAuth0();
     const [isCompleted, setIsCompleted] = useState<boolean>(false);
     const dispatch = useDispatch();
     const { decryptAES } = useEncryptDecrypt();
@@ -181,34 +178,8 @@ const SumsubCompnent = (props: any) => {
         setErrorMsg("");
     };
 
-    const logOutLogData = async () => {
-        const ip = await DeviceInfo.getIpAddress();
-        const deviceName = await DeviceInfo.getDeviceName();
-        const obj = {
-            "id": "",
-            "state": "",
-            "countryName": "",
-            "ipAddress": ip,
-            "info": `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`
-        }
-        const actionRes = await AuthService.logOutLog(obj);
-
-    }
     const handleLgout = async () => {
-        await clearSession();
-        dispatch(setUserInfo(""));
-        dispatch(isLogin(false));
-        const response = await OnBoardingService.updateFcmToken();
-        // H-11: clear every keychain service, not the two this path happened to know about.
-        await clearAllSecureEntries();
-        logOutLogData()
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: EMAIL_CONSTANTS.SPLASH_SCREEN }],
-            })
-        );
-        fcmNotification.unRegister();
+        await logout();
     };
 
     return (

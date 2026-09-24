@@ -39,7 +39,7 @@ import useChekBio from "../hooks/useCheckBio";
 import { storeToken } from "../utils/helpers";
 import { log } from "../utils/logger";
 const SplashScreen = React.memo(() => {
-  const { authorize, getCredentials, clearSession } = useAuth0();
+  const { authorize, getCredentials, clearCredentials } = useAuth0();
   const [loading, setLoading] = React.useState(false);
   const dispatch = useAppDispatch();
   const styles = useStyleSheet(themedStyles);
@@ -120,7 +120,7 @@ const SplashScreen = React.memo(() => {
       // Use proper serializable values
       dispatch(isLogin(false));
       dispatch(setUserInfo(null));
-      await clearSession();
+      await clearCredentials();
     } catch (error) {
       log.error("Error clearing persisted state", error);
     }
@@ -160,6 +160,7 @@ const SplashScreen = React.memo(() => {
       const authConfig = {
         scope: getOAuthValue("scope"),
         audience: getOAuthValue("audience"),
+        additionalParameters: { prompt: "login" },
       };
 
       await authorize(authConfig);
@@ -187,7 +188,7 @@ const SplashScreen = React.memo(() => {
       await authorize({
         scope: getOAuthValue("scope"),
         audience: getOAuthValue("audience"),
-        additionalParameters: { screen_hint: "signup" },
+        additionalParameters: { screen_hint: "signup", prompt: "login" },
       });
 
       // After successful authorization, get credentials and restore session

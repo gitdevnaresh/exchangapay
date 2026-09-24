@@ -9,15 +9,12 @@ import {
   Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useAuth0 } from "react-native-auth0";
 import {
   useNavigation,
-  CommonActions,
   useIsFocused,
 } from "@react-navigation/core";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  isLogin,
   setUserInfo,
 } from "../redux/Actions/UserActions";
 import ParagraphComponent from "./Paragraph/Paragraph";
@@ -45,26 +42,23 @@ import { s } from "../constants/theme/scale";
 import DeviceInfo from "react-native-device-info";
 import AuthService from "../services/auth";
 import Container from "./Container";
-import { fcmNotification } from "../utils/FCMNotification";
 import DefaultButton from "./DefaultButton";
 import BaseCurrency from "../screens/Profile/baseCurrency";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
-import Cookies from "@react-native-cookies/cookies";
 import useEncryptDecrypt from "../hooks/useEncryption_Decryption";
 import CryptoServices from "../services/crypto";
-import { clearAllSecureEntries } from "../utils/storage/keychainPolicy";
 import { isErrorDispaly } from "../utils/helpers";
-import OnBoardingService from "../services/onBoardingService";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useLogout from "../hooks/useLogOut";
 
 const { width } = Dimensions.get("window");
 
 const isPad = width > 600;
 const DrawerModal = (props: any) => {
   const navigation = useNavigation<any>();
+  const { logout } = useLogout();
   const isFocused = useIsFocused();
   const dispatch = useDispatch();
-  const { clearSession } = useAuth0();
   const { close } = props;
   const { userInfo } = useSelector((state: any) => state.UserReducer);
   const [profileImage, setProfileImage] = useState<any>(null);
@@ -122,36 +116,11 @@ const DrawerModal = (props: any) => {
 
   const handleLgout = async () => {
     setLogoutLoder(true);
-    Cookies.clearAll(true);
-    dispatch(setUserInfo(""));
-    dispatch(isLogin(false));
-    await logOutLogData();
-    const response = await OnBoardingService.updateFcmToken();
-    await clearSession();
-    // H-11: clear every keychain service, not the two this path happened to know about.
-    await clearAllSecureEntries();
-
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 1,
-        routes: [{ name: DRAWER_CONSTATNTS.SPLASH_SCREEN }],
-      })
-    );
-    fcmNotification.unRegister();
-    setLogoutLoder(false);
-  };
-
-  const logOutLogData = async () => {
-    const ip = await DeviceInfo.getIpAddress();
-    const deviceName = await DeviceInfo.getDeviceName();
-    const obj = {
-      id: "",
-      state: "",
-      countryName: "",
-      ipAddress: ip,
-      info: `{brand:${DeviceInfo.getBrand()},deviceName:${deviceName},model: ${DeviceInfo.getDeviceId()}}`,
-    };
-    const actionRes = await AuthService.logOutLog(obj);
+    try {
+      await logout();
+    } finally {
+      setLogoutLoder(false);
+    }
   };
 
   const getMemDetails = async () => {
