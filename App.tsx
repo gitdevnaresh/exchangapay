@@ -46,6 +46,7 @@ import {
   reportPinExpiry,
 } from "./src/security";
 import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
+import ErrorBoundary from "./src/components/errorBoundary/ErrorBoundary";
 
 import * as Sentry from "@sentry/react-native";
 import { version as appVersion } from './package.json';
@@ -55,6 +56,23 @@ const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getB
 // Safety check
 if (!store) {
   log.error("Store is undefined! This will cause the app to crash.");
+}
+
+const globalErrorUtils = (globalThis as any).ErrorUtils;
+if (globalErrorUtils) {
+  const previousHandler = globalErrorUtils.getGlobalHandler?.();
+  globalErrorUtils.setGlobalHandler((error: any, isFatal?: boolean) => {
+    try {
+      Sentry.withScope((scope) => {
+        scope.setTag("errorSource", "globalHandler");
+        scope.setLevel(isFatal ? "fatal" : "error");
+        Sentry.captureException(error);
+      });
+    } catch {
+      // Never let telemetry throw from the crash handler itself.
+    }
+    previousHandler?.(error, isFatal);
+  });
 }
 
 export default Sentry.wrap(function App() {
@@ -253,7 +271,9 @@ export default Sentry.wrap(function App() {
                     translucent={false}
                     backgroundColor={"#000"}
                   />
-                  <AppContainer />
+                  <ErrorBoundary boundaryName="root">
+                    <AppContainer />
+                  </ErrorBoundary>
                   {isUpdate && (
                     <ForceUpdate
                       show={isUpdate}
