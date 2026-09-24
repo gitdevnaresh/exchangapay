@@ -34,7 +34,6 @@ import { fcmNotification } from "./src/utils/FCMNotification";
 import { getAllEnvData } from "./Environment";
 import {
   buildSentryOptions,
-  initializeTelemetry,
   isSentryEnabled,
 } from "./src/utils/telemetry";
 import { log } from "./src/utils/logger";
@@ -96,6 +95,8 @@ export default Sentry.wrap(function App() {
         ])
       );
       sentryInitialized.current = true;
+      // Pin-expiry telemetry goes through Sentry, so it must run after init.
+      reportPinExpiry();
     }
   }, [sentryConfig]);
   const [theme, setTheme] = React.useState<"light" | "dark">("dark");
@@ -114,16 +115,8 @@ export default Sentry.wrap(function App() {
         .catch((error) => {
           log.error("Error getting theme", error);
         });
-      // H-08: loads the stored consent decision and applies it to Sentry and
-      // Crashlytics together. Until it resolves, getTelemetryConsentSync() is
-      // false and events are dropped — startup errors are not sent optimistically.
-      initializeTelemetry();
-      // M-03: pin expiry telemetry. The dates used to be hardcoded here, a
-      // fourth copy of two dates that also live in the Android pin-set, the iOS
-      // Info.plist and the iOS build phase. They now come from
-      // security/pinning-policy.json via src/security/pinExpiry.ts, which also
-      // explains why the two platforms carry different dates.
-      reportPinExpiry();
+      // Earlier builds turned collection off and Firebase persists that, so turn it back on explicitly.
+      crashlytics().setCrashlyticsCollectionEnabled(true).catch(() => undefined);
       // H-05: load the at-rest key, then let redux-persist rehydrate. Unlike
       // the integrity probe below this one DOES gate rendering — PersistGate
       // holds its loading component until it resolves — because rehydrating
