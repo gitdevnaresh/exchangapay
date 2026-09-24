@@ -35,7 +35,6 @@
  */
 
 import { redact } from "../redact";
-import { getTelemetryConsentSync } from "./consent";
 
 export type SentryEnvConfig = {
   enabled?: boolean;
@@ -47,19 +46,8 @@ export type SentryEnvConfig = {
   replaysOnErrorSampleRate?: number;
 };
 
-/**
- * Last gate before an event leaves the device.
- *
- * Two jobs, in order:
- *   1. Drop everything unless the user has consented. Sentry has no built-in
- *      consent switch, and init() has to run early enough to catch startup
- *      crashes, so gating happens here rather than around init().
- *   2. Scrub what remains. The API interceptor already redacts the bodies it
- *      attaches; this catches what it does not produce — unhandled exceptions,
- *      auto-instrumented HTTP breadcrumbs, and any future call site that forgets.
- */
+// Last gate before an event leaves the device: strips cookies, headers, IP/email and redacts request and breadcrumb data.
 export const scrubEvent = (event: any): any | null => {
-  if (!getTelemetryConsentSync()) return null;
   if (!event) return null;
 
   if (event.request) {
@@ -141,7 +129,4 @@ export const buildSentryOptions = (
   integrations: withoutScreenCapture(integrations),
 
   beforeSend: scrubEvent,
-  // Breadcrumbs are attached to events, but they are also the thing most likely
-  // to carry a URL with an identifier in it, so they are gated on consent too.
-  beforeBreadcrumb: (crumb: any) => (getTelemetryConsentSync() ? crumb : null),
 });

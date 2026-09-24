@@ -63,13 +63,7 @@ export const SENSITIVE_KEY_PATTERN =
  * Reviewed exceptions: names that trip the pattern but hold nothing sensitive.
  * Adding to this list is a security decision. Justify it in the comment.
  */
-export const ALLOWED_ASYNC_STORAGE_KEYS: ReadonlyArray<string> = [
-  // Matches on "KEY" in the identifier. Value is "telemetryConsent" — a boolean
-  // opt-in flag recording whether the user agreed to diagnostics (H-08). No user
-  // data, and it must be readable before any telemetry decision, so the Keychain
-  // would be the wrong home for it.
-  "TELEMETRY_CONSENT_KEY",
-];
+export const ALLOWED_ASYNC_STORAGE_KEYS: ReadonlyArray<string> = [];
 
 /**
  * The AsyncStorage keys the deleted module wrote to.

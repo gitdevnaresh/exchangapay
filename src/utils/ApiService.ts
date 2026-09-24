@@ -31,12 +31,6 @@ applyStandardInterceptors(uploadapi, {
   idempotency: false,
 });
 
-// H-08: crash-reporting consent used to live here, governing Crashlytics only,
-// while Sentry had no consent step at all. Both channels now read one decision —
-// see src/utils/telemetry/consent.ts. The storage key changed from
-// "crashReportingConsent" to "telemetryConsent"; nothing had ever written the
-// old one, so there is no stored value to migrate.
-
 // The optional `config` argument is an axios request config, passed straight
 // through by apisauce. Added for M-02 so the OTP transport can mark its
 // capability probe with `silentStatuses`; every existing call site omits it and
