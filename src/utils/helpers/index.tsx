@@ -122,12 +122,7 @@ export const formatOnlyDateLocal = (transactionData: any) => {
 
   return formattedDate;
 };
-/**
- * H-11: this used to call `getGenericPassword()` with no service name, so it
- * read the *default* keychain entry rather than "authTokenService" — a
- * different item than every other token reader in the app. It now goes through
- * the single accessor like everything else.
- */
+
 export const getTokenData = async () => {
   const { value } = await readAccessToken();
   return value;
@@ -155,49 +150,6 @@ export const hideDigitBeforLast = (input: string): string => {
   return visibleStart + hiddenPart + visiblePart;
 };
 
-// export const isErrorDispaly = (objValue: any, state?: boolean) => {
-
-//   if (objValue.status === 522) {
-//     if (objValue.data && objValue.data.title && typeof objValue.data.title === "string" && objValue.data?.title.length < 150) {
-//       return objValue.data.title;
-//     } else {
-//       return 'An unhandled exception occurred.'
-//     }
-//   } else if (objValue.status === 400) {
-//     if (objValue.data.errors && typeof objValue.data.errors === 'object') {
-//       for (const field in objValue.data.errors) {
-//         return `${typeof (objValue.data.errors[field][0]) === 'string' ? objValue.data.errors[field][0] : "Please enter valid data"}`;
-//       }
-//     } else if (objValue.data && objValue.data.title && typeof objValue.data.title === "string" && objValue.data?.title.length < 150) {
-//       return objValue.data.title;
-//     } else {
-//       return 'An unhandled exception occurred.'
-//     }
-//   } else if (objValue.status === 500) {
-//     if (objValue.data && objValue.data.title && typeof objValue.data.title === "string" && objValue.data?.title.length < 150) {
-//       return objValue.data.title;
-//     } else {
-//       return 'Service issue,Please contact Administrator!'
-//     }
-//   } else if (objValue?.response?.status == 502 || objValue?.response?.status == 503) {
-//     return "Server down! Please contact Administrator!";
-//   } else if (objValue.status === 403) {
-//     if (objValue.data && objValue.data.title && typeof objValue.data.title === "string" && objValue.data?.title.length < 150) {
-//       return objValue.data.title;
-//     } else {
-//       return "You don't have permission, Please contact Administrator!"
-//     }
-//   }
-//    else if (objValue.status === 524) {
-//     reset("AccountProgress")
-//     return;
-
-//   }
-//   else {
-//     return 'Something went wrong please try again!'
-//   }
-
-// };
 
 const ERROR_MESSAGES = {
   400: "Invalid request!",
@@ -217,6 +169,7 @@ const ERROR_MESSAGES = {
   426: "A protocol upgrade is required to proceed with the request.",
   429: "Too many requests. Please wait a moment and try again.",
   DEFAULT: "Something went wrong, Please try again after sometime!",
+  TIMEOUT: "This is taking longer than expected. Please check your connection and try again.",
 };
 
 const getErrorsMessage = (errors: any) => {
@@ -238,6 +191,9 @@ export const isErrorDispaly = (errorToDerive: any) => {
   }
   if (typeof errorToDerive !== "object") {
     return ERROR_MESSAGES.DEFAULT;
+  }
+  if (errorToDerive?.problem === "TIMEOUT_ERROR" || errorToDerive?.code === "ECONNABORTED") {
+    return ERROR_MESSAGES.TIMEOUT;
   }
   const { status, data } = errorToDerive;
   if (status === 400 || data?.status === 400) {

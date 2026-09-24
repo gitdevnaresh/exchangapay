@@ -57,15 +57,19 @@ import {
   applyStandardInterceptors,
   applyThirdPartyInterceptors,
   getUrl,
+  REQUEST_TIMEOUT_MS,
+  THIRD_PARTY_TIMEOUT_MS,
 } from "./apiInterceptors";
 
 const marketApi = create({
   baseURL: getUrl("marketUrl"),
   headers: {},
+  timeout: THIRD_PARTY_TIMEOUT_MS,
 });
 
 const cardApi = create({
   baseURL: getUrl("cardsUrl"),
+  timeout: REQUEST_TIMEOUT_MS,
 });
 
 // `uploadapi`, `coingico` and `memberInfoAPI` used to be exported from here and

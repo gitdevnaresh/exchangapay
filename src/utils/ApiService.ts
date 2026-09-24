@@ -10,13 +10,17 @@ import { create } from "apisauce";
 import {
   applyStandardInterceptors,
   getUrl,
+  REQUEST_TIMEOUT_MS,
+  UPLOAD_TIMEOUT_MS,
 } from "./apiInterceptors";
 
 const api = create({
   baseURL: getUrl("cardsUrl"),
+  timeout: REQUEST_TIMEOUT_MS,
 });
 const uploadapi = create({
   baseURL: getUrl("uploadUrl"),
+  timeout: UPLOAD_TIMEOUT_MS,
 });
 applyStandardInterceptors(api);
 // The upload instance never carried the client IP or an idempotency key, and

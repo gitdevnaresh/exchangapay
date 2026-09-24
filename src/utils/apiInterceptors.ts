@@ -79,6 +79,12 @@ const requestAction = (config: any): string => {
   return `${method} /${path}`;
 };
 
+// Every client gets a deadline; axios otherwise waits forever.
+export const REQUEST_TIMEOUT_MS = 30000;
+export const UPLOAD_TIMEOUT_MS = 90000;
+export const THIRD_PARTY_TIMEOUT_MS = 15000;
+const ATTESTATION_CHALLENGE_TIMEOUT_MS = 5000;
+
 /**
  * Obtains a one-time nonce from the same API host that will consume the
  * protected request. The request itself intentionally bypasses axios so it
@@ -98,16 +104,21 @@ const getServerAttestationChallenge = async (
   }
 
   let response: Response;
+  const controller = new AbortController();
+  const abortTimer = setTimeout(() => controller.abort(), ATTESTATION_CHALLENGE_TIMEOUT_MS);
   try {
     response = await fetch(requestUrl(config, challengePath), {
       method: "POST",
       headers,
       body: JSON.stringify({ action }),
+      signal: controller.signal,
     });
   } catch {
     throw createAttestationError(
       "Unable to obtain a device-attestation challenge"
     );
+  } finally {
+    clearTimeout(abortTimer);
   }
   if (!response.ok) {
     throw createAttestationError(

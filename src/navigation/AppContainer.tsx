@@ -123,14 +123,16 @@ const AppContainer = () => {
   }, [netInfo.isConnected]);
 
   const getIpAddress = async () => {
-    // const ip = await DeviceInfo.getIpAddress();
-
+    const controller = new AbortController();
+    const abortTimer = setTimeout(() => controller.abort(), 5000);
     try {
-      const response = await fetch("https://ipinfo.io/json");
+      const response = await fetch("https://ipinfo.io/json", { signal: controller.signal });
       const data = await response.json();
       dispatch(isSetIpInfo(data));
     } catch (error) {
       return "Unable to fetch IP address";
+    } finally {
+      clearTimeout(abortTimer);
     }
   }
 

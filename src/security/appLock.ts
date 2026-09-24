@@ -43,14 +43,7 @@ const APP_LOCK_CACHE = "biometricAppLockEnabled";
 /** The one field of GET api/v1/Security/SecurityInformation this module needs. */
 type SecurityInformation = { isFaceResgEnabled?: boolean };
 
-/**
- * This lookup sits between the splash screen and the Dashboard, and
- * ApiService sets no timeout on anything (audit finding M-03, still open). A
- * hung endpoint would therefore strand the user on the splash screen with no
- * way out but force-quitting. Cap it here rather than wait for M-03: the cached
- * value is a perfectly good answer, and a slow security check must not become
- * an unopenable app.
- */
+// Tighter than the 30s client timeout: this lookup blocks the splash screen and the cached value is a safe fallback.
 const LOOKUP_TIMEOUT_MS = 8000;
 
 const withTimeout = async <T>(work: Promise<T>): Promise<T | null> => {

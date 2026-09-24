@@ -24,7 +24,7 @@
 
 import { create } from "apisauce";
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
-import { applyThirdPartyInterceptors } from "./apiInterceptors";
+import { applyThirdPartyInterceptors, THIRD_PARTY_TIMEOUT_MS } from "./apiInterceptors";
 
 // Make.com automation endpoint used by the profile / onboarding webhooks.
 const WEBHOOK_BASE_URL = "https://hook.eu2.make.com";
@@ -39,7 +39,7 @@ const clientFor = (baseURL: string): AxiosInstance => {
   if (existing) {
     return existing;
   }
-  const instance = applyThirdPartyInterceptors(create({ baseURL }))
+  const instance = applyThirdPartyInterceptors(create({ baseURL, timeout: THIRD_PARTY_TIMEOUT_MS }))
     .axiosInstance as AxiosInstance;
   clients.set(baseURL, instance);
   return instance;

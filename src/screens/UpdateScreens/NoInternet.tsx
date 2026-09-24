@@ -1,12 +1,10 @@
 import {
   StyleSheet,
-  Text,
   View,
   Image,
 } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import Modal from "react-native-modal";
-import { useNavigation} from "@react-navigation/core";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import { commonStyles } from "../../components/CommonStyles";
