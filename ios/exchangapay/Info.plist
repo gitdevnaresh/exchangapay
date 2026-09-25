@@ -131,8 +131,6 @@
 	<string>Allow $(PRODUCT_NAME) to use Face ID to securely verify your identity when opening the app.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used for fraud prevention and to comply with financial regulations.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your microphone for specific device interactions. No audio is recorded or stored.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to access your photo library to upload profile photos and required documents.</string>
 	<key>RCTNewArchEnabled</key>
