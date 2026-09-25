@@ -48,9 +48,8 @@ import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 import ErrorBoundary from "./src/components/errorBoundary/ErrorBoundary";
 
 import * as Sentry from "@sentry/react-native";
-import { version as appVersion } from './package.json';
 
-const releaseName = `${DeviceInfo.getBundleId()}@${appVersion}+${DeviceInfo.getBuildNumber()}`;
+const releaseName = `${DeviceInfo.getBundleId()}@${DeviceInfo.getVersion()}+${DeviceInfo.getBuildNumber()}`;
 
 // Safety check
 if (!store) {
@@ -169,6 +168,17 @@ export default Sentry.wrap(function App() {
   useEffect(() => {
     checkAppVersion();
   }, [versionInfo]);
+
+  // While blocked, re-check on foreground so a corrected backend rule unblocks without a restart.
+  useEffect(() => {
+    if (!isForceUpdate) return;
+    const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
+      if (nextState === "active") {
+        checkVersionUpdate();
+      }
+    });
+    return () => subscription.remove();
+  }, [isForceUpdate]);
   const checkVersionUpdate = async () => {
     try {
       const res: any = await OnBoardingService.neoMobileVersioncheck();
@@ -184,27 +194,41 @@ export default Sentry.wrap(function App() {
     }
   };
   const checkAppVersion = async () => {
+    const clearUpdate = () => {
+      setIsForceUpdate(false);
+      setIsUpdate(false);
+    };
     try {
-      const versionName = DeviceInfo.getBuildNumber();
+      if (!versionInfo) return;
       const applicationId = DeviceInfo.getBundleId();
       let versionDetailsInfo = versionInfo;
-      if (versionDetailsInfo?.Info && versionDetailsInfo?.Info?.length > 0) {
-        const filterApplicant = versionDetailsInfo.Info?.filter(
-          (applicant: any) => applicant.applicationId === applicationId
-        );
-        if (filterApplicant && filterApplicant.length > 0) {
-          versionDetailsInfo = filterApplicant[0].applicationInfo;
+      // An app missing from Info[] has no policy: never fall back to another app's numbers.
+      if (Array.isArray(versionInfo?.Info) && versionInfo.Info.length > 0) {
+        const entry = versionInfo.Info.find((applicant: any) => applicant.applicationId === applicationId);
+        if (!entry) {
+          log.warn("No version policy for this app; skipping update check", { applicationId });
+          clearUpdate();
+          return;
         }
+        versionDetailsInfo = entry.applicationInfo;
       }
-      const currentBuild = parseInt(versionName, 10);
+      const currentBuild = parseInt(DeviceInfo.getBuildNumber(), 10);
       const platformKey = Platform.OS === "ios" ? "iosBuildVersion" : "androidBuildVersion";
       const forceKey = Platform.OS === "ios" ? "iosForceUpdateVersion" : "androidForceUpdateVersion";
       const remoteBuild = parseInt(versionDetailsInfo?.[platformKey], 10);
       const forceUpdateBuild = parseInt(versionDetailsInfo?.[forceKey], 10);
 
-      if (versionDetailsInfo && !isNaN(remoteBuild) && remoteBuild > currentBuild) {
-        setIsForceUpdate(!isNaN(forceUpdateBuild) && forceUpdateBuild > currentBuild);
+      // Unreadable numbers on either side must never block a user.
+      if (!Number.isFinite(currentBuild) || !Number.isFinite(remoteBuild)) {
+        log.warn("Unusable version numbers; skipping update check", { currentBuild, remoteBuild });
+        clearUpdate();
+        return;
+      }
+      if (remoteBuild > currentBuild) {
+        setIsForceUpdate(Number.isFinite(forceUpdateBuild) && forceUpdateBuild > currentBuild);
         setIsUpdate(true);
+      } else {
+        clearUpdate();
       }
     } catch (error) {
       log.error("[L-02] checkAppVersion failed", error);

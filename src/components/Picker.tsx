@@ -113,7 +113,11 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
               <TouchableOpacity onPress={() => onPressItem(item)}>
                 <View style={[styles.option, commonStyles.sectionStyle, commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap8,]}>
                   {item?.flag && <Image style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} source={{ uri: item?.flag }} />}
-                  {item?.logo && <SvgUri uri={item.logo} style={[{ width: s(30), height: s(30), borderRadius: s(30) / 2 },]} />}
+                  {item?.logo && (
+                    <View style={styles.logoBox}>
+                      <SvgUri uri={item.logo} width={s(30)} height={s(30)} />
+                    </View>
+                  )}
                   <ParagraphComponent text={(item?.displayName || item?.name)} style={[commonStyles.textBlack, commonStyles.fs14, commonStyles.fw500, { flexShrink: 1 },]} />
                 </View>
               </TouchableOpacity>
@@ -136,6 +140,10 @@ const styles = StyleSheet.create({
   searchIconBg: {
     borderRadius: 100, backgroundColor: NEW_COLOR.MENU_CARD_BG,
     height: 36, width: 36, flexDirection: 'row', alignItems: "center", justifyContent: "center"
+  },
+  logoBox: {
+    width: s(30), height: s(30), borderRadius: s(30) / 2, overflow: 'hidden',
+    alignItems: 'center', justifyContent: 'center',
   },
   option: {
     // paddingTop:20,
