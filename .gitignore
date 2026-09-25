@@ -70,10 +70,9 @@ web_modules/
 .env
 .env.*
 !.env.example
-# Non-production values contain no secrets — safe to commit so a fresh clone builds.
-!.env.tst
-!.env.dev
-# Production values must never be committed.
+# Every real env file (.env, .env.tst, .env.dev, .env.prod) stays local: they
+# carry the Sentry DSN, and this repository must not. Only .env.example, with
+# blank values, is committed.
 .env.prod
 
 # Sentry secrets
@@ -184,9 +183,6 @@ bin/
 android/app/build/
 android/build/
 android/.gradle/
-android/gradle/
-android/gradlew
-android/gradlew.bat
 android/local.properties
 android/app/debug.keystore
 android/app/release.keystore
@@ -206,13 +202,13 @@ android/app/src/main/res/values-night/colors.xml.bak
 android/app/src/main/res/values-night/styles.xml.bak
 android/app/src/main/res/values-night/themes.xml.bak
 
-# Android gradle wrapper and properties
-android/gradle/wrapper/gradle-wrapper.jar
-android/gradle/wrapper/gradle-wrapper.properties
-android/gradle.properties
-android/settings.gradle
-android/build.gradle
-android/app/build.gradle
+# Android gradle files (build.gradle, settings.gradle, gradle.properties, the
+# gradle wrapper) are build CONFIGURATION, not build output, and must be
+# versioned: android/app/build.gradle carries every release security guard
+# (certificate pinning coverage, pin expiry, Firebase project, prod config,
+# permission footprint). Ignoring them meant a renamed or new gradle file
+# (a new module, a build.gradle.kts migration) silently dropped out of the
+# repository. Only build OUTPUT is ignored, in the section above.
 
 # iOS CocoaPods
 ios/Pods/
