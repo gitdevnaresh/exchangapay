@@ -805,8 +805,8 @@ android {
         applicationId appId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 7
+        versionName "1.0.7"
         manifestPlaceholders = [auth0Domain: auth0Domain, auth0Scheme: "${applicationId}.auth0"]
     }
     signingConfigs {
