@@ -272,3 +272,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+
+# Machine-specific Xcode env (NODE_BINARY path); ios/.xcode.env is the shared one
+ios/.xcode.env.local
