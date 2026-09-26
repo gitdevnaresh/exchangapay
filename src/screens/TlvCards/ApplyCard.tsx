@@ -11,7 +11,7 @@ import DefaultButton from '../../components/DefaultButton';
 import { commonStyles } from '../../components/CommonStyles';
 import { isErrorDispaly } from '../../utils/helpers';
 import { CardApplicationLoader } from './CardsSkeleton';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml from '../../components/htmlRender/RenderHtml';
 import Loadding from '../../components/skeleton';
 import { ChevronRight } from '../../assets/svg';
 import { useIsFocused } from '@react-navigation/native';

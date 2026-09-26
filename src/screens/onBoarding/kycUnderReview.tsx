@@ -23,7 +23,7 @@ import { SvgUri } from "react-native-svg";
 import useLogout from "../../hooks/useLogOut";
 import useMemberLogin from "../../hooks/useMemberLogin";
 import { SafeAreaView } from "react-native-safe-area-context";
-import RenderHTML from "react-native-render-html";
+import RenderHTML from "../../components/htmlRender/RenderHtml";
 import { log } from "../../utils/logger";
 import { sanitizeNotesHtml } from "../../security";
 import { REMOTE_ASSETS } from "../../constants";
@@ -231,7 +231,7 @@ const UnderReview = () => {
                 </View>
               </Container>
             )}
-          {/* <View style={[commonStyles.mb24]} /> */}
+          <View style={[commonStyles.mb24]} />
           {!isLoading &&
             userInfo.customerState?.toLowerCase() === "registered" &&
             !notesHtml &&

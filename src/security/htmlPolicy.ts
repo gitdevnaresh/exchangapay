@@ -191,15 +191,24 @@ const sanitizeImageSource = (value: string): string | null => {
 };
 
 /**
- * Only `https:` and `mailto:` survive. `javascript:` is the obvious one to keep
+ * Only `https:`, `mailto:` and bare in-app action tokens survive. `javascript:` is the obvious one to keep
  * out; `data:`, `intent:`, `file:` and app schemes matter just as much, because
  * the notes screen hands the href to `Linking.openURL`.
  */
 const MAILTO = /^mailto:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
+/**
+ * In-app action tokens such as `href="goTomenu"` on the KYC template's CTA. The
+ * screens route these to a navigation call and never to `Linking.openURL`. A
+ * bare word with no `:` or `/` cannot carry a scheme, host or path, so it
+ * cannot leave the app.
+ */
+const IN_APP_ACTION = /^[A-Za-z][A-Za-z0-9_-]{0,63}$/;
+
 const sanitizeHref = (value: string): string | null => {
   const candidate = value.trim();
   if (MAILTO.test(candidate)) return candidate;
+  if (IN_APP_ACTION.test(candidate)) return candidate;
   return parseHttpsUrl(candidate) ? candidate : null;
 };
 

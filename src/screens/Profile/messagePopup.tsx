@@ -12,7 +12,7 @@ import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';
 import { s } from '../../constants/theme/scale';
-import { RenderHTML } from 'react-native-render-html';
+import RenderHTML from '../../components/htmlRender/RenderHtml';
 import ErrorComponent from '../../components/Error';
 import { SvgUri } from 'react-native-svg';
 import { sanitizeNotesHtml } from '../../security';

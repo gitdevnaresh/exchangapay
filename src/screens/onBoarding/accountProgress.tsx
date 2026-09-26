@@ -12,7 +12,7 @@ import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';
 import { s } from '../../constants/theme/scale';
 import { TouchableWebElement } from '@ui-kitten/components/devsupport';
 import { CONSTANTS, EMAIL_CONSTANTS } from './constants';
-import { RenderHTML } from 'react-native-render-html';
+import RenderHTML from '../../components/htmlRender/RenderHtml';
 import ErrorComponent from '../../components/Error';
 import { isErrorDispaly } from '../../utils/helpers';
 import { progressSkeltons } from '../Profile/skeleton_views';

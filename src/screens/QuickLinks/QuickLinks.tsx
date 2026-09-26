@@ -1,6 +1,6 @@
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React from 'react';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml from '../../components/htmlRender/RenderHtml';
 import { NEW_COLOR, WINDOW_WIDTH } from '../../constants/theme/variables';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { Container } from '../../components';

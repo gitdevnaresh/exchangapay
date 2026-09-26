@@ -13,7 +13,7 @@ import Loadding from '../../components/skeleton';
 import ErrorComponent from '../../components/Error';
 import NoDataComponent from '../../components/nodata';
 import { CONSTANTS, NotificationDetails } from './constants';
-import RenderHTML from 'react-native-render-html';
+import RenderHTML from '../../components/htmlRender/RenderHtml';
 import { Overlay } from "../../components/ui";
 import { s } from '../../constants/theme/scale';
 import SvgFromUrl from '../../components/svgIcon';

@@ -4,7 +4,7 @@ import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Overlay } from "../../components/ui";
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { commonStyles } from '../../components/CommonStyles';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml from '../../components/htmlRender/RenderHtml';
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/variables';
 import OnBoardingService from '../../services/onBoardingService';
 import crashlytics from '@react-native-firebase/crashlytics';
