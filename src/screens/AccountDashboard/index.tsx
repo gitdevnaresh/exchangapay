@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Image, TouchableOpacity, Platform, Alert, BackHandler } from "react-native";
 import { StyleService, useStyleSheet, TopNavigation } from "@ui-kitten/components";
 import { s } from "../../constants/theme/scale";
@@ -22,13 +22,16 @@ import messaging from "@react-native-firebase/messaging";
 import { updateChatCount } from "../../redux/Actions/UserActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// PERF-01: created once at module scope. Creating it during render gave React a
+// new component type every time, remounting all three tabs on each re-render.
+const Tab = createBottomTabNavigator();
+
 const Dashboard = (props: any) => {
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const noiffCount = useSelector((state: any) => state.UserReducer?.notificationCount);
   const supportMessageCount = useSelector((state: any) => state.UserReducer?.supportMessgaeCount);
   const dispatch = useDispatch();
   const styles = useStyleSheet(themedStyles);
-  const Tab = createBottomTabNavigator();
   const { decryptAES } = useEncryptDecrypt();
   const [state, setState] = useState<any>({
     index: props.route?.params?.tabIndex || 0,
@@ -40,17 +43,22 @@ const Dashboard = (props: any) => {
   });
   const [isAccountpopupVisible, setIsAccountPopupVisible] = useState<boolean>(false);
 
+  // Read the latest count through a ref so the push listener subscribes once
+  // instead of resubscribing on every count change.
+  const supportMessageCountRef = useRef(supportMessageCount);
+  supportMessageCountRef.current = supportMessageCount;
+
   // Effect to handle foreground notifications
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       if (remoteMessage?.notification?.title === "Support Chat") {
         // Increment the count in Redux store
-        dispatch(updateChatCount(supportMessageCount + 1));
+        dispatch(updateChatCount((supportMessageCountRef.current || 0) + 1));
       }
     });
 
     return unsubscribe;
-  }, [supportMessageCount, dispatch]);
+  }, [dispatch]);
 
   // Effect to sync count from keychain on app start
   useEffect(() => {

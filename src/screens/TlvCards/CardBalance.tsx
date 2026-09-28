@@ -495,7 +495,7 @@ const CardBalance = React.memo((props: any) => {
                       ]}
                     >
                       <ParagraphComponent
-                        text={`${CONSTANTS.DEPOSIT} \n ${CONSTANTS.AMOUNT}`}
+                        text={`${CONSTANTS.DEPOSIT} \n${CONSTANTS.AMOUNT}`}
                         style={[
                           commonStyles.fs24,
                           commonStyles.textGrey,

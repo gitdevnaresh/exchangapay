@@ -101,10 +101,10 @@ const SendOTP = ({ onChangeText, value, isOTP, phoneNumber, onVerify, showError,
             "isChangePhoneNumber": true
         }
         const response = await AuthService.verifyPhoneNumberOtp(Obj);
-        if (!response.status) {
+        if (!response?.ok) {
+            setIsVerified(false);
             return;
         }
-        ;
         setButtonColor(NEW_COLOR.TEXT_GREEN);
         if (onVerify) {
             onVerify(true);
