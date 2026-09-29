@@ -77,6 +77,16 @@ interface ApplyCardInterface {
   profile: Profile | any;
 }
 
+// Hooks can't live inside Formik's render prop, so the scroll-on-error effect gets its own component.
+const ScrollToTopOnError = ({ errors, scrollRef }: { errors: object; scrollRef: React.RefObject<any> }) => {
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      scrollRef?.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [errors, scrollRef]);
+  return null;
+};
+
 const ApplyExchangaCard = (props: any) => {
   const isFocus = useIsFocused();
   const ref = useRef<any>(null);
@@ -654,13 +664,9 @@ const ApplyExchangaCard = (props: any) => {
                       handleChange,
                       handleSubmit,
                     } = formikProps;
-                    useEffect(() => {
-                      if (Object.keys(errors).length > 0) {
-                        ref?.current?.scrollTo({ y: 0, animated: true });
-                      }
-                    }, [errors]);
                     return (
                       <>
+                        <ScrollToTopOnError errors={errors} scrollRef={ref} />
                         {isKycRequired && userInfo?.isKYC && (
                           <>
                             <KycAddress

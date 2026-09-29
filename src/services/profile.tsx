@@ -85,7 +85,7 @@ const ProfileService = {
     return put(`/api/v1/Security/UpdateSecurityQuestions`, body);
   },
   deleteAccount: async () => {
-    return put(`api/v1/Customer/DeleteCustomer`, {});
+    return post(`api/v1/Customer/Customer/Delete`, {});
   },
   getUserReferral: async () => {
     return get(`/api/v1/Security/getReferralDetails/customer`)

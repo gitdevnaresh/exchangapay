@@ -117,7 +117,25 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
     }
   }, [getKey]);
 
-  return { encryptAES, decryptAES };
+  /**
+   * H-04: decrypt WITHOUT the memoization cache. For card credentials (PAN,
+   * CVV, expiry) only: the cache above lives until logout, and a PAN/CVV kept
+   * in a module-level Map outlives the reveal it was decrypted for. These
+   * fields are only decrypted while the card is face-up, so the cost of not
+   * caching them is negligible.
+   */
+  const decryptSensitive = useCallback((cipherText: string): string => {
+    if (!cipherText) return '';
+    const sk = getKey();
+    if (!sk) return '';
+    try {
+      return decryptAny(cipherText, sk, 'network');
+    } catch {
+      return '';
+    }
+  }, [getKey]);
+
+  return { encryptAES, decryptAES, decryptSensitive };
 };
 
 export default useEncryptDecrypt;

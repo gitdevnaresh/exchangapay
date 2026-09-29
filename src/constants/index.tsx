@@ -27,6 +27,10 @@ export const REMOTE_ASSETS = {
   usdc: `${REMOTE_ASSET_BASE}/usdc.svg`,
 };
 
+// H-04: how long revealed card details (PAN, CVV, expiry) stay visible before
+// the card re-locks itself.
+export const CARD_REVEAL_TIMEOUT_MS = 30000;
+
 export const RequestStatus = {
   idle: 'idle',
   pending: 'pending',

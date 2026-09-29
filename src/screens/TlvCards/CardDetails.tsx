@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, SafeAreaView, ScrollView, TouchableOpacity, Image, ImageBackground, BackHandler, Dimensions, Platform } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, SafeAreaView, ScrollView, TouchableOpacity, Image, ImageBackground, BackHandler, Dimensions, Platform, AppState } from "react-native";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { Container } from "../../components";
 import { isErrorDispaly, formatCurrency } from "../../utils/helpers";
@@ -24,6 +24,7 @@ import AccountDeactivatePopup from "../Currencypop/actDeactivatePopup";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import { handleCardDetailsBack } from "./constants";
 import { guardHighRiskAction } from "../../security";
+import { CARD_REVEAL_TIMEOUT_MS } from "../../constants";
 
 const { width } = Dimensions.get('window');
 const isPad = width > 600;
@@ -41,7 +42,7 @@ const CardDetails = React.memo((props: any) => {
   const [isShowPin, setShowPin] = useState<boolean>(false);
   const [isPressed, setIsPressd] = useState<boolean>(false);
   const [isDetailsRevealed, setIsDetailsRevealed] = useState<boolean>(false);
-  const { decryptAES } = useEncryptDecrypt();
+  const { decryptAES, decryptSensitive } = useEncryptDecrypt();
   const { width } = Dimensions.get('window');
   const spin = useSharedValue(0);
   const [showPinDetails, setShowPinDetails] = useState<any>({});
@@ -61,15 +62,38 @@ const CardDetails = React.memo((props: any) => {
   )
 
   const isPad = width > 600;
+  const lockCardDetails = useCallback(() => {
+    spin.value = 0;
+    setIsDetailsRevealed(false);
+  }, [spin]);
+
   useEffect(() => {
-    fetchMyCardDetails();
-    if (!isFocused) {
+    if (isFocused) {
+      fetchMyCardDetails();
+    } else {
       // The screen stays mounted while another one is pushed over it, so a card
       // left revealed would still be revealed on return. Re-lock instead.
-      spin.value = 0;
-      setIsDetailsRevealed(false);
+      lockCardDetails();
     }
-  }, [isFocused]);
+  }, [isFocused, lockCardDetails]);
+
+  // H-04: re-lock when the app leaves the foreground (Home, app switcher,
+  // incoming call), so the card is not face-up when the app is reopened.
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState !== "active") {
+        lockCardDetails();
+      }
+    });
+    return () => subscription.remove();
+  }, [lockCardDetails]);
+
+  // H-04: a revealed card hides itself again after 30 seconds.
+  useEffect(() => {
+    if (!isDetailsRevealed) return;
+    const timer = setTimeout(lockCardDetails, CARD_REVEAL_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isDetailsRevealed, lockCardDetails]);
 
   const fetchMyCardDetails = async () => {
     const cardId = props?.route?.params?.cardId;
@@ -172,8 +196,7 @@ const CardDetails = React.memo((props: any) => {
    */
   const handleRevealCardDetails = async () => {
     if (spin.value !== 0) {
-      spin.value = 0;
-      setIsDetailsRevealed(false);
+      lockCardDetails();
       return;
     }
     if (!(await guardHighRiskAction("CARD_DETAILS_REVEAL"))) return;
@@ -414,7 +437,7 @@ const CardDetails = React.memo((props: any) => {
                                 commonStyles.fw500,
                               ]}
                               text={isDetailsRevealed
-                                ? `${convertCardNumberWithSpace(decryptAES(myCardsData?.number))}`
+                                ? `${convertCardNumberWithSpace(decryptSensitive(myCardsData?.number))}`
                                 : "**** **** **** ****"}
                               numberOfLines={1}
                             />
@@ -470,7 +493,7 @@ const CardDetails = React.memo((props: any) => {
                                   commonStyles.fw500,
                                   commonStyles.fs14,
                                 ]}
-                                text={isDetailsRevealed ? (decryptAES(myCardsData?.cvv) || "") : "****"}
+                                text={isDetailsRevealed ? (decryptSensitive(myCardsData?.cvv) || "") : "****"}
                               />
                             </View>
                             <View>
@@ -484,7 +507,7 @@ const CardDetails = React.memo((props: any) => {
                                   commonStyles.fw500,
                                   commonStyles.fs14,
                                 ]}
-                                text={isDetailsRevealed ? (convertExpiry(decryptAES(myCardsData?.expireDate)) || "") : "XX/XX"}
+                                text={isDetailsRevealed ? (convertExpiry(decryptSensitive(myCardsData?.expireDate)) || "") : "XX/XX"}
                               />
                             </View>
                           </View>

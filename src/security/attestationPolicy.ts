@@ -34,6 +34,9 @@ const ATTESTED_PATH_FRAGMENTS: string[] = [
   "showpin",
   "fetchcvv",
   "getcardbyid",
+  // card details (encrypted PAN/CVV/expiry) plus the Resendpin,
+  // Replacecard, ReportLoss and FreezeUnFreeze actions under the same route.
+  "cardswallet/customer/card/",
   "createcards",
   "terminatecard",
   "freezecard",
