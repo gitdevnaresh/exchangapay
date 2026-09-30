@@ -584,7 +584,9 @@ const SendCryptoDetails = React.memo((props: any) => {
 
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-      <ScrollView>
+      {/* The payee Modal's window shrinks as the keyboard opens (Android
+          ADJUST_RESIZE); hide this screen so the gap doesn't show its Send button. */}
+      <ScrollView style={openPayeesModel ? { opacity: 0 } : undefined}>
         <Container style={commonStyles.container}>
           {looading && <Loadding contenthtml={skeletonLoader} />}
           {!looading && <View>
