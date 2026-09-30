@@ -317,6 +317,10 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
             .test('no-html', 'Account Purpose cannot contain HTML tags.', value => {
                 if (!value) return true;
                 return !HTML_REGEX.test(value);
+            })
+            .test('not-only-numbers', 'Account Purpose must contain letters.', value => {
+                if (!value) return true;
+                return /[a-zA-Z]/.test(value);
             }),
         expectedMonthlyVolume: Yup.number()
             .required('Is required')
@@ -449,9 +453,9 @@ export const FORM_DATA_PLACEHOLDER = {
     ENTER_POSTAL_CODE: "Enter Postal Code",
     NUMERIC: "numeric",
     EMERGENCY_CONTACT_NAME: " Enter Emergency Contact Name",
-    ENTER_ANNUAL_SALARY: " Enter Annual Salary",
-    ENTER_ACCOUNT_PURPOSE: " Enter Account Purpose",
-    ENTER_EXPECTED_MONTHLY_VOLUME: " Enter Expected Monthly Volume",
+    ENTER_ANNUAL_SALARY: "Enter Annual Salary",
+    ENTER_ACCOUNT_PURPOSE: "Enter Account Purpose",
+    ENTER_EXPECTED_MONTHLY_VOLUME: "Enter Expected Monthly Volume",
     SELECT_OCCUPATION: "Select Occupation",
 }
 

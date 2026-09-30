@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, BackHandler, View, ScrollView, ImageBackground } from "react-native";
+import React, { useState } from 'react';
+import { StyleSheet, TouchableOpacity, View, ScrollView, ImageBackground } from "react-native";
 import { Container } from '../../components';
 import { SafeAreaView } from "react-native-safe-area-context";
 import DefaultButton from "../../components/DefaultButton";
@@ -11,22 +11,19 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import SecurityServices from "../../services/security";
 import { guardHighRiskAction } from "../../security";
+import useHardwareBack from "../../hooks/useHardwareBack";
 
 const ChangePassword = (props: any) => {
     const [errormsg, setErrormsg] = useState(null);
     const [pwdLoading, setPwdLoading] = useState<boolean>(false);
 
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            () => { handleGoBack(); return true; }
-        );
-        return () => backHandler.remove();
-    }, []);
+    // goBack, not navigate("Security"): in React Navigation 7 navigate pushes a
+    // second Security on top, whose back returns here — a loop.
     const handleGoBack = () => {
-        props.navigation.navigate("Security", { animation: "slide_from_left" })
+        props.navigation.goBack();
     };
+    useHardwareBack(handleGoBack);
 
     const fetchResetPassword = async () => {
         // H-04: a credential change on an attacker-controlled device hands the
