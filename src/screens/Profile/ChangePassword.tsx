@@ -31,7 +31,7 @@ const ChangePassword = (props: any) => {
     const fetchResetPassword = async () => {
         // H-04: a credential change on an attacker-controlled device hands the
         // account over rather than securing it. Gate before the reset is sent.
-        if (!(await guardHighRiskAction("PASSWORD_CHANGE"))) return;
+        if (!(await guardHighRiskAction("PASSWORD_CHANGE",{skipPresenceCheck:true}))) return;
         try {
             setPwdLoading(true);
             const response: any = await SecurityServices.getResetPassword();

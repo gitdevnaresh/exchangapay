@@ -67,7 +67,7 @@ const Security = (props: any) => {
     // H-14: turning two-factor authentication OFF is the change an attacker
     // makes first, and it had no challenge of its own — the confirmation popup
     // above is a dialog, not an authentication.
-    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS"))) {
+    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS",{skipPresenceCheck:true}))) {
       setVerificationFieldLoading(false);
       await getSecurityInfo();
       return;
@@ -130,7 +130,7 @@ const Security = (props: any) => {
    * as the fallback, and a failure says something instead of nothing.
    */
   const checkBio = async (data: any) => {
-    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS"))) return;
+    if (!(await guardHighRiskAction("TWO_FACTOR_SETTINGS",{skipPresenceCheck:true}))) return;
     toggleFaceRecognisationSwitch(data);
   };
   const toggleSequrityQuationsSwitch = async (data: boolean) => {

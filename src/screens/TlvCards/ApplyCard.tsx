@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, SafeAreaView, ScrollView, TouchableOpacity, ImageBackground, useWindowDimensions, BackHandler, LayoutAnimation, Dimensions, Platform } from 'react-native';
+import { View, SafeAreaView, ScrollView, TouchableOpacity, ImageBackground, useWindowDimensions, LayoutAnimation, Dimensions, Platform } from 'react-native';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
 import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/variables';
@@ -15,6 +15,7 @@ import RenderHtml from '../../components/htmlRender/RenderHtml';
 import Loadding from '../../components/skeleton';
 import { ChevronRight } from '../../assets/svg';
 import { useIsFocused } from '@react-navigation/native';
+import useHardwareBack from '../../hooks/useHardwareBack';
 import { isCardKycCompleted, setPersonalInfo } from '../../redux/Actions/UserActions';
 import { useDispatch, useSelector } from 'react-redux';
 import CardsModuleService from '../../services/card';
@@ -104,19 +105,13 @@ const ApplyCard = React.memo((props: any) => {
     const source = {
         html: `${applyCardsData?.note}`
     };
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            () => { handleBack(); return true; }
-        );
-        return () => backHandler.remove();
-    }, []);
     const handleBack = () => {
         props.navigation.navigate("Dashboard", {
             screen: 'Cards',
             animation: "slide_from_left"
         })
     };
+    useHardwareBack(handleBack);
 
     const handleCloseMFAPopUp = () => {
         setIsPressed(false)

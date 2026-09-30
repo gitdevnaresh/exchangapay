@@ -13,6 +13,7 @@ import { CardFAQsLoader } from './CardsSkeleton';
 import Loadding from '../../components/skeleton';
 import { ChevronRight } from '../../assets/svg';
 import { s } from '../../constants/theme/scale';
+import useHardwareBack from '../../hooks/useHardwareBack';
 
 const AllFaqs = (props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -28,6 +29,12 @@ const AllFaqs = (props: any) => {
     useEffect(() => {
         getFAQsInfo()
     }, []);
+    const handleBack = () => {
+        props.navigation.goBack();
+    };
+    useHardwareBack(handleBack);
+
+    
     const getFAQsInfo = async () => {
         try {
             setLoading(true);
@@ -53,7 +60,7 @@ const AllFaqs = (props: any) => {
 
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap20, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
-                            <TouchableOpacity style={[]} onPress={() => props.navigation.goBack()}>
+                            <TouchableOpacity style={[]} onPress={handleBack}>
                                 <View>
                                     <AntDesign name="arrowleft" size={s(22)} color={NEW_COLOR.TEXT_BLACK} style={{ marginTop: 3 }} />
                                 </View>
