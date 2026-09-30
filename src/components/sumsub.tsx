@@ -76,17 +76,21 @@ const SumsubCompnent = (props: any) => {
 
 
 
+    const getSumsubLevelName = () => props?.route?.params?.cardKycLevl || userInfo?.kycLevel;
+
+    // M-07: called by the SDK when the access token expires mid-flow.
+    const getSumsubToken = async () => {
+        const res: any = await OnBoardingService.sumsubAccessToken(userInfo.userId, getSumsubLevelName());
+        if (res?.ok && res?.data?.token) {
+            return res.data.token as string;
+        }
+    };
+
     const launchSNSMobileSDK = async () => {
         try {
-            const response = await OnBoardingService.sumsubAccessToken(userInfo.userId, props?.route?.params?.cardKycLevl || userInfo?.kycLevel);
+            const response: any = await OnBoardingService.sumsubAccessToken(userInfo.userId, getSumsubLevelName());
             if (response?.ok) {
-                sdkInstance.current = SNSMobileSDK.init(response?.data?.token, () => {
-                    return fetch('http://example.org/', {
-                        method: 'GET',
-                    }).then(resp => {
-                        return 'new_access_token';
-                    });
-                })
+                sdkInstance.current = SNSMobileSDK.init(response?.data?.token, getSumsubToken)
                     .withHandlers({
                         onStatusChanged: (event) => {
                         },
@@ -108,7 +112,6 @@ const SumsubCompnent = (props: any) => {
                             }
                         }
                     })
-                    .withDebug(true)
                     .withLocale('en')
                     .withApplicantConf(
                         {

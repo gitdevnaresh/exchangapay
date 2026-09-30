@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-	Debug entitlements — H-07 / M-07.
+	Entitlements for BOTH Debug and Release — H-07 / M-07 / M-13.
 
-	Until now this file was not referenced by any build configuration:
-	CODE_SIGN_ENTITLEMENTS was unset in both Debug and Release, so nothing here
-	reached the built app. It is now wired to the Debug configuration.
+	One file, not one per configuration. aps-environment is the only entitlement
+	that must differ between Debug and Release, so it comes from the
+	APS_ENVIRONMENT build setting (Target > Build Settings > User-Defined):
 
-	The Release counterpart is exchangapayRelease.entitlements. The two differ in
-	exactly one value — aps-environment — and that difference is the reason there
-	are two files. Keep everything else identical between them; an entitlement
-	that exists only in Debug is one that gets discovered missing in production.
+	  Debug    APS_ENVIRONMENT = development
+	  Release  APS_ENVIRONMENT = production
+
+	Everything else is shared, so an entitlement cannot exist in Debug and be
+	discovered missing in production. The [H-07] Release build phase and the
+	C-01 Gradle guard both assert that Release resolves to `production`.
 -->
 <plist version="1.0">
 <dict>
-	<!-- Sandbox APNs. The Release file uses `production`. -->
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>$(APS_ENVIRONMENT)</string>
 
 	<!--
 		M-07: Universal Links for the OAuth callback. Both tenants listed — iOS
@@ -24,7 +25,7 @@
 		unmatched entry is inert rather than an error.
 
 		Requires Associated Domains on the App ID and regenerated provisioning
-		profiles, or signing fails. See security/M07_APPLINKS_SETUP.md.
+		profiles, or signing fails.
 	-->
 	<key>com.apple.developer.associated-domains</key>
 	<array>

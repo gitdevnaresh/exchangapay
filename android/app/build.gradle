@@ -514,13 +514,44 @@ gradle.taskGraph.whenReady { graph ->
         )
     }
 
-    // 3. iOS APNs entitlement must be production
-    def entitlementsFile = new File(repoRoot, "ios/exchangapay/exchangapay.entitlements")
-    if (entitlementsFile.exists() && entitlementsFile.text =~ /<string>development<\/string>/) {
+    // 3. iOS APNs entitlement must be production (M-13).
+    // Debug and Release share one entitlements file whose aps-environment is
+    // $(APS_ENVIRONMENT); the value is the APS_ENVIRONMENT build setting of each
+    // configuration. So resolve what Xcode actually signs Release with: the
+    // Release CODE_SIGN_ENTITLEMENTS file, with $(APS_ENVIRONMENT) substituted
+    // from the Release build settings.
+    def pbxproj = new File(repoRoot, "ios/exchangapay.xcodeproj/project.pbxproj")
+    if (!pbxproj.exists()) {
+        throw new GradleException("[C-01] ${pbxproj} not found; cannot verify the iOS Release entitlements.")
+    }
+    def readSetting = { String body, String key ->
+        def m = (body =~ /\b${key} = "?([^";]+)"?;/)
+        m.find() ? m.group(1) : null
+    }
+    def releaseConfigs = (pbxproj.text =~ /(?s)isa = XCBuildConfiguration;(.*?)\n\s*name = ([^;]+);/)
+        .findAll { it[2].trim() == "Release" }
+        .collect { [entitlements: readSetting(it[1], "CODE_SIGN_ENTITLEMENTS"), apsSetting: readSetting(it[1], "APS_ENVIRONMENT")] }
+        .findAll { it.entitlements }
+    if (!releaseConfigs) {
         throw new GradleException(
-            "[C-01] ios/exchangapay/exchangapay.entitlements has aps-environment=development.\n" +
-            "Ensure Xcode uses exchangapay-release.entitlements for Release builds."
+            "[C-01] CODE_SIGN_ENTITLEMENTS is not set for the iOS Release configuration.\n" +
+            "The app would ship with no aps-environment and no associated-domains."
         )
+    }
+    releaseConfigs.each { cfg ->
+        def relPath = cfg.entitlements
+        def entitlementsFile = new File(repoRoot, "ios/${relPath}")
+        if (!entitlementsFile.exists()) {
+            throw new GradleException("[C-01] Release CODE_SIGN_ENTITLEMENTS points at ios/${relPath}, which does not exist.")
+        }
+        def aps = (entitlementsFile.text =~ /<key>aps-environment<\/key>\s*<string>([^<]*)<\/string>/)
+        def apsEnv = aps.find() ? aps.group(1) : "missing"
+        if (apsEnv == '$(APS_ENVIRONMENT)') apsEnv = cfg.apsSetting ?: "missing (APS_ENVIRONMENT not set for Release)"
+        if (apsEnv != "production") {
+            throw new GradleException(
+                "[C-01] ios/${relPath} (iOS Release entitlements) has aps-environment='${apsEnv}'; it must be 'production'."
+            )
+        }
     }
 
     logger.lifecycle("[C-01] Production release config checks passed for '${appId}'.")
@@ -649,8 +680,8 @@ gradle.taskGraph.whenReady { graph ->
  *      return without anyone editing a manifest.
  *
  * Release builds only, in keeping with the other guards in this file. If the
- * merged manifest cannot be located the guard warns rather than fails — a
- * changed AGP output layout should not be able to block a release.
+ * merged manifest cannot be located the guard fails (M-13): an unverified
+ * permission footprint must not ship silently.
  */
 tasks.matching { it.name ==~ /(?i)process.*ReleaseMainManifest/ }.configureEach { manifestTask ->
     manifestTask.doLast {
@@ -677,12 +708,14 @@ tasks.matching { it.name ==~ /(?i)process.*ReleaseMainManifest/ }.configureEach 
         }
         def merged = candidates.find { it.exists() && it.text.contains("<manifest") }
         if (!merged) {
-            logger.warn(
+            // M-13: fail rather than warn. A guard that silently skips when it
+            // loses its input reports success either way.
+            throw new GradleException(
                 "[M-06] could not locate the merged manifest among the outputs of " +
-                "${manifestTask.name}; skipping the permission-footprint check. " +
-                "The policy in security/android-permissions.json was NOT verified for this build."
+                "${manifestTask.name}, so the permission footprint in " +
+                "security/android-permissions.json cannot be verified for this release build.\n" +
+                "If the AGP output layout changed, update the lookup above."
             )
-            return
         }
 
         def appId = android.defaultConfig.applicationId?.toString() ?: ""
