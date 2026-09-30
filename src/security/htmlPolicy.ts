@@ -37,7 +37,7 @@
  */
 
 import { log } from "../utils/logger";
-import { parseHttpsUrl } from "./webViewUrlPolicy";
+import { getApiHosts, parseHttpsUrl } from "./webViewUrlPolicy";
 
 /** Guards against a pathological payload before any scanning runs. */
 export const MAX_HTML_LENGTH = 64 * 1024;
@@ -182,12 +182,36 @@ const sanitizeStyle = (value: string): string | null => {
   return value.trim() || null;
 };
 
-const sanitizeImageSource = (value: string): string | null => {
+/**
+ * Hosts a notes image may load from — security finding M-05. Any other https
+ * image in CMS or notification HTML is a tracking beacon: it tells whoever runs
+ * that host which user opened the screen, and from what IP. Our own storage
+ * accounts and the backend hosts for this build are the only legitimate sources.
+ */
+const NOTES_IMAGE_HOSTS = [
+  "prdexchangapaystorage.blob.core.windows.net",
+  "neomobilestorage.blob.core.windows.net",
+  "devdottstoragespace.blob.core.windows.net",
+];
+
+const isNotesImageHostAllowed = (host: string): boolean => {
+  if (NOTES_IMAGE_HOSTS.includes(host)) return true;
+  try {
+    return getApiHosts().includes(host);
+  } catch {
+    return false;
+  }
+};
+
+const sanitizeImageSource = (value: string, restrictHosts: boolean): string | null => {
   const candidate = value.trim();
   if (DATA_IMAGE.test(candidate)) return candidate;
   // Reuses the deliberately strict https parser from the 2FA origin policy, so
   // the two surfaces agree on what a URL is.
-  return parseHttpsUrl(candidate) ? candidate : null;
+  const parsed = parseHttpsUrl(candidate);
+  if (!parsed) return null;
+  if (restrictHosts && !isNotesImageHostAllowed(parsed.host)) return null;
+  return candidate;
 };
 
 /**
@@ -220,7 +244,8 @@ type Counters = { tags: number; attributes: number };
 const sanitizeAttributes = (
   tag: string,
   raw: string,
-  counters: Counters
+  counters: Counters,
+  restrictImageHosts: boolean
 ): string => {
   const allowed = TAG_ATTRIBUTES[tag];
   const kept: string[] = [];
@@ -238,7 +263,7 @@ const sanitizeAttributes = (
 
     let safe: string | null = null;
     if (name === "style") safe = sanitizeStyle(value);
-    else if (name === "src") safe = sanitizeImageSource(value);
+    else if (name === "src") safe = sanitizeImageSource(value, restrictImageHosts);
     else if (name === "href") safe = sanitizeHref(value);
     else if (name === "class") safe = CLASS_NAMES.test(value.trim()) ? value.trim() : null;
     else if (name === "alt") safe = value.slice(0, 128);
@@ -292,7 +317,7 @@ const rewrite = (
     }
 
     if (VOID_TAGS.has(tag)) {
-      const attributes = sanitizeAttributes(tag, match[3] || "", counters);
+      const attributes = sanitizeAttributes(tag, match[3] || "", counters, allowAnchors);
       // An <img> that lost its source is dropped rather than left empty.
       if (tag === "img" && !attributes) {
         counters.tags++;
@@ -302,7 +327,7 @@ const rewrite = (
       continue;
     }
 
-    const attributes = sanitizeAttributes(tag, match[3] || "", counters);
+    const attributes = sanitizeAttributes(tag, match[3] || "", counters, allowAnchors);
 
     if (tag === "a" && !attributes.includes("href=")) {
       droppedAnchors++;
