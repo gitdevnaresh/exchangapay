@@ -5,7 +5,6 @@ import {
     SectionList,
     TouchableOpacity,
     Dimensions,
-    BackHandler
 } from "react-native";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -26,6 +25,7 @@ import { CryptoPayee } from "./constants";
 import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 import { IconRefresh } from "../../assets/svg";
 import { LIST_PERF_NO_CLIP } from "../../constants/listPerformance";
+import useHardwareBack from "../../hooks/useHardwareBack";
 
 const { width } = Dimensions.get("window");
 const isPad = width > 600;
@@ -187,11 +187,11 @@ const CryptoPayeesList = (props: any) => {
     const handleBackPress = useCallback(() => {
         if (props.route?.params?.screenName === "withdraw") {
             navigation.navigate("Dashboard", {
-                animation: "slid_from_left"
+                animation: "slide_from_left"
             })
         } else {
             navigation.navigate("DrawerModal", {
-                animation: "slid_from_left"
+                animation: "slide_from_left"
             });
 
         }
@@ -199,16 +199,8 @@ const CryptoPayeesList = (props: any) => {
     }, [navigation]);
 
 
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
-            () => {
-                handleBackPress();
-                return true;
-            }
-        );
-        return () => backHandler.remove();
-    }, []);
+    // Focus-aware: must not fire while payeeDetails is on top of this screen.
+    useHardwareBack(handleBackPress);
     const handleCloseError = () => {
         setErrormsg("");
     };
