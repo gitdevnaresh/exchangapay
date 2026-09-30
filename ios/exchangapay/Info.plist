@@ -22,13 +22,22 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- Jailbreak app schemes checked by src/security/deviceIntegrity.ts. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>cydia</string>
+		<string>sileo</string>
+		<string>zbra</string>
+		<string>filza</string>
+		<string>undecimus</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
-		<!-- L-03 / M-07: NSAllowsLocalNetworking is deliberately absent here, and
+		<!-- NSAllowsLocalNetworking is deliberately absent here, and
 		     absent means false. Setting it true permits cleartext HTTP to every
 		     .local name, unqualified hostname and RFC 1918 address — a far broader
 		     exemption than a financial app with two pinned HTTPS hosts has any use
@@ -43,19 +52,19 @@
 		     all configurations, so that exemption cannot live in this file without
 		     also shipping. It is instead injected into the *built* Info.plist
 		     inside the .app by ios/scripts/ats-local-networking.sh, which runs as
-		     the "[M-07] ATS local networking (Debug only)" build phase and adds the
+		     the "ATS local networking (Debug only)" build phase and adds the
 		     key only when CONFIGURATION=Debug. For every other configuration the
 		     same script strips the key and fails the build if any cleartext
 		     exemption survives in the built product.
 
 		     Do not add NSAllowsLocalNetworking, or an NSExceptionDomains entry with
 		     NSExceptionAllowsInsecureHTTPLoads, to this file. Two build phases
-		     reject it: the one above, and "[H-07] Release security guards", which
+		     reject it: the one above, and "Release security guards", which
 		     re-reads both this file and the built product before a release build
 		     completes. A genuine local-network feature would need its own narrowly
 		     scoped NSExceptionDomains entry plus a written reason here — not this
 		     key, which opens the whole local network. -->
-		<!-- H-03: certificate pinning. Mirrors the Android pin-set in
+		<!-- Certificate pinning. Mirrors the Android pin-set in
 		     android/app/src/main/res/xml/network_security_config.xml — the two
 		     MUST be updated together or the platforms diverge silently.
 
@@ -64,7 +73,7 @@
 		     hosts; backup is DigiCert Global Root G2 so a reissue from a different
 		     DigiCert intermediate still validates.
 
-		     H-02 — WHAT IS NOT PINNED, AND WHY: security/pinning-policy.json, one
+		     WHAT IS NOT PINNED, AND WHY: security/pinning-policy.json, one
 		     entry per host with a reason and a review date. It is enforced, not
 		     documentation: the Android release build fails if a host in
 		     environments/*.js is neither pinned nor exempt, and fails if this file
@@ -78,7 +87,7 @@
 		     no fail-open. If these pins stop matching, the iOS app cannot reach the
 		     API at all and the only remedy is an App Store release.
 
-		     M-03 — the expiry date is deliberately NOT repeated here. It lives in
+		     The expiry date is deliberately NOT repeated here. It lives in
 		     security/pinning-policy.json (pinSet.iosExpiration), which the release
 		     build phase reads to warn ahead of the date and which App.tsx reads to
 		     report the fleet's pin state to Sentry. A date in a comment is the one
@@ -176,7 +185,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- M-07: Universal Links for the Auth0 callback are NOT ACTIVE on iOS.
+	<!-- Universal Links for the Auth0 callback are NOT ACTIVE on iOS.
 
 	     Unlike Android — which at least declares an autoVerify App Link filter —
 	     nothing in this target requests Universal Links yet. There is no
@@ -211,7 +220,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<!-- Legacy custom scheme. Claimable by any app on the device, which is
-				     what M-07 is about — but it is currently the only iOS callback
+				     what the Universal Links work is about — but it is currently the only iOS callback
 				     path, so removing it before Universal Links work would break login
 				     entirely rather than harden it.
 

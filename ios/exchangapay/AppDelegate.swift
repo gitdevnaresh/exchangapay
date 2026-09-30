@@ -11,13 +11,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   var reactNativeDelegate: ReactNativeDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
 
-  /// Opaque cover shown over the UI whenever it must not be captured (H-09).
+  /// Opaque cover shown over the UI whenever it must not be captured.
   private var privacyOverlay: UIView?
 
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // Block debugger attach in Release builds (Debug is skipped so Xcode still works).
+    #if !DEBUG
+    if let deviceSecurity = NSClassFromString("DeviceSecurityModule") as? NSObject.Type {
+      _ = deviceSecurity.perform(NSSelectorFromString("enableAntiDebug"))
+    }
+    #endif
+
     FirebaseApp.configure()
 
     let delegate = ReactNativeDelegate()
@@ -48,7 +55,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     return true
   }
 
-  // MARK: - Screen-capture protection (security finding H-09)
+  // MARK: - Screen-capture protection
   //
   // iOS has no FLAG_SECURE equivalent, so this is two separate defences:
   //
@@ -99,8 +106,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     return overlay
   }
 
+  // Off for dev/tst builds so QA can record the screen; on for prod and unknown envs.
+  private lazy var captureProtectionEnabled: Bool = {
+    let env = (NSClassFromString("RNCConfig") as? NSObject.Type)?
+      .perform(NSSelectorFromString("envFor:"), with: "APP_ENV")?
+      .takeUnretainedValue() as? String
+    return env != "dev" && env != "tst"
+  }()
+
   private func showPrivacyOverlay() {
-    guard privacyOverlay == nil, let window = window else { return }
+    guard captureProtectionEnabled, privacyOverlay == nil, let window = window else { return }
     let overlay = makePrivacyOverlay()
     window.addSubview(overlay)
     window.bringSubviewToFront(overlay)

@@ -1,5 +1,5 @@
 /**
- * Filesystem probes backing the H-04 device-integrity check.
+ * Filesystem probes backing the device-integrity check.
  *
  * These are heuristics, deliberately kept in one place so the path lists can be
  * reviewed and extended without touching the scoring logic. None of them is
@@ -82,6 +82,16 @@ export const IOS_HOOK_PATHS = [
   "/usr/lib/TweakInject",
   "/usr/lib/frida",
   "/usr/lib/frida/frida-agent.dylib",
+];
+
+// Jailbreak app URL schemes. Must also be listed under LSApplicationQueriesSchemes
+// in Info.plist, or canOpenURL always returns false.
+export const IOS_JAILBREAK_SCHEMES = [
+  "cydia://",
+  "sileo://",
+  "zbra://",
+  "filza://",
+  "undecimus://",
 ];
 
 /**

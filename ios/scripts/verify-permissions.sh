@@ -4,8 +4,8 @@
 #
 # A purpose string is what makes a permission prompt possible: once the key
 # exists, any SDK can raise a microphone or location prompt and the user sees a
-# plausible reason. The allowlist below matches the keys the live BullSwipe app
-# ships with. NSMicrophoneUsageDescription was removed because nothing in the
+# plausible reason. The allowlist below matches the keys the app
+# actually needs. NSMicrophoneUsageDescription was removed because nothing in the
 # app records audio and Sumsub's Default subspec has no Video Ident.
 #
 # Checked in the source plist, so a commit that adds a key fails, and in the

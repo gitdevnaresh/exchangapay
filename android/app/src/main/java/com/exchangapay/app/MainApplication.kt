@@ -19,6 +19,8 @@ class MainApplication : Application(), ReactApplication {
           // H-04: Play Integrity lives in this app rather than in a library, so
           // autolinking does not see it and it has to be registered by hand.
           add(PlayIntegrityPackage())
+          // Native root / hook detection.
+          add(DeviceSecurityPackage())
         },
     )
   }

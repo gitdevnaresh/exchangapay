@@ -46,6 +46,7 @@ import {
 } from "./src/security";
 import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 import ErrorBoundary from "./src/components/errorBoundary/ErrorBoundary";
+import DeviceSecurityGate from "./src/components/DeviceSecurityGate";
 
 import * as Sentry from "@sentry/react-native";
 
@@ -298,6 +299,7 @@ export default Sentry.wrap(function App() {
                       updateLatter={() => setIsUpdate(false)}
                     />
                   )}
+                  <DeviceSecurityGate />
                 </SafeAreaProvider>
               </ApplicationProvider>
             </SafeAreaProvider>

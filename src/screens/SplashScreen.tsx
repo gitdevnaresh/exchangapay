@@ -38,6 +38,11 @@ import useMemberLogin from "../hooks/useMemberLogin";
 import useChekBio from "../hooks/useCheckBio";
 import { storeToken } from "../utils/helpers";
 import { log } from "../utils/logger";
+import {
+  initializeDeviceIntegrity,
+  isDeviceCompromised,
+  isEnforcementEnabled,
+} from "../security";
 const SplashScreen = React.memo(() => {
   const { authorize, getCredentials, clearCredentials } = useAuth0();
   const [loading, setLoading] = React.useState(false);
@@ -61,6 +66,9 @@ const SplashScreen = React.memo(() => {
   useEffect(() => {
     const initializeAuth = async () => {
       if (isInitialized) return;
+      // Hold login until the device passes the root/jailbreak check.
+      const integrity = await initializeDeviceIntegrity();
+      if (isEnforcementEnabled() && isDeviceCompromised(integrity)) return;
       setLoading(true);
       try {
         const credentials = await getCredentials();

@@ -1,5 +1,5 @@
 /**
- * H-04 — device integrity (Tier 2: client-side detection).
+ * Device integrity (Tier 2: client-side detection).
  *
  * The app previously had no way to tell a stock phone from one where an attacker
  * has full control. On a rooted device with Frida an attacker hooks the biometric
@@ -26,37 +26,44 @@
  *   - Enforcement is disabled in __DEV__ so that developers and CI on emulators
  *     are never blocked. The verdict is still computed and reported.
  *
- * Deliberately built on dependencies the app already ships (react-native-fs,
- * react-native-device-info) rather than adding a native module mid RN-0.83
- * upgrade. If you later want stronger, harder-to-strip checks, jail-monkey or a
- * commercial RASP product (Guardsquare, Promon SHIELD, Appdome) drops in behind
- * this same interface — only evaluateDeviceIntegrity() needs to change.
+ * Native modules (DeviceSecurity / DeviceSecurityIOS) repeat these checks outside
+ * the JS bridge; both layers are OR-ed, and a missing module falls back to JS.
  */
 
-import { Platform } from "react-native";
+import { Linking, NativeModules, Platform } from "react-native";
 import RNFS from "react-native-fs";
 import DeviceInfo from "react-native-device-info";
+import { isProductionEnv } from "../../Environment";
 import {
   ANDROID_HOOK_PATHS,
   ANDROID_ROOT_PATHS,
   IOS_HOOK_PATHS,
   IOS_JAILBREAK_PATHS,
+  IOS_JAILBREAK_SCHEMES,
   IOS_SANDBOX_ESCAPE_PATH,
 } from "./probes";
+
+// ⚠️ TESTING ONLY. `true` checks emulators/simulators in dev/tst and enforces the
+// block even in Debug builds. MUST be `false` before committing.
+const CHECK_EMULATOR_IN_TEST = false;
 
 export type IntegritySignal =
   | "ROOT_BINARY"
   | "JAILBREAK_PATH"
   | "SANDBOX_ESCAPE"
   | "HOOK_FRAMEWORK"
+  | "DEBUGGER_ATTACHED"
   | "EMULATOR"
   | "NO_SCREEN_LOCK"
+  | "DEVELOPER_OPTIONS"
+  | "ADB_ENABLED"
   | "DEBUG_BUILD";
 
 /**
  * ok          — nothing found.
- * suspect     — weak signals (emulator, no device passcode). Warn, allow.
- * compromised — root/jailbreak/hooking framework present. Block high-risk ops.
+ * suspect     — weak signals (no device passcode). Warn, allow.
+ * compromised — root/jailbreak/hooking framework, emulator, or dev options /
+ *               USB debugging in a release build. Blocks the app.
  * unknown     — checks could not complete. Treated as trusted: a probe failure
  *               must never lock a legitimate user out of their money.
  */
@@ -74,6 +81,10 @@ const CRITICAL_SIGNALS: IntegritySignal[] = [
   "JAILBREAK_PATH",
   "SANDBOX_ESCAPE",
   "HOOK_FRAMEWORK",
+  "DEBUGGER_ATTACHED",
+  "DEVELOPER_OPTIONS",
+  "ADB_ENABLED",
+  "EMULATOR",
 ];
 
 const EVALUATION_TIMEOUT_MS = 4000;
@@ -156,33 +167,112 @@ const hasNoScreenLock = (): Promise<boolean> =>
     false
   );
 
+/**
+ * iOS: can any jailbreak package manager be opened? Requires the schemes in
+ * LSApplicationQueriesSchemes (Info.plist); otherwise always false.
+ */
+const canOpenJailbreakScheme = async (): Promise<boolean> => {
+  for (const url of IOS_JAILBREAK_SCHEMES) {
+    const opens = await settleWithin(
+      Linking.canOpenURL(url).then((v) => v === true),
+      1500,
+      false
+    );
+    if (opens) return true;
+  }
+  return false;
+};
+
+/** Maps native reason strings onto the existing signals. */
+const NATIVE_REASON_SIGNALS: Record<string, IntegritySignal> = {
+  native_root_file: "ROOT_BINARY",
+  native_su_path: "ROOT_BINARY",
+  native_test_keys: "ROOT_BINARY",
+  native_hook_artifact: "HOOK_FRAMEWORK",
+  native_hook_injected: "HOOK_FRAMEWORK",
+  native_jailbreak_file: "JAILBREAK_PATH",
+  native_sandbox_write: "SANDBOX_ESCAPE",
+  native_suspicious_dylib: "HOOK_FRAMEWORK",
+  native_debugger_attached: "DEBUGGER_ATTACHED",
+};
+
+/** Calls one native probe. A missing module or a fault yields no reasons. */
+const readNativeReasons = async (
+  moduleName: string,
+  method: string
+): Promise<string[]> => {
+  const native = NativeModules[moduleName];
+  if (typeof native?.[method] !== "function") {
+    return [];
+  }
+  const result = await settleWithin<any>(native[method](), 2000, null);
+  return Array.isArray(result?.reasons)
+    ? result.reasons.filter((r: unknown): r is string => typeof r === "string")
+    : [];
+};
+
+const collectNativeSignals = async (): Promise<IntegritySignal[]> => {
+  const reasons =
+    Platform.OS === "ios"
+      ? await readNativeReasons("DeviceSecurityIOS", "getJailbreakStatus")
+      : await readNativeReasons("DeviceSecurity", "getRootStatus");
+
+  const signals: IntegritySignal[] = [];
+  for (const reason of reasons) {
+    const signal = NATIVE_REASON_SIGNALS[reason];
+    // Xcode / Android Studio attach a debugger to every debug build.
+    if (signal === "DEBUGGER_ATTACHED" && __DEV__) continue;
+    if (signal) signals.push(signal);
+  }
+
+  // Developer Options / USB debugging block release builds only, never __DEV__.
+  if (Platform.OS === "android" && !__DEV__) {
+    const flags = await settleWithin<any>(
+      NativeModules.DeviceSecurity?.getFlags?.() ?? Promise.resolve(null),
+      2000,
+      null
+    );
+    if (flags?.developerOptionsEnabled) signals.push("DEVELOPER_OPTIONS");
+    if (flags?.adbEnabled) signals.push("ADB_ENABLED");
+  }
+
+  return signals;
+};
+
 const collectSignals = async (): Promise<IntegritySignal[]> => {
+  // Emulators/simulators trip the file probes; skip them outside prod so QA can test.
+  if (!isProductionEnv() && !CHECK_EMULATOR_IN_TEST && (await isEmulator())) return [];
+
   const signals: IntegritySignal[] = [];
 
   const rootPaths =
     Platform.OS === "ios" ? IOS_JAILBREAK_PATHS : ANDROID_ROOT_PATHS;
   const hookPaths = Platform.OS === "ios" ? IOS_HOOK_PATHS : ANDROID_HOOK_PATHS;
 
-  const [rooted, hooked, sandboxEscaped, emulated, unlocked] = await Promise.all(
-    [
+  const [rooted, hooked, sandboxEscaped, schemeOpens, emulated, unlocked, native] =
+    await Promise.all([
       anyPathExists(rootPaths),
       anyPathExists(hookPaths),
       Platform.OS === "ios" ? canEscapeSandbox() : Promise.resolve(false),
+      Platform.OS === "ios" ? canOpenJailbreakScheme() : Promise.resolve(false),
       isEmulator(),
       hasNoScreenLock(),
-    ]
-  );
+      collectNativeSignals().catch(() => [] as IntegritySignal[]),
+    ]);
 
   if (rooted) {
     signals.push(Platform.OS === "ios" ? "JAILBREAK_PATH" : "ROOT_BINARY");
   }
   if (hooked) signals.push("HOOK_FRAMEWORK");
   if (sandboxEscaped) signals.push("SANDBOX_ESCAPE");
+  if (schemeOpens) signals.push("JAILBREAK_PATH");
   if (emulated) signals.push("EMULATOR");
   if (unlocked) signals.push("NO_SCREEN_LOCK");
   if (__DEV__) signals.push("DEBUG_BUILD");
 
-  return signals;
+  // JS and native layers overlap; report each signal once.
+  for (const signal of native) signals.push(signal);
+  return Array.from(new Set(signals));
 };
 
 const scoreSignals = (signals: IntegritySignal[]): IntegrityLevel => {
@@ -221,7 +311,7 @@ export const evaluateDeviceIntegrity = async (): Promise<IntegrityReport> => {
  * always reported; only the blocking behaviour is gated on this, so that debug
  * builds and emulators stay fully usable during development and QA.
  */
-export const isEnforcementEnabled = (): boolean => !__DEV__;
+export const isEnforcementEnabled = (): boolean => !__DEV__ || CHECK_EMULATOR_IN_TEST;
 
 export const isDeviceCompromised = (report: IntegrityReport): boolean =>
   report.level === "compromised";
