@@ -3,7 +3,6 @@ import {
   StyleSheet,
   View,
   ScrollView,
-  SafeAreaView,
   Image,
   TouchableOpacity,
   TextInput,
@@ -14,6 +13,7 @@ import {
   Alert,
   Keyboard,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { Field } from "formik";
 import LabelComponent from "../../components/Paragraph/label";
@@ -2139,7 +2139,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
         presentationStyle="fullScreen"
         onRequestClose={() => setSelfiePreview(null)}
       >
-        <View style={styles.selfiePreviewBackdrop}>
+        <SafeAreaView edges={Platform.OS === "android" ? ["bottom"] : []} style={styles.selfiePreviewBackdrop}>
           <TouchableOpacity
             style={styles.closeSelfiePreviewButton}
             onPress={() => setSelfiePreview(null)}
@@ -2179,7 +2179,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
 
       <OverlayPopup

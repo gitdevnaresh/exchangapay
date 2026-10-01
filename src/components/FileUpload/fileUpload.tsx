@@ -23,6 +23,7 @@ import { NEW_COLOR, WINDOW_HEIGHT, WINDOW_WIDTH } from '../../constants/theme/va
 import { s } from '../../constants/theme/scale';
 import { isErrorDispaly } from '../../utils/helpers';
 import { downloadImage } from '../../utils/tools';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Container } from '../index';
 import OverlayPopup from '../../screens/cards/SelectPopup';
 import { REMOTE_ASSETS } from '../../constants';
@@ -206,6 +207,7 @@ const CommonUploadAttachment = ({ onUploadSuccess, uploadApi }: Props) => {
 
             {/* ✅ PREVIEW MODAL WITH DOWNLOAD */}
             <Modal visible={!!previewUri} transparent animationType="slide">
+                <SafeAreaProvider>
                 <Container style={commonStyles.container}>
                     <TouchableWithoutFeedback onPress={() => setPreviewUri(null)}>
                         <View style={[commonStyles.screenBg, commonStyles.flex1]}>
@@ -235,6 +237,7 @@ const CommonUploadAttachment = ({ onUploadSuccess, uploadApi }: Props) => {
                         </View>
                     </TouchableWithoutFeedback>
                 </Container>
+                </SafeAreaProvider>
             </Modal>
         </>
     );

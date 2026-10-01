@@ -3,9 +3,9 @@ buildscript {
         buildToolsVersion = "36.0.0"
         minSdkVersion = 24
         compileSdkVersion = 36
-        // Intentionally held at 35: targetSdk 36 makes edge-to-edge mandatory on
-        // Android 16 and ignores the edgeToEdgeEnabled=false opt-out.
-        targetSdkVersion = 35
+        // targetSdk 36 makes edge-to-edge mandatory on Android 16. System-bar insets
+        // are applied as padding in MainActivity so screens keep their layout.
+        targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
         // AGP 8.12 defaults to CMake 3.22.1, which emits `-fuse-ld=gold`. NDK 27 ships

@@ -8,6 +8,7 @@ import { s } from '../../../../../constants/theme/scale';
 import ErrorComponent from '../../../../../components/Error';
 import { commonStyles } from '../../../../../components/CommonStyles';
 import { ActivityIndicator, Alert, BackHandler, Image, Keyboard, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Container } from '../../../../../components';
 import PageHeader from '../../../../../components/pageHeader/pageHeader';
 import DefaultButton from '../../../../../components/DefaultButton';
@@ -439,6 +440,7 @@ const SendReplay = (props: any) => {
         loadingType={loadingState?.loadingType}
       />
       <Modal visible={!!filePreview} onRequestClose={handleClosePreview} animationType="slide" transparent={true}>
+        <SafeAreaProvider>
         <Container style={[commonStyles.container]}>
           <TouchableWithoutFeedback>
             <View style={[commonStyles.screenBg, commonStyles.flex1]}>
@@ -465,6 +467,7 @@ const SendReplay = (props: any) => {
             </View>
           </TouchableWithoutFeedback>
         </Container>
+        </SafeAreaProvider>
       </Modal>
     </SafeAreaView>
 

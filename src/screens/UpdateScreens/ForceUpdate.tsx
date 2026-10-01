@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import DefaultButton from "../../components/DefaultButton";
 
@@ -21,6 +22,7 @@ const ForceUpdate = (props: any) => {
     return (
         <>
             <Modal isVisible={show} style={{ flex: 1, margin: 0 }}>
+                <SafeAreaProvider>
                 <Container style={styles.container}>
                     <View style={[styles.content]}>
                         <View>
@@ -46,6 +48,7 @@ const ForceUpdate = (props: any) => {
                         </View>
                     </View>
                 </Container>
+                </SafeAreaProvider>
             </Modal>
         </>
     );

@@ -1,7 +1,8 @@
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import React, { useEffect, useRef, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Platform, TouchableOpacity, View } from "react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
+import { initialWindowMetrics } from "react-native-safe-area-context";
 import { commonStyles } from "../../components/CommonStyles";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -17,6 +18,12 @@ import {
 } from "../../security";
 import { REMOTE_ASSETS } from "../../constants";
 
+// The sheet's modal window is edge-to-edge on Android, so its bottom sits behind the
+// navigation bar. Extend the sheet by that inset so its background fills the strip
+// without cutting off content. The root view is padded natively, so useSafeAreaInsets
+// reports 0 here; initialWindowMetrics is measured on the full window.
+const SHEET_BOTTOM_INSET =
+    Platform.OS === "android" ? initialWindowMetrics?.insets.bottom ?? 0 : 0;
 
 const CardPin = React.memo((props: any) => {
     const styles = useStyleSheet(themedStyles);
@@ -29,7 +36,7 @@ const CardPin = React.memo((props: any) => {
 
     return (
         <RBSheet
-            height={350}
+            height={350 + SHEET_BOTTOM_INSET}
             ref={refRBSheet}
             closeOnDragDown={false}
             closeOnPressMask={false}
@@ -93,7 +100,7 @@ export const ChiperCardPin = React.memo((props: any) => {
 
     return (
         <RBSheet
-            height={780}
+            height={780 + SHEET_BOTTOM_INSET}
             ref={refRBSheet}
             closeOnDragDown={false}
             closeOnPressMask={false}

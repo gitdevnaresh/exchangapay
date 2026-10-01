@@ -49,14 +49,14 @@ const CardDetails = React.memo((props: any) => {
   const frontStyle = useAnimatedStyle(() => {
     const spinValue = interpolate(spin.value, [0, 1], [0, 180]);
     return {
-      transform: [{ rotateY: withTiming(`${spinValue}deg`) }],
+      transform: [{ perspective: 1000 }, { rotateY: withTiming(`${spinValue}deg`) }],
     }
   }
   )
   const backStyle = useAnimatedStyle(() => {
     const spinValue = interpolate(spin.value, [0, 1], [180, 360]);
     return {
-      transform: [{ rotateY: withTiming(`${spinValue}deg`) }],
+      transform: [{ perspective: 1000 }, { rotateY: withTiming(`${spinValue}deg`) }],
     }
   }
   )
@@ -314,7 +314,7 @@ const CardDetails = React.memo((props: any) => {
                     activeOpacity={1}
                   >
                     <Animated.View
-                      style={[{ position: "absolute" }, frontStyle]}
+                      style={[{ position: "absolute", backfaceVisibility: "hidden" }, frontStyle]}
                     >
                       <ImageBackground
                         source={{ uri: myCardsData?.logo }}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView, TextInput } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LIST_PERF_PICKER } from '../constants/listPerformance';
 import { NEW_COLOR } from '../constants/theme/variables';
 import { ms, s } from '../constants/theme/scale';

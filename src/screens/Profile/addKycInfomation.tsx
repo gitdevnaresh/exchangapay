@@ -2105,7 +2105,7 @@ const AddKycInfomation = (props: any) => {
         presentationStyle="fullScreen"
         onRequestClose={() => setSelfiePreview(null)}
       >
-        <View style={styles.selfiePreviewBackdrop}>
+        <SafeAreaView edges={Platform.OS === "android" ? ["bottom"] : []} style={styles.selfiePreviewBackdrop}>
           <TouchableOpacity
             style={styles.closeSelfiePreviewButton}
             onPress={() => setSelfiePreview(null)}
@@ -2145,7 +2145,7 @@ const AddKycInfomation = (props: any) => {
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
       <OverlayPopup
         title={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO}

@@ -9,6 +9,7 @@ import {
   StyleProp,
   ViewStyle,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * P-03 — duplicate UI kits.
@@ -63,7 +64,13 @@ export const Overlay: React.FC<OverlayProps> = ({
       />
     </TouchableWithoutFeedback>
 
-    <View style={styles.container} pointerEvents="box-none">
+    {/* The modal window is edge-to-edge on Android (targetSdk 36), so centre the
+        overlay between the status and navigation bars rather than the full window. */}
+    <SafeAreaView
+      edges={Platform.OS === "android" ? ["top", "bottom"] : []}
+      style={styles.container}
+      pointerEvents="box-none"
+    >
       <View
         style={StyleSheet.flatten([
           styles.overlay,
@@ -73,7 +80,7 @@ export const Overlay: React.FC<OverlayProps> = ({
       >
         {children}
       </View>
-    </View>
+    </SafeAreaView>
   </ModalComponent>
 );
 
@@ -101,6 +108,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 3,
     padding: 10,
+    // Shrinks call sites sized from WINDOW_HEIGHT to fit the safe area above.
+    // (A percentage maxHeight clamps the size but Yoga centres on the unclamped one.)
+    flexShrink: 1,
     ...Platform.select({
       android: {
         elevation: 2,

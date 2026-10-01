@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import React from "react";
 import Modal from "react-native-modal";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
 import { commonStyles } from "../../components/CommonStyles";
@@ -17,6 +18,7 @@ const NoInternet = (props: any) => {
   return (
     <>
       <Modal isVisible={show} style={{ flex: 1, margin: 0,backgroundColor:NEW_COLOR.SCREENBG_WHITE }}>
+        <SafeAreaProvider>
         <Container style={commonStyles.container}>
           <View style={[styles.content]}>
             <View>
@@ -46,6 +48,7 @@ const NoInternet = (props: any) => {
             </View>
           </View>
         </Container>
+        </SafeAreaProvider>
       </Modal>
     </>
   );

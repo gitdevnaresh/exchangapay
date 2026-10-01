@@ -15,6 +15,7 @@ import { Field, Formik } from "formik";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { s } from "../../constants/theme/scale";
 import { commonStyles } from "../../components/CommonStyles";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Container from "../../components/Container";
 import DefaultButton from "../../components/DefaultButton";
 import InputDefault from "../../components/DefaultFiat";
@@ -364,6 +365,7 @@ const AddEditPayeeScreen = (props: any) => {
           visible={enableScanner}
           onRequestClose={() => setEnableScanner(false)}
         >
+          <SafeAreaProvider>
           <Container style={styles.modalContainer}>
             <QRCodeScanner
               onCaptureCode={(data: string) => {
@@ -379,6 +381,7 @@ const AddEditPayeeScreen = (props: any) => {
               onClose={() => setEnableScanner(false)}
             />
           </Container>
+          </SafeAreaProvider>
         </Modal>
       )}
     </SafeAreaView>

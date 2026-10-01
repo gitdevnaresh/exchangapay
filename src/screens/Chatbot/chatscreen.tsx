@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
 import { KEYCHAIN_SERVICES, readSecretValue, writeSecret } from '../../utils/storage/keychainPolicy';
@@ -412,7 +413,7 @@ const KommoChatScreen = (props: any) => {
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
             <KeyboardAvoidingView style={[commonStyles.flex1, commonStyles.screenBg]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-                <View style={[commonStyles.orangeSection, { marginTop: Platform.OS === 'ios' ? 0 : 35 }, commonStyles.p12, commonStyles.mb14,]}>
+                <View style={[commonStyles.orangeSection, commonStyles.p12, commonStyles.mb14,]}>
                     <View style={[commonStyles.dflex, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
                             <ChatIcon width={s(24)} height={s(24)} />
@@ -496,6 +497,7 @@ const KommoChatScreen = (props: any) => {
                         </TouchableOpacity>
                     </View>
                 </View>
+                <SafeAreaProvider>
             </KeyboardAvoidingView>
             <Modal visible={!!filePreview} onRequestClose={handleClosePreview} animationType="slide" transparent={true}>
                 <Container style={[commonStyles.container]}>
@@ -519,6 +521,7 @@ const KommoChatScreen = (props: any) => {
                                 )}
                             </View>
                         </View>
+                </SafeAreaProvider>
                     </TouchableWithoutFeedback>
                 </Container>
             </Modal>

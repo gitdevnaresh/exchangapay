@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { Camera, useCameraDevices } from "react-native-vision-camera";
 
@@ -58,23 +59,34 @@ const SelfieCamera: React.FC<SelfieCameraProps> = ({ visible, onClose, onCapture
             photoQualityBalance="speed"
           />
         ) : null}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose} disabled={capturing}>
-          <Ionicons name="close" size={30} color="#FFFFFF" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.switchButton}
-          onPress={() => setCameraPosition((position) => position === "front" ? "back" : "front")}
-          disabled={capturing}
+        {/* The modal window is edge-to-edge on Android, so keep the controls clear
+            of the status and navigation bars. Absolute children ignore their
+            parent's padding, hence the inner view. */}
+        <SafeAreaView
+          edges={Platform.OS === "android" ? ["top", "bottom"] : []}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="box-none"
         >
-          <Ionicons name="camera-reverse-outline" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.captureButton, (!device || capturing) && styles.captureButtonDisabled]}
-          onPress={takeSelfie}
-          disabled={!device || capturing}
-        >
-          {capturing ? <ActivityIndicator color="#000000" /> : <View style={styles.captureInner} />}
-        </TouchableOpacity>
+          <View style={styles.controls} pointerEvents="box-none">
+            <TouchableOpacity style={styles.closeButton} onPress={onClose} disabled={capturing}>
+              <Ionicons name="close" size={30} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.switchButton}
+              onPress={() => setCameraPosition((position) => position === "front" ? "back" : "front")}
+              disabled={capturing}
+            >
+              <Ionicons name="camera-reverse-outline" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.captureButton, (!device || capturing) && styles.captureButtonDisabled]}
+              onPress={takeSelfie}
+              disabled={!device || capturing}
+            >
+              {capturing ? <ActivityIndicator color="#000000" /> : <View style={styles.captureInner} />}
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </View>
     </Modal>
   );
@@ -82,6 +94,7 @@ const SelfieCamera: React.FC<SelfieCameraProps> = ({ visible, onClose, onCapture
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000000" },
+  controls: { flex: 1 },
   closeButton: {
     position: "absolute", top: 48, left: 24, width: 44, height: 44,
     borderRadius: 22, backgroundColor: "rgba(0, 0, 0, 0.45)", alignItems: "center", justifyContent: "center",
