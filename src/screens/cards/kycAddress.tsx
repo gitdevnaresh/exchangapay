@@ -14,7 +14,6 @@ import {
   Alert,
   Keyboard,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { Field } from "formik";
 import LabelComponent from "../../components/Paragraph/label";
@@ -2076,11 +2075,11 @@ const KycAddress: React.FC<KycAddressProps> = ({
 
   return (
     <SafeAreaView>
-      <KeyboardAwareScrollView
+      {/* Parent screen owns scrolling/keyboard handling; a nested keyboard-aware view conflicts with it */}
+      <ScrollView
         ref={ref}
+        scrollEnabled={false}
         keyboardShouldPersistTaps="handled"
-        enableOnAndroid={true}
-        enableAutomaticScroll={true}
         showsVerticalScrollIndicator={false}
       >
         <View>
@@ -2108,7 +2107,7 @@ const KycAddress: React.FC<KycAddressProps> = ({
             })}
           </View>
         </View>
-      </KeyboardAwareScrollView>
+      </ScrollView>
 
       <OverlayPopup
         title={PLACEHOLDER_CONSTANTS.UPLOAD_YOUR_FACE_PHOTO}

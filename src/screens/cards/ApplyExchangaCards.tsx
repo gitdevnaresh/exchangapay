@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   BackHandler,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
@@ -522,21 +524,16 @@ const ApplyExchangaCard = (props: any) => {
   };
   return (
     <SafeAreaView style={[commonStyles.screenBg, { flex: 1 }]}>
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? ms(24) : ms(-55)}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "android" ? "height" : undefined}
         style={[commonStyles.screenBg, commonStyles.flex1]}
-      > */}
+      >
       <ScrollView
         showsVerticalScrollIndicator={false}
         ref={ref}
         keyboardShouldPersistTaps="handled"
-      // contentContainerStyle={{
-      //   flexGrow: 1,
-      //   paddingBottom: isKeyboardVisible
-      //     ? insets.bottom + ms(6)
-      //     : insets.bottom + ms(32),
-      // }}
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: ms(32) }}
       >
         <Container style={commonStyles.container}>
           {applyCardsLoading && (
@@ -785,7 +782,7 @@ const ApplyExchangaCard = (props: any) => {
           )}
         </Container>
       </ScrollView>
-      {/* </KeyboardAvoidingView> */}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

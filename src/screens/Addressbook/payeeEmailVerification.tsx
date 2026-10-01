@@ -151,7 +151,7 @@ const EmailOtpVerification = (props: any) => {
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
             <KeyboardAvoidingView
                 style={commonStyles.flex1}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? s(20) : 0}
             >
                 <Formik
