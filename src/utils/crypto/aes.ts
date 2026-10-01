@@ -1,13 +1,12 @@
 /**
  * AES core — the single implementation of this app's wire format (H-06).
  *
- * This used to exist twice: once in `src/hooks/useEncryption_Decryption.tsx` for
- * React callers and once in `src/utils/helpers/encryptionDecryption.tsx` for the
- * redux-persist transform, with subtly different failure behaviour. Two copies of
- * a crypto routine drift, and the drift is invisible until something is already
- * unreadable. Both are now thin wrappers over this module; the only thing they
- * still decide for themselves is where the key comes from and what a failure
- * looks like to the caller.
+ * This used to exist twice, with subtly different failure behaviour. Two copies
+ * of a crypto routine drift, and the drift is invisible until something is
+ * already unreadable. Callers are now thin wrappers over this module —
+ * `src/hooks/useEncryption_Decryption.tsx` for backend traffic and
+ * `src/utils/helpers/encryptionTransformation.tsx` for redux-persist — and only
+ * decide where the key comes from and what a failure looks like to the caller.
  *
  * ---------------------------------------------------------------------------
  * WIRE FORMATS
@@ -19,9 +18,8 @@
  *
  * 0x01  CBC, backend-compat base64( [0x01][16B random IV][AES-CBC-PKCS7 ct] )
  *       Confidentiality only. Byte-for-byte compatible with the C# backend and
- *       the web app. No longer written by this build — backend traffic moved to
- *       0x02 — but still READ, because installs that have not updated are still
- *       sending it. See BACKEND_SUPPORTS_AEAD in policy.ts.
+ *       the web app. This is the format backend traffic uses: the backend's
+ *       DecryptString (the `sk` path) does not read 0x02.
  *
  * v2:   legacy              "v2:" + hex(16B IV) + base64(AES-CBC-PKCS7 ct)
  * (none) legacy, WEAK       base64( AES-CBC-PKCS7 ct ) with an all-zero IV
@@ -37,18 +35,15 @@
  * transit can therefore make controlled edits to the decrypted value without
  * knowing the key. That is exactly what a MAC prevents and CBC does not have.
  *
- * Nothing in this build writes CBC any more. The decoder keeps it because the
- * far side of a migration is never instantaneous: older installs are still
- * sending 0x01, and records written before the switch are still sitting in the
- * backend and in the Keychain. Deleting the branch would make all of that
- * unreadable. The encrypt function stays only so that reverting
- * BACKEND_SUPPORTS_AEAD remains a one-constant rollback.
+ * Backend traffic is still CBC, because the backend's DecryptString only reads
+ * 0x01 and zero-IV. The decoder must also keep CBC for records written before
+ * at-rest storage moved to GCM, which are still sitting in the Keychain.
+ * Deleting the branch would make all of that unreadable.
  */
 
 import QuickCrypto from "react-native-quick-crypto";
 import { Buffer } from "@craftzdog/react-native-buffer";
-import { LEGACY_FORMATS_ENABLED } from "./policy";
-import { recordLegacyFormatDecrypt } from "./legacyTelemetry";
+import { LEGACY_FORMATS_ENABLED, recordLegacyFormatDecrypt } from "./legacyTelemetry";
 import { recordDecryptFailure } from "./integrityTelemetry";
 import type { CryptoContext } from "./integrityTelemetry";
 

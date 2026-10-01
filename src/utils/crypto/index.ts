@@ -35,8 +35,5 @@ export {
 export type { CryptoContext } from "./integrityTelemetry";
 
 export {
-  AT_REST_USES_AEAD,
-  BACKEND_SUPPORTS_AEAD,
-  LEGACY_FORMAT_REMOVAL_DATE,
   LEGACY_FORMATS_ENABLED,
-} from "./policy";
+} from "./legacyTelemetry";

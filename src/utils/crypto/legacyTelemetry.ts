@@ -5,8 +5,8 @@
  * blind — some records in the Keychain and in the backend may still be in the
  * old shape, and dropping the branch would render them permanently unreadable.
  * So instead we measure: count every legacy decrypt, surface the count, and
- * delete the branch when the number reaches zero. See policy.ts for the removal
- * procedure and deadline.
+ * delete the branch when the number reaches zero. The removal procedure is on
+ * LEGACY_FORMATS_ENABLED below.
  *
  * WHAT IS REPORTED: a format name, a context, a count and the app version.
  * Nothing else. No ciphertext, no plaintext, no key, no field name — a
@@ -44,11 +44,22 @@
  * file has never had a say in that, and still does not.
  */
 
-import {
-  LEGACY_FORMAT_REMOVAL_DATE,
-  LEGACY_FORMATS_ENABLED,
-} from "./policy";
 import type { CryptoContext } from "./integrityTelemetry";
+
+/**
+ * Whether to keep decrypting the two pre-0x01 formats: the `v2:` hex-IV form and
+ * the all-zero-IV form written by the old crypto-js code.
+ *
+ * The zero-IV form is the one flagged as weak — a fixed IV means identical
+ * plaintext always produced identical ciphertext, which leaks equality between
+ * records. The encrypt side was fixed previously; this is the read side.
+ *
+ * REMOVAL PROCEDURE:
+ *   1. Watch the `crypto.legacy_format` metric (reported below).
+ *   2. Once it is zero for a full release cycle, set this to `false` and ship.
+ *   3. One release later, delete the legacy branches in aes.ts entirely.
+ */
+export const LEGACY_FORMATS_ENABLED = true;
 
 /**
  * `zero-iv` is the weak one: a fixed all-zero IV, so identical plaintext always
@@ -110,13 +121,6 @@ export const resetLegacyFormatCounts = (): void => {
 };
 
 /**
- * Past the removal deadline a legacy decrypt is no longer "expected residue",
- * it is a missed migration — so it stops being a warning and becomes an error.
- */
-const isOverdue = (): boolean =>
-  new Date().toISOString().slice(0, 10) >= LEGACY_FORMAT_REMOVAL_DATE;
-
-/**
  * The app version is a dimension, not decoration: a legacy decrypt from a build
  * shipped before the migration is residue that will age out on its own, while
  * the same event from the current build is a live problem. Without it the
@@ -150,13 +154,12 @@ const send = (
     // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
     const Sentry = require("@sentry/react-native");
     Sentry.captureMessage(`crypto.legacy_format:${format}`, {
-      level: isOverdue() ? "error" : "warning",
+      level: "warning",
       tags: {
         "crypto.legacy_format": format,
         // M-08: the dimension that decides who owns the residue, and therefore
         // whether the flag can be flipped at all.
         "crypto.legacy_context": context,
-        "crypto.legacy_overdue": String(isOverdue()),
         "app.version": appVersion(),
       },
       extra: {
@@ -165,7 +168,6 @@ const send = (
         // be summed across a session.
         count,
         sessionTotals: { ...counts },
-        removalDate: LEGACY_FORMAT_REMOVAL_DATE,
       },
     });
   } catch {

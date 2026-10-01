@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { decryptAny, encryptCBC, encryptGCM } from '../utils/crypto/aes';
-import { BACKEND_SUPPORTS_AEAD } from '../utils/crypto/policy';
+import { decryptAny, encryptCBC } from '../utils/crypto/aes';
 
 /**
  * Encrypt/decrypt for backend traffic, keyed off the session `sk`.
@@ -16,11 +15,9 @@ import { BACKEND_SUPPORTS_AEAD } from '../utils/crypto/policy';
  *      the result straight into a <Text> and an exception there blanks a screen,
  *   3. the decrypt memoization cache.
  *
- * Writes are authenticated AES-GCM (format 0x02) — the H-06 fix. Every outbound
- * field carries a tag, so a request modified in transit is rejected by the
- * server instead of decrypting to something the attacker chose. The CBC branch
- * is retained only so that reverting BACKEND_SUPPORTS_AEAD is a one-constant
- * change if the backend rollout has to be unwound; see utils/crypto/policy.ts.
+ * Writes are AES-CBC (format 0x01), because the backend's DecryptString (the
+ * `sk` path) does not read GCM yet. Switch encryptCBC to encryptGCM here once
+ * it does — that is the step that closes H-06 for network traffic.
  *
  * Reads accept every format the app has ever emitted, which is what lets the two
  * sides migrate independently.
@@ -75,9 +72,7 @@ const useEncryptDecrypt = (customSecretKey?: string) => {
     try {
       const sk = getKey();
       if (!sk) return '';
-      return BACKEND_SUPPORTS_AEAD
-        ? encryptGCM(plainText, sk)
-        : encryptCBC(plainText, sk);
+      return encryptCBC(plainText, sk);
     } catch {
       return '';
     }

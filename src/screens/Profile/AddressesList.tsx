@@ -132,7 +132,7 @@ const UserAddressListScreen = (props: any) => {
 
                                                             <View style={[commonStyles.dflex, commonStyles.alignStart, commonStyles.gap8, commonStyles.mb8,]}>
                                                                 <View>
-                                                                    <ParagraphComponent style={[styles.fs12, commonStyles.fw400, commonStyles.textBlack]} text={`${item?.addressLine1 || ""}  ${", "} ${item?.addressLine2 || ""}  ${", "}${item?.state || " "} ${", "}`} />
+                                                                    <ParagraphComponent style={[styles.fs12, commonStyles.fw400, commonStyles.textBlack]} text={[item?.addressLine1, item?.addressLine2, item?.state].filter((part) => part?.trim()).join(", ")} />
                                                                     <ParagraphComponent style={[styles.fs12, commonStyles.fw400, commonStyles.textBlack, commonStyles.mb4]} text={`${item?.city || " "} ${", "} ${decryptAES(item?.postalCode) || " "} ${"."}`} />
                                                                 </View>
                                                             </View>

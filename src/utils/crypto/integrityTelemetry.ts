@@ -10,7 +10,7 @@
  * What it cannot fix is the data it did not write. Installs that have not
  * updated are still sending CBC, records encrypted before the switch are still
  * in the backend and the Keychain, and the decoder must keep reading all of it
- * (see policy.ts step 4). For that traffic, prevention is still unavailable —
+ * (the backend still sends CBC). For that traffic, prevention is still unavailable —
  * but detection is not. Every realistic tampering attempt leaves a trace on the
  * decrypt path:
  *
