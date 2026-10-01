@@ -8,8 +8,6 @@ import {
   SafeAreaView,
   BackHandler,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Container } from "../../components";
 import DefaultButton from "../../components/DefaultButton";
@@ -524,10 +522,7 @@ const ApplyExchangaCard = (props: any) => {
   };
   return (
     <SafeAreaView style={[commonStyles.screenBg, { flex: 1 }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "android" ? "height" : undefined}
-        style={[commonStyles.screenBg, commonStyles.flex1]}
-      >
+      {/* Android resizes the window for the keyboard (adjustResize); a KeyboardAvoidingView on top would shrink it twice */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         ref={ref}
@@ -782,7 +777,6 @@ const ApplyExchangaCard = (props: any) => {
           )}
         </Container>
       </ScrollView>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
