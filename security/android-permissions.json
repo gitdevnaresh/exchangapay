@@ -48,6 +48,12 @@
       "runtimeRequest": "App.tsx - PermissionsAndroid.request(POST_NOTIFICATIONS)"
     },
     {
+      "name": "android.permission.HIDE_OVERLAY_WINDOWS",
+      "declaredBy": "app manifest",
+      "why": "Tapjacking defence. MainApplication.kt calls window.setHideOverlayWindows(true) on API 31+ so another app's overlay window cannot cover login, KYC or payment screens. Normal permission.",
+      "runtimeRequest": "none - normal permission, granted at install"
+    },
+    {
       "name": "android.permission.USE_BIOMETRIC",
       "declaredBy": "react-native-keychain",
       "why": "Biometric unlock of the keychain entries holding session material.",
