@@ -53,6 +53,9 @@ target 'exchangapay' do
   # Native jailbreak / hook / debugger detection.
   pod 'DeviceSecurity', :path => './DeviceSecurity'
 
+  # Local-only, expiring clipboard writes for secrets (TOTP setup key).
+  pod 'SecureClipboard', :path => './SecureClipboard'
+
   # Documents-folder lookup for document notification taps.
   pod 'FileManager', :path => './FileManager'
 

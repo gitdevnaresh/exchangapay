@@ -31,7 +31,7 @@ import { isErrorDispaly } from "../../utils/helpers";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import LabelComponent from "../../components/Paragraph/label";
 import CommonPopup from "../../components/commonPopup";
-import { copyEphemeral } from "../../utils/clipboard";
+import { copySensitive } from "../../utils/clipboard";
 import { set } from "lodash";
 
 const VerifyCode = React.memo((props: any) => {
@@ -121,13 +121,13 @@ const VerifyCode = React.memo((props: any) => {
   // read the clipboard on Android 10+, and iOS syncs it via Universal
   // Clipboard). 30 s rather than the 60 s default: the shortest window that
   // still lets a user paste into an authenticator app.
-  const copyToClipboard = () => {
+  // L-06: copied flagged sensitive (Android) / local-only (iOS); see copySensitive.
+  const copyToClipboard = async () => {
     const text = extractSecretFromOTPAuthURI(data);
-    if (!text) {
+    const copied = await copySensitive(text, "Authenticator secret", 30_000);
+    if (!copied) {
       Alert.alert("Copy", "Failed to copy the setup key. Please scan the QR code instead.");
-      return;
     }
-    copyEphemeral(text, "Authenticator secret", 30_000);
   };
   const dispatch = useDispatch();
   const getMemDetails = async () => {

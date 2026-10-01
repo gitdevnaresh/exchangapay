@@ -25,6 +25,8 @@ class MainApplication : Application(), ReactApplication {
           add(PlayIntegrityPackage())
           // Native root / hook detection.
           add(DeviceSecurityPackage())
+          // Sensitive-flagged clipboard writes (TOTP setup key).
+          add(SecureClipboardPackage())
           // Opens the Downloads screen from a document notification tap.
           add(FileManagerPackage())
         },
