@@ -80,6 +80,44 @@
     ]
   },
 
+  "thirdPartyPinSet": {
+    "_comment": [
+      "M-10 / pentest M-11 — Auth0 and Sumsub were exempt, leaving the Auth0 refresh",
+      "token and Sumsub KYC documents open to any rogue CA, and on iOS to any",
+      "user-installed CA profile. They are now pinned on both platforms.",
+      "",
+      "ROOT level, not intermediate: Let's Encrypt (Auth0) and Google Trust Services",
+      "(Sumsub) pick from several intermediates at random, so an intermediate pin",
+      "would break login or KYC unannounced. A public root pin still rejects every",
+      "user-installed or rogue CA, which is the threat in the finding.",
+      "",
+      "The set spans three CA families so a vendor CA switch stays inside it. If a",
+      "vendor moves to a CA outside this list, iOS login/KYC fails CLOSED until a",
+      "release — re-run ./scripts/compute-spki-pins.sh <host> at every reviewBy."
+    ],
+    "hosts": ["exchangapay.eu.auth0.com", "exchangapay-tst.eu.auth0.com", "api.sumsub.com"],
+    "pins": {
+      "ISRG Root X1": "C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=",
+      "ISRG Root X2": "diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=",
+      "ISRG Root YE": "sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=",
+      "GTS Root R1": "hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=",
+      "GTS Root R2": "Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=",
+      "GTS Root R3": "QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=",
+      "GTS Root R4": "mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=",
+      "DigiCert Global Root G2": "i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY="
+    },
+    "lastVerified": {
+      "date": "2026-10-01",
+      "findings": [
+        "exchangapay.eu.auth0.com and exchangapay-tst.eu.auth0.com: leaf CN=eu.auth0.com -> Let's Encrypt YE1 -> Root YE -> ISRG Root X2. Root YE and ISRG Root X2 SPKIs match the pins.",
+        "api.sumsub.com: leaf CN=sumsub.com -> GTS WE1 -> GTS Root R4. GTS Root R4 SPKI matches the pin.",
+        "The remaining root hashes were computed from the macOS system root store."
+      ]
+    },
+    "owner": "mobile-platform",
+    "reviewBy": "2027-04-01"
+  },
+
   "exemptions": [
     {
       "host": "api.coingecko.com",
@@ -87,15 +125,6 @@
       "traffic": "Public market prices",
       "reason": "Third party, public data, and no credential ever reaches it — applyThirdPartyInterceptors in src/utils/apiInterceptors.ts withholds the bearer token and the device-risk header, asserted by __tests__/apiLayerHardening.test.ts. It currently chains through Google Trust Services WE1 / GTS Root R4, but CoinGecko can change CA without telling us, and an outage on the price screen buys no security: an attacker intercepting this can misstate a coin price and nothing else.",
       "remediation": "None planned. Treat displayed prices as untrusted input.",
-      "owner": "mobile-platform",
-      "reviewBy": "2027-06-01"
-    },
-    {
-      "host": "exchangapay-tst.eu.auth0.com",
-      "risk": "medium",
-      "traffic": "OAuth token exchange (react-native-auth0 — not an apiUrls host)",
-      "reason": "Auth0 rotates certificates on its own schedule with no notice to tenants. Already documented in the Android network security config; recorded here so the exemption list is the whole picture rather than half of it.",
-      "remediation": "Revisit if Auth0 publishes a pinning-safe chain commitment.",
       "owner": "mobile-platform",
       "reviewBy": "2027-06-01"
     },
@@ -132,15 +161,6 @@
       "traffic": "Crash and error telemetry",
       "reason": "Third-party operator, certificates rotate without notice. Bodies are allow-list redacted before they leave the device (C-07), so an interceptor gets shapes, not values.",
       "remediation": "None planned.",
-      "owner": "mobile-platform",
-      "reviewBy": "2027-06-01"
-    },
-    {
-      "host": "api.sumsub.com",
-      "risk": "medium",
-      "traffic": "KYC document capture",
-      "reason": "Third-party SDK host with its own transport, so a pin in our config would not be enforced on it anyway, and its certificates rotate without notice.",
-      "remediation": "None planned. If the SDK exposes a pinning hook, revisit — this path carries identity documents.",
       "owner": "mobile-platform",
       "reviewBy": "2027-06-01"
     }

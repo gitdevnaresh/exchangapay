@@ -1,7 +1,7 @@
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 26
         compileSdkVersion = 36
         // targetSdk 36 makes edge-to-edge mandatory on Android 16. System-bar insets
         // are applied as padding in MainActivity so screens keep their layout.

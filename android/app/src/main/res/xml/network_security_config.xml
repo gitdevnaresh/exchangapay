@@ -45,9 +45,9 @@
   trusting this comment to stay current.
 
   In short, the obsolete development, Azure and Suissebase hosts were removed from the
-  app configuration. Auth0, Sentry, Sumsub and CoinGecko remain third-party services
-  with independently rotating certificates; their documented exemptions are reviewed
-  in security/pinning-policy.json.
+  app configuration. Auth0 and Sumsub are pinned at root level in the second
+  domain-config below. Sentry and CoinGecko remain exempt third-party services;
+  their documented exemptions are reviewed in security/pinning-policy.json.
 
   ANY HOST ADDED TO environments/*.js MUST BE PINNED HERE, ON iOS, OR EXEMPTED.
   Compute the hashes with ./scripts/compute-spki-pins.sh; add to both platforms or the
@@ -87,6 +87,40 @@
       <!-- primary: GeoTrust TLS RSA CA G1 (issuing intermediate) -->
       <pin digest="SHA-256">SDG5orEv8iX6MNenIAxa8nQFNpROB/6+llsZdXHZNqs=</pin>
       <!-- backup: DigiCert Global Root G2 -->
+      <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
+    </pin-set>
+  </domain-config>
+
+  <!-- M-10 / pentest M-11 — identity providers. Auth0 /oauth/token carries the
+       access and refresh tokens; Sumsub carries KYC identity documents. Both were
+       exempt, so a rogue CA (MDM, phishing profile, malware) could read them.
+
+       Pinned at ROOT level, never the intermediate: Let's Encrypt (Auth0) and
+       Google Trust Services (Sumsub) both rotate between several intermediates at
+       random, so an intermediate pin would break login or KYC without warning.
+       A root pin still defeats the threat in the finding — a user-installed or
+       rogue CA never matches a public root SPKI.
+
+       The set is deliberately wider than either chain today (Let's Encrypt, GTS
+       and DigiCert roots) so a CA switch by either vendor stays inside it. Every
+       hash was computed from the live chain or the system root store on
+       2026-10-01 — see security/pinning-policy.json (thirdPartyPinSet).
+       Same expiration as the API pin-set above; the H-03 guard reads the first. -->
+  <domain-config>
+    <domain includeSubdomains="false">exchangapay.eu.auth0.com</domain>
+    <domain includeSubdomains="false">exchangapay-tst.eu.auth0.com</domain>
+    <domain includeSubdomains="false">api.sumsub.com</domain>
+    <pin-set expiration="2027-06-01">
+      <!-- Let's Encrypt: ISRG Root X1 (RSA), ISRG Root X2 (ECDSA), Root YE (2025 gen) -->
+      <pin digest="SHA-256">C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=</pin>
+      <pin digest="SHA-256">diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=</pin>
+      <pin digest="SHA-256">sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=</pin>
+      <!-- Google Trust Services: GTS Root R1, R2, R3, R4 -->
+      <pin digest="SHA-256">hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</pin>
+      <pin digest="SHA-256">Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=</pin>
+      <pin digest="SHA-256">QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=</pin>
+      <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
+      <!-- DigiCert Global Root G2 -->
       <pin digest="SHA-256">i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</pin>
     </pin-set>
   </domain-config>

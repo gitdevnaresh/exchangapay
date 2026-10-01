@@ -40,8 +40,9 @@ class MainActivity : ReactActivity() {
    * opt-out is ignored. The JS screens use the core SafeAreaView, which is a no-op on Android, so
    * the system-bar and cutout insets are applied here as padding on the content view. This keeps
    * the previous layout: the root view sits below the status bar and above the navigation bar, and
-   * react-native-safe-area-context still reports zero insets. The IME is not included because the
-   * activity uses adjustPan.
+   * react-native-safe-area-context still reports zero insets. The window is no longer resized for
+   * the keyboard when edge-to-edge, so the IME height is folded into the bottom padding to keep the
+   * manifest's adjustResize behaviour.
    */
   private fun applySystemBarInsets() {
     window.setBackgroundDrawable(ColorDrawable(Color.BLACK))
@@ -54,7 +55,8 @@ class MainActivity : ReactActivity() {
       val bars =
           insets.getInsets(
               WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
-      view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+      val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+      view.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, ime.bottom))
       insets
     }
   }

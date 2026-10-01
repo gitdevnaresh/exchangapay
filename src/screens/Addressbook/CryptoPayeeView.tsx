@@ -80,9 +80,10 @@ const PayeeDetailsView = (props: any) => {
 
     const onShare = async () => {
         try {
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(payeeDetails.walletaddress)}&size=200x200`;
+            // M-11: no api.qrserver.com link — it handed the wallet address to a
+            // third party. The QR code is rendered locally on this screen instead.
             await Share.share({
-                message: `Hey, I'm sharing my whitelist address details below for your reference:\n Whitelist Address Name : ${decryptAES(payeeDetails.favouriteName)}\nWallet Address: ${payeeDetails.walletaddress}\nNetwork: ${payeeDetails.network}\nCurrency: ${payeeDetails.currency || '--'}\n\nScan this QR Code: ${qrCodeUrl}`,
+                message: `Hey, I'm sharing my whitelist address details below for your reference:\n Whitelist Address Name : ${decryptAES(payeeDetails.favouriteName)}\nWallet Address: ${payeeDetails.walletaddress}\nNetwork: ${payeeDetails.network}\nCurrency: ${payeeDetails.currency || '--'}`,
                 title: 'Share Whitelist Address Details'
             });
         } catch (error: any) {

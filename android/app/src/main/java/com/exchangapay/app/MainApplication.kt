@@ -2,6 +2,7 @@ package com.exchangapay.tst
 
 import android.app.Activity
 import android.app.Application
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import com.facebook.react.PackageList
@@ -31,22 +32,30 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     // Block screenshots/recording on every activity (incl. Auth0, Sumsub) except dev/tst builds.
-    if (BuildConfig.APP_ENV != "dev" && BuildConfig.APP_ENV != "tst") {
-      registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-          activity.window.setFlags(
+    val blockScreenCapture = BuildConfig.APP_ENV != "dev" && BuildConfig.APP_ENV != "tst"
+    registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+      override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        val window = activity.window
+        if (blockScreenCapture) {
+          window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
           )
         }
-        override fun onActivityStarted(activity: Activity) {}
-        override fun onActivityResumed(activity: Activity) {}
-        override fun onActivityPaused(activity: Activity) {}
-        override fun onActivityStopped(activity: Activity) {}
-        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-        override fun onActivityDestroyed(activity: Activity) {}
-      })
-    }
+        // M-12 tapjacking: drop touches while another app's window covers ours, and on
+        // API 31+ hide other apps' overlays while ours is shown. Applied in every environment.
+        window.decorView.filterTouchesWhenObscured = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          window.setHideOverlayWindows(true)
+        }
+      }
+      override fun onActivityStarted(activity: Activity) {}
+      override fun onActivityResumed(activity: Activity) {}
+      override fun onActivityPaused(activity: Activity) {}
+      override fun onActivityStopped(activity: Activity) {}
+      override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+      override fun onActivityDestroyed(activity: Activity) {}
+    })
     loadReactNative(this)
   }
 }
