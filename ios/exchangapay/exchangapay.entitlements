@@ -32,5 +32,17 @@
 		<string>applinks:exchangapay.eu.auth0.com</string>
 		<string>applinks:exchangapay-tst.eu.auth0.com</string>
 	</array>
+
+	<!--
+		L-14: every file the app writes (AsyncStorage, react-native-fs, caches)
+		is encrypted with a key that is discarded while the device is locked.
+		Side effect: the FCM background handler in index.js cannot write
+		AsyncStorage while locked; its try/catch absorbs that.
+
+		Requires Data Protection on the App ID and regenerated provisioning
+		profiles, or signing fails.
+	-->
+	<key>com.apple.developer.default-data-protection</key>
+	<string>NSFileProtectionComplete</string>
 </dict>
 </plist>
