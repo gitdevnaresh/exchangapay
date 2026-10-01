@@ -183,10 +183,12 @@ const sanitizeStyle = (value: string): string | null => {
 };
 
 /**
- * Hosts a notes image may load from — security finding M-05. Any other https
- * image in CMS or notification HTML is a tracking beacon: it tells whoever runs
- * that host which user opened the screen, and from what IP. Our own storage
- * accounts and the backend hosts for this build are the only legitimate sources.
+ * Hosts an image may load from, in the notes and in the card PIN document —
+ * security findings M-05 and L-13. Any other https image in backend HTML is a
+ * tracking beacon: it tells whoever runs that host which user opened the screen
+ * (on the card, that they just viewed their PIN), and from what IP. Our own
+ * storage accounts and the backend hosts for this build are the only legitimate
+ * sources.
  */
 const NOTES_IMAGE_HOSTS = [
   "prdexchangapaystorage.blob.core.windows.net",
@@ -194,14 +196,20 @@ const NOTES_IMAGE_HOSTS = [
   "devdottstoragespace.blob.core.windows.net",
 ];
 
-const isNotesImageHostAllowed = (host: string): boolean => {
-  if (NOTES_IMAGE_HOSTS.includes(host)) return true;
+/** The allow-list above plus this build's API hosts. Empty-safe. */
+const getImageHosts = (): string[] => {
+  let apiHosts: string[] = [];
   try {
-    return getApiHosts().includes(host);
+    apiHosts = getApiHosts();
   } catch {
-    return false;
+    // Environment not readable: our storage accounts are still enough.
   }
+  return [...NOTES_IMAGE_HOSTS, ...apiHosts].filter(
+    (host, index, all) => host && all.indexOf(host) === index
+  );
 };
+
+const isNotesImageHostAllowed = (host: string): boolean => getImageHosts().includes(host);
 
 const sanitizeImageSource = (value: string, restrictHosts: boolean): string | null => {
   const candidate = value.trim();
@@ -285,7 +293,8 @@ const sanitizeAttributes = (
 const rewrite = (
   html: string,
   counters: Counters,
-  allowAnchors: boolean
+  allowAnchors: boolean,
+  restrictImageHosts: boolean
 ): string => {
   let out = "";
   let cursor = 0;
@@ -317,7 +326,7 @@ const rewrite = (
     }
 
     if (VOID_TAGS.has(tag)) {
-      const attributes = sanitizeAttributes(tag, match[3] || "", counters, allowAnchors);
+      const attributes = sanitizeAttributes(tag, match[3] || "", counters, restrictImageHosts);
       // An <img> that lost its source is dropped rather than left empty.
       if (tag === "img" && !attributes) {
         counters.tags++;
@@ -327,7 +336,7 @@ const rewrite = (
       continue;
     }
 
-    const attributes = sanitizeAttributes(tag, match[3] || "", counters, allowAnchors);
+    const attributes = sanitizeAttributes(tag, match[3] || "", counters, restrictImageHosts);
 
     if (tag === "a" && !attributes.includes("href=")) {
       droppedAnchors++;
@@ -341,7 +350,12 @@ const rewrite = (
   return out + escapeText(html.slice(cursor));
 };
 
-const sanitize = (raw: unknown, allowAnchors: boolean, surface: string): string => {
+const sanitize = (
+  raw: unknown,
+  allowAnchors: boolean,
+  restrictImageHosts: boolean,
+  surface: string
+): string => {
   if (typeof raw !== "string" || !raw.trim()) return "";
 
   const counters: Counters = { tags: 0, attributes: 0 };
@@ -353,7 +367,7 @@ const sanitize = (raw: unknown, allowAnchors: boolean, surface: string): string 
     .replace(/<![^>]*>/g, "")
     .replace(/<\?[\s\S]*?\?>/g, "");
 
-  const clean = rewrite(stripped, counters, allowAnchors);
+  const clean = rewrite(stripped, counters, allowAnchors, restrictImageHosts);
 
   if (counters.tags || counters.attributes || truncated) {
     // Counts only. The document being sanitised contains the PIN, so no part of
@@ -375,7 +389,7 @@ const sanitize = (raw: unknown, allowAnchors: boolean, surface: string): string 
  * within the allow-list.
  */
 export const sanitizeCardHtml = (raw: unknown): string =>
-  sanitize(raw, false, "cardPin");
+  sanitize(raw, false, true, "cardPin");
 
 /**
  * The same rewrite for the KYC notes, which are rendered by
@@ -383,25 +397,32 @@ export const sanitizeCardHtml = (raw: unknown): string =>
  * the screen makes them tappable; every other difference is intentional.
  */
 export const sanitizeNotesHtml = (raw: unknown): string =>
-  sanitize(raw, true, "kycNotes");
+  sanitize(raw, true, true, "kycNotes");
 
 /**
  * The Content-Security-Policy the rendered document runs under.
  *
  * `default-src 'none'` covers script, connect, frame, object and everything else
  * not named explicitly, so the only things this document can do are draw text,
- * draw an image, and sit there. Exported so the test can assert on it rather
- * than on a string buried in a template literal.
+ * draw an image, and sit there.
+ *
+ * L-13: images are limited to `data:` and the same host allow-list the sanitiser
+ * enforces, not `https:` at large, so an <img> that slips past the sanitiser
+ * still cannot beacon to an arbitrary host. Built per call because the API hosts
+ * come from the environment. Every host has already been through the strict
+ * parser (letters, digits, dots, hyphens), so none can break out of the policy.
+ * Exported so the test can assert on it rather than on a template literal.
  */
-export const CARD_HTML_CSP = [
-  "default-src 'none'",
-  "img-src https: data:",
-  "style-src 'unsafe-inline'",
-  "font-src data:",
-  "form-action 'none'",
-  "frame-ancestors 'none'",
-  "base-uri 'none'",
-].join("; ");
+export const getCardHtmlCsp = (): string =>
+  [
+    "default-src 'none'",
+    ["img-src", "data:", ...getImageHosts().map((host) => `https://${host}`)].join(" "),
+    "style-src 'unsafe-inline'",
+    "font-src data:",
+    "form-action 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'none'",
+  ].join("; ");
 
 /**
  * The full document handed to the WebView: sanitised markup inside a CSP that
@@ -414,7 +435,7 @@ export const buildCardHtmlDocument = (raw: unknown): string => {
   return (
     `<!DOCTYPE html><html><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width, initial-scale=1">` +
-    `<meta http-equiv="Content-Security-Policy" content="${CARD_HTML_CSP}">` +
+    `<meta http-equiv="Content-Security-Policy" content="${getCardHtmlCsp()}">` +
     `<style>html,body{margin:0;padding:0;background:transparent;` +
     `-webkit-user-select:none;user-select:none;}img{max-width:100%;}` +
     `${vendorCss}</style>` +
