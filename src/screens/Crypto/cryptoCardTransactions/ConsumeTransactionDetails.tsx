@@ -4,7 +4,6 @@ import {
   View,
   Dimensions,
   ScrollView,
-  Linking,
   TouchableOpacity,
   BackHandler,
 } from "react-native";
@@ -16,6 +15,7 @@ import ParagraphComponent from "../../../components/Paragraph/Paragraph";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import CopyCard from "../../../components/CopyCard";
 import { copyEphemeral } from "../../../utils/clipboard";
+import { openExplorerLink } from "../../../security/explorerUrlPolicy";
 import { formatCurrency, formatDateLocal } from "../../../utils/helpers";
 import CardsModuleService from "../../../services/card";
 import { s } from "../../../constants/theme/scale";
@@ -386,7 +386,7 @@ const ConsumeTransactionDetails = React.memo(
                     ]}
                   />
                   <View style={[commonStyles.dflex, { alignItems: "flex-end" }, commonStyles.gap8, commonStyles.flex1]}>
-                    <TouchableOpacity style={[commonStyles.flex1]} onPress={() => Linking.openURL(hyperLinkHash)}>
+                    <TouchableOpacity style={[commonStyles.flex1]} onPress={() => openExplorerLink(transactionDetails?.explorer, transactionDetails?.transactionHash)}>
                       <ParagraphComponent
                         text={hyperLinkHash?.split("/")?.pop()}
                         style={[

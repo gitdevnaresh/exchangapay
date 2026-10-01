@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleService, useStyleSheet } from '@ui-kitten/components';
 import { Container } from '../../components';
-import { View, ScrollView, TouchableOpacity, Alert, ImageBackground, SafeAreaView, BackHandler, Linking } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Alert, ImageBackground, SafeAreaView, BackHandler } from 'react-native';
 import { Image } from 'react-native';
 import DefaultButton from '../../components/DefaultButton';
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -14,6 +14,7 @@ import CopyCard from '../../components/CopyCard';
 import { ActivityIndicator } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { copyEphemeral } from '../../utils/clipboard';
+import { openExplorerLink } from '../../security/explorerUrlPolicy';
 import { s } from '../../constants/theme/scale';
 
 const SendCryptoSuccess = React.memo((props: any) => {
@@ -101,7 +102,7 @@ const SendCryptoSuccess = React.memo((props: any) => {
                                     <View style={[{ marginTop: "auto", marginBottom: "auto" }]}>
                                         <View>
                                             <ParagraphComponent text={` ${props.route?.params?.ammount ?? ''} ${props.route?.params?.walletCode ?? ''}   Amount Sent Successfully.`} style={[commonStyles.fs14, commonStyles.fw500, commonStyles.textGrey, commonStyles.textCenter, { marginHorizontal: 24 }]} />
-                                            <TouchableOpacity activeOpacity={0.8} onPress={() => hash && Linking.openURL(hash?.explorer + hash?.transactionHash)} style={{ marginHorizontal: 24 }}>
+                                            <TouchableOpacity activeOpacity={0.8} onPress={() => hash && openExplorerLink(hash?.explorer, hash?.transactionHash)} style={{ marginHorizontal: 24 }}>
                                                 {loading && (
                                                     <ActivityIndicator size="small" color={NEW_COLOR.TEXT_BLACK} />
                                                 )}

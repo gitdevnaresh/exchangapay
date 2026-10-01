@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
-import { View, Dimensions, ScrollView, Linking, TouchableOpacity, BackHandler } from "react-native";
+import { View, Dimensions, ScrollView, TouchableOpacity, BackHandler } from "react-native";
 import DefaultButton from "../../../components/DefaultButton";
 import { commonStyles } from "../../../components/CommonStyles";
 import { Overlay } from "../../../components/ui";
@@ -9,6 +9,7 @@ import ParagraphComponent from "../../../components/Paragraph/Paragraph";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import CopyCard from "../../../components/CopyCard";
 import { copyEphemeral } from "../../../utils/clipboard";
+import { openExplorerLink } from "../../../security/explorerUrlPolicy";
 import { formatCurrency, formatDateLocal } from "../../../utils/helpers";
 import CardsModuleService from "../../../services/card";
 import { s } from "../../../constants/theme/scale";
@@ -567,7 +568,7 @@ const TransactionDetails = React.memo(({ transId, closePop }: { transId: string,
                 commonStyles.flex1,
               ]}>
               <TouchableOpacity style={[commonStyles.flex1,]}
-                onPress={() => Linking.openURL(hyperLinkHash)}
+                onPress={() => openExplorerLink(transactionDetails?.explorer, transactionDetails?.transactionHash)}
               >
                 <ParagraphComponent
                   text={hyperLinkHash?.split('/').pop()}
