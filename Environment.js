@@ -82,7 +82,6 @@ const buildEnv = () => {
       enabled: config.SENTRY_ENABLED === "true",
       dsn: config.SENTRY_DSN,
       environment: APP_ENV,
-      sendPii: config.SENTRY_SEND_PII === "true",
       enableLogs: config.SENTRY_ENABLE_LOGS === "true",
       replaysSessionSampleRate: Number(config.SENTRY_REPLAYS_SESSION_RATE ?? 0),
       replaysOnErrorSampleRate: Number(config.SENTRY_REPLAYS_ERROR_RATE ?? 0),

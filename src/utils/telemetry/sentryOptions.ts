@@ -32,21 +32,58 @@
  * It was `true`, directly underneath a comment stating it must stay false. When
  * true, Sentry attaches the IP address, cookies and request headers — including
  * Authorization, which is the bearer-token leak finding C-07 was about.
+ *
+ * L-11: it is hard-coded, not read from config. It used to follow
+ * SENTRY_SEND_PII, so one .env line could undo C-07 with no code change and no
+ * review. Turning it on is now a code change, same as Session Replay.
  */
 
-import { redact } from "../redact";
+import { redact, REDACTED, SENSITIVE_KEY } from "../redact";
 
 export type SentryEnvConfig = {
   enabled?: boolean;
   dsn?: string;
   environment?: string;
-  sendPii?: boolean;
   enableLogs?: boolean;
   replaysSessionSampleRate?: number;
   replaysOnErrorSampleRate?: number;
 };
 
-// Last gate before an event leaves the device: strips cookies, headers, IP/email and redacts request and breadcrumb data.
+/**
+ * `extra` keys our own code sets whose values are safe or already redacted at
+ * the call site. Allow-list, like redact.ts: an unknown key is redacted.
+ */
+const SAFE_EXTRA_KEYS = new Set([
+  "count",
+  "sessionTotals",
+  "Request Body",
+  "Response Data",
+]);
+
+/**
+ * Contexts that carry device/runtime facts or our own non-customer data. Any
+ * other context is passed through redact().
+ */
+const SAFE_CONTEXTS = new Set([
+  "os",
+  "device",
+  "app",
+  "runtime",
+  "culture",
+  "trace",
+  "react_native_context",
+  "certificate_pinning",
+]);
+
+/**
+ * Values that look like customer data whatever key they sit under: an email,
+ * a 12–19 digit run (PAN / account number), or a JWT.
+ */
+const PII_VALUE =
+  /[^\s@]+@[^\s@]+\.[^\s@]+|\b\d{12,19}\b|eyJ[\w-]+\.[\w-]+\.[\w-]+/;
+
+// Last gate before an event leaves the device: strips cookies, headers and user
+// fields, and redacts request, breadcrumb, extra, tag and context data.
 export const scrubEvent = (event: any): any | null => {
   if (!event) return null;
 
@@ -60,15 +97,51 @@ export const scrubEvent = (event: any): any | null => {
 
   // sendDefaultPii: false should already prevent this. Belt and braces, because
   // a future option change should not silently start shipping IP addresses.
+  // Keep only the opaque id. Deleting named fields missed username, geo and
+  // anything a later setUser() call adds.
   if (event.user) {
-    delete event.user.ip_address;
-    delete event.user.email;
+    event.user = event.user.id != null ? { id: event.user.id } : undefined;
   }
 
   if (event.breadcrumbs) {
     event.breadcrumbs = event.breadcrumbs.map((crumb: any) =>
       crumb && crumb.data ? { ...crumb, data: redact(crumb.data) } : crumb
     );
+  }
+
+  if (event.extra) {
+    const extra: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(event.extra)) {
+      extra[key] =
+        SAFE_EXTRA_KEYS.has(key) && !SENSITIVE_KEY.test(key)
+          ? value
+          : redact(value);
+    }
+    event.extra = extra;
+  }
+
+  // Tags are checked by value rather than allow-listed: the SDK adds its own
+  // (os.name, event.origin, ...) and they are the main triage dimensions. Not
+  // by key either — SENSITIVE_KEY's /pin/ would hit the pin_status/pin_expiry
+  // certificate-pinning tags, and tag names come from code, not customer data.
+  if (event.tags) {
+    for (const [key, value] of Object.entries(event.tags)) {
+      if (PII_VALUE.test(String(value))) {
+        event.tags[key] = REDACTED;
+      }
+    }
+  }
+
+  if (event.contexts) {
+    // The user-set device name, e.g. "Jane's iPhone".
+    if (event.contexts.device) {
+      delete event.contexts.device.name;
+    }
+    for (const key of Object.keys(event.contexts)) {
+      if (!SAFE_CONTEXTS.has(key)) {
+        event.contexts[key] = redact(event.contexts[key]);
+      }
+    }
   }
 
   return event;
@@ -120,7 +193,7 @@ export const buildSentryOptions = (
   environment: config.environment,
   release,
 
-  sendDefaultPii: config.sendPii === true,
+  sendDefaultPii: false,
   enableLogs: config.enableLogs === true,
 
   replaysSessionSampleRate: config.replaysSessionSampleRate ?? 0,
