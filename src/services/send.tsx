@@ -8,8 +8,5 @@ const SendServices =  {
     getSendListDetails : async (currency:any) => {
         return get(`api/v1/addressbook/PayeeLu/${currency}`);
       },
-       fetchIBANDetails : async(iban:any) => {
-        return get(`api/v1/Master/GetIBANAccountDetails?ibanNumber=${iban}`);
-    }
 }
 export default SendServices;

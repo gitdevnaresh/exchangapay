@@ -15,9 +15,6 @@ const CardsModuleService = {
   getCardsById: async (customerId: any, cardId: any) => {
     return get(`api/v1/Cards/GetCardById/${customerId}/${cardId}`);
   },
-  getFetchCVV: async (customerId: any, cardId: any) => {
-    return get(`api/v1/Cards/FetchCVV/${customerId}/${cardId}`);
-  },
   getFreezCard: async (body: any) => {
     return put(`api/v1/Cards/FreezeCard`, body);
   },
@@ -32,9 +29,6 @@ const CardsModuleService = {
   },
   savesetcardpin: async (body: any) => {
     return put(`api/v1/Cards/setcardpin`, body);
-  },
-  savegetcardpin: async (id: any) => {
-    return get(`api/v1/Cards/GetCardPin/${id}`);
   },
   getTopupBalance: async (customerId: string) => {
     return get(`api/v1/Cards/GetWallet/${customerId}`);
