@@ -614,10 +614,26 @@ gradle.taskGraph.whenReady { graph ->
     }
     if (!releaseTask) return
 
-    def jsDomain   = System.getenv("AUTH0_ISSUER") ?: project.findProperty("AUTH0_ISSUER") ?: ""
-    def nativeDomain = android.defaultConfig.manifestPlaceholders["auth0Domain"]?.toString() ?: ""
+    // AUTH0_ISSUER lives in .env, which dotenv.gradle loads into project.env.
+    // It used to be read from System.getenv only — normally empty, so the guard
+    // below never ran. Read .env first, same as auth0Domain itself.
+    def normalizeDomain = { v -> v?.toString()?.trim()?.replaceFirst(/^https?:\/\//, "")?.replaceFirst(/\/+$/, "") ?: "" }
+    def jsDomain = normalizeDomain(
+        (project.hasProperty('env') ? project.env.get('AUTH0_ISSUER', null) : null)
+            ?: System.getenv("AUTH0_ISSUER")
+            ?: project.findProperty("AUTH0_ISSUER")
+    )
+    def nativeDomain = normalizeDomain(android.defaultConfig.manifestPlaceholders["auth0Domain"])
 
-    if (jsDomain && nativeDomain && jsDomain != nativeDomain) {
+    // A guard that silently skips when it cannot read its input reports success
+    // either way — a Release build without both values fails instead.
+    if (!jsDomain || !nativeDomain) {
+        throw new GradleException(
+            "Cannot verify the Auth0 tenant for a Release build: AUTH0_ISSUER='${jsDomain}', " +
+            "auth0Domain='${nativeDomain}'. Set AUTH0_ISSUER and ANDROID_AUTH0_DOMAIN in .env."
+        )
+    }
+    if (jsDomain != nativeDomain) {
         throw new GradleException(
             "[H-13] Auth0 domain mismatch: .env AUTH0_ISSUER='${jsDomain}' but " +
             "manifestPlaceholders auth0Domain='${nativeDomain}'.\n" +
