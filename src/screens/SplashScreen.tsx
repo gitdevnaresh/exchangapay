@@ -16,11 +16,8 @@ import { Checkbox, Container } from "../components";
 import { useAuth0 } from "react-native-auth0";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../hooks/useReduxStore";
-import {
-  isSessionExpired,
-  isLogin,
-  setUserInfo,
-} from "../redux/Actions/UserActions";
+import { isSessionExpired } from "../redux/Actions/UserActions";
+import { clearLocalSession } from "../utils/session/clearLocalSession";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DefaultButton from "../components/DefaultButton";
 import {
@@ -122,16 +119,16 @@ const SplashScreen = React.memo(() => {
     }
   };
 
-  // Clear all persisted authentication state
+  // Clear all persisted authentication state: the same wipe logout runs
+  // (Keychain, persisted state, caches, keys, every Redux slice), not just
+  // Auth0 and the login flag (L-09).
   const clearPersistedState = async () => {
     try {
-      // Use proper serializable values
-      dispatch(isLogin(false));
-      dispatch(setUserInfo(null));
       await clearCredentials();
     } catch (error) {
       log.error("Error clearing persisted state", error);
     }
+    await clearLocalSession();
   };
 
   useEffect(() => {
