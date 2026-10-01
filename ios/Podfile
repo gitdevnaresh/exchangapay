@@ -53,6 +53,9 @@ target 'exchangapay' do
   # Native jailbreak / hook / debugger detection.
   pod 'DeviceSecurity', :path => './DeviceSecurity'
 
+  # Documents-folder lookup for document notification taps.
+  pod 'FileManager', :path => './FileManager'
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

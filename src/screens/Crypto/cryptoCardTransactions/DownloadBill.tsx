@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  NativeModules,
   BackHandler,
   Alert,
   Platform,
@@ -22,8 +21,6 @@ import { commonStyles } from "../../../components/CommonStyles";
 import CardsModuleService from "../../../services/card";
 import { isErrorDispaly } from "../../../utils/helpers";
 import dayjs from "../../../utils/dayjs";
-import notifee, { EventType } from "@notifee/react-native";
-import FileViewer from "react-native-file-viewer";
 import ModalPicker from "../../../components/ModalPicker";
 import ErrorComponent from "../../../components/Error";
 import DatePickers from "react-native-date-picker";
@@ -31,6 +28,8 @@ import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
 import { saveToDownloads, fetchContentType, extensionFromContentType } from "../../../utils/fileDownload";
 import { log } from "../../../utils/logger";
+import notifee from "@notifee/react-native";
+import { handleDocumentNotificationPress } from "../../../utils/documentNotification";
 
 const EXChangaCardDownloadBill = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -65,38 +64,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
     },
   ];
   useEffect(() => {
-    return notifee.onForegroundEvent(async ({ type, detail }) => {
-      const notificationType = detail.notification?.data?.type;
-      if (type !== EventType.PRESS) return;
-
-      // FileManagerModule is not registered on either platform; calling into it
-      // throws and kills the notification handler, so treat it as optional.
-      const fileManager = NativeModules.FileManagerModule;
-      if (!fileManager) return;
-
-      try {
-        if (Platform.OS === "ios" && notificationType === "Document_IOS") {
-          fileManager.getDocumentDirectoryPath(
-            async (documentDirectory: string) => {
-              try {
-                await FileViewer.open(
-                  documentDirectory + "/" + detail.notification?.body!
-                );
-              } catch (error) {
-                log.error("Could not open downloaded document", error);
-              }
-            }
-          );
-        } else if (
-          Platform.OS === "android" &&
-          notificationType === "Document_Android"
-        ) {
-          await fileManager.goToFolder("Downloads");
-        }
-      } catch (error) {
-        log.error("Could not handle document notification", error);
-      }
-    });
+    return notifee.onForegroundEvent(handleDocumentNotificationPress);
   }, []);
 
   const downloadImage = async (url: any) => {

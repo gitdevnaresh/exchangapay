@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { NativeModules, Platform, View } from "react-native";
+import { Platform, View } from "react-native";
+import notifee from "@notifee/react-native";
+import { handleDocumentNotificationPress } from "../utils/documentNotification";
 import { enableScreens } from "react-native-screens";
 import { NavigationContainer } from "@react-navigation/native";
-import FileViewer from "react-native-file-viewer";
-import notifee, { EventType } from "@notifee/react-native";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { RootStackParamList } from "./navigation-types";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -140,28 +140,7 @@ const AppContainer = () => {
   useEffect(() => {
 
     getIpAddress();
-    return notifee.onForegroundEvent(async ({ type, detail }) => {
-      const notificationType = detail.notification?.data?.type;
-      if (type === EventType.PRESS) {
-        if (Platform.OS === "ios" && notificationType === "Document_IOS") {
-          NativeModules.FileManagerModule.getDocumentDirectoryPath(
-            async (documentDirectory: string) => {
-              try {
-                await FileViewer.open(
-                  documentDirectory + "/" + detail.notification?.body!
-                );
-              } finally {
-              }
-            }
-          );
-        } else if (
-          Platform.OS === "android" &&
-          notificationType === "Document_Android"
-        ) {
-          await NativeModules.FileManagerModule.goToFolder("Downloads");
-        }
-      }
-    });
+    return notifee.onForegroundEvent(handleDocumentNotificationPress);
 
   }, []);
 

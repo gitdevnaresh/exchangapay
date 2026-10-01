@@ -25,6 +25,8 @@ class MainApplication : Application(), ReactApplication {
           add(PlayIntegrityPackage())
           // Native root / hook detection.
           add(DeviceSecurityPackage())
+          // Opens the Downloads screen from a document notification tap.
+          add(FileManagerPackage())
         },
     )
   }
