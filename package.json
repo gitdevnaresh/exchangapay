@@ -39,7 +39,7 @@
     "@ui-kitten/components": "^5.3.1",
     "@ui-kitten/eva-icons": "^5.3.1",
     "apisauce": "^3.2.0",
-    "axios": "^1.11.0",
+    "axios": "^1.20.0",
     "babel-plugin-module-resolver": "^4.1.0",
     "base-64": "^1.0.0",
     "camelcase-keys": "^7.0.0",
