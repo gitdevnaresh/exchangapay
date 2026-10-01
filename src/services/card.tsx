@@ -21,9 +21,6 @@ const CardsModuleService = {
   getUnFreezCard: async (body: any) => {
     return put(`api/v1/Cards/UnFreezeCard`, body);
   },
-  saveterminateCard: async (body: any) => {
-    return put(`api/v1/Cards/UnFreezeCard`, body);
-  },
   getReissueCard: async (id: any) => {
     return get(`api/v1/Cards/ReActivateCard/${id}`);
   },
@@ -213,7 +210,7 @@ const CardsModuleService = {
     return put(`api/v1/Common/Update/Customer/PersonalAddress`, body)
   },
   getAccountInformation: async () => {
-    return get(`/api/v1/Common/CustomerInformation}`)
+    return get(`/api/v1/Common/CustomerInformation`)
   }, updateAccountInformation: async (body: any) => {
     return put(`api/v1/Common/Update/CustomerInformation`, body)
   },
