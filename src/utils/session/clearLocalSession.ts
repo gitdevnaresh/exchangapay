@@ -26,6 +26,8 @@ const attempt = async (label: string, work: () => Promise<unknown> | unknown) =>
  *
  * Auth0's own credential store is not cleared here: `clearCredentials` comes
  * from the `useAuth0` hook, so each caller clears it before calling this.
+ * Since M-06 that store is emptied right after login anyway; the call is a
+ * safety net.
  * Every step is best-effort; one failing never stops the rest.
  */
 export const clearLocalSession = async (options?: ClearLocalSessionOptions): Promise<void> => {

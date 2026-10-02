@@ -33,7 +33,12 @@ import LockedModal from "../components/LockedModal";
 import { getAllEnvData } from "../../Environment";
 import useMemberLogin from "../hooks/useMemberLogin";
 import useChekBio from "../hooks/useCheckBio";
-import { storeToken } from "../utils/helpers";
+import { checkAndRefreshToken, storeToken } from "../utils/helpers";
+import {
+  isTransientTokenFailure,
+  readAccessToken,
+  storeAuthTokens,
+} from "../utils/storage/authTokens";
 import { log } from "../utils/logger";
 import {
   initializeDeviceIntegrity,
@@ -68,9 +73,16 @@ const SplashScreen = React.memo(() => {
       if (isEnforcementEnabled() && isDeviceCompromised(integrity)) return;
       setLoading(true);
       try {
-        const credentials = await getCredentials();
-        if (credentials?.accessToken) {
-          await restoreUserSession(credentials, false);
+        await migrateSdkCredentials();
+        // M-06: the app Keychain is the only credential store. The refresh is
+        // the shared single-flight one, so it cannot race the refresh timer.
+        const outcome = await checkAndRefreshToken();
+        if (outcome === "ok") {
+          await restoreUserSession(false);
+        } else if (outcome !== "no-session") {
+          // rejected / unavailable: the same fail-closed path getCredentials()
+          // throwing used to take.
+          await clearPersistedState();
         } else if (persistedLoginState && persistedUserInfo) {
           await clearPersistedState();
         } else {
@@ -88,19 +100,63 @@ const SplashScreen = React.memo(() => {
     initializeAuth();
   }, [isInitialized, fcmToken]);
 
-  // Restore user session from Auth0 credentials
-  const restoreUserSession = async (
-    credentials: any,
-    isNewLogin: boolean = false
-  ) => {
-    try {
-      // H-05: the access, refresh and id tokens used to be dispatched into
-      // Redux here as well as stored in the Keychain. Nothing ever read them
-      // back — the only consumer of a token is GetTokens(), which reads the
-      // Keychain — so the copy existed purely to be persisted into a weaker
-      // store alongside the key that decrypts the user's data. Removed.
-      await storeToken(credentials?.accessToken, credentials?.refreshToken);
+  /**
+   * M-06: the Auth0 SDK's credentials manager kept its own copy of the refresh
+   * token, which went stale as soon as the app rotated the Keychain copy — and
+   * a stale token reused on the next start revokes the whole token family. It
+   * also sat outside the keychainPolicy accessibility rules.
+   *
+   * Installs from earlier builds may still hold credentials there. If the
+   * Keychain has no session, the SDK copy is the only one (the app never
+   * refreshed it out-of-band), so it is moved across once. Either way the SDK
+   * store is then emptied. A Keychain that cannot be read right now is left
+   * alone, since we cannot tell which copy is authoritative.
+   */
+  const migrateSdkCredentials = async () => {
+    const stored = await readAccessToken();
+    if (isTransientTokenFailure(stored.status)) return;
+    if (stored.status === "empty" || !stored.value) {
+      try {
+        const legacy = await getCredentials();
+        if (legacy?.accessToken) {
+          await storeAuthTokens(legacy.accessToken, legacy.refreshToken);
+        }
+      } catch (error) {
+        // no_credentials is the normal case: nothing to migrate. A failed
+        // Keychain write keeps the SDK copy for the next start.
+        if ((error as any)?.code !== "no_credentials") {
+          log.warn("Auth0 credential migration skipped");
+          return;
+        }
+      }
+    }
+    await dropSdkCredentials();
+  };
 
+  // Empties the SDK credentials manager; the app Keychain stays untouched.
+  const dropSdkCredentials = async () => {
+    try {
+      await clearCredentials();
+    } catch (error) {
+      log.warn("Could not clear Auth0 SDK credentials");
+    }
+  };
+
+  // Store tokens from a fresh login in the app Keychain — the single
+  // credential store — and drop the copy the SDK saved for itself (M-06).
+  const storeLoginCredentials = async (credentials: any) => {
+    // H-05: the access, refresh and id tokens used to be dispatched into
+    // Redux here as well as stored in the Keychain. Nothing ever read them
+    // back — the only consumer of a token is GetTokens(), which reads the
+    // Keychain — so the copy existed purely to be persisted into a weaker
+    // store alongside the key that decrypts the user's data. Removed.
+    await storeToken(credentials?.accessToken, credentials?.refreshToken);
+    await dropSdkCredentials();
+  };
+
+  // Restore the user session; tokens are already in the Keychain.
+  const restoreUserSession = async (isNewLogin: boolean = false) => {
+    try {
       const userDetails = {
         isNewLogin,
         fcmTken: fcmToken,
@@ -168,12 +224,10 @@ const SplashScreen = React.memo(() => {
         additionalParameters: { prompt: "login" },
       };
 
-      await authorize(authConfig);
-
-      // After successful authorization, get credentials and restore session
-      const credentials = await getCredentials();
+      const credentials = await authorize(authConfig);
       if (credentials?.accessToken) {
-        await restoreUserSession(credentials, true);
+        await storeLoginCredentials(credentials);
+        await restoreUserSession(true);
       }
 
       setLoading(false);
@@ -190,16 +244,14 @@ const SplashScreen = React.memo(() => {
       setLoading(true);
       setIsNewLogin(true);
 
-      await authorize({
+      const credentials = await authorize({
         scope: getOAuthValue("scope"),
         audience: getOAuthValue("audience"),
         additionalParameters: { screen_hint: "signup", prompt: "login" },
       });
-
-      // After successful authorization, get credentials and restore session
-      const credentials = await getCredentials();
       if (credentials?.accessToken) {
-        await restoreUserSession(credentials, true);
+        await storeLoginCredentials(credentials);
+        await restoreUserSession(true);
       }
 
       setLoading(false);

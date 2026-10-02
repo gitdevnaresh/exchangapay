@@ -577,62 +577,97 @@ export type TokenRefreshOutcome =
   | "rejected";
 
 /**
+ * M-06: one Auth0 client for the refresh path. The refresh token itself is
+ * read from, and written back to, the app Keychain only — the SDK's own
+ * credentials manager is emptied right after login (see SplashScreen), so
+ * there is exactly one copy to rotate.
+ */
+let authClient: Auth0 | null = null;
+const getAuthClient = (): Auth0 => {
+  if (!authClient) {
+    const { oAuthConfig } = getAllEnvData();
+    authClient = new Auth0({
+      domain: oAuthConfig.issuer,
+      clientId: oAuthConfig.clientId,
+    });
+  }
+  return authClient;
+};
+
+/**
  * H-11: reads the refresh token from its own entry, and reports *why* it could
  * not proceed.
  *
  * The previous version swallowed every failure into a bare `return`, so a
  * transient keychain error was indistinguishable from an expired session — and
  * the caller retried it in a tight loop.
+ *
+ * The expiry is checked before the refresh token is read: a still-valid access
+ * token is "ok" on its own, and the refresh token is only needed to replace it.
  */
-export const checkAndRefreshToken = async (): Promise<TokenRefreshOutcome> => {
-  const { oAuthConfig } = getAllEnvData();
-  const auth0 = new Auth0({
-    domain: oAuthConfig.issuer,
-    clientId: oAuthConfig.clientId,
-  });
+const refreshIfNeeded = async (): Promise<TokenRefreshOutcome> => {
   try {
-    const refresh = await readRefreshToken();
-    if (refresh.status === "empty") {
-      return "no-session";
-    }
-    if (refresh.status !== "ok" || !refresh.value) {
-      // Locked, cancelled, invalidated or unclassifiable. The session may well
-      // be fine; the entry just is not readable at this instant.
-      return "unavailable";
-    }
-
     const expiry = await readAccessTokenExpiry();
     if (expiry.status === "empty") {
       return "no-session";
     }
     if (expiry.status !== "ok" || !expiry.value) {
+      // Locked, cancelled, invalidated or unclassifiable. The session may well
+      // be fine; the entry just is not readable at this instant.
       return "unavailable";
     }
 
     const currentTime = Math.floor(Date.now() / 1000);
     // Check if token needs refreshing (expires within the next 60 seconds)
-    if (expiry.value - currentTime <= 60) {
-      try {
-        const refreshed = await auth0.auth.refreshToken({
-          refreshToken: refresh.value,
-        });
-        // Handle refresh token rotation: use the new refresh token from the
-        // response if it exists, otherwise keep the one we already hold.
-        const newRefreshToken = refreshed.refreshToken || refresh.value;
-        await storeAuthTokens(refreshed.accessToken, newRefreshToken);
-      } catch (error: any) {
-        // Usually an expired or revoked refresh token. Reported rather than
-        // swallowed so the caller can stop retrying; the session-expiry
-        // dispatch still happens on the next 401, as it did before.
-        log.warn("Token refresh rejected by the identity provider");
-        return "rejected";
-      }
+    if (expiry.value - currentTime > 60) {
+      return "ok";
+    }
+
+    const refresh = await readRefreshToken();
+    if (refresh.status === "empty") {
+      return "no-session";
+    }
+    if (refresh.status !== "ok" || !refresh.value) {
+      return "unavailable";
+    }
+
+    try {
+      const refreshed = await getAuthClient().auth.refreshToken({
+        refreshToken: refresh.value,
+      });
+      // Handle refresh token rotation: use the new refresh token from the
+      // response if it exists, otherwise keep the one we already hold.
+      const newRefreshToken = refreshed.refreshToken || refresh.value;
+      await storeAuthTokens(refreshed.accessToken, newRefreshToken);
+    } catch (error: any) {
+      // Usually an expired or revoked refresh token. Reported rather than
+      // swallowed so the caller can stop retrying; the session-expiry
+      // dispatch still happens on the next 401, as it did before.
+      log.warn("Token refresh rejected by the identity provider");
+      return "rejected";
     }
     return "ok";
   } catch (error) {
     log.warn("Token refresh could not run");
     return "unavailable";
   }
+};
+
+/**
+ * M-06: single-flight. With rotation on, two refreshes racing on the same
+ * refresh token look like token reuse to Auth0, which revokes the whole token
+ * family. Every caller (the refresh timer, the splash screen) shares the one
+ * in-flight attempt instead.
+ */
+let refreshInFlight: Promise<TokenRefreshOutcome> | null = null;
+
+export const checkAndRefreshToken = (): Promise<TokenRefreshOutcome> => {
+  if (!refreshInFlight) {
+    refreshInFlight = refreshIfNeeded().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 };
 
 //Navigation Sliding Animations

@@ -69,13 +69,15 @@ const useMemberLogin = () => {
       const userLoginInfo: any = await AuthService.getMemberInfo();
       const userDetails = userLoginInfo?.data;
       if (userLoginInfo?.status === 200) {
-        // H-11: written with the shared options — device-only, so the member
-        // record (which carries `sk`) no longer syncs to iCloud or appears in
-        // a device backup.
+        // M-07: only the identifiers crash reporting needs reach the Keychain
+        // (apiInterceptors getUserInfo). The full record carries `sk`, the
+        // key for the user's field-encrypted PII; it stays in memory (Redux,
+        // stripped from persistence) and is re-fetched here on every launch.
+        // Overwriting the entry also drops the full record older builds wrote.
         await writeSecret(
           KEYCHAIN_SERVICES.USER_INFO,
           "userInfo",
-          JSON.stringify(userDetails)
+          JSON.stringify({ id: userDetails?.id, userId: userDetails?.userId })
         );
         dispatch(setUserInfo(userDetails));
         if (isOnlyMember) {

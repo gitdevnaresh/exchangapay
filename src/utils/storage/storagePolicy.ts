@@ -12,8 +12,10 @@
  *                        stricter accessibility class than the access token
  *                        (H-11). Never in the same entry — see authTokens.ts.
  *
- *   Member record        Keychain, service "userInfoService"
- *   (incl. `sk`)         written on login in useMemberLogin, cleared on logout
+ *   Member identifiers   Keychain, service "userInfoService" — `{ id, userId }`
+ *                        only, for crash attribution (M-07). Written on login
+ *                        in useMemberLogin, cleared on logout. `sk` is never
+ *                        stored: it lives in memory and is re-fetched per launch.
  *
  *   Persisted app state  Keychain, service "persist:root", AES-GCM encrypted
  *                        under a dedicated device key, secrets stripped first

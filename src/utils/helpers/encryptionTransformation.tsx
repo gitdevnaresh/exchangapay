@@ -35,7 +35,9 @@ import { SENSITIVE_KEY } from "../redact";
  * `sk` is the field-level encryption key for all of the user's personal data.
  * Persisting it next to the data it protects makes that encryption decorative,
  * which is the core of the finding. It is re-fetched with the member record on
- * every launch, so nothing depends on it surviving a restart.
+ * every launch, so nothing depends on it surviving a restart. The Keychain
+ * member entry no longer carries it either (M-07): useMemberLogin writes only
+ * `{ id, userId }` there.
  */
 const SECRET_FIELDS = ["sk", "accessToken", "refreshToken", "idToken", "token"];
 
