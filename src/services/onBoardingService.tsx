@@ -1,9 +1,7 @@
 
-import { webhookHttp } from "../utils/thirdPartyHttp";
 import { get, post } from '../utils/ApiService';
 import messaging from '@react-native-firebase/messaging';
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from '../security';
-const WEBHOOK_URL = "https://hook.eu2.make.com/glekogomi355qvg7u888kc9rs6clvise";
 const OnBoardingService = {
     resendVerifyMail: async () => {
         return get(`/api/v1/Customer/VerifyEmail`)
@@ -50,11 +48,6 @@ const OnBoardingService = {
         return get(`api/v1/SumSub/AccessToken1?applicantId=${customerId}&levelName=${flow}`)
     }, sumsubCompleted: async () => {
         return get(`api/v1/SumSub/getSumsubData`)
-    }, sendUserWebhook: async (userData: any) => {
-        const response = await webhookHttp.post(WEBHOOK_URL, userData, {
-            headers: { 'Content-Type': 'application/json' }
-        });
-        return response
     },
     updateFcmToken: async () => {
         let token: string | undefined;

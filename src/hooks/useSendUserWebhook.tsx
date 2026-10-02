@@ -1,38 +1,25 @@
 import { useState } from 'react';
-import { formatDateTimeAPI } from '../utils/helpers';
-
 import { useSelector } from 'react-redux';
-import useEncryptDecrypt from './useEncryption_Decryption';
 import ProfileService from '../services/profile';
-import { getAllEnvData } from '../../Environment';
+import { log } from '../utils/logger';
 
 const useSendUserWebhook = () => {
   const [loading, setLoading] = useState(false);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
-const {decryptAES}=useEncryptDecrypt();
   const sendWebhook = async (queryType: string) => {
-   const environment=getAllEnvData()
-   if(environment.envName!=="prod"){
-    return;
-   }
     if (!userInfo) return;
-    const payLoad = {
-      customerId: userInfo?.id || '',
-      customerName:
-        decryptAES(userInfo?.firstName) + ' ' + decryptAES(userInfo?.lastName) || '',
-      country: userInfo?.country || '',
-      phoneNumber: decryptAES(userInfo?.phonecode)+ decryptAES(userInfo?.phoneNumber)|| '',      email: decryptAES(userInfo?.email) || '',
-      phoneVerified: userInfo?.isPhoneNumberVerified || false,
-      emailVerified: userInfo?.isEmailVerified || false,
-      kycVerified: userInfo?.isKYC || false,
-      Querytype: queryType,
-      createdDate: formatDateTimeAPI(userInfo?.createdDate) || '',
-    };
+    // The backend's CustomerEvent route reads the customer from the token and
+    // forwards to Make.com, so no personal data is decrypted or sent from the
+    // device and the webhook address never ships in the bundle.
     try {
       setLoading(true);
-      const response = await ProfileService.sendUserWebhook(payLoad);
+      const response: any = await ProfileService.sendCustomerEvent(queryType);
+      if (!response?.ok) {
+        // A side effect of an action that already succeeded: never block the
+        // user, but do not swallow the failure either.
+        log.warn('Customer event failed', { queryType, status: response?.status });
+      }
       return response;
-    } catch (error) {
     } finally {
       setLoading(false);
     }

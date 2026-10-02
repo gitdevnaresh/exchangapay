@@ -1,9 +1,7 @@
 
-import { webhookHttp } from "../utils/thirdPartyHttp";
 import { fileget, filepost, get, post, put } from "../utils/ApiService";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from "../security";
-const WEBHOOK_URL = "https://hook.eu2.make.com/glekogomi355qvg7u888kc9rs6clvise";
 const ProfileService = {
   uploadFile: async (imgdata: any) => {
     return filepost(`UploadFile`, imgdata);
@@ -100,12 +98,12 @@ const ProfileService = {
   }, updateGoogleAuthenticateSwitch: async (data: any) => {
     return get(`api/v1/Common/TwoFactorAuthentication/${data}`);
   },
-  sendUserWebhook: async (userData: any) => {
-    const response = await webhookHttp.post(WEBHOOK_URL, userData, {
-      headers: { 'Content-Type': 'application/json' }
-    });
-    return response
-  }, getCasesKPis: async () => {
+  // The backend identifies the customer from the bearer token, builds the
+  // Make.com payload and forwards it. The webhook address lives only there.
+  sendCustomerEvent: async (queryType: string) => {
+    return post(`api/v1/Common/CustomerEvent`, { queryType });
+  },
+  getCasesKPis: async () => {
     return get('api/v1/casemanagement/Customer/Cases/kpi')
   },
   getCasesList: async (page: any, pageSize: any) => {
