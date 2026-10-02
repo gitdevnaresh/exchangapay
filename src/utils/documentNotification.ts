@@ -1,7 +1,65 @@
 import { NativeModules, Platform } from "react-native";
-import { EventType, Event } from "@notifee/react-native";
+import notifee, { AndroidImportance, EventType, Event } from "@notifee/react-native";
 import FileViewer from "react-native-file-viewer";
+import BlobUtil from "react-native-blob-util";
 import { log } from "./logger";
+import type { SavedFile } from "./fileDownload";
+
+const DOWNLOAD_NOTIFICATION_TYPE = "Download_Complete";
+const DOWNLOAD_CHANNEL_ID = "downloads";
+
+/**
+ * Files this process published, keyed by the id of the notification announcing
+ * them. The tap handler opens a file only through this map, never from the
+ * notification payload, so a push message cannot name a file to open (L-07).
+ * The map lives in memory: after the app process is killed a tap falls back to
+ * the Downloads screen.
+ */
+const publishedDownloads = new Map<string, { uri: string; mime: string }>();
+
+/**
+ * Android's "Download complete" notification. Downloads used to go through
+ * DownloadManager, which posted one; since files are published through
+ * MediaStore (fileDownload.ts) nothing did. Tapping it opens the file.
+ */
+export const notifyDownloadComplete = async (saved: SavedFile): Promise<void> => {
+  if (Platform.OS !== "android" || !saved.savedToDownloads) return;
+  try {
+    await notifee.createChannel({
+      id: DOWNLOAD_CHANNEL_ID,
+      name: "Downloads",
+      importance: AndroidImportance.DEFAULT,
+    });
+    const id = `download-${Date.now()}`;
+    publishedDownloads.set(id, { uri: saved.path, mime: saved.mime });
+    await notifee.displayNotification({
+      id,
+      title: "Download complete",
+      body: saved.fileName,
+      data: { type: DOWNLOAD_NOTIFICATION_TYPE },
+      android: {
+        channelId: DOWNLOAD_CHANNEL_ID,
+        smallIcon: "ic_launcher",
+        autoCancel: true,
+        showTimestamp: true,
+        pressAction: { id: "default", launchActivity: "default" },
+      },
+    });
+  } catch (error) {
+    log.error("Could not show download notification", error);
+  }
+};
+
+const openPublishedDownload = async (notificationId?: string) => {
+  const file = notificationId ? publishedDownloads.get(notificationId) : undefined;
+  if (file) {
+    publishedDownloads.delete(notificationId!);
+    await BlobUtil.android.actionViewIntent(file.uri, file.mime);
+    return;
+  }
+  // Process restarted since the download: open the Downloads screen instead.
+  await NativeModules.FileManagerModule?.goToFolder("Downloads");
+};
 
 // The notification body comes from the push payload, so it is untrusted.
 // Only a plain file name the app itself would produce is accepted: no
@@ -15,6 +73,15 @@ export const handleDocumentNotificationPress = async ({ type, detail }: Event) =
   if (type !== EventType.PRESS) return;
 
   const notificationType = detail.notification?.data?.type;
+
+  if (Platform.OS === "android" && notificationType === DOWNLOAD_NOTIFICATION_TYPE) {
+    try {
+      await openPublishedDownload(detail.notification?.id);
+    } catch (error) {
+      log.error("Could not open downloaded file", error);
+    }
+    return;
+  }
   // FileManagerModule is optional; calling into a missing module throws.
   const fileManager = NativeModules.FileManagerModule;
   if (!fileManager) return;

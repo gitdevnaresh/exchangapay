@@ -28,8 +28,7 @@ import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
 import { saveToDownloads, fetchContentType, extensionFromContentType } from "../../../utils/fileDownload";
 import { log } from "../../../utils/logger";
-import notifee from "@notifee/react-native";
-import { handleDocumentNotificationPress } from "../../../utils/documentNotification";
+import { notifyDownloadComplete } from "../../../utils/documentNotification";
 
 const EXChangaCardDownloadBill = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
@@ -63,9 +62,6 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
       name: "Customize",
     },
   ];
-  useEffect(() => {
-    return notifee.onForegroundEvent(handleDocumentNotificationPress);
-  }, []);
 
   const downloadImage = async (url: any) => {
     if (!url) {
@@ -103,6 +99,7 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
       }
 
       if (saved.savedToDownloads) {
+        await notifyDownloadComplete(saved);
         Alert.alert(
           "Transactions Bill Downloaded Successfully.",
           `${saved.fileName} has been saved to your Downloads folder.`
