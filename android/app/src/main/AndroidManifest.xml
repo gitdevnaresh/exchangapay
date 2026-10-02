@@ -124,50 +124,33 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
-      <!-- M-07: App Links intent filter. android:autoVerify="true" causes Android
-           to verify ownership of the domain against the hosted assetlinks.json
-           before registering this filter. A verified App Link cannot be claimed
-           by another app — unlike the custom scheme below, which any app can
-           register.
+      <!-- L-10 / M-07: MainActivity deliberately has NO OAuth callback filter.
 
-           The statement file must be served from the host in the <data> element
-           below, which is ${auth0Domain} — the Auth0 TENANT domain
-           (exchangapay.eu.auth0.com / exchangapay-tst.eu.auth0.com), NOT
-           exchangapay.com. This comment used to name exchangapay.com; hosting it
-           there verifies nothing, because Android never fetches that host. We do
-           not host the file at all: Auth0 serves
-           https://${auth0Domain}/.well-known/assetlinks.json once the package
-           name and signing-key SHA-256 are registered in the Auth0 Dashboard.
+           The Auth0 callback is received by com.auth0.android.provider.RedirectActivity,
+           which the Auth0 Android SDK declares in its own manifest from the two
+           placeholders in build.gradle:
 
-           NOT YET VERIFIED — until those Dashboard fields are filled in, this
-           filter is inert and the custom scheme below is still carrying every
-           callback. Setup and verification: security/M07_APPLINKS_SETUP.md -->
-      <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" android:host="${auth0Domain}" android:pathPrefix="/android/${applicationId}/callback" />
-      </intent-filter>
-      <!-- M-07: Legacy custom-scheme callback. Any app on the device can register
-           this same scheme and receive the authorization code, which is the whole
-           reason for the App Link above.
+               ${auth0Scheme}://${auth0Domain}/android/${applicationId}/callback
 
-           It is still here on purpose. Removing it before App Links verify on
-           real installs breaks login outright — the callback lands nowhere and
-           the user is stranded in a browser that cannot return to the app. It
-           must outlive the migration, not the declaration.
+           That is the only redirect react-native-auth0 sends (SplashScreen.tsx calls
+           authorize() with no customScheme or redirectUrl), and it is the URL that
+           must be in Auth0's Allowed Callback URLs. To see it, read the merged
+           manifest, not this file.
 
-           REMOVAL REVIEW DATE: 2027-02-06. A decision deadline, not an automatic
-           removal: on that date either the criteria in
-           security/M07_APPLINKS_SETUP.md hold and this filter plus the
-           auth0Scheme placeholder in build.gradle come out, or someone records
-           why not and moves the date. build.gradle warns once it passes. -->
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="${auth0Scheme}" android:host="callback" />
-      </intent-filter>
+           Two filters used to sit here, and neither ever carried a callback:
+             - https://${auth0Domain}/android/${applicationId}/callback with
+               autoVerify, routed to MainActivity, which cannot complete a WebAuth
+               flow. Had it ever verified, it would have swallowed the callback and
+               broken login.
+             - ${auth0Scheme}://callback, a URL the SDK never generates. Its only
+               effect was to give every other app on the device a way to launch
+               MainActivity.
+
+           Another app can claim the custom scheme on RedirectActivity, but the code it
+           would intercept is useless without the PKCE code_verifier, and that never
+           leaves this process (RFC 8252 s8.1). Moving to an https App Link needs
+           Auth0 Dashboard work first; see security/oauth-callback.md. A release build
+           fails if an OAuth filter is added back to this file. -->
     </activity>
   </application>
 </manifest>

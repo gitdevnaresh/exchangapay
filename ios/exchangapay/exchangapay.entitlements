@@ -20,18 +20,20 @@
 	<string>$(APS_ENVIRONMENT)</string>
 
 	<!--
-		M-07: Universal Links for the OAuth callback. Both tenants listed — iOS
-		ignores an applinks domain that does not resolve for this app, so an
-		unmatched entry is inert rather than an error.
+		L-10: no com.apple.developer.associated-domains entitlement, on purpose.
 
-		Requires Associated Domains on the App ID and regenerated provisioning
-		profiles, or signing fails.
+		This file used to claim applinks for both Auth0 tenants (prod and tst, in
+		every build). Nothing used them. The OAuth callback is the custom scheme
+		in Info.plist, delivered in-process by ASWebAuthenticationSession;
+		authorize() never asks for an https callback, and AppDelegate has no
+		continueUserActivity handler that could receive a Universal Link. The
+		entitlement only bound the app to two third-party hosts it does not
+		control.
+
+		If the callback ever moves to https, re-add it for the build's own tenant
+		only (webcredentials: and applinks:) as part of that change. See
+		security/oauth-callback.md.
 	-->
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:exchangapay.eu.auth0.com</string>
-		<string>applinks:exchangapay-tst.eu.auth0.com</string>
-	</array>
 
 	<!--
 		L-14: every file the app writes (AsyncStorage, react-native-fs, caches)

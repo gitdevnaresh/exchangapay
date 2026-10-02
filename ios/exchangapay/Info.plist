@@ -311,31 +311,21 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- Universal Links for the Auth0 callback are NOT ACTIVE on iOS.
+	<!-- L-10: OAuth callback scheme.
 
-	     Unlike Android — which at least declares an autoVerify App Link filter —
-	     nothing in this target requests Universal Links yet. There is no
-	     com.apple.developer.associated-domains entitlement in
-	     exchangapay.entitlements, so the custom scheme below is the ONLY callback
-	     path on iOS, and any app that registers the same scheme can receive the
-	     authorization code. This comment is the whole iOS half of the fix so far.
+	     Login redirects to
+	       <bundle id>.auth0://<tenant>/ios/<bundle id>/callback
+	     react-native-auth0 runs it in an ASWebAuthenticationSession (no
+	     useSFSafariViewController anywhere). That session catches the redirect
+	     itself and hands it straight to this process; it is never sent through
+	     the OS URL router. So another app that registers the same scheme
+	     cannot receive the code. Android has no equivalent, which is why its
+	     side of L-10 relies on PKCE (see AndroidManifest.xml).
 
-	     Two independent things are required, and neither is done:
-
-	       1. Auth0 must serve the association file for this tenant. We do not
-	          host it — Auth0 does, at
-	          https://<tenant>/.well-known/apple-app-site-association — once the
-	          Team ID and bundle ID are set in the Auth0 Dashboard under
-	          Advanced Settings > Device Settings > iOS.
-
-	       2. The associated-domains entitlement must be added here AND the
-	          Associated Domains capability enabled on the App ID in the Apple
-	          Developer portal, with provisioning profiles regenerated. Adding the
-	          entitlement without the portal change does not degrade gracefully —
-	          it breaks code signing for every iOS build including CI.
-
-	     Do both in that order. Steps, verification commands and the removal
-	     criteria for the scheme below: security/M07_APPLINKS_SETUP.md -->
+	     Universal Links are deliberately NOT configured (see
+	     exchangapay.entitlements). An https callback needs iOS 17.4+, Auth0
+	     Dashboard device settings and the Associated Domains capability, in
+	     that order: security/oauth-callback.md. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -345,14 +335,6 @@
 			<string>auth0</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<!-- Legacy custom scheme. Claimable by any app on the device, which is
-				     what the Universal Links work is about — but it is currently the only iOS callback
-				     path, so removing it before Universal Links work would break login
-				     entirely rather than harden it.
-
-				     REMOVAL REVIEW DATE: 2027-02-06, matching the Android legacy
-				     filter. Criteria in security/M07_APPLINKS_SETUP.md — both
-				     platforms should stop depending on custom schemes together. -->
 				<string>$(PRODUCT_BUNDLE_IDENTIFIER).auth0</string>
 			</array>
 		</dict>
