@@ -22,6 +22,9 @@ import { PROFILE_CONSTANTS } from '../Profile/constants';
 import { downloadImage } from '../../utils/tools';
 import { LIST_PERF_CHAT } from '../../constants/listPerformance';
 
+const SUPPORT_DISPLAY_NAME = 'Exchanga Pay Support';
+const SUPPORT_AMOJO_ID = '3e580f1e-99e4-48e1-b95c-3ba4850bee86';
+
 
 const KommoChatScreen = (props: any) => {
     const [chatAPI, setChatAPI] = useState(null);
@@ -184,8 +187,14 @@ const KommoChatScreen = (props: any) => {
         const message = apiMessage.message || {};
         const sender = apiMessage.sender || {};
         const receiver = apiMessage.receiver || {};
-        const isUserMessage = sender?.client_id === userInfo?.id;
-        const isSupportMessage = sender?.name?.id === "3e580f1e-99e4-48e1-b95c-3ba4850bee86" || sender?.name === 'Exchanga Pay Support';
+        const isUserMessage = !!userInfo?.id && sender?.client_id === userInfo?.id;
+        // Trust is decided by server-assigned identity, never by the display name
+        // (VAPT L-19): amojo stamps client_id on every message sent through a
+        // client channel, so only Kommo-side agents/bots come back without one.
+        const isSupportMessage = !isUserMessage && (
+            sender?.id === SUPPORT_AMOJO_ID ||
+            (typeof sender?.id === 'string' && sender.id.length > 0 && !sender?.client_id)
+        );
         const hasContent = message.text || message.media;
         if (!hasContent) return null;
         return {
@@ -297,11 +306,13 @@ const KommoChatScreen = (props: any) => {
         if (!hasText && !isImage) return null;
 
         const isOutgoing = item.isOutgoing === true;
+        // The support label comes from the verified flag, not the sender-supplied name.
+        const senderLabel = isOutgoing ? item.sender?.name : item.isIncoming ? SUPPORT_DISPLAY_NAME : 'Unverified sender';
 
         return (
             <View style={[styles.messageContainer, isOutgoing ? styles.incomingMessage : styles.outgoingMessage, item.isTemp && styles.tempMessage, { alignSelf: isOutgoing ? 'flex-end' : 'flex-start' }]} >
                 <View >
-                    <ParagraphComponent text={item.sender.name} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textAlwaysWhite]} />
+                    <ParagraphComponent text={senderLabel} style={[commonStyles.fs14, commonStyles.fw600, commonStyles.textAlwaysWhite]} />
                     <View>
                         {hasText && (
                             <ParagraphComponent text={item.text} style={[styles.messageText, commonStyles.textAlwaysWhite]} />
@@ -416,7 +427,7 @@ const KommoChatScreen = (props: any) => {
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
                             <ChatIcon width={s(24)} height={s(24)} />
                             <View style={[]}>
-                                <ParagraphComponent style={[commonStyles.fs18, commonStyles.fw700, commonStyles.textAlwaysWhite]} text={"Exchanga Pay Support"} />
+                                <ParagraphComponent style={[commonStyles.fs18, commonStyles.fw700, commonStyles.textAlwaysWhite]} text={SUPPORT_DISPLAY_NAME} />
                                 <ParagraphComponent style={[commonStyles.fs12, commonStyles.fw500, commonStyles.textAlwaysWhite]} text={isConnected ? 'Connected' : 'Offline'} />
                             </View>
 
