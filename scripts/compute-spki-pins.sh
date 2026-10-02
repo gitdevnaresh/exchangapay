@@ -4,8 +4,8 @@
 #
 # The pin-set covered 2 of 8 hosts because the host list lived in one place and
 # the pin-set in another, and nobody reconciled them. This script reads the same
-# inventory the build guard reads (the apiUrls block of environments/*.js, plus
-# any baseURL literal left in src/) so the two cannot disagree, and prints the
+# inventory as verify-hosts.sh (scripts/lib/host-inventory.sh: URL values in
+# .env*, plus every https:// literal in src/), and prints the
 # chain for each host with the SHA-256 SPKI hash of every certificate in it.
 #
 #   ./scripts/compute-spki-pins.sh                 every host in the inventory
@@ -26,29 +26,7 @@ set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-collect_inventory() {
-  # apiUrls hosts from each environment. Restricted to that block on purpose:
-  # oAuthConfig holds an `audience` that looks like a URL but is an identifier,
-  # and the Sentry DSN is not a host the pin-set governs.
-  awk '
-    /apiUrls[[:space:]]*:[[:space:]]*\{/ { inblock = 1 }
-    inblock && /https?:\/\// {
-      line = $0
-      while (match(line, /https?:\/\/[^\/"'"'"'[:space:]]+/)) {
-        host = substr(line, RSTART, RLENGTH)
-        sub(/^https?:\/\//, "", host)
-        print host
-        line = substr(line, RSTART + RLENGTH)
-      }
-    }
-    inblock && /^[[:space:]]*\},[[:space:]]*$/ { inblock = 0 }
-  ' "$REPO_ROOT"/environments/dev.js "$REPO_ROOT"/environments/tst.js \
-    "$REPO_ROOT"/environments/prod.js 2>/dev/null
-
-  # Any baseURL literal still in src/. After H-01 there should be none.
-  grep -rhoE 'baseURL[[:space:]]*:[[:space:]]*["'"'"'`][[:space:]]*https?://[^/"'"'"'`[:space:]]+' \
-    "$REPO_ROOT/src" 2>/dev/null | sed -E 's#.*https?://##'
-}
+source "$REPO_ROOT/scripts/lib/host-inventory.sh"
 
 print_chain() {
   local host="$1"
@@ -106,12 +84,7 @@ print_chain() {
 if [ "$#" -gt 0 ]; then
   hosts="$*"
 else
-  hosts="$(collect_inventory | tr ' ' '\n' | sort -u)"
-fi
-
-if [ -z "$hosts" ]; then
-  echo "No hosts found. Is environments/*.js missing its apiUrls block?" >&2
-  exit 1
+  hosts="$(require_inventory)" || exit 1
 fi
 
 echo "Hosts in the inventory:"

@@ -25,27 +25,16 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 failures=0
 
-collect_inventory() {
-  awk '
-    /apiUrls[[:space:]]*:[[:space:]]*\{/ { inblock = 1 }
-    inblock && /https?:\/\// {
-      line = $0
-      while (match(line, /https?:\/\/[^\/"'"'"'[:space:]]+/)) {
-        host = substr(line, RSTART, RLENGTH)
-        sub(/^https?:\/\//, "", host)
-        print host
-        line = substr(line, RSTART + RLENGTH)
-      }
-    }
-    inblock && /^[[:space:]]*\},[[:space:]]*$/ { inblock = 0 }
-  ' "$REPO_ROOT"/environments/dev.js "$REPO_ROOT"/environments/tst.js \
-    "$REPO_ROOT"/environments/prod.js 2>/dev/null | sort -u
-}
+source "$REPO_ROOT/scripts/lib/host-inventory.sh"
+
+hosts="$(require_inventory --resolvable)" || exit 1
+checked=0
 
 printf '%-36s %-18s %s\n' "HOST" "DNS" "TLS"
 printf '%-36s %-18s %s\n' "------------------------------------" "------------------" "---"
 
-for host in $(collect_inventory); do
+for host in $hosts; do
+  checked=$((checked + 1))
   ip="$(dig +short +time=3 +tries=1 "$host" 2>/dev/null | grep -E '^[0-9]+\.' | head -1)"
 
   if [ -z "$ip" ]; then
@@ -67,10 +56,10 @@ done
 echo
 if [ "$failures" -gt 0 ]; then
   echo "$failures host(s) unreachable."
-  echo "A host in environments/*.js that does not resolve means every feature routed"
+  echo "A host in .env* or src/ that does not resolve means every feature routed"
   echo "through it is dead, and the user sees a spinner. Fix the config or delete the"
   echo "routes — see security/legacy-endpoint-audit.md for the last full survey."
   exit 1
 fi
 
-echo "All hosts resolve and complete a TLS handshake."
+echo "All $checked hosts resolve and complete a TLS handshake."
