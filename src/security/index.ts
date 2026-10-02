@@ -66,7 +66,7 @@ export type { PinExpiryReport, PinStatus } from "./pinExpiry";
 
 export {
   buildCardHtmlDocument,
-  getCardHtmlCsp,
+  CARD_HTML_CSP,
   CARD_HTML_WEBVIEW_PROPS,
   isCardHtmlNavigationAllowed,
   MAX_HTML_LENGTH,
