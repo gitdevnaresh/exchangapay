@@ -29,10 +29,21 @@ import CoinsDropdown from "./CoinsDropDown";
 import CryptoServices from "../../services/crypto";
 import SendCryptoServices from "../../services/sendcrypto";
 import { CONSTANTS } from "./constants";
-let checkAmount;
+const FEE_DEBOUNCE_MS = 400;
+
+/** True when a fee quote was calculated for exactly the amount on screen. */
+const isFeeForAmount = (feeData: any, enteredAmount: any): boolean => {
+  const quoted = parseFloat(feeData?.amount);
+  const entered = parseFloat(enteredAmount);
+  return Number.isFinite(quoted) && Number.isFinite(entered) && Math.abs(quoted - entered) < 1e-9;
+};
 
 const CardBalance = React.memo((props: any) => {
   const ref = useRef<any>(null);
+  // Incremented on every amount/coin/network change. A fee response is applied
+  // only if its id is still the latest, so a slow response for an older amount
+  // can never overwrite the fee for the amount currently on screen.
+  const feeRequestId = useRef(0);
   const isFocused = useIsFocused();
   const styles = useStyleSheet(themedStyles);
   const [topupLoading, setTopupLoading] = useState(false);
@@ -103,12 +114,14 @@ const CardBalance = React.memo((props: any) => {
   }, []);
 
   useEffect(() => {
-    if (/^[0-9]\d*(\.\d+)?$/.test(topupAmount)) {
-      fetchDepositFeeComission();
-    } else {
-      setFeeComissionData({});
-      checkAmount = null;
+    const requestId = ++feeRequestId.current;
+    setFeeComissionData({});
+    if (!/^[0-9]\d*(\.\d+)?$/.test(topupAmount)) {
+      setFeeComissionLoading(false);
+      return;
     }
+    const timer = setTimeout(() => fetchDepositFeeComission(requestId), FEE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
   }, [topupAmount, selectedNetwork, selectedCoin]);
 
   const getExchangeDeposite = async (walletCode?: any) => {
@@ -134,7 +147,8 @@ const CardBalance = React.memo((props: any) => {
     }
   };
 
-  const fetchDepositFeeComission = async () => {
+  const fetchDepositFeeComission = async (requestId: number) => {
+    const isLatest = () => requestId === feeRequestId.current;
     const cardId = props?.route?.params?.cardId;
     if (
       parseFloat(topupAmount) >=
@@ -146,12 +160,11 @@ const CardBalance = React.memo((props: any) => {
           topupAmount || 0,
           cardId
         );
+        // Amount, coin or network changed while this request was in flight — drop it.
+        if (!isLatest()) return;
         if (response?.status === 200) {
-          if (checkAmount) {
-            setFeeComissionData(response?.data);
-          } else {
-            setFeeComissionData({});
-          }
+          // Second guard: the backend echoes the amount it quoted for.
+          setFeeComissionData(isFeeForAmount(response?.data, topupAmount) ? response?.data : {});
           setFeeComissionLoading(false);
           setErrormsg(null);
         } else {
@@ -159,16 +172,17 @@ const CardBalance = React.memo((props: any) => {
           setFeeComissionLoading(false);
         }
       } catch (error) {
+        if (!isLatest()) return;
         setErrormsg(isErrorDispaly(error));
         setFeeComissionLoading(false);
       }
     } else {
       setFeeComissionData({});
+      setFeeComissionLoading(false);
     }
   };
   const handleTopupAmountChange = (text: any) => {
     setErrormsg("");
-    checkAmount = text || null;
     if (text) {
       if (/^\d{0,8}(\.\d{0,2})?$/.test(text)) {
         setTopupAmount(text);
@@ -230,6 +244,12 @@ const CardBalance = React.memo((props: any) => {
       setTopupLoading(false);
       ref?.current?.scrollTo(0, 0, true);
       return setErrormsg(CONSTANTS.INSUFFICIENT_BALANCE);
+    }
+    // Never submit with a fee/concurrencyStamp that was quoted for another amount.
+    if (!isFeeForAmount(feeComissionData, topupAmount)) {
+      setTopupLoading(false);
+      ref?.current?.scrollTo(0, 0, true);
+      return setErrormsg("Fee is still updating. Please try again.");
     }
     setErrormsg("");
     try {

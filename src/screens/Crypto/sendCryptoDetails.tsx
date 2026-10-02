@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { StyleService, useStyleSheet } from "@ui-kitten/components";
 import { View, ScrollView, TouchableOpacity, Modal, Platform, Image, BackHandler, ActivityIndicator, Alert, ViewComponent } from "react-native";
@@ -41,10 +41,21 @@ import {
 } from "../../security";
 import { log } from "../../utils/logger";
 
-let amount;
+const FEE_DEBOUNCE_MS = 400;
+
+/** True when a fee quote was calculated for exactly the amount on screen. */
+const isFeeForAmount = (feeData: any, sendAmount: any): boolean => {
+  const quoted = parseFloat(feeData?.amount);
+  const entered = parseFloat(sendAmount);
+  return Number.isFinite(quoted) && Number.isFinite(entered) && Math.abs(quoted - entered) < 1e-9;
+};
 
 const SendCryptoDetails = React.memo((props: any) => {
   const isFocused = useIsFocused();
+  // Incremented on every amount/network change. A fee response is applied only
+  // if its id is still the latest, so a slow response for an older amount can
+  // never overwrite the fee for the amount currently on screen.
+  const feeRequestId = useRef(0);
   const styles = useStyleSheet(themedStyles);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
   const [sendAmmount, setSendAmout] = React.useState<any>("");
@@ -173,12 +184,15 @@ const SendCryptoDetails = React.memo((props: any) => {
   }
 
   useEffect(() => {
-    if (/^[0-9]\d*(\.\d+)?$/.test(sendAmmount)) {
-      getFeeDetails();
-    } else {
-      amount = null;
-      setFee({});
+    const requestId = ++feeRequestId.current;
+    setFee({});
+    if (!/^[0-9]\d*(\.\d+)?$/.test(sendAmmount)) {
+      setFeeLoader(false);
+      return;
     }
+    setFeeLoader(true);
+    const timer = setTimeout(() => getFeeDetails(requestId), FEE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
   }, [sendAmmount, handleFee()])
 
 
@@ -297,6 +311,12 @@ const SendCryptoDetails = React.memo((props: any) => {
       setBtnDisabled(false);
       return setErrormsg("Total received amount must be greater than zero.");
     }
+    // Never submit with a fee/concurrencyStamp that was quoted for another amount.
+    if (!isFeeForAmount(fee, sendAmmount)) {
+      setSummryLoading(false);
+      setBtnDisabled(false);
+      return setErrormsg("Fee is still updating. Please try again.");
+    }
 
     if (parseFloat(sendAmmount) > parseFloat(cryptoWithdrawData.amount)) {
       setSummryLoading(false);
@@ -378,7 +398,6 @@ const SendCryptoDetails = React.memo((props: any) => {
   const handleSendAmountChange = (text: any) => {
     setErrormsg("");
     const numericValue = text.replace(/[^0-9.]/g, "");
-    amount = numericValue || null;
     if (text) {
       if (/^\d{1,8}(\.\d{0,2})?$/.test(text)) {
         setSendAmout(numericValue);
@@ -404,28 +423,30 @@ const SendCryptoDetails = React.memo((props: any) => {
     setNetworkModel(false)
   };
 
-  const getFeeDetails = async () => {
+  const getFeeDetails = async (requestId: number) => {
+    const isLatest = () => requestId === feeRequestId.current;
     if (parseFloat(sendAmmount) > 0) {
       try {
         setFeeLoader(true);
         const response: any = await CryptoServices.getCryptoWithdrawFee(handleFee(), parseFloat(sendAmmount));
+        // Amount or network changed while this request was in flight — drop it.
+        if (!isLatest()) return;
         if (response?.ok) {
-          if (amount) {
-            setFee(response?.data);
-          } else {
-            setFee({})
-          }
+          // Second guard: the backend echoes the amount it quoted for.
+          setFee(isFeeForAmount(response?.data, sendAmmount) ? response?.data : {});
           setFeeLoader(false)
         } else {
           setFeeLoader(false)
           setErrormsg(isErrorDispaly(response))
         }
       } catch (error) {
+        if (!isLatest()) return;
         setFeeLoader(false);
         setErrormsg(isErrorDispaly(error))
       }
     } else {
       setFee({})
+      setFeeLoader(false);
     }
   };
 
