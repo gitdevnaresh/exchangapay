@@ -23,6 +23,7 @@ import CustomPickerAcc from "../../components/CustomPicker";
 import ErrorComponent from "../../components/Error";
 import Loadding from "../../components/skeleton";
 import { formatDateTimeAPI, isErrorDispaly } from "../../utils/helpers";
+import { parsePaymentUri, paymentUriErrorMessage } from "../../utils/cryptoAddress";
 import { guardHighRiskAction } from "../../security";
 import QRCodeScanner from "../../components/qrScanner";
 import { personalInfoLoader } from "../Profile/skeleton_views";
@@ -369,13 +370,21 @@ const AddEditPayeeScreen = (props: any) => {
           <Container style={styles.modalContainer}>
             <QRCodeScanner
               onCaptureCode={(data: string) => {
-                const scannedAddress = data.includes(":")
-                  ? data.split(":")[1]
-                  : data;
-                formikRef.current.setFieldValue(
-                  "walletAddress",
-                  scannedAddress
+                // M-10: BIP-21 / EIP-681 aware, and refuses a QR code for a
+                // different network than the one selected.
+                const parsed = parsePaymentUri(
+                  data,
+                  formikRef.current?.values?.network
                 );
+                if (parsed.ok) {
+                  setErrormsg("");
+                  formikRef.current.setFieldValue(
+                    "walletAddress",
+                    parsed.address
+                  );
+                } else {
+                  setErrormsg(paymentUriErrorMessage(parsed.reason));
+                }
                 setEnableScanner(false);
               }}
               onClose={() => setEnableScanner(false)}

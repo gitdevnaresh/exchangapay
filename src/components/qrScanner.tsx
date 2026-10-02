@@ -85,7 +85,8 @@ const QRCodeScannerComp: React.FC<QRCodeScannerProps> = ({
   }, []);
 
   const codeScanner = useCodeScanner({
-    codeTypes: ["qr", "ean-13"],
+    // M-10: QR only. An EAN-13 product barcode is never a wallet address.
+    codeTypes: ["qr"],
     onCodeScanned: (codes) => {
       // A single QR can be reported on several consecutive frames; without the
       // latch the caller is handed the same address twice and onClose fires on

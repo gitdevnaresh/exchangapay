@@ -6,6 +6,7 @@ import { getAllEnvData } from "../../../Environment";
 import store from "../../store";
 import { isSessionExpired } from "../../redux/Actions/UserActions";
 import { log } from "../logger";
+import { isValidAddressForNetwork } from "../cryptoAddress";
 import {
   readAccessToken,
   readAccessTokenExpiry,
@@ -372,85 +373,20 @@ const getRuntimeEnv = (): string => {
   }
 };
 
-const mainnetAddressRegex = {
-  btc: /^(1[a-km-zA-HJ-NP-Z1-9]{25,34}|3[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}|bc1p[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58})$/,
-  "erc-20": /^0x[a-fA-F0-9]{40}$/, // Ethereum Mainnet
-  pol: /^0x[a-fA-F0-9]{40}$/, // Polygon Mainnet (uses EVM format)
-  "trc-20": /^(T[1-9A-HJ-NP-Za-km-z]{33}|41[a-fA-F0-9]{40})$/, // Tron Mainnet
-  sol: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, // Solana Mainnet
-};
-
-const testnetAddressRegex = {
-  btc: new RegExp(
-    [
-      // Allow Mainnet formats on testnet for flexibility
-      "^1[a-km-zA-HJ-NP-Z1-9]{25,34}",
-      "|3[a-km-zA-HJ-NP-Z1-9]{25,34}",
-      "|bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}",
-      "|bc1p[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58}",
-      // Actual Testnet formats
-      "|(m|n)[a-km-zA-HJ-NP-Z1-9]{26,35}", // Testnet P2PKH
-      "|2[a-km-zA-HJ-NP-Z1-9]{26,35}", // Testnet P2SH (common prefix)
-      "|tb1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}", // Testnet SegWit
-      "|tb1p[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58}", // Testnet Taproot
-      "$", // End of string
-    ].join("")
-  ),
-  "erc-20": /^0x[a-fA-F0-9]{40}$/, // EVM testnets use the same format
-  pol: /^0x[a-fA-F0-9]{40}$/, // Polygon testnets use the same format
-  "trc-20": /^(T[1-9A-HJ-NP-Za-km-z]{33}|41[a-fA-F0-9]{40})$/, // Tron testnets often use mainnet format
-  sol: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, // Solana testnets use mainnet format
-};
-
-const getAddressRegex = (): any => {
-  const envName = getRuntimeEnv();
-  return envName === "tst" || envName === "prod"
-    ? mainnetAddressRegex
-    : testnetAddressRegex;
-};
-
-// Assuming you have an addressRegex object defined somewhere, like:
-// const addressRegex = {
-//   'trc-20': /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
-//   'pol': /^0x[a-fA-F0-9]{40}$/,
-//   // ... other regexes
-// };
-
+/**
+ * M-10: every supported network is checked, checksum included, and an unknown
+ * network is rejected. The checks live in utils/cryptoAddress.ts; this wrapper
+ * only supplies the environment: BTC testnet formats are accepted outside
+ * "tst" and "prod", as the previous testnet regex table did.
+ */
 export const validateCryptoAddress = (
   network: string | undefined | null,
   address: string | undefined | null
 ): boolean => {
-  // 1. Basic check: If network or address is missing, it's always invalid.
-  if (!network || !address) {
-    return false;
-  }
-
-  const lowerNetwork = network.toLowerCase();
-  let networkKey: "trc-20" | "pol" | null = null;
-
-  // 2. Identify if the network is one we need to validate.
-  if (lowerNetwork === "trc-20" || lowerNetwork === "trx") {
-    networkKey = "trc-20";
-  } else if (lowerNetwork === "pol" || lowerNetwork === "polygon") {
-    networkKey = "pol";
-  }
-
-  // 3. If the network is NOT TRC-20 or Polygon, allow it by returning true.
-  if (!networkKey) {
-    return true;
-  }
-
-  // 4. If it IS a network we need to validate, proceed with the regex check.
-  const addressRegex = getAddressRegex();
-  const regex = addressRegex[networkKey];
-
-  // If for some reason a regex isn't defined for a network we want to validate,
-  // treat it as invalid for safety.
-  if (!regex) {
-    return false;
-  }
-
-  return regex.test(address.trim());
+  const envName = getRuntimeEnv();
+  return isValidAddressForNetwork(network, address, {
+    allowTestnet: envName !== "tst" && envName !== "prod",
+  });
 };
 
 /**

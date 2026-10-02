@@ -5,6 +5,7 @@ import { View, ScrollView, TouchableOpacity, Modal, Platform, Image, BackHandler
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Container } from "../../components";
 import { formatCurrency, isErrorDispaly, validateCryptoAddress } from "../../utils/helpers";
+import { parsePaymentUri, paymentUriErrorMessage } from "../../utils/cryptoAddress";
 import { ms, s, screenHeight } from "../../constants/theme/scale";
 import ErrorComponent from "../../components/Error";
 import { useIsFocused } from "@react-navigation/native";
@@ -752,8 +753,15 @@ const SendCryptoDetails = React.memo((props: any) => {
             <Container style={[styles.container,]}>
               <QRCodeScanner
                 onCaptureCode={(text: any) => {
-                  const address = text?.includes(":") ? text.split(":")[1] : text;
-                  setAdress(address);
+                  // M-10: BIP-21 / EIP-681 aware, and refuses a QR code for a
+                  // different network than the one selected.
+                  const parsed = parsePaymentUri(text, selectedNetwork);
+                  if (parsed.ok) {
+                    setErrormsg("");
+                    setAdress(parsed.address);
+                  } else {
+                    setErrormsg(paymentUriErrorMessage(parsed.reason));
+                  }
                 }}
                 onClose={() => setEnableScanner(false)}
               />
