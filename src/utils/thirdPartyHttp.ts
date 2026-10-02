@@ -1,7 +1,7 @@
 /**
  * One HTTP stack for the third-party hosts we talk to directly.
  *
- * P-03 flagged `apisauce` and `axios` as overlapping dependencies. They are not
+ * `apisauce` and `axios` can look like overlapping dependencies. They are not
  * two bundles — apisauce *is* a wrapper over axios and pulls in the same single
  * copy — but three modules did reach past the configured apisauce clients and
  * call `axios` straight, so those requests carried none of the interceptor
@@ -28,9 +28,6 @@ import { applyThirdPartyInterceptors, THIRD_PARTY_TIMEOUT_MS } from "./apiInterc
 
 // Make.com automation endpoint used by the profile / onboarding webhooks.
 const WEBHOOK_BASE_URL = "https://hook.eu2.make.com";
-// Kommo support chat. Requests are HMAC-signed by the caller and pass absolute
-// URLs, which axios honours over the baseURL.
-const KOMMO_BASE_URL = "https://amojo.kommo.com";
 
 const clients = new Map<string, AxiosInstance>();
 
@@ -55,5 +52,3 @@ const lazyClient = (baseURL: string) => ({
 });
 
 export const webhookHttp = lazyClient(WEBHOOK_BASE_URL);
-
-export const kommoHttp = lazyClient(KOMMO_BASE_URL);
