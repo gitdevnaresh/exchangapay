@@ -19,7 +19,6 @@
  * Backend contract: docs/SEC-02_KOMMO_CHAT_BACKEND_PROXY.md
  */
 
-import { KEYCHAIN_SERVICES, readSecret, writeSecret } from '../utils/storage/keychainPolicy';
 import ChatbotService from '../screens/Chatbot/chatbotService';
 
 /**
@@ -52,7 +51,6 @@ export class KommoChatAPI {
             if (data.scope_id) {
                 this.scopeId = data.scope_id;
                 this.isConnected = true;
-                await writeSecret(KEYCHAIN_SERVICES.CHAT_BOT, 'kommo_scope_id', data.scope_id);
                 return data;
             } else {
                 throw new Error('No scope_id in response');
@@ -91,17 +89,11 @@ export class KommoChatAPI {
         }
     }
 
-    async sendUserMessage(messageConfig, conversation_id) {
-        let scopeId = null;
-        const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
-        if (stored.username === 'kommo_scope_id') {
-            scopeId = stored.value;
-        };
-
+    // The backend picks the customer's chat from the token and keeps the
+    // conversation id itself, so no scope or conversation id is sent.
+    async sendUserMessage(messageConfig) {
         try {
             const data = unwrapOrThrow(await ChatbotService.sendMessage({
-                scopeId,
-                conversationId: conversation_id,
                 type: messageConfig.type,
                 text: messageConfig.text,
                 media: messageConfig.media,
@@ -123,17 +115,9 @@ export class KommoChatAPI {
         }
     }
 
-    async sendSignedGetRequest(conversation_id) {
-        let kommoScopeId = null;
-        const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
-        if (stored.username === 'kommo_scope_id') {
-            kommoScopeId = stored.value;
-        }
+    async sendSignedGetRequest() {
         try {
-            const data = unwrapOrThrow(await ChatbotService.getHistory({
-                scopeId: kommoScopeId,
-                conversationId: conversation_id
-            }));
+            const data = unwrapOrThrow(await ChatbotService.getHistory());
             return { success: true, data: data };
 
         } catch (error) {

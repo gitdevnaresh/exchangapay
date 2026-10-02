@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, K
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
-import { KEYCHAIN_SERVICES, readSecretValue, writeSecret } from '../../utils/storage/keychainPolicy';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { KommoChatAPI } from '../../services/chatService';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
@@ -41,6 +40,9 @@ const KommoChatScreen = (props: any) => {
     const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
     const messagecount = useSelector((state: any) => state.UserReducer?.supportMessgaeCount);
     const flatListRef = useRef<FlatList>(null);
+    // Set once /Chats has answered. History waits for it: /Chats creates the
+    // customer's row on the backend, and the poll closes over a stale currentChatId.
+    const chatIdRef = useRef<string | null>(null);
     const { decryptAES } = useEncryptDecrypt();
     const [inputKey, setInputKey] = useState(0);
     const dispatch = useDispatch();
@@ -55,8 +57,8 @@ const KommoChatScreen = (props: any) => {
     const api = new KommoChatAPI();
 
     useEffect(() => {
+        // initializeChat loads the history once /Chats has answered.
         initializeChat();
-        getChatHistory();
         updateMessageCount();
     }, []);
     useEffect(() => {
@@ -108,8 +110,10 @@ const KommoChatScreen = (props: any) => {
             const response = await api.connectChannel();
             setIsConnected(true);
             const chatResponse = await api.createChat(user);
+            chatIdRef.current = chatResponse?.id || null;
             setCurrentChatId(chatResponse.id);
             setChatAPI(api);
+            await getChatHistory();
         } catch (error: any) {
             setError(error.message);
             Alert.alert('Connection Error', error.message, [
@@ -152,9 +156,8 @@ const KommoChatScreen = (props: any) => {
                 senderId: userInfo?.id,
             };
             setSelectedImage(null);
-            const result: any = await api.sendUserMessage(messageConfig, currentChatId);
+            const result: any = await api.sendUserMessage(messageConfig);
             if (result?.success) {
-                await writeSecret(KEYCHAIN_SERVICES.CHAT_CONVERSATION, 'conversationId', result?.data?.new_message.conversation_id);
                 if (result?.data.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id
@@ -215,23 +218,22 @@ const KommoChatScreen = (props: any) => {
 
     const getChatHistory = async () => {
         try {
-            const conversationId = await readSecretValue(KEYCHAIN_SERVICES.CHAT_CONVERSATION);
-            if (conversationId) {
-                const chatHistory = await api.sendSignedGetRequest(conversationId);
-                if (chatHistory?.success) {
-                    // amojo answers 204 with an empty body when the conversation
-                    // has no messages, so `messages` can be missing.
-                    const apiMessages = Array.isArray(chatHistory.data?.messages) ? chatHistory.data.messages : [];
-                    const formattedMessages = apiMessages.map(formatApiMessage).filter(Boolean);
-                    formattedMessages?.sort((a: any, b: any) => new Date(a.timestamp) - new Date(b.timestamp));
-                    setMessages(formattedMessages);
-                    updateMessageCount();
-                } else {
-                    setError(isErrorDispaly(chatHistory.error));
-                    setMessages([]);
-                }
+            // The backend reads the conversation from its own table, so history
+            // loads straight after login and nothing is stored on the device.
+            if (!chatIdRef.current) return;
+            const chatHistory = await api.sendSignedGetRequest();
+            if (chatHistory?.success) {
+                // amojo answers 204 with an empty body when the conversation
+                // has no messages, so `messages` can be missing.
+                const apiMessages = Array.isArray(chatHistory.data?.messages) ? chatHistory.data.messages : [];
+                const formattedMessages = apiMessages.map(formatApiMessage).filter(Boolean);
+                formattedMessages?.sort((a: any, b: any) => new Date(a.timestamp) - new Date(b.timestamp));
+                setMessages(formattedMessages);
+                updateMessageCount();
+            } else {
+                setError(isErrorDispaly(chatHistory.error));
+                setMessages([]);
             }
-
         } catch (error: any) {
             setError(isErrorDispaly(error.message));
         }
@@ -263,10 +265,9 @@ const KommoChatScreen = (props: any) => {
             senderId: userInfo?.id
         }
         try {
-            const result: any = await api.sendUserMessage(messageConfig, currentChatId);
+            const result: any = await api.sendUserMessage(messageConfig);
             if (result?.success) {
                 setMessages(prev => [...prev, tempMessage]);
-                await writeSecret(KEYCHAIN_SERVICES.CHAT_CONVERSATION, 'conversationId', result?.data?.new_message.conversation_id);
                 if (result?.data.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id
