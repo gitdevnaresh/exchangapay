@@ -205,10 +205,11 @@ const DefaultButton = ({
           borderRadius: 100 / 2,
         }}
         activeOpacity={1}
+        disabled={disable}
         onPress={onPress}
       >
         <MaterialIcons
-          onPress={onPress}
+          onPress={disable ? undefined : onPress}
           name="refresh"
           size={18}
           color={NEW_COLOR.TEXT_ORANGE}

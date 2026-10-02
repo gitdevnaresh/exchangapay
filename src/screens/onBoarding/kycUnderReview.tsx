@@ -278,7 +278,7 @@ const UnderReview = () => {
               </Container>
             )}
           {/* <View style={[commonStyles.mb10]} /> */}
-          {!isLoading && !isLogout && (
+          {!isLoading  && (
             <DefaultButton
               title={CONSTANTS?.REFRESH}
               customTitleStyle={styles.btnConfirmTitle}
@@ -289,7 +289,7 @@ const UnderReview = () => {
               backgroundColors={undefined}
               colorful={undefined}
               transparent={undefined}
-              disable={saveLoading}
+              disable={saveLoading || isLogout}
               loading={saveLoading}
               refresh={true}
               onPress={handleRefresh}

@@ -23,6 +23,26 @@ import { LIST_PERF_CHAT } from '../../constants/listPerformance';
 
 const SUPPORT_DISPLAY_NAME = 'Exchanga Pay Support';
 const SUPPORT_AMOJO_ID = '3e580f1e-99e4-48e1-b95c-3ba4850bee86';
+const IMAGE_RETRY_LIMIT = 5;
+const IMAGE_RETRY_DELAY_MS = 3000;
+
+// Image never retries on its own after a failed load, and freshly sent media can
+// 404 briefly while Kommo processes it. Remounting via `key` re-requests it.
+const ChatImage = ({ uri, style }: { uri: string, style: any }) => {
+    const [attempt, setAttempt] = useState(0);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => {
+        setAttempt(0);
+    }, [uri]);
+    useEffect(() => () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+    }, []);
+    const handleError = () => {
+        if (attempt >= IMAGE_RETRY_LIMIT) return;
+        timerRef.current = setTimeout(() => setAttempt(a => a + 1), IMAGE_RETRY_DELAY_MS);
+    };
+    return <Image key={`${uri}-${attempt}`} style={style} source={{ uri }} onError={handleError} />;
+};
 
 
 const KommoChatScreen = (props: any) => {
@@ -43,6 +63,15 @@ const KommoChatScreen = (props: any) => {
     // Set once /Chats has answered. History waits for it: /Chats creates the
     // customer's row on the backend, and the poll closes over a stale currentChatId.
     const chatIdRef = useRef<string | null>(null);
+    // Messages we sent that history hasn't returned yet. Kommo processes media
+    // asynchronously, so a fresh image is missing from the next history call and
+    // would vanish from the list until the following refresh.
+    const pendingRef = useRef<any[]>([]);
+    // Server message id -> the URL we uploaded. Kommo re-hosts the picture and
+    // its copy 404s for a few seconds, so our own uploads keep our URL.
+    const localImageByIdRef = useRef<Map<string, string>>(new Map());
+    // Every message id history has returned so far.
+    const seenIdsRef = useRef<Set<string>>(new Set());
     const { decryptAES } = useEncryptDecrypt();
     const [inputKey, setInputKey] = useState(0);
     const dispatch = useDispatch();
@@ -171,10 +200,12 @@ const KommoChatScreen = (props: any) => {
                             : msg
                     ));
                 };
+                trackPending(tempMessage, result);
                 await getChatHistory();
                 setIsSending(false);
             } else {
                 setIsSending(false);
+                setMessages(prev => prev.filter(msg => msg.id !== tempId));
                 setError(isErrorDispaly(result.error));
             }
 
@@ -216,6 +247,48 @@ const KommoChatScreen = (props: any) => {
         };
     };
 
+    const PENDING_TTL_MS = 5 * 60 * 1000;
+    const trackPending = (tempMessage: any, result: any) => {
+        pendingRef.current.push({
+            ...tempMessage,
+            isTemp: false,
+            msgId: result?.data?.new_message?.msgid,
+            // Ids already in history when this was sent can't be its echo. Used
+            // instead of timestamps, which break when the device clock is off.
+            seenIds: new Set(seenIdsRef.current),
+        });
+    };
+
+    // Pictures ignore text: Kommo may rewrite a picture's text.
+    const isSameMessage = (server: any, local: any) =>
+        (!!local.msgId && server.id === local.msgId) || (
+            server.isOutgoing &&
+            server.type === local.type &&
+            (local.type === 'picture' || (server.text || '').trim() === (local.text || '').trim()) &&
+            !local.seenIds.has(server.id)
+        );
+
+    const mergePendingMessages = (serverMessages: any[]) => {
+        const now = Date.now();
+        const stillPending: any[] = [];
+        const matchedIds = new Set<string>();
+        for (const local of pendingRef.current) {
+            const match = serverMessages.find(m => !matchedIds.has(m.id) && isSameMessage(m, local));
+            if (match) {
+                matchedIds.add(match.id);
+                if (local.image) localImageByIdRef.current.set(match.id, local.image);
+            } else if (now - new Date(local.timestamp).getTime() < PENDING_TTL_MS) {
+                stillPending.push(local);
+            }
+        }
+        pendingRef.current = stillPending;
+        const withLocalImages = serverMessages.map(m => {
+            const localImage = localImageByIdRef.current.get(m.id);
+            return localImage ? { ...m, image: localImage } : m;
+        });
+        return [...withLocalImages, ...stillPending];
+    };
+
     const getChatHistory = async () => {
         try {
             // The backend reads the conversation from its own table, so history
@@ -227,8 +300,10 @@ const KommoChatScreen = (props: any) => {
                 // has no messages, so `messages` can be missing.
                 const apiMessages = Array.isArray(chatHistory.data?.messages) ? chatHistory.data.messages : [];
                 const formattedMessages = apiMessages.map(formatApiMessage).filter(Boolean);
-                formattedMessages?.sort((a: any, b: any) => new Date(a.timestamp) - new Date(b.timestamp));
-                setMessages(formattedMessages);
+                const merged = mergePendingMessages(formattedMessages);
+                formattedMessages.forEach((m: any) => seenIdsRef.current.add(m.id));
+                merged.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                setMessages(merged);
                 updateMessageCount();
             } else {
                 setError(isErrorDispaly(chatHistory.error));
@@ -281,6 +356,7 @@ const KommoChatScreen = (props: any) => {
                             : msg
                     ));
                 }
+                trackPending(tempMessage, result);
                 getChatHistory();
             } else {
                 setError(isErrorDispaly(result.error));
@@ -320,7 +396,7 @@ const KommoChatScreen = (props: any) => {
                         )}
                         {isImage && (
                             <TouchableOpacity onPress={() => setFilePreview({ uri: item.image || item.avatar, type: 'image' })}>
-                                <Image style={[commonStyles.mt10, { minWidth: s(150), minHeight: s(150), borderRadius: s(8) }]} source={{ uri: item.image || item.avatar }} />
+                                <ChatImage style={[commonStyles.mt10, { minWidth: s(150), minHeight: s(150), borderRadius: s(8) }]} uri={item.image || item.avatar} />
                             </TouchableOpacity>
                         )}
                         <View style={styles.messageFooter}>
@@ -422,7 +498,7 @@ const KommoChatScreen = (props: any) => {
 
     return (
         <SafeAreaView style={[commonStyles.flex1, commonStyles.screenBg]}>
-            <KeyboardAvoidingView style={[commonStyles.flex1, commonStyles.screenBg]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+            <KeyboardAvoidingView style={[commonStyles.flex1, commonStyles.screenBg]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
                 <View style={[commonStyles.orangeSection, commonStyles.p12, commonStyles.mb14,]}>
                     <View style={[commonStyles.dflex, commonStyles.justifyContent]}>
                         <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.gap16]}>
@@ -486,7 +562,7 @@ const KommoChatScreen = (props: any) => {
                                 }
                             </TouchableOpacity>
                             <TextInput
-                            style={[commonStyles.fs16,commonStyles.textAlwaysWhite,{marginLeft:s(10),maxWidth:s(280)}]}
+                            style={[commonStyles.fs16,commonStyles.textAlwaysWhite,styles.chatInput]}
                                 value={inputText}
                                 onChangeText={setInputText}
                                 placeholder="Type a message..."
@@ -607,6 +683,13 @@ const styles = StyleSheet.create({
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'flex-end',
+    },
+    // Fixed width (flex: 1) so the input doesn't resize on every keystroke
+    // while the text is still on the first line — that resize was the flicker.
+    chatInput: {
+        flex: 1,
+        marginLeft: s(10),
+        maxHeight: s(120),
     },
     textInput: {
         color: '#ffffff',

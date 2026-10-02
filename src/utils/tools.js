@@ -2,6 +2,7 @@ import BlobUtil from "react-native-blob-util";
 import { Alert, Linking, PermissionsAndroid, Platform } from "react-native";
 import Share from "react-native-share";
 import { getUrlExtension, saveToDownloads } from "./fileDownload";
+import { notifyDownloadComplete } from "./documentNotification";
 
 export const downloadFileFromUrl = (path, extension) => {
   const date = new Date();
@@ -145,6 +146,7 @@ export const downloadImage = async (url) => {
         title: "Save Image",
       });
     } else if (saved.savedToDownloads) {
+      await notifyDownloadComplete(saved);
       Alert.alert(
         "Download Complete",
         "Image has been saved to your Downloads folder."

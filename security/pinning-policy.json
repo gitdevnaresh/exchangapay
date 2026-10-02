@@ -147,15 +147,6 @@
       "reviewBy": "2027-06-01"
     },
     {
-      "host": "97c9602ff0c4f74c3f55743eace18039@o4510198382919680.ingest.us.sentry.io",
-      "risk": "low",
-      "traffic": "Sentry DSN userinfo host string in .env files",
-      "reason": "The build guard sees the raw DSN URL segment as a host string; the actual Sentry endpoint is a third-party telemetry host with independently rotating certificates.",
-      "remediation": "None planned.",
-      "owner": "mobile-platform",
-      "reviewBy": "2027-06-01"
-    },
-    {
       "host": "o4510198382919680.ingest.us.sentry.io",
       "risk": "low",
       "traffic": "Crash and error telemetry",
