@@ -26,7 +26,7 @@ export const REFERRAL_CONSTANTS = {
     HANDLED: "handled",
     EXCHANGAPAY_LOGO: REMOTE_ASSETS.logoOrange,
     EXCHANGA_PAY: 'Exchanga Pay',
-    ENTER_YOUR_REFFERAL_CODE: "Enter  Your Referral Code",
+    ENTER_YOUR_REFFERAL_CODE: "  Enter Your Referral Code",
     REQUIRED_STAR: ' *',
     CHECK_CIRCLE: 'checkcircle',
     CLOSE_CIRCLEO: 'closecircleo',
