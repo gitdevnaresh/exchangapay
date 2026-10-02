@@ -34,7 +34,6 @@ import {
   ViewIcon,
   PersonalInfoIcon,
   KycInfoIcon,
-  CasesIcon,
 } from "../assets/svg";
 import ProfileService from "../services/profile";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -249,9 +248,6 @@ const DrawerModal = (props: any) => {
   };
   const handleNavigatePayees = () => {
     navigation.navigate("cryptoPayeesList");
-  };
-  const handleNavigateCases = () => {
-    props?.navigation?.navigate("support")
   };
   return (
     <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
@@ -588,19 +584,6 @@ const DrawerModal = (props: any) => {
               </TouchableOpacity>
               <View style={[commonStyles.hLine, styles.py16]} />
             </View>
-            {/* <View>
-              <TouchableOpacity onPress={handleNavigateCases}>
-                <View style={[styles.listFlex]}>
-                  <View style={[commonStyles.dflex, commonStyles.gap16, commonStyles.alignCenter]}>
-                    <CasesIcon height={18} width={18} />
-                    <ParagraphComponent text="Cases" style={[commonStyles.fs14, commonStyles.textBlack, commonStyles.fw500]} />
-                  </View>
-                  <ChevronRight />
-                </View>
-              </TouchableOpacity>
-              <View style={[commonStyles.hLine, styles.py16]} />
-
-            </View> */}
             <TouchableOpacity onPress={handlePriceCurrenyModel}>
               <View style={[styles.listFlex]}>
                 <View

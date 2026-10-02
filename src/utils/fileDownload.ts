@@ -140,26 +140,6 @@ export const saveToDownloads = async (
   return publishToDownloads(cachedPath, fileName, resolvedMime);
 };
 
-/**
- * Same contract as {@link saveToDownloads} for content the app already holds as
- * base64, e.g. a `data:` URI. Writing straight to `RNFS.DownloadDirectoryPath`
- * is denied outright on Android 11+, so the bytes go to app storage first and
- * reach the user through MediaStore.
- */
-export const saveBase64ToDownloads = async (
-  base64: string,
-  { baseName, extension, mime }: Omit<SaveToDownloadsOptions, "headers"> & { extension: string }
-): Promise<SavedFile> => {
-  const ext = extension.toLowerCase();
-  const fileName = `${sanitizeFileName(baseName)}.${ext}`;
-  const resolvedMime = mime ?? mimeForExtension(ext);
-  const cachedPath = `${BlobUtil.fs.dirs.CacheDir}/${fileName}`;
-
-  await BlobUtil.fs.writeFile(cachedPath, base64, "base64");
-
-  return publishToDownloads(cachedPath, fileName, resolvedMime);
-};
-
 const publishToDownloads = async (
   cachedPath: string,
   fileName: string,

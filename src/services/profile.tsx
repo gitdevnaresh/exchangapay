@@ -1,5 +1,5 @@
 
-import { fileget, filepost, get, post, put } from "../utils/ApiService";
+import { filepost, get, post, put } from "../utils/ApiService";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { OTP_PROBE_CONFIG, verifyOneTimeCode } from "../security";
 const ProfileService = {
@@ -102,30 +102,6 @@ const ProfileService = {
   // Make.com payload and forwards it. The webhook address lives only there.
   sendCustomerEvent: async (queryType: string) => {
     return post(`api/v1/Common/CustomerEvent`, { queryType });
-  },
-  getCasesKPis: async () => {
-    return get('api/v1/casemanagement/Customer/Cases/kpi')
-  },
-  getCasesList: async (page: any, pageSize: any) => {
-    return get(`api/v1/casemanagement/Customer/cases?page=${page}&pageSize=${pageSize}`);
-  },
-  getCaseDetails: async (id: any) => {
-    return get(`api/v1/casemanagement/CustomerCase/${id}`);
-  },
-  getCaseDetailsMessages: async (id: any) => {
-    return get(`api/v1/casemanagement/cases/${id}/messages`)
-  },
-  sendCaseReply: async (id: any, body: any) => {
-    return post(`api/v1/casemanagement/cases/${id}/message`, body)
-  },
-  getCasesUploadFiles: async (id: any) => {
-    return fileget(`api/v1/casemanagement/filePreview/${id}`)
-  },
-  casesReplyUploadFile: async (body: any) => {
-    return filepost(`v1/casesuploadfile`, body)
-  },
-  getAlertCasess: async () => {
-    return get(`api/v1/casemanagement/Customercases/alerts`)
   },
 };
 
