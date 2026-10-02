@@ -1,65 +1,54 @@
-import QuickCrypto from 'react-native-quick-crypto';
+/**
+ * Support chat — Kommo (amojo) client.
+ *
+ * The chat flow is unchanged: connect the channel, create the chat, send a
+ * message, pull history — same four methods, same arguments, same return
+ * shapes as before.
+ *
+ * What moved is the signing. This file used to hold the channel's HMAC-SHA1
+ * secret and build the `Date` / `Content-MD5` / `X-Signature` triple in JS,
+ * which meant the secret shipped inside the bundle — unzip an APK or IPA and
+ * you can sign any amojo call for our channel, read any customer's support
+ * history or post as any customer. The secret now lives only in the
+ * backend's secret store.
+ *
+ * The HTTP calls themselves are in ../screens/Chatbot/chatbotService.js. What
+ * stays here is the client the screen talks to: scope handling, payload shaping
+ * and the result envelopes the screen already expects.
+ *
+ * Backend contract: docs/SEC-02_KOMMO_CHAT_BACKEND_PROXY.md
+ */
+
 import { KEYCHAIN_SERVICES, readSecret, writeSecret } from '../utils/storage/keychainPolicy';
-import dayjs from "../utils/dayjs";
-import { kommoHttp } from "../utils/thirdPartyHttp";
+import ChatbotService from '../screens/Chatbot/chatbotService';
+
+/**
+ * ChatbotService returns the apisauce response, like every other service in
+ * the app. The direct axios calls this replaced threw on a non-2xx, and the
+ * screen's try/catch blocks are unchanged, so failures keep throwing here.
+ */
+const unwrapOrThrow = (response) => {
+    if (response?.ok) {
+        return response.data;
+    }
+    const message =
+        response?.data?.message ||
+        response?.data?.error ||
+        response?.problem ||
+        'Unknown error';
+    throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
+};
 
 export class KommoChatAPI {
-    constructor(secretKey, channelId, accountId) {
-        this.secretKey = secretKey;
-        this.channelId = channelId;
-        this.accountId = accountId;
-        this.baseUrl = 'https://amojo.kommo.com';
+    constructor() {
+        // No secretKey / channelId / accountId: the backend holds all three.
         this.scopeId = null;
         this.isConnected = false;
-    };
-    generateRFC2822Date() {
-        const now = new Date();
-        return now.toUTCString().replace(/GMT/, '+0000');
-    }
-    calculateMD5(body = '') {
-        const bodyString = typeof body === 'object' ? JSON.stringify(body) : body.toString();
-        return QuickCrypto.createHash('md5').update(bodyString).digest('hex').toLowerCase();
-    };
-
-    generateHeaders(body, endpoint, method = 'POST') {
-        try {
-            const date = dayjs.utc().format('ddd, DD MMM YYYY HH:mm:ss') + ' GMT';
-            const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
-            const signatureString = [
-                method.toUpperCase(),
-                contentMD5,
-                'application/json',
-                date,
-                endpoint
-            ].join('\n');
-
-            const signature = QuickCrypto.createHmac('sha1', this.secretKey)
-                .update(signatureString, 'utf8')
-                .digest('hex');
-
-            return {
-                'Date': date,
-                'Content-Type': 'application/json',
-                'Content-MD5': contentMD5,
-                'X-Signature': signature
-            };
-
-        } catch (error) {
-            throw error;
-        }
     };
 
     async connectChannel() {
         try {
-            const body = JSON.stringify({
-                account_id: this.accountId,
-                title: 'Exchangapay Chat support',
-                hook_api_version: 'v2'
-            });
-            const endpoint = `/v2/origin/custom/${this.channelId}/connect`;
-            const headers = this.generateHeaders(body, endpoint);
-            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, body, { headers });
-            const data = response.data;
+            const data = unwrapOrThrow(await ChatbotService.connectChannel());
             if (data.scope_id) {
                 this.scopeId = data.scope_id;
                 this.isConnected = true;
@@ -73,16 +62,7 @@ export class KommoChatAPI {
             throw error;
         }
     }
-    validateCredentials() {
-        const errors = [];
 
-        if (!this.secretKey) errors.push('Secret key is required');
-        if (!this.channelId) errors.push('Channel ID is required');
-        if (!this.accountId) errors.push('Account ID is required');
-
-        if (errors.length > 0) throw new Error(errors.join(', '));
-        return true;
-    }
     async createChat(userConfig) {
         try {
             if (!this.isConnected || !this.scopeId) {
@@ -91,76 +71,49 @@ export class KommoChatAPI {
             if (!userConfig.id || !userConfig.name) {
                 throw new Error('User ID and name are required');
             }
-            const payload = JSON.stringify({
-                conversation_id: userConfig.id || '',
-                source: { external_id: 'amocrm:34707067' || '' },
+            // The backend fills in source.external_id and profile_link; the
+            // user fields stay as the screen supplies them today.
+            const data = unwrapOrThrow(await ChatbotService.createChat({
+                scopeId: this.scopeId,
+                conversationId: userConfig.id || '',
                 user: {
                     id: userConfig.id,
-                    ref_id: userConfig.id || '',
+                    refId: userConfig.id || '',
                     name: userConfig.name,
                     avatar: userConfig.avatar || '',
-                    profile: {
-                        phone: userConfig.phone || '',
-                        email: userConfig.email || ''
-                    }
-                },
-                profile_link: "https://swokistoragespace.blob.core.windows.net/images/logox_orange.svg"
-            });
-
-            const endpoint = `/v2/origin/custom/${this.scopeId}/chats`;
-            const headers = this.generateHeaders(payload, endpoint);
-            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, payload, { headers });
-            const data = response.data;
+                    phone: userConfig.phone || '',
+                    email: userConfig.email || ''
+                }
+            }));
             return data;
         } catch (error) {
             throw error;
         }
     }
+
     async sendUserMessage(messageConfig, conversation_id) {
         let scopeId = null;
         const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
         if (stored.username === 'kommo_scope_id') {
             scopeId = stored.value;
         };
-        const messageObject = {
-            type: messageConfig.type,
-            text: messageConfig.text
-        };
-        if (messageConfig.type === 'picture' && messageConfig.media) {
-            messageObject.media = messageConfig.media;
-        }
-        const messagePayload = JSON.stringify({
-            event_type: "new_message",
-            payload: {
-                timestamp: Math.floor(Date.now() / 1000),
-                msec_timestamp: Date.now(),
-                msgid: "user-msg-" + Date.now(),
-                conversation_id: conversation_id,
+
+        try {
+            const data = unwrapOrThrow(await ChatbotService.sendMessage({
+                scopeId,
+                conversationId: conversation_id,
+                type: messageConfig.type,
+                text: messageConfig.text,
+                media: messageConfig.media,
                 sender: {
                     id: messageConfig?.senderId,
                     name: messageConfig.name,
-                    avatar: messageConfig.imageUrl || "https://www.w3schools.com/w3images/avatar2.png",
-                    profile: {
-                        phone: messageConfig?.phoneNo,
-                        email: messageConfig?.email
-                    }
-                },
-                message: {
-                    type: messageConfig.type,
-                    text: messageConfig.text,
-                    media: messageConfig.media
-
-                },
-                messageObject,
-                silent: false
-            }
-        });
-
-        try {
-            const endpoint = `/v2/origin/custom/${scopeId}`;
-            const headers = this.generateHeaders(messagePayload, endpoint);
-            const response = await kommoHttp.post(`${this.baseUrl}${endpoint}`, messagePayload, { headers });
-            return { success: true, data: response.data };
+                    avatar: messageConfig.imageUrl,
+                    phone: messageConfig?.phoneNo,
+                    email: messageConfig?.email
+                }
+            }));
+            return { success: true, data };
 
         } catch (error) {
             return {
@@ -169,45 +122,18 @@ export class KommoChatAPI {
             };
         }
     }
+
     async sendSignedGetRequest(conversation_id) {
         let kommoScopeId = null;
         const stored = await readSecret(KEYCHAIN_SERVICES.CHAT_BOT);
         if (stored.username === 'kommo_scope_id') {
             kommoScopeId = stored.value;
         }
-        const secret = '60d0c569acef691e8c11f4db628152b5aaa3ab4a';
-        const method = 'GET';
-        const contentType = 'application/json';
-        const path = `/v2/origin/custom/${kommoScopeId}/chats/${conversation_id}/history`;
-        const body = '';
-        const contentMD5 = QuickCrypto.createHash('md5').update(body, 'utf8').digest('hex');
-        const date = dayjs().utc().format('ddd, DD MMM YYYY HH:mm:ss [GMT]');
-        const stringToSign = [method, contentMD5, contentType, date, path].join('\n');
-        const signature = QuickCrypto.createHmac('sha1', secret)
-            .update(stringToSign, 'utf8')
-            .digest('hex');
-        const requestHeaders = {
-            'Date': date,
-            'Content-Type': contentType,
-            'Content-MD5': contentMD5,
-            'X-Signature': signature,
-            'User-Agent': 'okhttp/4.11.0',
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive'
-        };
         try {
-            const response = await fetch(`https://amojo.kommo.com${path}`, {
-                method: 'GET',
-                headers: requestHeaders
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-            }
-
-            const data = await response.json();
+            const data = unwrapOrThrow(await ChatbotService.getHistory({
+                scopeId: kommoScopeId,
+                conversationId: conversation_id
+            }));
             return { success: true, data: data };
 
         } catch (error) {

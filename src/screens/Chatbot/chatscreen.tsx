@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Modal, TouchableWithoutFeedback, Image, PermissionsAndroid } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
@@ -42,11 +42,6 @@ const KommoChatScreen = (props: any) => {
     const [inputKey, setInputKey] = useState(0);
     const dispatch = useDispatch();
     const [filePreview, setFilePreview] = useState<{ uri: string, type: string } | null>(null);
-    const config = {
-        secretKey: '60d0c569acef691e8c11f4db628152b5aaa3ab4a',
-        channelId: '30778ba5-1242-4603-b38d-376e358ee595',
-        accountId: 'e393e15b-d500-4eb5-8a0f-45e41b875cc5'
-    };
     const user = {
         id: userInfo?.id || 'user123',
         name: decryptAES(userInfo?.userName) || 'John Doe',
@@ -54,7 +49,7 @@ const KommoChatScreen = (props: any) => {
         phone: decryptAES(userInfo?.phoneNo) || '+1234567890',
         profile: userInfo?.imageURL || ""
     };
-    const api = new KommoChatAPI(config.secretKey, config.channelId, config.accountId);
+    const api = new KommoChatAPI();
 
     useEffect(() => {
         initializeChat();
@@ -215,7 +210,10 @@ const KommoChatScreen = (props: any) => {
             if (conversationId) {
                 const chatHistory = await api.sendSignedGetRequest(conversationId);
                 if (chatHistory?.success) {
-                    const formattedMessages = chatHistory.data?.messages.map(formatApiMessage).filter(Boolean);
+                    // amojo answers 204 with an empty body when the conversation
+                    // has no messages, so `messages` can be missing.
+                    const apiMessages = Array.isArray(chatHistory.data?.messages) ? chatHistory.data.messages : [];
+                    const formattedMessages = apiMessages.map(formatApiMessage).filter(Boolean);
                     formattedMessages?.sort((a: any, b: any) => new Date(a.timestamp) - new Date(b.timestamp));
                     setMessages(formattedMessages);
                     updateMessageCount();
@@ -444,7 +442,7 @@ const KommoChatScreen = (props: any) => {
                                 flatListRef.current?.scrollToEnd({ animated: true });
                             }
                         }}
-                        // P-01: message bubbles are variable height (text vs
+                        // Message bubbles are variable height (text vs
                         // image), so window capping only — no getItemLayout.
                         // Clipping stays off: this list is auto-scrolled to the
                         // end and clipped cells show up as blank bubbles.
@@ -497,9 +495,9 @@ const KommoChatScreen = (props: any) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <SafeAreaProvider>
             </KeyboardAvoidingView>
             <Modal visible={!!filePreview} onRequestClose={handleClosePreview} animationType="slide" transparent={true}>
+                <SafeAreaProvider>
                 <Container style={[commonStyles.container]}>
                     <TouchableWithoutFeedback>
                         <View style={[commonStyles.screenBg, commonStyles.flex1]}>
@@ -521,9 +519,9 @@ const KommoChatScreen = (props: any) => {
                                 )}
                             </View>
                         </View>
-                </SafeAreaProvider>
                     </TouchableWithoutFeedback>
                 </Container>
+                </SafeAreaProvider>
             </Modal>
         </SafeAreaView>
     );

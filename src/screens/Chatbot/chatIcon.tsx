@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, Animated, PanResponder, Modal, TouchableOpacity, Dimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { s } from '../../constants/theme/scale';
@@ -12,7 +12,7 @@ const ICON_DIAMETER = 50;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const DraggableChatIcon: React.FC = (props) => {
+const DraggableChatIcon: React.FC = () => {
     const pan = useRef(new Animated.ValueXY()).current;
     const [chatVisible, setChatVisible] = useState<boolean>(false);
     const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -103,9 +103,11 @@ const DraggableChatIcon: React.FC = (props) => {
                 statusBarTranslucent={true}
                 hardwareAccelerated={true}
             >
+                <SafeAreaProvider>
                 <KommoChatScreen
                     onClose={handleCloseModel}
                     isChatVisible={chatVisible} />
+                </SafeAreaProvider>
             </Modal>
         </>
     );
