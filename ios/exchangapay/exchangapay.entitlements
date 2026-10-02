@@ -41,8 +41,16 @@
 
 		Requires Data Protection on the App ID and regenerated provisioning
 		profiles, or signing fails.
+
+		TEMPORARILY REMOVED: the team cannot regenerate profiles until the
+		Account Holder accepts the latest Apple Program License Agreement, so
+		every device build failed with "profile doesn't include the Data
+		Protection capability". L-14 is OPEN until this is restored. To restore:
+		enable Data Protection (Complete) on com.exchangapay.tst and
+		com.exchangapay, then add back:
+
+		<key>com.apple.developer.default-data-protection</key>
+		<string>NSFileProtectionComplete</string>
 	-->
-	<key>com.apple.developer.default-data-protection</key>
-	<string>NSFileProtectionComplete</string>
 </dict>
 </plist>
