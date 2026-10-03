@@ -72,7 +72,6 @@
 -keep class com.imagepicker.** { *; }
 -keep class com.ReactNativeBlobUtil.** { *; }
 -keep class com.henninghall.date_picker.** { *; }
--keep class com.agastya.androidinappupdates.** { *; }
 -keep class io.invertase.firebase.** { *; }
 
 

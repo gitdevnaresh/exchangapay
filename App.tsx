@@ -20,7 +20,6 @@ import { default as lightTheme } from "./src/constants/theme/light.json";
 import { default as customTheme } from "./src/constants/theme/appTheme.json";
 import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
 import { default as customMapping } from "./src/constants/theme/mapping.json";
-import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AssetsIconsPack from "./src/assets/AssetsIconsPack";
@@ -268,7 +267,7 @@ export default Sentry.wrap(function App() {
         <PersistGate loading={<LoadingComponent />} persistor={persistor}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaProvider>
-              <IconRegistry icons={[EvaIconsPack, AssetsIconsPack]} />
+              <IconRegistry icons={AssetsIconsPack} />
               <ApplicationProvider
                 {...eva}
                 theme={

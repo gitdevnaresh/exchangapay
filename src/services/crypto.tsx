@@ -1,5 +1,4 @@
 
-import { update } from 'lodash';
 import { get, post, put } from '../utils/ApiService';
 import { marketApi } from '../utils/api';
 

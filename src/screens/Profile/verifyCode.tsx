@@ -32,7 +32,6 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import LabelComponent from "../../components/Paragraph/label";
 import CommonPopup from "../../components/commonPopup";
 import { copySensitive } from "../../utils/clipboard";
-import { set } from "lodash";
 
 const VerifyCode = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
