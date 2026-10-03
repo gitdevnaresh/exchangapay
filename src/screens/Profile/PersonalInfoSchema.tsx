@@ -3,6 +3,8 @@ const HTML_REGEX = /<[^>]*>?/g;
 const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FAB0}-\u{1FAB6}\u{1FAC0}-\u{1FAC2}\u{1FAD0}\u{200D}\u{2640}\u{200D}\u{2642}]/gu;
 const ONLY_NUMBERS_REGEX = /^\d+$/;
 const SPACE_NUMBERS_REGEX = /^(?=.*\S).+$/;
+// City / state: must contain at least one letter; numbers and special characters are fine alongside it.
+const PLACE_NAME_REGEX = /[A-Za-zÀ-ÖØ-öø-ÿ]/;
 
 export const CreateAccSchema = Yup.object().shape({
     postalCode: Yup.string()
@@ -50,7 +52,9 @@ export const CreateAccSchema = Yup.object().shape({
         .test('no-whitespace', 'Is required', value => {
             if (!value) return true;
             return SPACE_NUMBERS_REGEX.test(value);
-        }).max(50, "City should be max 50"),
+        })
+        .matches(PLACE_NAME_REGEX, 'Invalid City')
+        .max(50, "City should be max 50"),
     state: Yup.string().required('Is required ')
         .test('no-emojis', 'State cannot contain emojis.', value => {
             if (!value) return true;
@@ -63,7 +67,9 @@ export const CreateAccSchema = Yup.object().shape({
         .test('no-whitespace', 'Is required', value => {
             if (!value) return true
             return SPACE_NUMBERS_REGEX.test(value);
-        }).max(50, "State should be max 50")
+        })
+        .matches(PLACE_NAME_REGEX, 'Invalid State')
+        .max(50, "State should be max 50")
 
 });
 

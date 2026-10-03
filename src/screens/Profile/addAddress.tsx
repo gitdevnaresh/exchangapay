@@ -36,12 +36,13 @@ const validationSchema = Yup.object().shape({
         .required("Address Line 1 is required")
         .matches(/^[A-Za-z0-9 ]+$/, "Only alphabets and numbers are allowed"),
     addressLine2: Yup.string().matches(/^[A-Za-z0-9 ]*$/, "Only alphabets and numbers are allowed"),
+    // Must contain at least one letter; numbers and special characters are fine alongside it.
     state: Yup.string()
         .required("State is required")
-        .matches(/^[A-Za-z0-9 ]+$/, "Only alphabets and numbers are allowed"),
+        .matches(/[A-Za-zÀ-ÖØ-öø-ÿ]/, "Invalid State"),
     city: Yup.string()
         .required("City is required")
-        .matches(/^[A-Za-z0-9 ]+$/, "Only alphabets and numbers are allowed"),
+        .matches(/[A-Za-zÀ-ÖØ-öø-ÿ]/, "Invalid City"),
     pincode: Yup.string()
         .required("Pincode is required")
         .matches(/^[A-Za-z0-9]+$/, "Only alphanumeric characters allowed")
