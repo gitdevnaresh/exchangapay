@@ -2119,7 +2119,7 @@ const AddKycInfomation = (props: any) => {
             <Image
               source={{ uri: selfiePreview?.uri || "" }}
               style={styles.selfiePreviewImage}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </View>
           <View style={styles.selfiePreviewActions}>
@@ -2282,11 +2282,16 @@ const styles = StyleSheet.create({
   },
   selfiePreviewImageContainer: {
     flex: 1,
+    justifyContent: "center",
+    // Keep the picture below the close button instead of under it.
+    paddingTop: Platform.OS === "ios" ? 106 : 82,
     backgroundColor: "#000000",
   },
+  // The Android capture is a full-screen snapshot, so it is taller than a photo;
+  // framing it at 3:4 gives the full-width picture with black bands above and below.
   selfiePreviewImage: {
     width: "100%",
-    height: "100%",
+    aspectRatio: 3 / 4,
   },
   selfiePreviewActions: {
     flexDirection: "row",
