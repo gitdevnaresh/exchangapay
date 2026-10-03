@@ -199,6 +199,11 @@ const AddEditAddress: React.FC = () => {
                                         component={InputDefault}
                                         label="Pincode"
                                         placeholder="Enter Pincode"
+                                        autoCapitalize="characters"
+                                        // Same as the referral code: letters and numbers only, in capitals.
+                                        onChangeText={(text: string) =>
+                                            setFieldValue("pincode", text.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
+                                        }
                                         error={touched.pincode && errors.pincode ? errors.pincode : ""}
                                         handleBlur={handleBlur}
                                         Children={<LabelComponent text=" *" style={{ color: "red" }} />}

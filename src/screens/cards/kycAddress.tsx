@@ -1899,6 +1899,12 @@ const KycAddress: React.FC<KycAddressProps> = ({
           placeholder={FORM_DATA_PLACEHOLDER.ENTER_POSTAL_CODE}
           maxLength={10}
           component={InputDefault}
+          autoCapitalize="characters"
+          // Same as the referral code: letters are stored in capitals.
+          // Space and hyphen stay, since postal codes such as "SW1A 1AA" use them.
+          onChangeText={(text: string) =>
+            setFieldValue(FORM_DATA_CONSTANTS.POSTAL_CODE, text.replace(/[^a-zA-Z0-9 -]/g, "").toUpperCase())
+          }
           innerRef={kycDetailsRef.postalCode}
           Children={<LabelComponent text=" *" style={commonStyles.textError} />}
         />

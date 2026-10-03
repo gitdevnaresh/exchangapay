@@ -266,7 +266,7 @@ const AddPersonalInfo = (props: any) => {
                   validateOnBlur={false}
                 >
                   {(formik) => {
-                    const { touched, handleSubmit, errors, handleBlur } =
+                    const { touched, handleSubmit, errors, handleBlur, setFieldValue } =
                       formik;
                     return (
                       <View style={[commonStyles.mb20]}>
@@ -352,6 +352,12 @@ const AddPersonalInfo = (props: any) => {
                             customContainerStyle={{}}
                             placeholder={PERSONAL_INFORMATION.ENTER_POSTAL_CODE}
                             component={InputDefault}
+                            autoCapitalize="characters"
+                            // Same as the referral code: letters are stored in capitals.
+                            // Space and hyphen stay, since postal codes such as "SW1A 1AA" use them.
+                            onChangeText={(text: string) =>
+                              setFieldValue("postalCode", text.replace(/[^a-zA-Z0-9 -]/g, "").toUpperCase())
+                            }
                             innerRef={nameRef}
                             Children={
                               <LabelComponent
