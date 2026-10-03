@@ -8,6 +8,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import java.io.File
+import java.net.InetSocketAddress
+import java.net.Socket
 
 /**
  * Native root / hook detection, used by src/security/deviceIntegrity.ts.
@@ -17,6 +19,34 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = NAME
+
+    init {
+        // Normally already started from MainApplication.onCreate; no-op then.
+        BootStateAttestation.prewarm()
+    }
+
+    /**
+     * Resolves `{ compromised, reasons }` with "native_bootloader_unlocked"
+     * when the TEE reports an unlocked bootloader. Runs on its own thread: key
+     * generation must not hold up the other probes on the native-modules thread.
+     */
+    @ReactMethod
+    fun getBootState(promise: Promise) {
+        Thread({
+            val reasons = Arguments.createArray()
+            try {
+                if (BootStateAttestation.isBootloaderUnlocked() == true) {
+                    reasons.pushString("native_bootloader_unlocked")
+                }
+            } catch (_: Throwable) {
+                // No answer -> no signal.
+            }
+            promise.resolve(Arguments.createMap().apply {
+                putBoolean("compromised", reasons.size() > 0)
+                putArray("reasons", reasons)
+            })
+        }, "boot-state-probe").start()
+    }
 
     /** Resolves `{ developerOptionsEnabled, adbEnabled }`. Never rejects. */
     @ReactMethod
@@ -51,6 +81,9 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             if (hasTestKeys()) reasons.pushString("native_test_keys")
             if (anyPathExists(HOOK_PATHS)) reasons.pushString("native_hook_artifact")
             if (procMapsHasInstrumentation()) reasons.pushString("native_hook_injected")
+            if (mountsHaveRootArtifacts()) reasons.pushString("native_root_mount")
+            if (hasFridaThread()) reasons.pushString("native_frida_thread")
+            if (isFridaPortOpen()) reasons.pushString("native_frida_port")
         } catch (_: Throwable) {
             // Report whatever was collected before the fault.
         }
@@ -110,8 +143,66 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             false
         }
 
+    // Magisk, KernelSU and APatch mount over system paths. /proc/self/mounts
+    // is readable by every app (unlike /data/adb), so their mounts show up here
+    // unless a hider such as Shamiko unmounts them for this process.
+    private fun mountsHaveRootArtifacts(): Boolean =
+        try {
+            File("/proc/self/mounts").bufferedReader().useLines { lines ->
+                lines.any { line ->
+                    val parts = line.split(" ")
+                    val device = parts.getOrNull(0)?.lowercase() ?: ""
+                    val mountPoint = parts.getOrNull(1) ?: ""
+                    device.contains("magisk") ||
+                        device == "ksu" ||
+                        device == "apatch" ||
+                        mountPoint.startsWith("/debug_ramdisk") ||
+                        mountPoint.contains("/.magisk")
+                }
+            }
+        } catch (_: Throwable) {
+            false
+        }
+
+    // Frida's agent keeps its thread names even when the gadget library
+    // is renamed, so a renamed gadget is still visible here.
+    private fun hasFridaThread(): Boolean =
+        try {
+            File("/proc/self/task").listFiles()?.any { task ->
+                try {
+                    val name = File(task, "comm").readText().trim().lowercase()
+                    FRIDA_THREAD_NAMES.any { name.contains(it) }
+                } catch (_: Throwable) {
+                    false
+                }
+            } ?: false
+        } catch (_: Throwable) {
+            false
+        }
+
+    // frida-server listens on 127.0.0.1:27042 by default. React methods run
+    // on the native-modules thread, so this short connect never touches the UI.
+    private fun isFridaPortOpen(): Boolean =
+        try {
+            Socket().use { socket ->
+                socket.connect(InetSocketAddress("127.0.0.1", FRIDA_DEFAULT_PORT), 150)
+                true
+            }
+        } catch (_: Throwable) {
+            false
+        }
+
     companion object {
         const val NAME = "DeviceSecurity"
+
+        private const val FRIDA_DEFAULT_PORT = 27042
+
+        // Frida-only names. Generic GLib names (gmain, gdbus) are left out: a false
+        // positive here blocks the whole app.
+        private val FRIDA_THREAD_NAMES = arrayOf(
+            "gum-js-loop",
+            "pool-frida",
+        )
 
         private const val SU_PATH_FALLBACK =
             "/sbin:/system/sbin:/system/bin:/system/xbin:/vendor/bin"
@@ -133,9 +224,9 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             "/dev/com.koushikdutta.superuser.daemon/",
             "/system/app/Magisk.apk",
             "/sbin/magisk",
-            "/data/adb/magisk",
-            "/data/adb/modules",
             "/cache/.disable_magisk",
+            // /data/adb/* removed — unreadable by untrusted_app under
+            // SELinux, so always false. See mountsHaveRootArtifacts().
         )
 
         private val HOOK_PATHS = arrayOf(
@@ -145,8 +236,6 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             "/system/lib/libfrida-gadget.so",
             "/system/lib64/libfrida-gadget.so",
             "/sbin/.magisk/modules/riru_lsposed",
-            "/data/adb/lspd",
-            "/data/adb/riru",
             "/system/framework/XposedBridge.jar",
             "/system/lib/libxposed_art.so",
             "/system/bin/app_process_xposed",
@@ -160,6 +249,13 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             "linjector",
             "libsubstrate",
             "xposed",
+            // Zygisk / LSPosed / Riru / Shamiko modules mapped into the app.
+            "zygisk",
+            "lsposed",
+            "lspd",
+            "riru",
+            "edxp",
+            "shamiko",
         )
     }
 }

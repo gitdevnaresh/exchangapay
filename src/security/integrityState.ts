@@ -33,10 +33,12 @@ export const getIntegrityReport = (): IntegrityReport => current;
  * Runs the check once per app launch. Safe to call from several places — later
  * callers await the first evaluation instead of starting another.
  */
-export const initializeDeviceIntegrity = (): Promise<IntegrityReport> => {
+export const initializeDeviceIntegrity = (
+  timeoutMs?: number
+): Promise<IntegrityReport> => {
   if (evaluation) return evaluation;
 
-  evaluation = evaluateDeviceIntegrity()
+  evaluation = evaluateDeviceIntegrity(timeoutMs)
     .then((report) => {
       current = report;
       emit();
@@ -57,9 +59,11 @@ export const initializeDeviceIntegrity = (): Promise<IntegrityReport> => {
  * Forces a re-check. Worth calling when the app returns to the foreground after a
  * long background stint, since a device can be rooted between sessions.
  */
-export const refreshDeviceIntegrity = (): Promise<IntegrityReport> => {
+export const refreshDeviceIntegrity = (
+  timeoutMs?: number
+): Promise<IntegrityReport> => {
   evaluation = null;
-  return initializeDeviceIntegrity();
+  return initializeDeviceIntegrity(timeoutMs);
 };
 
 const subscribe = (listener: Listener) => {

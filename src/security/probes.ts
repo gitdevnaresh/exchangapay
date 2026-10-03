@@ -28,9 +28,10 @@ export const ANDROID_ROOT_PATHS = [
   "/system/etc/init.d/99SuperSUDaemon",
   "/system/bin/magisk",
   "/sbin/magisk",
-  "/data/adb/magisk",
-  "/data/adb/modules",
   "/dev/com.koushikdutta.superuser.daemon/",
+  // /data/adb/* (magisk, modules, ksu, ap) removed — SELinux denies
+  // untrusted_app any access there, so those probes could only ever say "no".
+  // Magisk / KernelSU / APatch are detected natively via /proc/self/mounts.
 ];
 
 /** Instrumentation frameworks — Frida, Xposed, Substrate. */
@@ -71,6 +72,14 @@ export const IOS_JAILBREAK_PATHS = [
   "/bin/sh",
   "/var/checkra1n.dmg",
   "/var/binpack",
+  // Rootless jailbreaks (Dopamine, palera1n rootless) live under /var/jb,
+  // a symlink into /private/preboot/<hash>/jb.
+  "/var/jb",
+  "/private/var/jb",
+  "/var/jb/usr/bin/su",
+  "/var/jb/Applications/Sileo.app",
+  "/var/jb/Applications/Zebra.app",
+  "/.procursus_strapped",
 ];
 
 /** iOS hooking runtimes. */
@@ -82,6 +91,11 @@ export const IOS_HOOK_PATHS = [
   "/usr/lib/TweakInject",
   "/usr/lib/frida",
   "/usr/lib/frida/frida-agent.dylib",
+  // Rootless hooking runtimes.
+  "/var/jb/usr/lib/ellekit",
+  "/var/jb/usr/lib/libellekit.dylib",
+  "/var/jb/usr/lib/TweakInject",
+  "/var/jb/Library/MobileSubstrate/DynamicLibraries",
 ];
 
 // Jailbreak app URL schemes. Must also be listed under LSApplicationQueriesSchemes

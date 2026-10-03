@@ -21,8 +21,9 @@
  *   - Every probe is individually wrapped and fails open. A probe that throws or
  *     hangs contributes nothing rather than producing a false positive.
  *   - The whole evaluation is bounded by EVALUATION_TIMEOUT_MS and runs off the
- *     startup path. If it times out the level is "unknown", which is treated as
- *     trusted.
+ *     startup path. If it times out the level is "unknown". That never blocks the
+ *     app, but high-risk operations re-check and do not treat it as trusted
+ *     (see guard.ts).
  *   - Enforcement is disabled in __DEV__ so that developers and CI on emulators
  *     are never blocked. The verdict is still computed and reported.
  *
@@ -49,6 +50,7 @@ const CHECK_EMULATOR_IN_TEST = false;
 
 export type IntegritySignal =
   | "ROOT_BINARY"
+  | "BOOTLOADER_UNLOCKED"
   | "JAILBREAK_PATH"
   | "SANDBOX_ESCAPE"
   | "HOOK_FRAMEWORK"
@@ -64,8 +66,9 @@ export type IntegritySignal =
  * suspect     — weak signals (no device passcode). Warn, allow.
  * compromised — root/jailbreak/hooking framework, emulator, or dev options /
  *               USB debugging in a release build. Blocks the app.
- * unknown     — checks could not complete. Treated as trusted: a probe failure
- *               must never lock a legitimate user out of their money.
+ * unknown     — checks could not complete. Never blocks the app (a slow probe
+ *               must not lock a user out of their money), but it is not trusted
+ *               for high-risk operations: guard.ts re-checks and warns.
  */
 export type IntegrityLevel = "ok" | "suspect" | "compromised" | "unknown";
 
@@ -78,6 +81,7 @@ export interface IntegrityReport {
 /** Signals that on their own mean the device is untrustworthy. */
 const CRITICAL_SIGNALS: IntegritySignal[] = [
   "ROOT_BINARY",
+  "BOOTLOADER_UNLOCKED",
   "JAILBREAK_PATH",
   "SANDBOX_ESCAPE",
   "HOOK_FRAMEWORK",
@@ -87,7 +91,13 @@ const CRITICAL_SIGNALS: IntegritySignal[] = [
   "EMULATOR",
 ];
 
+/** On a non-prod emulator only real root/hook evidence counts (see collectSignals). */
+const NON_PROD_EMULATOR_SIGNALS: IntegritySignal[] = ["ROOT_BINARY", "HOOK_FRAMEWORK"];
+
 const EVALUATION_TIMEOUT_MS = 4000;
+const BOOT_STATE_TIMEOUT_MS = 800;
+/** Longer budget for the re-check a high-risk operation runs on an "unknown" verdict. */
+export const RECHECK_TIMEOUT_MS = 8000;
 
 export const UNKNOWN_REPORT: IntegrityReport = {
   level: "unknown",
@@ -194,28 +204,43 @@ const NATIVE_REASON_SIGNALS: Record<string, IntegritySignal> = {
   native_sandbox_write: "SANDBOX_ESCAPE",
   native_suspicious_dylib: "HOOK_FRAMEWORK",
   native_debugger_attached: "DEBUGGER_ATTACHED",
+  native_root_mount: "ROOT_BINARY",
+  native_frida_thread: "HOOK_FRAMEWORK",
+  native_frida_port: "HOOK_FRAMEWORK",
+  native_bootloader_unlocked: "BOOTLOADER_UNLOCKED",
 };
 
 /** Calls one native probe. A missing module or a fault yields no reasons. */
 const readNativeReasons = async (
   moduleName: string,
-  method: string
+  method: string,
+  timeoutMs = 2000
 ): Promise<string[]> => {
   const native = NativeModules[moduleName];
   if (typeof native?.[method] !== "function") {
     return [];
   }
-  const result = await settleWithin<any>(native[method](), 2000, null);
+  const result = await settleWithin<any>(native[method](), timeoutMs, null);
   return Array.isArray(result?.reasons)
     ? result.reasons.filter((r: unknown): r is string => typeof r === "string")
     : [];
 };
 
 const collectNativeSignals = async (): Promise<IntegritySignal[]> => {
+  // Android: the file/mount probes and the key-attestation boot-state check
+  // (catches root hidden by DenyList/Shamiko) run in parallel. The boot
+  // state is pre-computed from MainApplication.onCreate, so it is normally
+  // ready; it gets a short budget so it can never lengthen the splash wait. If
+  // it is not ready yet, the next foreground re-check picks it up.
   const reasons =
     Platform.OS === "ios"
       ? await readNativeReasons("DeviceSecurityIOS", "getJailbreakStatus")
-      : await readNativeReasons("DeviceSecurity", "getRootStatus");
+      : (
+          await Promise.all([
+            readNativeReasons("DeviceSecurity", "getRootStatus"),
+            readNativeReasons("DeviceSecurity", "getBootState", BOOT_STATE_TIMEOUT_MS),
+          ])
+        ).flat();
 
   const signals: IntegritySignal[] = [];
   for (const reason of reasons) {
@@ -240,8 +265,17 @@ const collectNativeSignals = async (): Promise<IntegritySignal[]> => {
 };
 
 const collectSignals = async (): Promise<IntegritySignal[]> => {
-  // Emulators/simulators trip the file probes; skip them outside prod so QA can test.
-  if (!isProductionEnv() && !CHECK_EMULATOR_IN_TEST && (await isEmulator())) return [];
+  // Root/hook probes are never skipped because an emulator was detected —
+  // tst builds are the release builds, and a rooted emulator must not get a clean
+  // verdict. Outside prod, signals every stock emulator has (EMULATOR, ADB,
+  // developer options, no screen lock, unlocked bootloader) are ignored so QA
+  // keeps testing on emulators exactly as before; only root/hook signals count
+  // (use Google Play system images — Google APIs images ship su and are rooted).
+  // The iOS Simulator is still skipped: it reads the Mac filesystem (/bin/sh,
+  // /etc/ssh …) and cannot run a device-signed release build.
+  const nonProdEmulator =
+    !isProductionEnv() && !CHECK_EMULATOR_IN_TEST && (await isEmulator());
+  if (nonProdEmulator && Platform.OS === "ios") return [];
 
   const signals: IntegritySignal[] = [];
 
@@ -272,7 +306,10 @@ const collectSignals = async (): Promise<IntegritySignal[]> => {
 
   // JS and native layers overlap; report each signal once.
   for (const signal of native) signals.push(signal);
-  return Array.from(new Set(signals));
+  const unique = Array.from(new Set(signals));
+  return nonProdEmulator
+    ? unique.filter((signal) => NON_PROD_EMULATOR_SIGNALS.includes(signal))
+    : unique;
 };
 
 const scoreSignals = (signals: IntegritySignal[]): IntegrityLevel => {
@@ -288,10 +325,12 @@ const scoreSignals = (signals: IntegritySignal[]): IntegrityLevel => {
 /**
  * Runs the full check. Never rejects; the worst case is an "unknown" verdict.
  */
-export const evaluateDeviceIntegrity = async (): Promise<IntegrityReport> => {
+export const evaluateDeviceIntegrity = async (
+  timeoutMs: number = EVALUATION_TIMEOUT_MS
+): Promise<IntegrityReport> => {
   const signals = await settleWithin(
     collectSignals(),
-    EVALUATION_TIMEOUT_MS,
+    timeoutMs,
     null as IntegritySignal[] | null
   );
 

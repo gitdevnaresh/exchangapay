@@ -60,6 +60,9 @@ class MainApplication : Application(), ReactApplication {
       override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
       override fun onActivityDestroyed(activity: Activity) {}
     })
+    // Compute the bootloader state in the background while React Native
+    // loads, so the device check at the splash screen does not wait for it.
+    BootStateAttestation.prewarm()
     loadReactNative(this)
   }
 }

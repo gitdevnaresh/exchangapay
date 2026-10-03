@@ -9,7 +9,11 @@
  *   compromised  block these three operations, explain why, offer no override.
  *                The user still has a fully working app for everything else.
  *   suspect      warn once and let the user proceed deliberately.
- *   ok/unknown   no interruption at all.
+ *   unknown      re-check with a longer budget. Every probe has its own
+ *                ≤2 s fallback, so the re-check always completes on a genuine
+ *                device; still "unknown" means the check itself failed or was
+ *                interfered with, and is treated like suspect.
+ *   ok           no interruption at all.
  *
  * Enforcement is off in __DEV__ (see isEnforcementEnabled) so emulators and debug
  * builds behave normally for developers and QA.
@@ -17,8 +21,8 @@
 
 import { Alert } from "react-native";
 import crashlytics from "@react-native-firebase/crashlytics";
-import { isEnforcementEnabled } from "./deviceIntegrity";
-import { getIntegrityReport } from "./integrityState";
+import { isEnforcementEnabled, RECHECK_TIMEOUT_MS } from "./deviceIntegrity";
+import { getIntegrityReport, refreshDeviceIntegrity } from "./integrityState";
 import { describeBiometricOutcome, requireUserPresence } from "./biometricAuth";
 import { log } from "../utils/logger";
 
@@ -130,19 +134,19 @@ const requireStepUp = async (operation: HighRiskOperation): Promise<boolean> => 
 };
 
 /**
- * Returns true when the caller should go ahead. Never throws on the device
- * posture checks — on an internal error there, the operation is allowed, because
- * silently breaking a withdrawal is worse than missing one heuristic.
+ * Returns true when the caller should go ahead. Never throws. On an
+ * internal error the operation is refused with a "try again" message — failing
+ * open here was a one-hook bypass of every check above.
  *
- * The biometric step-up (H-14) is the exception to that: it fails closed. A
- * presence check that gives up when it cannot run is the finding.
+ * The biometric step-up (H-14) fails closed too. A presence check that gives up
+ * when it cannot run is the finding.
  */
 export const guardHighRiskAction = async (
   operation: HighRiskOperation,
   options?: GuardOptions
 ): Promise<boolean> => {
   try {
-    const report = getIntegrityReport();
+    let report = getIntegrityReport();
 
     // Report regardless of whether we enforce: the durable value of a
     // client-side check is as a risk factor in fraud monitoring, not as a block.
@@ -158,6 +162,15 @@ export const guardHighRiskAction = async (
       return options?.skipPresenceCheck ? true : requireStepUp(operation);
     }
 
+    // "unknown" means the launch check timed out or failed. Run it again
+    // with a longer budget before deciding; never treat it as "ok".
+    if (report.level === "unknown") {
+      report = await refreshDeviceIntegrity(RECHECK_TIMEOUT_MS);
+      if (report.level === "unknown") {
+        crashlytics().log(`High-risk op ${operation} on unverified device`);
+      }
+    }
+
     if (report.level === "compromised") {
       return notify(
         "Device security check failed",
@@ -166,7 +179,8 @@ export const guardHighRiskAction = async (
       );
     }
 
-    if (report.level === "suspect") {
+    // "unknown" here is never treated as trusted.
+    if (report.level === "suspect" || report.level === "unknown") {
       const proceed = await confirm(
         "Unrecognised device setup",
         `This device shows an unusual configuration, so ${OPERATION_LABELS[
@@ -180,8 +194,11 @@ export const guardHighRiskAction = async (
     // actually going ahead.
     return options?.skipPresenceCheck ? true : requireStepUp(operation);
   } catch {
-    // Reached only if the device-posture probes throw. The step-up above has
-    // its own handling and does not rely on this.
-    return true;
+    // Fail closed. The user can simply retry; allowing here would let a
+    // single thrown probe skip the device check and the step-up.
+    return notify(
+      "Security check unavailable",
+      "We couldn't verify this device right now. Please try again."
+    );
   }
 };
