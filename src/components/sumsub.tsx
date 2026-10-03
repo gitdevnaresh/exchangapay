@@ -18,8 +18,10 @@ import AuthService from '../services/auth';
 import useEncryptDecrypt from '../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../hooks/useSendUserWebhook';
 import useLogout from "../hooks/useLogOut";
+import useExitAppOnBack from "../hooks/useExitAppOnBack";
 
 const SumsubCompnent = (props: any) => {
+    useExitAppOnBack();
     const navigation = useNavigation<any>();
     const { logout } = useLogout();
     const isFocused = useIsFocused();

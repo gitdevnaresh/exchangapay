@@ -22,6 +22,7 @@ import Loadding from "../../components/skeleton";
 import { SvgUri } from "react-native-svg";
 import useLogout from "../../hooks/useLogOut";
 import useMemberLogin from "../../hooks/useMemberLogin";
+import useExitAppOnBack from "../../hooks/useExitAppOnBack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RenderHTML from "../../components/htmlRender/RenderHtml";
 import { log } from "../../utils/logger";
@@ -29,6 +30,7 @@ import { sanitizeNotesHtml } from "../../security";
 import { REMOTE_ASSETS } from "../../constants";
 
 const UnderReview = () => {
+  useExitAppOnBack();
   const styles = useStyleSheet(themedStyles);
   const navigation = useNavigation<any>();
   const [saveLoading, setSaveLoading] = useState<boolean>(false);

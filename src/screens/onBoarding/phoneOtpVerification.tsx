@@ -25,6 +25,7 @@ import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import useSendUserWebhook from '../../hooks/useSendUserWebhook';
 import { REMOTE_ASSETS } from '../../constants';
 import useLogout from '../../hooks/useLogOut';
+import useExitAppOnBack from '../../hooks/useExitAppOnBack';
 const PhoneOtpVerification = () => {
     const [errorMsg, setErrorMsg] = useState<any>('');
     const [resendTimer, setResendTimer] = useState(0);
@@ -125,6 +126,7 @@ const PhoneOtpVerification = () => {
                 phoneNumber: encryptAES(phoneNumber),
                 isResendOTP: true,
             };
+            console.log("handleConfirmAndContinue payload", obj);   
             try {
                 if (isResend) setIsResendLoading(true); // start loader
                 const response = await AuthService.getPhoneNumberOtp(obj);
@@ -170,6 +172,7 @@ const PhoneOtpVerification = () => {
                     "phoneNumber": encryptAES(values.phoneNumber),
                     "isChangePhoneNumber": true
                 };
+                console.log("handleConfirmAndContinue verifyPhoneNumberOtp payload", Obj);
                 setResendTimer(60);
                 const response = await AuthService.verifyPhoneNumberOtp(Obj);
                 if (response?.ok) {
@@ -209,7 +212,16 @@ const PhoneOtpVerification = () => {
         }
     };
 
-    const formattedTimer = `${Math.floor(resendTimer / 60)}:${(resendTimer % 60)
+    // Back from the OTP step returns to the phone step; otherwise confirm exit.
+    useExitAppOnBack(() => {
+        if (isOtpScreen) {
+            handleEditPhoneNumber();
+            return true;
+        }
+        return false;
+    });
+
+    const formattedTimer =`${Math.floor(resendTimer / 60)}:${(resendTimer % 60)
         .toString()
         .padStart(2, '0')}`;
 

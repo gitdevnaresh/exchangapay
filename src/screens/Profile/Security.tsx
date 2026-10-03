@@ -431,7 +431,7 @@ const Security = (props: any) => {
                         commonStyles.textBlack,
                         styles.opacity6,
                       ]}
-                      text="Google /Microsoft Authenticator"
+                      text="Google/Microsoft Authenticator"
                     />
                     <View style={styles.h24}>
                       <Switch

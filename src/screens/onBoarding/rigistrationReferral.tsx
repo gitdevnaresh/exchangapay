@@ -21,9 +21,11 @@ import CommonPopup from '../../components/commonPopup';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
 import { REMOTE_ASSETS } from '../../constants';
 import useLogout from '../../hooks/useLogOut';
+import useExitAppOnBack from '../../hooks/useExitAppOnBack';
 
 
 const RigistrationReferral = () => {
+    useExitAppOnBack();
     const styles = useStyleSheet(themedStyles);
     const [errormsg, setErrormsg] = useState<string>("");
     const userprofile = useSelector((state: any) => state.UserReducer?.userInfo);

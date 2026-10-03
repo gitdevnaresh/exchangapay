@@ -36,6 +36,16 @@ class MainActivity : ReactActivity() {
   }
 
   /**
+   * Called when JS does not handle a back press. On targetSdk 36 ReactActivity's version disables
+   * its OnBackPressedCallback and never re-enables it, so every later back press skips JS
+   * (BackHandler, exit popups, react-navigation) and just backgrounds the app. Do the system
+   * default here instead, leaving that callback enabled.
+   */
+  override fun invokeDefaultOnBackPressed() {
+    if (isTaskRoot) moveTaskToBack(false) else finish()
+  }
+
+  /**
    * targetSdk 36 forces edge-to-edge on Android 16, and the windowOptOutEdgeToEdgeEnforcement
    * opt-out is ignored. The JS screens use the core SafeAreaView, which is a no-op on Android, so
    * the system-bar and cutout insets are applied here as padding on the content view. This keeps

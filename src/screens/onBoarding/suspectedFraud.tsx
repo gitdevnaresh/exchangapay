@@ -20,11 +20,13 @@ import Loadding from '../../components/skeleton';
 import { SvgUri } from 'react-native-svg';
 import useLogout from '../../hooks/useLogOut';
 import useMemberLogin from '../../hooks/useMemberLogin';
+import useExitAppOnBack from '../../hooks/useExitAppOnBack';
 import { log } from '../../utils/logger';
 import { sanitizeNotesHtml } from '../../security';
 import { REMOTE_ASSETS } from '../../constants';
 
 const SuspectedFraud = () => {
+    useExitAppOnBack();
     const styles = useStyleSheet(themedStyles);
     const navigation = useNavigation<any>();
     const [saveLoading, setSaveLoading] = useState<boolean>(false)

@@ -9,7 +9,9 @@ import { NEW_COLOR } from '../../constants/theme/variables';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { CONSTANTS } from './constants';
 import useLogout from '../../hooks/useLogOut';
+import useExitAppOnBack from '../../hooks/useExitAppOnBack';
 const ActionRestricted = () => {
+  useExitAppOnBack();
   const styles = useStyleSheet(themedStyles);
   const { logout } = useLogout();
 

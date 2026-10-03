@@ -19,9 +19,11 @@ import { NEW_COLOR } from '../../constants/theme/variables';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { REMOTE_ASSETS } from '../../constants';
 import useLogout from '../../hooks/useLogOut';
+import useExitAppOnBack from '../../hooks/useExitAppOnBack';
 
 
 const VerifyEmail = () => {
+    useExitAppOnBack();
     const styles = useStyleSheet(themedStyles);
     const [errorMsg, setErrorMsg] = useState<string>('');
     const [loadMail, setLoadMail] = useState<boolean>(false);
