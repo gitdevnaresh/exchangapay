@@ -37,7 +37,7 @@
     "@reduxjs/toolkit": "^2.9.0",
     "@scure/base": "^1.2.6",
     "@sentry/react-native": "^8.20.0",
-    "@sumsub/react-native-mobilesdk-module": "^1.37.1",
+    "@sumsub/react-native-mobilesdk-module": "1.45.1",
     "@ui-kitten/components": "^5.3.1",
     "@ui-kitten/eva-icons": "^5.3.1",
     "apisauce": "^3.2.0",

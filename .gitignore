@@ -217,7 +217,7 @@ ios/.cxx/
 ios/*.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
-ios/Podfile.lock
+# ios/Podfile.lock is intentionally TRACKED so native pod versions/checksums are reproducible (H-09).
 
 # iOS build generated files
 ios/build/generated/

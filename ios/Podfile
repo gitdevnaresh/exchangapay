@@ -59,6 +59,10 @@ target 'exchangapay' do
   # Documents-folder lookup for document notification taps.
   pod 'FileManager', :path => './FileManager'
 
+  # SumSub KYC SDK comes from SumSub's own spec repo; pin it exactly so the
+  # third-party source cannot silently serve a different version (H-09).
+  pod 'IdensicMobileSDK', '1.45.1'
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
