@@ -198,7 +198,9 @@ const RigistrationReferral = () => {
                                         ? commonStyles?.disabledBg
                                         : 'transparent',
                                     borderRadius: 50,
-
+                                    // Indent via padding, not leading spaces in the placeholder,
+                                    // so the cursor starts where the placeholder text does.
+                                    paddingLeft: s(16),
 
                                 }}
                                 onChangeText={onChangeText}
