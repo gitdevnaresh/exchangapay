@@ -1038,7 +1038,8 @@ const AddKycInfomation = (props: any) => {
         keyboardShouldPersistTaps={"handled"}
         showsVerticalScrollIndicator={false}
         ref={ref}
-        enableOnAndroid={true}
+        // Android resizes the window for the keyboard (adjustResize); padding it here as well would leave a keyboard-sized gap
+        enableOnAndroid={false}
         enableAutomaticScroll={true}
       >
         <Container style={commonStyles.container}>
