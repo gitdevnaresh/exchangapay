@@ -34,6 +34,11 @@ const attempt = async (label: string, work: () => Promise<unknown> | unknown) =>
     }
 };
 
+// One logout at a time, app-wide. Repeated taps (or two screens calling it)
+// share the in-flight run instead of each wiping the session and resetting
+// to Splash again. Module-level so every useLogout() instance sees it.
+let logoutInFlight: Promise<void> | null = null;
+
 const useLogout = () => {
     const { clearCredentials, revokeRefreshToken } = useAuth0();
     const navigation = useNavigation<any>();
@@ -52,7 +57,16 @@ const useLogout = () => {
         await AuthService.logOutLog(obj);
     };
 
-    const logout = async (options?: LogoutOptions) => {
+    const logout = (options?: LogoutOptions): Promise<void> => {
+        if (!logoutInFlight) {
+            logoutInFlight = runLogout(options).finally(() => {
+                logoutInFlight = null;
+            });
+        }
+        return logoutInFlight;
+    };
+
+    const runLogout = async (options?: LogoutOptions) => {
         const { clearCookies = true } = options || {};
         try {
             await attempt("fcmToken", () => withTimeout(OnBoardingService.updateFcmToken()));
