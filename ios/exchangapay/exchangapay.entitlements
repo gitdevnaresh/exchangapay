@@ -49,7 +49,7 @@
 		every device build failed with "profile doesn't include the Data
 		Protection capability". L-14 is OPEN until this is restored. To restore:
 		enable Data Protection (Complete) on com.exchangapay.tst and
-		com.exchangapay, then add back:
+		com.exchangapay.app, then add back:
 
 		<key>com.apple.developer.default-data-protection</key>
 		<string>NSFileProtectionComplete</string>

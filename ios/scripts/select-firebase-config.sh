@@ -34,7 +34,8 @@ VARIANT_PLIST="${PROJECT_DIR}/firebase/GoogleService-Info-${CONFIGURATION}.plist
 BUNDLED_PLIST="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
 
 # Bundle identifiers that constitute a production build.
-PRODUCTION_BUNDLE_IDS=("com.exchangapay")
+# com.exchangapay.app is the live App Store bundle id (App Store id 6480390257).
+PRODUCTION_BUNDLE_IDS=("com.exchangapay.app")
 # Firebase projects that must never back a production build.
 NON_PRODUCTION_PROJECTS=("exchangapay-tst-f570a")
 

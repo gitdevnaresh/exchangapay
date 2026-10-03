@@ -37,7 +37,8 @@ apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 // It fires the moment applicationId becomes a production one while Firebase is
 // still pointing at test — which is exactly the mistake this finding is about,
 // and precisely the moment nobody will be thinking about Firebase.
-ext.PRODUCTION_APPLICATION_IDS = ["com.exchangapay"] as Set
+// com.exchanga is the live Play Store applicationId (Exchanga Pay).
+ext.PRODUCTION_APPLICATION_IDS = ["com.exchanga"] as Set
 ext.NON_PRODUCTION_FIREBASE_PROJECTS = ["exchangapay-tst-f570a"] as Set
 
 ext.resolveGoogleServicesFile = { String buildType ->
@@ -386,7 +387,9 @@ gradle.taskGraph.whenReady { graph ->
             envFile.eachLine { line ->
                 def trimmed = line.trim()
                 if (!trimmed || trimmed.startsWith('#')) return
-                def m = (trimmed =~ /=\s*https?:\/\/([^\/\s]+)/)
+                // Skip any userinfo (a Sentry DSN is https://<key>@<host>/<id>) so the
+                // key never becomes a "host" that pinning-policy.json has to name.
+                def m = (trimmed =~ /=\s*https?:\/\/(?:[^\/\s@]*@)?([^\/\s]+)/)
                 if (m) recordHost(m[0][1], envFile.name)
             }
         }
@@ -478,7 +481,7 @@ gradle.taskGraph.whenReady { graph ->
     if (!releaseTask) return
 
     def appId = android.defaultConfig.applicationId?.toString()
-    def productionIds = ["com.exchangapay"] as Set
+    def productionIds = ["com.exchanga"] as Set
     if (!productionIds.contains(appId)) return
 
     def repoRoot = file("${rootProject.projectDir}/..")
