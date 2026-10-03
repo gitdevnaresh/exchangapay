@@ -58,6 +58,9 @@ const RigistrationReferral = () => {
                 setIsValid(response?.data?.isValidReferral);
                 setCustomerName(response?.data?.customerName)
                 setErrormsg("");
+                if (!response?.data?.isValidReferral) {
+                    setRequiredMsg(REFERRAL_CONSTANTS.PLEASE_PROVIDE_VALID_REFERRAL_CODE);
+                }
             } else {
                 setIsValid(false);
                 setErrormsg(isErrorDispaly(response))
@@ -99,14 +102,15 @@ const RigistrationReferral = () => {
     };
 
     const updateReferralCode = async () => {
-        setSaveLoading(false);
+        // Keep Continue disabled until the save and the redirect to the next step finish.
+        setSaveLoading(true);
         const body = {
             referralCode: encryptAES(referralCode ? referralCode : "")
         }
         try {
             const response: any = await AuthService.putReferralCode(body, referral?.haveReferralCode);
             if (response.ok) {
-                getMemDetails({});
+                await getMemDetails({});
             } else {
                 setErrormsg(isErrorDispaly(response));
             }

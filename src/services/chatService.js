@@ -61,49 +61,30 @@ export class KommoChatAPI {
         }
     }
 
-    async createChat(userConfig) {
+    // The backend resolves the customer from the access token and builds the
+    // Kommo user (id, name, avatar, phone, email) from its own record, so the
+    // app sends no identity, scope or conversation id.
+    async createChat() {
         try {
             if (!this.isConnected || !this.scopeId) {
                 throw new Error('Channel not connected');
             }
-            if (!userConfig.id || !userConfig.name) {
-                throw new Error('User ID and name are required');
-            }
-            // The backend fills in source.external_id and profile_link; the
-            // user fields stay as the screen supplies them today.
-            const data = unwrapOrThrow(await ChatbotService.createChat({
-                scopeId: this.scopeId,
-                conversationId: userConfig.id || '',
-                user: {
-                    id: userConfig.id,
-                    refId: userConfig.id || '',
-                    name: userConfig.name,
-                    avatar: userConfig.avatar || '',
-                    phone: userConfig.phone || '',
-                    email: userConfig.email || ''
-                }
-            }));
+            const data = unwrapOrThrow(await ChatbotService.createChat({}));
             return data;
         } catch (error) {
             throw error;
         }
     }
 
-    // The backend picks the customer's chat from the token and keeps the
-    // conversation id itself, so no scope or conversation id is sent.
+    // The backend picks the customer's chat from the token, keeps the
+    // conversation id itself and builds the sender from the customer's record,
+    // so only the message content is sent.
     async sendUserMessage(messageConfig) {
         try {
             const data = unwrapOrThrow(await ChatbotService.sendMessage({
                 type: messageConfig.type,
                 text: messageConfig.text,
-                media: messageConfig.media,
-                sender: {
-                    id: messageConfig?.senderId,
-                    name: messageConfig.name,
-                    avatar: messageConfig.imageUrl,
-                    phone: messageConfig?.phoneNo,
-                    email: messageConfig?.email
-                }
+                media: messageConfig.media
             }));
             return { success: true, data };
 

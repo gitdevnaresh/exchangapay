@@ -76,13 +76,6 @@ const KommoChatScreen = (props: any) => {
     const [inputKey, setInputKey] = useState(0);
     const dispatch = useDispatch();
     const [filePreview, setFilePreview] = useState<{ uri: string, type: string } | null>(null);
-    const user = {
-        id: userInfo?.id || 'user123',
-        name: decryptAES(userInfo?.userName) || 'John Doe',
-        email: decryptAES(userInfo?.email) || 'john@example.com',
-        phone: decryptAES(userInfo?.phoneNo) || '+1234567890',
-        profile: userInfo?.imageURL || ""
-    };
     const api = new KommoChatAPI();
 
     useEffect(() => {
@@ -138,7 +131,7 @@ const KommoChatScreen = (props: any) => {
             setError(null);
             const response = await api.connectChannel();
             setIsConnected(true);
-            const chatResponse = await api.createChat(user);
+            const chatResponse = await api.createChat();
             chatIdRef.current = chatResponse?.id || null;
             setCurrentChatId(chatResponse.id);
             setChatAPI(api);
@@ -178,11 +171,6 @@ const KommoChatScreen = (props: any) => {
                 type: 'picture',
                 text: inputText.trim(),
                 media: selectedImage, // Send the public URL to Kommo
-                name: decryptAES(userInfo?.firstName)+" " + decryptAES(userInfo?.lastName) || decryptAES(userInfo?.email) || 'You',
-                imageUrl: decryptAES(userInfo?.imageUrl) || user.profile,
-                phone: decryptAES(userInfo?.phoneNo) || user.phone,
-                email: decryptAES(userInfo?.email) || user.email,
-                senderId: userInfo?.id,
             };
             setSelectedImage(null);
             const result: any = await api.sendUserMessage(messageConfig);
@@ -324,7 +312,7 @@ const KommoChatScreen = (props: any) => {
             isOutgoing: true,
             isIncoming: false,
             isTemp: true,
-            sender: { name: decryptAES(userInfo?.userName) || 'You', id: userInfo?.id || 'user123' },
+            sender: { name: decryptAES(userInfo?.userName) || 'You', id: userInfo?.id },
             type: 'text'
         };
         setInputText('');
@@ -332,12 +320,7 @@ const KommoChatScreen = (props: any) => {
         setIsSending(true);
         const messageConfig = {
             text: messageText,
-            type: 'text',
-            name: decryptAES(userInfo?.firstName) +" "+ decryptAES(userInfo?.lastName) || decryptAES(userInfo?.email) || 'You',
-            imageUrl: decryptAES(userInfo?.imageUrl) || user.profile,
-            phone: decryptAES(userInfo?.phoneNo) || user.phone,
-            email: decryptAES(userInfo?.email) || user.email,
-            senderId: userInfo?.id
+            type: 'text'
         }
         try {
             const result: any = await api.sendUserMessage(messageConfig);
