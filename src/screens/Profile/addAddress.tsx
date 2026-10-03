@@ -35,7 +35,9 @@ const validationSchema = Yup.object().shape({
     addressLine1: Yup.string()
         .required("Address Line 1 is required")
         .matches(/^[A-Za-z0-9 ]+$/, "Only alphabets and numbers are allowed"),
-    addressLine2: Yup.string().matches(/^[A-Za-z0-9 ]*$/, "Only alphabets and numbers are allowed"),
+    addressLine2: Yup.string()
+        .matches(/^[A-Za-z0-9 ]*$/, "Only alphabets and numbers are allowed")
+        .max(50, "Address Line 2 must be at most 50 characters"),
     // Must contain at least one letter; numbers and special characters are fine alongside it.
     state: Yup.string()
         .required("State is required")
@@ -170,6 +172,7 @@ const AddEditAddress: React.FC = () => {
                                         component={InputDefault}
                                         label="Address Line 2"
                                         placeholder="Enter Address Line 2"
+                                        maxLength={50}
                                         error={touched.addressLine2 && errors.addressLine2 ? errors.addressLine2 : ""}
                                         handleBlur={handleBlur}
                                         Children={<LabelComponent text=" *" style={{ color: "red" }} />}

@@ -301,6 +301,7 @@ const AddPersonalInfo = (props: any) => {
                             placeholder={
                               PERSONAL_INFORMATION.EG_ROOM2_BUILDINGA_888XXXX_STREET_XX
                             }
+                            maxLength={50}
                             component={InputDefault}
                             innerRef={nameRef}
                           />

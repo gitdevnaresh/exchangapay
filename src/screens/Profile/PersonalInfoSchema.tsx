@@ -40,6 +40,8 @@ export const CreateAccSchema = Yup.object().shape({
             return SPACE_NUMBERS_REGEX.test(value);
         })
     ,
+    addressLine2: Yup.string()
+        .max(50, "Address Line2 must be at most 50 characters"),
     city: Yup.string().required('Is required ')
         .test('no-emojis', 'City cannot contain emojis.', value => {
             if (!value) return true;
