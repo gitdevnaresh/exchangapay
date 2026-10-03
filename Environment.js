@@ -101,6 +101,18 @@ const buildEnv = () => {
     localization: {
       defaultResourceName: config.DEFAULT_RESOURCE_NAME,
     },
+    // Force-update targets. The Play link is built from the same
+    // ANDROID_APPLICATION_ID Gradle uses as applicationId, so the link and the
+    // shipped app cannot name different identities (H-07). Live: com.exchanga
+    // (Play) and com.exchangapay.app / 6480390257 (App Store).
+    storeUrls: {
+      android: `https://play.google.com/store/apps/details?id=${
+        config.ANDROID_APPLICATION_ID || "com.exchanga"
+      }`,
+      ios: `https://apps.apple.com/app/id${
+        config.IOS_APP_STORE_ID || "6480390257"
+      }`,
+    },
   };
 
   return cachedEnv;

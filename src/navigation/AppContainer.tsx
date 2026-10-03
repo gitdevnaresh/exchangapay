@@ -260,7 +260,7 @@ const AppContainer = () => {
           })} />
           <Stack.Screen name="completeKyc" component={CompleteKyc} />
           <Stack.Screen name="addressDetails" component={AddressDetails} />
-          <Stack.Screen name="suspectedFraud" component={SuspectedFraud} />
+          <Stack.Screen name="suspectedFraud" component={SuspectedFraud} options={{ animation: "none" }} />
         </Stack.Navigator>
 
       </View>

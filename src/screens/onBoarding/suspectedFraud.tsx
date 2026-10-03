@@ -132,6 +132,7 @@ const SuspectedFraud = () => {
 
                     </View>}
 
+                    {!(isLoading && !notesHtml) && <>
                     <View style={[commonStyles.mb24]} />
                     <View style={[commonStyles.mb24]} />
                     <View style={[commonStyles.mb10]} />
@@ -153,6 +154,7 @@ const SuspectedFraud = () => {
                     <View style={[commonStyles.dflex, commonStyles.alignCenter, commonStyles.justifyCenter, commonStyles.mt10]}>
                         <TouchableOpacity onPress={handleLogout} style={[commonStyles.px10]} ><Text style={[commonStyles.textCenter, commonStyles.textOrange, commonStyles.fs16, commonStyles.fw600]}>{EMAIL_CONSTANTS.LOG_OUT}</Text></TouchableOpacity>
                     </View>
+                    </>}
 
                 </Container>
             </ScrollView>

@@ -1,24 +1,20 @@
 import {
-    Alert,
     Linking,
     StyleSheet,
     Text,
     TouchableOpacity,
     View, Image, Platform
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Modal from "react-native-modal";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Container } from '../../components';
 import DefaultButton from "../../components/DefaultButton";
+import { getAllEnvData } from "../../../Environment";
 
 const ForceUpdate = (props: any) => {
     const { show, forceUpdate } = props;
-    const platformUrls: any = {
-        ios: "https://apps.apple.com/app/exchanga-pay/id6480390257",
-        // android: "https://play.google.com/apps/internaltest/4701194528402245605",
-        android: "https://play.google.com/store/apps/details?id=com.exchanga"
-    };
+    const platformUrls: any = getAllEnvData().storeUrls;
     return (
         <>
             <Modal isVisible={show} style={{ flex: 1, margin: 0 }}>
@@ -27,7 +23,6 @@ const ForceUpdate = (props: any) => {
                     <View style={[styles.content]}>
                         <View>
                             <Image style={[styles.imgCenter]} source={require("../../assets/images/force-update.png")} />
-                            {/* <Text style={[styles.pageTitle,styles.mx10]}>Force update</Text> */}
                             {forceUpdate && <Text style={[styles.textNormal]}>We added new features and fix some bugs to make your experience as smooth as possible</Text>}
                             {!forceUpdate && <Text style={[styles.textNormal]}>We recommend you to update your app. you can keep using the app while we downloaded the update in background.</Text>}
                             <View style={styles.mt26}>
