@@ -25,7 +25,7 @@ const SecurityQuestion = (props: any) => {
     const securityVerifySk = securityCEnterVerify(1);
     const [errormsg, setErrormsg] = useState<string>('');
     const [questionsSaveLoading, setQuestionsSaveLoading] = useState(false);
-    const [questionsLoading, setQuestionsLoading] = useState(false);
+    const [questionsLoading, setQuestionsLoading] = useState(true);
     const [myQuestionsData, setMyQuestionsData] = useState<any>([]);
     const [myQuestion2Data, setMyQuestion2Data] = useState<any>([]);
     const [myQuestion3Data, setMyQuestion3Data] = useState<any>([]);
@@ -39,9 +39,14 @@ const SecurityQuestion = (props: any) => {
         answer3: "",
     });
     useEffect(() => {
-        fetchSecurityQuestions();
-        fetchSecurityQuestionsList();
+        loadData();
     }, [isFocused]);
+
+    const loadData = async () => {
+        setQuestionsLoading(true);
+        await Promise.all([fetchSecurityQuestions(), fetchSecurityQuestionsList()]);
+        setQuestionsLoading(false);
+    };
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener(
@@ -100,7 +105,6 @@ const SecurityQuestion = (props: any) => {
     };
     const fetchSecurityQuestions = async () => {
         try {
-            setQuestionsLoading(true);
             const response: any = await ProfileService.getSecurityQuestionsdata();
             if (response.data && response.data.length > 0) {
                 setInitValues({
@@ -114,15 +118,12 @@ const SecurityQuestion = (props: any) => {
             }
             setquestiionsInfo(response.data)
             setErrormsg('');
-            setQuestionsLoading(false);
         } catch (error) {
             setErrormsg(isErrorDispaly(error));
-            setQuestionsLoading(false);
         }
     };
     const fetchSecurityQuestionsList = async () => {
         try {
-            setQuestionsLoading(true);
             const response = await ProfileService.getSecurityQuestions();
             const list = response.data?.map(item => {
                 return { id: item.id, name: item.question };
@@ -131,10 +132,8 @@ const SecurityQuestion = (props: any) => {
             setMyQuestion2Data(list);
             setMyQuestion3Data(list);
             setErrormsg('');
-            setQuestionsLoading(false);
         } catch (error) {
             setErrormsg(isErrorDispaly(error));
-            setQuestionsLoading(false);
         }
     };
     const handleCloseError = () => {
@@ -158,7 +157,7 @@ const SecurityQuestion = (props: any) => {
                     </View>
                     {errormsg && <ErrorComponent message={errormsg} onClose={handleCloseError} />}
                     {questionsLoading && <Loadding contenthtml={securityVerifySk} />}
-                    <View >
+                    {!questionsLoading && <View >
                         <Formik
                             initialValues={initValues}
                             onSubmit={onSubmit}
@@ -312,7 +311,7 @@ const SecurityQuestion = (props: any) => {
                                 );
                             }}
                         </Formik>
-                    </View>
+                    </View>}
 
                 </Container>
             </ScrollView>
