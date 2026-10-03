@@ -194,14 +194,17 @@ const RigistrationReferral = () => {
                                 placeholder={REFERRAL_CONSTANTS.ENTER_YOUR_REFFERAL_CODE}
                                 value={referralCode}
                                 inputStyle={{
-                                    backgroundColor: referral?.isReferralEditable
-                                        ? commonStyles?.disabledBg
-                                        : 'transparent',
+                                    // Same background and padding whether editable or not: the
+                                    // wrapping View already paints the disabled grey, and changing
+                                    // the TextInput's own background on Android swaps its native
+                                    // drawable and padding, which shifted the text when disabled.
+                                    backgroundColor: 'transparent',
                                     borderRadius: 50,
                                     // Indent via padding, not leading spaces in the placeholder,
                                     // so the cursor starts where the placeholder text does.
                                     paddingLeft: s(16),
-
+                                    paddingRight: 0,
+                                    paddingVertical: 0,
                                 }}
                                 onChangeText={onChangeText}
                             />

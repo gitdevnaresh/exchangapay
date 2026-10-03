@@ -185,7 +185,8 @@ const UnderReview = () => {
           )}
           {!isLoading &&
             (userInfo.customerState === "Approval In Progress" ||
-              userInfo.customerState === "Registered" ||
+              (userInfo.customerState === "Registered" &&
+                userInfo?.isSumsubKyc) ||
               (userInfo.customerState === "Approved" &&
                 userInfo?.isSumsubKyc)) &&
             !notesHtml && (
@@ -231,7 +232,6 @@ const UnderReview = () => {
                 </View>
               </Container>
             )}
-          <View style={[commonStyles.mb24]} />
           {!isLoading &&
             userInfo.customerState?.toLowerCase() === "registered" &&
             !notesHtml &&
@@ -274,10 +274,10 @@ const UnderReview = () => {
                     />
                   </TouchableOpacity>
                 </View>
-                <View style={[commonStyles.mb32]} />
               </Container>
             )}
-          {/* <View style={[commonStyles.mb10]} /> */}
+          {/* One gap above Refresh for every scenario (notes / in progress / rejected). */}
+          {!isLoading && <View style={[commonStyles.mb24]} />}
           {!isLoading  && (
             <DefaultButton
               title={CONSTANTS?.REFRESH}
@@ -338,7 +338,6 @@ const themedStyles = StyleService.create({
   },
   webViewContainer: {
     marginTop: s(24),
-    marginBottom: s(24),
     width: "100%",
   },
   dashedBorder: {
