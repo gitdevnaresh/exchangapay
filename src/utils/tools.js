@@ -1,67 +1,11 @@
-import BlobUtil from "react-native-blob-util";
 import { Alert, Linking, PermissionsAndroid, Platform } from "react-native";
 import Share from "react-native-share";
-import { getUrlExtension, saveToDownloads } from "./fileDownload";
+import {
+  discardLocalCopy,
+  getUrlExtension,
+  saveToDownloads,
+} from "./fileDownload";
 import { notifyDownloadComplete } from "./documentNotification";
-
-export const downloadFileFromUrl = (path, extension) => {
-  const date = new Date();
-  const filename = path.replace(/^.*[\\\\/]/, "");
-  const name = filename.split(".").slice(0, -1).join(".");
-
-  const { DownloadDir, DocumentDir } = BlobUtil.fs.dirs;
-  const fileExt = extension?.toLowerCase();
-  let mimeType;
-  if (fileExt === "png" || fileExt === "jpg" || fileExt === "jpeg") {
-    mimeType = "image/*";
-  }
-  if (fileExt === "pdf") {
-    mimeType = "application/pdf";
-  }
-  const options = Platform.select({
-    ios: {
-      fileCache: true,
-      path: `${DocumentDir}${Math.floor(
-        date.getTime() + date.getSeconds() / 2
-      )}.${fileExt}`,
-      notification: true,
-    },
-    android: {
-      fileCache: true,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        mime: mimeType,
-        title: name,
-        path: `${DownloadDir}/me_${Math.floor(
-          date.getTime() + date.getSeconds() / 2
-        )}.${fileExt}`,
-        description: "Downloading file",
-      },
-    },
-  });
-  BlobUtil.config(options)
-    .fetch("GET", path)
-    .then(() => {
-      Alert.alert("Download file success");
-    })
-    .catch((err) => {
-      throw new Error("Download error", { cause: err });
-    });
-};
-
-export const readFileURL = async (path) => {
-  const response = await BlobUtil.config({
-    // add this option that makes response data to be stored as a file,
-    // this is much more performant.
-    fileCache: true,
-  }).fetch("GET", path, {
-    // some headers ..
-  });
-  const result =
-    Platform.OS === "android" ? `file://${response.data}` : `${response.data}`;
-  return result;
-};
 
 export const requestAndroidPermission = async () => {
   try {
@@ -140,11 +84,15 @@ export const downloadImage = async (url) => {
     });
 
     if (isIOS) {
-      await Share.open({
-        url: "file://" + saved.path,
-        type: saved.mime,
-        title: "Save Image",
-      });
+      try {
+        await Share.open({
+          url: "file://" + saved.path,
+          type: saved.mime,
+          title: "Save Image",
+        });
+      } finally {
+        await discardLocalCopy(saved);
+      }
     } else if (saved.savedToDownloads) {
       await notifyDownloadComplete(saved);
       Alert.alert(

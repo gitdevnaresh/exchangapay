@@ -26,7 +26,7 @@ import ErrorComponent from "../../../components/Error";
 import DatePickers from "react-native-date-picker";
 import Share from "react-native-share";
 import { requestAndroidPermission } from "../../../utils/tools";
-import { saveToDownloads, fetchContentType, extensionFromContentType } from "../../../utils/fileDownload";
+import { saveToDownloads, fetchContentType, extensionFromContentType, discardLocalCopy } from "../../../utils/fileDownload";
 import { log } from "../../../utils/logger";
 import { notifyDownloadComplete } from "../../../utils/documentNotification";
 
@@ -94,7 +94,11 @@ const EXChangaCardDownloadBill = React.memo((props: any) => {
       // iOS has no shared Downloads folder, so the share sheet ("Save to Files")
       // is the only way to put the bill somewhere the user can find it.
       if (Platform.OS === "ios") {
-        await sharePDF(saved.path, saved.mime);
+        try {
+          await sharePDF(saved.path, saved.mime);
+        } finally {
+          await discardLocalCopy(saved);
+        }
         return;
       }
 

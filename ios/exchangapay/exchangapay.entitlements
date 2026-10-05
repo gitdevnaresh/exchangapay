@@ -53,6 +53,10 @@
 
 		<key>com.apple.developer.default-data-protection</key>
 		<string>NSFileProtectionComplete</string>
+
+		M-06 tracks the same gap. Until then, downloaded statements and images
+		are protected one by one (FileManagerModule.protectFile: Complete
+		protection, excluded from backup) and deleted after the share sheet.
 	-->
 </dict>
 </plist>

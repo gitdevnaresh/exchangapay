@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+import { NativeModules, Platform } from "react-native";
 import BlobUtil from "react-native-blob-util";
 import { log } from "./logger";
 
@@ -124,9 +124,12 @@ export const saveToDownloads = async (
   const fileName = `${sanitizeFileName(baseName)}.${ext}`;
   const resolvedMime = mime ?? mimeForExtension(ext);
 
+  // An explicit path keeps the real name. With only `fileCache`, blob-util names
+  // the file ReactNativeBlobUtilTmp_<random>, which is what the iOS share sheet
+  // (and the Android fallback) would then show the user.
   const response = await BlobUtil.config({
     fileCache: true,
-    appendExt: ext,
+    path: `${BlobUtil.fs.dirs.CacheDir}/${fileName}`,
   }).fetch("GET", url, headers);
 
   const cachedPath = response.path();
@@ -140,12 +143,45 @@ export const saveToDownloads = async (
   return publishToDownloads(cachedPath, fileName, resolvedMime);
 };
 
+/**
+ * iOS keeps the download under Caches/, which, while the Data Protection
+ * entitlement is off, is readable once the device has been unlocked after
+ * boot (M-06). Lock the file down before anyone can share it;
+ * if that fails, delete it rather than leave a statement unprotected.
+ */
+const protectLocalCopy = async (path: string): Promise<void> => {
+  const protectFile = NativeModules.FileManagerModule?.protectFile;
+  // A binary built before protectFile existed: keep the old behaviour rather
+  // than break every download.
+  if (typeof protectFile !== "function") {
+    log.error("FileManagerModule.protectFile is unavailable; rebuild the app");
+    return;
+  }
+  try {
+    await protectFile(path);
+  } catch (error) {
+    log.error("Could not protect downloaded file", error);
+    await BlobUtil.fs.unlink(path).catch(() => {});
+    throw new Error("Could not secure the downloaded file.");
+  }
+};
+
+/**
+ * Delete the iOS working copy once the share sheet has handed it off. Nothing
+ * else reads it, and leaving it would pile statements up in Documents/.
+ */
+export const discardLocalCopy = async (saved: SavedFile): Promise<void> => {
+  if (Platform.OS !== "ios") return;
+  await BlobUtil.fs.unlink(saved.path).catch(() => {});
+};
+
 const publishToDownloads = async (
   cachedPath: string,
   fileName: string,
   mime: string
 ): Promise<SavedFile> => {
   if (Platform.OS !== "android") {
+    await protectLocalCopy(cachedPath);
     return { fileName, path: cachedPath, mime, savedToDownloads: false };
   }
 
