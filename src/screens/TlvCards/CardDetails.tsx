@@ -67,6 +67,13 @@ const CardDetails = React.memo((props: any) => {
     setIsDetailsRevealed(false);
   }, [spin]);
 
+  // L-01: closing the PIN sheet also drops the PIN payload, so it is not kept
+  // in state after the sheet is gone.
+  const hidePin = useCallback(() => {
+    setShowPin(false);
+    setShowPinDetails({});
+  }, []);
+
   useEffect(() => {
     if (isFocused) {
       fetchMyCardDetails();
@@ -74,8 +81,9 @@ const CardDetails = React.memo((props: any) => {
       // The screen stays mounted while another one is pushed over it, so a card
       // left revealed would still be revealed on return. Re-lock instead.
       lockCardDetails();
+      hidePin();
     }
-  }, [isFocused, lockCardDetails]);
+  }, [isFocused, lockCardDetails, hidePin]);
 
   // H-04: re-lock when the app leaves the foreground (Home, app switcher,
   // incoming call), so the card is not face-up when the app is reopened.
@@ -83,10 +91,11 @@ const CardDetails = React.memo((props: any) => {
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState !== "active") {
         lockCardDetails();
+        hidePin();
       }
     });
     return () => subscription.remove();
-  }, [lockCardDetails]);
+  }, [lockCardDetails, hidePin]);
 
   // H-04: a revealed card hides itself again after 30 seconds.
   useEffect(() => {
@@ -94,6 +103,13 @@ const CardDetails = React.memo((props: any) => {
     const timer = setTimeout(lockCardDetails, CARD_REVEAL_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [isDetailsRevealed, lockCardDetails]);
+
+  // L-01: the PIN sheet closes itself after the same 30 seconds.
+  useEffect(() => {
+    if (!isShowPin) return;
+    const timer = setTimeout(hidePin, CARD_REVEAL_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isShowPin, hidePin]);
 
   const fetchMyCardDetails = async () => {
     const cardId = props?.route?.params?.cardId;
@@ -789,8 +805,8 @@ const CardDetails = React.memo((props: any) => {
         </Container>
       </ScrollView>
       {infoModelVisible && <CradDetailsInfo updatemodelvisible={() => { setInfoModelVisible(false) }} productId={myCardsData?.productId} />}
-      {(isShowPin && showPinDetails?.isQR) && <ChiperCardPin cardId={props?.route?.params?.cardId} close={() => setShowPin(false)} showPinDetails={showPinDetails} />}
-      {(isShowPin && showPinDetails?.isQR === false) && <CardPin cardId={props?.route?.params?.cardId} close={() => setShowPin(false)} showPinDetails={showPinDetails} />}
+      {(isShowPin && showPinDetails?.isQR) && <ChiperCardPin cardId={props?.route?.params?.cardId} close={hidePin} showPinDetails={showPinDetails} />}
+      {(isShowPin && showPinDetails?.isQR === false) && <CardPin cardId={props?.route?.params?.cardId} close={hidePin} showPinDetails={showPinDetails} />}
       {((userInfo?.accountStatus === "Inactive") && isPressed) && <AccountDeactivatePopup isVisible={((userInfo?.accountStatus === "Inactive") && isPressed)} handleClose={handleCloseMFAPopUp} />}
 
     </SafeAreaView >
