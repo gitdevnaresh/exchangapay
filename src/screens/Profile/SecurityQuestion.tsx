@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView,BackHandler } from "react-native";
+import { StyleSheet, TouchableOpacity, View, SafeAreaView,BackHandler } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useIsFocused } from "@react-navigation/core";
 import { Container } from '../../components';
 import { ms, s } from "../../constants/theme/scale";
@@ -151,7 +152,13 @@ const SecurityQuestion = (props: any) => {
     return (
 
         <SafeAreaView style={[commonStyles.screenBg, commonStyles.flex1]}>
-            <ScrollView>
+            <KeyboardAwareScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                // Android resizes the window for the keyboard (adjustResize); padding it here as well would leave a keyboard-sized gap
+                enableOnAndroid={false}
+                enableAutomaticScroll={true}
+            >
                 <Container style={commonStyles.container}>
 
                     <View style={[commonStyles.dflex, commonStyles.mb32, commonStyles.alignCenter, commonStyles.gap10]}>
@@ -322,7 +329,7 @@ const SecurityQuestion = (props: any) => {
                     </View>}
 
                 </Container>
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
 
     );
