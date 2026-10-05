@@ -1,23 +1,3 @@
-/**
- * Support chat — Kommo (amojo) client.
- *
- * The chat flow is unchanged: connect the channel, create the chat, send a
- * message, pull history — same four methods, same arguments, same return
- * shapes as before.
- *
- * What moved is the signing. This file used to hold the channel's HMAC-SHA1
- * secret and build the `Date` / `Content-MD5` / `X-Signature` triple in JS,
- * which meant the secret shipped inside the bundle — unzip an APK or IPA and
- * you can sign any amojo call for our channel, read any customer's support
- * history or post as any customer. The secret now lives only in the
- * backend's secret store.
- *
- * The HTTP calls themselves are in ../screens/Chatbot/chatbotService.js. What
- * stays here is the client the screen talks to: scope handling, payload shaping
- * and the result envelopes the screen already expects.
- *
- * Backend contract: docs/SEC-02_KOMMO_CHAT_BACKEND_PROXY.md
- */
 
 import ChatbotService from '../screens/Chatbot/chatbotService';
 

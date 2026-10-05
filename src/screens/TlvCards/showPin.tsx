@@ -123,13 +123,7 @@ export const ChiperCardPin = React.memo((props: any) => {
 
                     <View style={[commonStyles.alignCenter, commonStyles.justifyContent]}>
                         <View style={{ width: '100%', height: "65%", marginTop: 8 }}>
-                            {/*
-                              * H-03: getPin.description is HTML from the card API,
-                              * rendered in the same document as the PIN. It is
-                              * sanitised, wrapped in a `default-src 'none'` CSP,
-                              * and shown with scripting and navigation off — see
-                              * src/security/cardHtmlPolicy.ts.
-                              */}
+
                             <WebView
                                 {...CARD_HTML_WEBVIEW_PROPS}
                                 source={{ html: pinDocument, baseUrl: '' }}

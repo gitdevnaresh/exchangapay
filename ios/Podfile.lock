@@ -131,36 +131,6 @@ PODS:
   - IdensicMobileSDK/Default (1.45.1):
     - IdensicMobileSDK/Core
   - JWTDecode (3.3.0)
-  - lottie-ios (4.6.0)
-  - lottie-react-native (7.3.8):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - lottie-ios (= 4.6.0)
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -2409,10 +2379,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-signature-capture (0.4.12):
-    - React
-  - react-native-version-check (3.5.0):
-    - React-Core
   - react-native-webview (13.17.0):
     - boost
     - DoubleConversion
@@ -3297,8 +3263,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNReactNativeHapticFeedback (1.14.0):
-    - React-Core
   - RNReanimated (4.5.3):
     - boost
     - DoubleConversion
@@ -3738,7 +3702,6 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - IdensicMobileSDK (= 1.45.1)
-  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -3790,8 +3753,6 @@ DEPENDENCIES:
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - react-native-signature-capture (from `../node_modules/react-native-signature-capture`)
-  - react-native-version-check (from `../node_modules/react-native-version-check`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
@@ -3840,7 +3801,6 @@ DEPENDENCIES:
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
-  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
@@ -3870,7 +3830,6 @@ SPEC REPOS:
     - GoogleDataTransport
     - GoogleUtilities
     - JWTDecode
-    - lottie-ios
     - nanopb
     - OpenSSL-Universal
     - PromisesObjC
@@ -3904,8 +3863,6 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v0.14.1
-  lottie-react-native:
-    :path: "../node_modules/lottie-react-native"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
   QuickCrypto:
@@ -4006,10 +3963,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-render-html"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-signature-capture:
-    :path: "../node_modules/react-native-signature-capture"
-  react-native-version-check:
-    :path: "../node_modules/react-native-version-check"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -4106,8 +4059,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@notifee/react-native"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
-  RNReactNativeHapticFeedback:
-    :path: "../node_modules/react-native-haptic-feedback"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -4156,8 +4107,6 @@ SPEC CHECKSUMS:
   hermes-engine: 22348a39b7fc110a0833e6b7b48294344d20e0ac
   IdensicMobileSDK: b32caa39919bd9d0ad64897b2a17de81e16f23fd
   JWTDecode: 1ca6f765844457d0dd8690436860fecee788f631
-  lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
-  lottie-react-native: 7696ee54db539844f215c7e1f37372ae3138f37d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroModules: d52aaa5db99af2be4c2b171460e3a7541d78fe4d
   OpenSSL-Universal: ecee7b138fa75a74ecf00d7ffd248fb584739b9e
@@ -4212,8 +4161,6 @@ SPEC CHECKSUMS:
   react-native-quick-base64: eca82f83cc5fd9e8615d50e789788877ff3f8401
   react-native-render-html: 5afc4751f1a98621b3009432ef84c47019dcb2bd
   react-native-safe-area-context: 7794f18549493f369e4ca4b3cd66843bd050ac66
-  react-native-signature-capture: 181e11f5559b4e4a6da893775e78b5d600f66d66
-  react-native-version-check: 842a3b0e7221798cbe8c6abaf24aab3ed0b485ce
   react-native-webview: fb55e85095e22e6cfb814a2b122b4860de91a620
   React-NativeModulesApple: 2a5867780e763d07b598c4413d524d257641ff81
   React-networking: 8af3f9e7f3fc1b0788a5e70801218be3b85f0b98
@@ -4262,7 +4209,6 @@ SPEC CHECKSUMS:
   RNKeychain: 76d042fc1dfba47f3945920bc82e0bce9ad1ff55
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNPermissions: b0fb41785cede9fcef7e86fd2461727bc95b8e78
-  RNReactNativeHapticFeedback: 8364333ca888b1b7ec9d2daf04b010ee5436366e
   RNReanimated: b5c110db1de41abbac5acb7138cab1ba84eb4b69
   RNScreens: 7a423c912ca9e107b37f54f32292186de32bfcaf
   RNSentry: 0fa2d78974fdc01ce786d0cb9eaad85193af8fd4

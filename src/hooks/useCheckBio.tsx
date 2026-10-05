@@ -53,10 +53,7 @@ const useChekBio = () => {
     };
 
     const checkBio = async () => {
-        // Read from the security endpoint, not from `userInfo`. The previous
-        // `userInfo.isFaceRecognition` matched no field the API returns, so this
-        // branch was taken unconditionally and the prompt never ran — see the
-        // header of security/appLock.ts.
+
         if (!(await isAppLockEnabled())) {
             // The user has not switched the lock on. Nothing to enforce.
             goToDashboard();

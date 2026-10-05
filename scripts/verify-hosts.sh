@@ -58,7 +58,7 @@ if [ "$failures" -gt 0 ]; then
   echo "$failures host(s) unreachable."
   echo "A host in .env* or src/ that does not resolve means every feature routed"
   echo "through it is dead, and the user sees a spinner. Fix the config or delete the"
-  echo "routes — see security/legacy-endpoint-audit.md for the last full survey."
+  echo "routes. security/pinning-policy.json (lastVerified) records the last survey."
   exit 1
 fi
 
