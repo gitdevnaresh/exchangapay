@@ -1,6 +1,5 @@
 import React, { FC, useState, useEffect, useRef } from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import Tooltip from 'react-native-walkthrough-tooltip';
 import { NEW_COLOR } from '../constants/theme/variables';
 import Feather from "react-native-vector-icons/Feather";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -27,10 +26,6 @@ const CopyCard: FC<Props> = ({ onPress, contentShow = true, iconShow = false }) 
     return () => clearTimeout(clearTimer.current);
   }, [toolTipVisible]);
 
-  const handleToolTip = () => {
-    setToolTipVisible(false)
-  };
-
   const handleShowContent = () => {
     onPress();
     setToolTipVisible(true);
@@ -40,16 +35,14 @@ const CopyCard: FC<Props> = ({ onPress, contentShow = true, iconShow = false }) 
   return (
     <>
       <View style={{ position: "relative" }}>
-        <Tooltip
-          tooltipStyle={{}}
-          backgroundColor='transparent'
-          isVisible={toolTipVisible}
-          contentStyle={{ backgroundColor: NEW_COLOR.SECTION_BG, position: "absolute", top: 100 }}
-          onClose={handleToolTip}
-          content={<View><ParagraphComponent text='Copied' style={{ color: NEW_COLOR.TEXT_ALWAYS_WHITE }} /></View>}
-        >
-
-        </Tooltip>
+        {/* Drawn in place rather than through react-native-walkthrough-tooltip:
+            that opens a Modal, a separate Android window, and the system shades
+            the navigation bar for as long as it is up. */}
+        {toolTipVisible && (
+          <View pointerEvents="none" style={styles.copiedBubble}>
+            <ParagraphComponent text='Copied' style={{ color: NEW_COLOR.TEXT_ALWAYS_WHITE }} />
+          </View>
+        )}
         <TouchableOpacity onPress={handleShowContent}
         >
           {contentShow && <View style={[styles.ml8, styles.copyBtn, { backgroundColor: toolTipVisible ? NEW_COLOR.BG_GREEN : NEW_COLOR.BG_ORANGE, }]}>
@@ -80,6 +73,7 @@ const CopyCard: FC<Props> = ({ onPress, contentShow = true, iconShow = false }) 
 export default CopyCard;
 
 const styles = StyleSheet.create({
+  copiedBubble: { position: 'absolute', bottom: '100%', alignSelf: 'center', marginBottom: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: NEW_COLOR.SECTION_BG, zIndex: 10, elevation: 10 },
   copyBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100, minWidth: 90, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: s(10) },
   ml8: {
     marginLeft: 8,
