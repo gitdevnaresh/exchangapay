@@ -40,6 +40,9 @@ apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 // com.exchanga is the live Play Store applicationId (Exchanga Pay).
 ext.PRODUCTION_APPLICATION_IDS = ["com.exchanga"] as Set
 ext.NON_PRODUCTION_FIREBASE_PROJECTS = ["exchangapay-tst-f570a"] as Set
+// Any project id containing one of these markers is treated as non-production
+// too (M-12), so a future dev/staging project is caught without editing the list.
+ext.NON_PRODUCTION_FIREBASE_PATTERN = ~/(^|[-_.])(tst|test|dev|stg|stage|staging|uat|qa|sandbox|demo)([-_.0-9]|$)/
 
 ext.resolveGoogleServicesFile = { String buildType ->
     // Mirrors the plugin's search order for the source sets this project uses.
@@ -61,8 +64,14 @@ tasks.register("verifyFirebaseProjectForRelease") {
                 "[H-15] Production release '${appId}' has no google-services.json.\n" +
                 "Add the production project's file at android/app/src/release/google-services.json.")
         }
-        def projectId = new groovy.json.JsonSlurper().parse(configFile).project_info.project_id
-        if (NON_PRODUCTION_FIREBASE_PROJECTS.contains(projectId)) {
+        def config = new groovy.json.JsonSlurper().parse(configFile)
+        def projectId = config.project_info?.project_id?.toString()
+        if (!projectId) {
+            throw new GradleException(
+                "[M-12] ${configFile} has no project_info.project_id; cannot verify which " +
+                "Firebase project production '${appId}' reports to.")
+        }
+        if (NON_PRODUCTION_FIREBASE_PROJECTS.contains(projectId) || projectId =~ NON_PRODUCTION_FIREBASE_PATTERN) {
             throw new GradleException(
                 "[H-15] Refusing to build production '${appId}' against Firebase project " +
                 "'${projectId}', which is a TEST project.\n" +
@@ -75,7 +84,9 @@ tasks.register("verifyFirebaseProjectForRelease") {
 }
 
 afterEvaluate {
-    tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+    // Hook the task that bakes google-services.json into the APK/AAB, so every
+    // release path (assemble, bundle, install, package) is covered, not just two.
+    tasks.matching { it.name ==~ /(?i)process.*ReleaseGoogleServices/ || it.name == "assembleRelease" || it.name == "bundleRelease" }
          .configureEach { dependsOn "verifyFirebaseProjectForRelease" }
 }
 

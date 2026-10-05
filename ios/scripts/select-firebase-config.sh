@@ -38,6 +38,9 @@ BUNDLED_PLIST="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Google
 PRODUCTION_BUNDLE_IDS=("com.exchangapay.app")
 # Firebase projects that must never back a production build.
 NON_PRODUCTION_PROJECTS=("exchangapay-tst-f570a")
+# Any project id containing one of these markers is treated as non-production
+# too (M-12), so a future dev/staging project is caught without editing the list.
+NON_PRODUCTION_PATTERN='(^|[-_.])(tst|test|dev|stg|stage|staging|uat|qa|sandbox|demo)([-_.0-9]|$)'
 
 # --- 1. select -------------------------------------------------------------
 
@@ -78,5 +81,25 @@ for bad in "${NON_PRODUCTION_PROJECTS[@]}"; do
     exit 1
   fi
 done
+
+if [[ -z "${PROJECT_ID}" ]]; then
+  echo "error: [M-12] ${SELECTED} has no PROJECT_ID; cannot verify which Firebase project production '${BUNDLE_ID}' reports to." >&2
+  exit 1
+fi
+
+if [[ "${PROJECT_ID}" =~ ${NON_PRODUCTION_PATTERN} ]]; then
+  echo "error: [M-12] Firebase project '${PROJECT_ID}' looks non-production (matches ${NON_PRODUCTION_PATTERN}); refusing to build production '${BUNDLE_ID}' against it." >&2
+  echo "error: Add the production plist at ios/firebase/GoogleService-Info-${CONFIGURATION}.plist" >&2
+  exit 1
+fi
+
+# The Firebase iOS SDK only logs a warning when the plist was registered for a
+# different app, so check it here: a mismatch means the plist belongs to some
+# other app in some other project.
+PLIST_BUNDLE_ID="$(${PLIST_BUDDY} -c 'Print :BUNDLE_ID' "${SELECTED}" 2>/dev/null || echo '')"
+if [[ "${PLIST_BUNDLE_ID}" != "${BUNDLE_ID}" ]]; then
+  echo "error: [M-12] ${SELECTED} is registered for '${PLIST_BUNDLE_ID}', not '${BUNDLE_ID}'. Download the plist for the production iOS app." >&2
+  exit 1
+fi
 
 echo "note: [H-15] Release Firebase project '${PROJECT_ID}' OK for '${BUNDLE_ID}'."
