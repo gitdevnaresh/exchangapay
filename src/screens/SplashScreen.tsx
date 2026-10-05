@@ -265,6 +265,9 @@ const SplashScreen = React.memo(() => {
     setShow(true);
   };
 
+  // Login / Sign up are only usable once startup checks finish and no session exists.
+  const showAuthActions = !(memberLoader || loading) && !persistedLoginState;
+
   return (
     <Container style={styles.container}>
       <ImageBackground
@@ -300,12 +303,10 @@ const SplashScreen = React.memo(() => {
                 />
 
                 <View
-                  style={{
-                    opacity:
-                      !(memberLoader || loading) && !persistedLoginState
-                        ? 1
-                        : 0,
-                  }}
+                  // Hidden by opacity so the layout does not shift; stop it
+                  // taking taps while it is invisible.
+                  pointerEvents={showAuthActions ? "auto" : "none"}
+                  style={{ opacity: showAuthActions ? 1 : 0 }}
                 >
                   <DefaultButton
                     title={"Login"}

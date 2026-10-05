@@ -152,5 +152,14 @@
            Auth0 Dashboard work first; see security/oauth-callback.md. A release build
            fails if an OAuth filter is added back to this file. -->
     </activity>
+    <!-- Auth0 opens this invisible activity (in its own task) between the Login/Sign up
+         tap and the Chrome login page. Its stock theme, the pre-Material
+         Theme.Translucent.NoTitleBar, does not draw its own system bar backgrounds, so the
+         system gives it an opaque black status bar and animates it in: a black band that
+         slides up the splash screen. See Auth0AuthenticationTheme. -->
+    <activity
+      android:name="com.auth0.android.provider.AuthenticationActivity"
+      android:theme="@style/Auth0AuthenticationTheme"
+      tools:replace="android:theme" />
   </application>
 </manifest>
