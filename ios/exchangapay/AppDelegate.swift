@@ -3,6 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
+import DeviceSecurity
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -19,10 +20,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     // Block debugger attach in Release builds (Debug is skipped so Xcode still works).
+    // A direct call, not a class lookup by name: if the module is ever missing
+    // the build fails instead of the protection silently switching off.
     #if !DEBUG
-    if let deviceSecurity = NSClassFromString("DeviceSecurityModule") as? NSObject.Type {
-      _ = deviceSecurity.perform(NSSelectorFromString("enableAntiDebug"))
-    }
+    DeviceSecurityModule.enableAntiDebug()
     #endif
 
     FirebaseApp.configure()

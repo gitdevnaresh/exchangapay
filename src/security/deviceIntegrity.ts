@@ -54,6 +54,7 @@ export type IntegritySignal =
   | "JAILBREAK_PATH"
   | "SANDBOX_ESCAPE"
   | "HOOK_FRAMEWORK"
+  | "INSECURE_SYSTEM"
   | "DEBUGGER_ATTACHED"
   | "EMULATOR"
   | "NO_SCREEN_LOCK"
@@ -85,6 +86,7 @@ const CRITICAL_SIGNALS: IntegritySignal[] = [
   "JAILBREAK_PATH",
   "SANDBOX_ESCAPE",
   "HOOK_FRAMEWORK",
+  "INSECURE_SYSTEM",
   "DEBUGGER_ATTACHED",
   "DEVELOPER_OPTIONS",
   "ADB_ENABLED",
@@ -208,6 +210,10 @@ const NATIVE_REASON_SIGNALS: Record<string, IntegritySignal> = {
   native_frida_thread: "HOOK_FRAMEWORK",
   native_frida_port: "HOOK_FRAMEWORK",
   native_bootloader_unlocked: "BOOTLOADER_UNLOCKED",
+  // ro.debuggable/ro.secure or permissive SELinux. Stock emulator images trip
+  // these, so it is kept out of NON_PROD_EMULATOR_SIGNALS.
+  native_insecure_build: "INSECURE_SYSTEM",
+  native_selinux_permissive: "INSECURE_SYSTEM",
 };
 
 /** Calls one native probe. A missing module or a fault yields no reasons. */

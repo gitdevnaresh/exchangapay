@@ -84,6 +84,8 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             if (mountsHaveRootArtifacts()) reasons.pushString("native_root_mount")
             if (hasFridaThread()) reasons.pushString("native_frida_thread")
             if (isFridaPortOpen()) reasons.pushString("native_frida_port")
+            if (isInsecureSystemBuild()) reasons.pushString("native_insecure_build")
+            if (isSelinuxPermissive()) reasons.pushString("native_selinux_permissive")
         } catch (_: Throwable) {
             // Report whatever was collected before the fault.
         }
@@ -164,6 +166,35 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             false
         }
 
+    // Retail builds ship ro.debuggable=0 and ro.secure=1. Anything else is an
+    // eng/userdebug ROM or a property patched by a root module (e.g. MagiskHide
+    // Props / resetprop), either of which lets any process be debugged.
+    private fun isInsecureSystemBuild(): Boolean =
+        systemProperty("ro.debuggable") == "1" || systemProperty("ro.secure") == "0"
+
+    // A permissive SELinux policy turns off the sandbox that keeps other
+    // processes out of this app's data. Newer Android hides both sources from
+    // apps; an unreadable value is no signal, never a false positive.
+    private fun isSelinuxPermissive(): Boolean {
+        val enforce = try {
+            File("/sys/fs/selinux/enforce").readText().trim()
+        } catch (_: Throwable) {
+            ""
+        }
+        return enforce == "0" || systemProperty("ro.boot.selinux") == "permissive"
+    }
+
+    // android.os.SystemProperties is hidden API, but `get` is on the SDK
+    // allow-list. Empty string means unset or unreadable.
+    private fun systemProperty(key: String): String =
+        try {
+            Class.forName("android.os.SystemProperties")
+                .getMethod("get", String::class.java)
+                .invoke(null, key) as? String ?: ""
+        } catch (_: Throwable) {
+            ""
+        }
+
     // Frida's agent keeps its thread names even when the gadget library
     // is renamed, so a renamed gadget is still visible here.
     private fun hasFridaThread(): Boolean =
@@ -233,6 +264,10 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             "/data/local/tmp/frida-server",
             "/data/local/tmp/re.frida.server",
             "/data/local/tmp/frida-gadget",
+            // Renamed builds that strip "frida" from their names.
+            "/data/local/tmp/florida",
+            "/data/local/tmp/hluda-server",
+            "/data/local/tmp/hluda",
             "/system/lib/libfrida-gadget.so",
             "/system/lib64/libfrida-gadget.so",
             "/sbin/.magisk/modules/riru_lsposed",
@@ -247,6 +282,9 @@ class DeviceSecurityModule(private val reactContext: ReactApplicationContext) :
             "frida-gadget",
             "gum-js-loop",
             "linjector",
+            // Renamed Frida builds ("florida", "hluda") strip the "frida" string.
+            "florida",
+            "hluda",
             "libsubstrate",
             "xposed",
             // Zygisk / LSPosed / Riru / Shamiko modules mapped into the app.

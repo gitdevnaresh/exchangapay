@@ -82,7 +82,60 @@ static NSArray<NSString *> *SuspiciousDylibTokens(void) {
     @"ellekit",
     @"systemhook",
     @"rootlesshooks",
+    @"libinjector",
   ];
+}
+
+// stat/lstat issued as raw syscalls (SYS_stat64 = 338, SYS_lstat64 = 340).
+// NSFileManager, fopen and the libc stat wrappers are all symbols a tweak can
+// hook to answer "no such file"; a raw svc never goes through them. Darwin
+// reports a failed syscall by setting the carry flag, so success is
+// "carry clear and x0 == 0".
+static BOOL RawPathExists(const char *path, BOOL followLinks)
+{
+#if defined(__arm64__) && !TARGET_OS_SIMULATOR
+  struct stat info;
+  long result;
+  long failed;
+  long number = followLinks ? 338 : 340;
+  __asm__ volatile("mov x0, %[path]\n"
+                   "mov x1, %[info]\n"
+                   "mov x16, %[number]\n"
+                   "svc #0x80\n"
+                   "cset %[failed], cs\n"
+                   "mov %[result], x0\n"
+                   : [result] "=&r"(result), [failed] "=&r"(failed)
+                   : [path] "r"(path), [info] "r"(&info), [number] "r"(number)
+                   : "x0", "x1", "x16", "memory", "cc");
+  return failed == 0 && result == 0;
+#else
+  (void)path;
+  (void)followLinks;
+  return NO;
+#endif
+}
+
+// Rootless jailbreaks keep their real root at /private/preboot/<hash>/jb-<id>
+// (Dopamine, palera1n) or /var/containers/Bundle/Application/.jbroot-<id>
+// (roothide), with random names, so they are found by listing the parent.
+// The sandbox normally refuses these listings; a refusal is no signal.
+static BOOL HasRandomizedJailbreakRoot(void)
+{
+  NSFileManager *fm = [NSFileManager defaultManager];
+  for (NSString *entry in [fm contentsOfDirectoryAtPath:@"/var/containers/Bundle/Application" error:nil]) {
+    if ([entry hasPrefix:@".jbroot-"]) {
+      return YES;
+    }
+  }
+  for (NSString *hash in [fm contentsOfDirectoryAtPath:@"/private/preboot" error:nil]) {
+    NSString *dir = [@"/private/preboot" stringByAppendingPathComponent:hash];
+    for (NSString *entry in [fm contentsOfDirectoryAtPath:dir error:nil]) {
+      if ([entry hasPrefix:@"jb-"] || [entry isEqualToString:@"procursus"]) {
+        return YES;
+      }
+    }
+  }
+  return NO;
 }
 
 @implementation DeviceSecurityModule
@@ -156,7 +209,7 @@ RCT_EXPORT_METHOD(getJailbreakStatus:(RCTPromiseResolveBlock)resolve
 {
   NSFileManager *fm = [NSFileManager defaultManager];
   for (NSString *path in JailbreakPaths()) {
-    if ([fm fileExistsAtPath:path]) {
+    if (RawPathExists(path.fileSystemRepresentation, YES) || [fm fileExistsAtPath:path]) {
       return YES;
     }
     // fopen catches some files that fileExistsAtPath misses.
@@ -168,11 +221,13 @@ RCT_EXPORT_METHOD(getJailbreakStatus:(RCTPromiseResolveBlock)resolve
   }
   for (NSString *path in RootlessJailbreakPaths()) {
     struct stat info;
-    if (lstat(path.fileSystemRepresentation, &info) == 0 || [fm fileExistsAtPath:path]) {
+    if (RawPathExists(path.fileSystemRepresentation, NO) ||
+        lstat(path.fileSystemRepresentation, &info) == 0 ||
+        [fm fileExistsAtPath:path]) {
       return YES;
     }
   }
-  return NO;
+  return HasRandomizedJailbreakRoot();
 }
 
 // A write outside the app container only succeeds if the sandbox is broken.
