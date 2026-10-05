@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView, Switch, BackHandler } from "react-native";
+import { StyleSheet, TouchableOpacity, View, ScrollView, SafeAreaView,BackHandler } from "react-native";
 import { useIsFocused } from "@react-navigation/core";
 import { Container } from '../../components';
 import { ms, s } from "../../constants/theme/scale";
@@ -18,9 +18,11 @@ import ProfileService from "../../services/profile";
 import Loadding from "../../components/skeleton";
 import { securityCEnterVerify } from "./skeleton_views";
 import { commonStyles } from "../../components/CommonStyles";
+import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 
 const SecurityQuestion = (props: any) => {
     const nameRef = useRef();
+    const { encryptAES } = useEncryptDecrypt();
     const isFocused = useIsFocused();
     const securityVerifySk = securityCEnterVerify(1);
     const [errormsg, setErrormsg] = useState<string>('');
@@ -65,13 +67,13 @@ const SecurityQuestion = (props: any) => {
         let obj = [...questiionsInfo];
         if (obj.length > 0) {
             obj[0].question = values.question1;
-            obj[0].answer = values.answer;
+            obj[0].answer = encryptAES(values.answer);
             obj[1].question = values.question2;
-            obj[1].answer = values.answer2;
+            obj[1].answer = encryptAES(values.answer2);
             obj[2].question = values.question3;
-            obj[2].answer = values.answer3;
+            obj[2].answer = encryptAES(values.answer3);
         } else {
-            obj = [{ question: values.question1, answer: values.answer }, { question: values.question2, answer: values.answer2 }, { question: values.question3, answer: values.answer3 }]
+            obj = [{ question: values.question1, answer: encryptAES(values.answer) }, { question: values.question2, answer: encryptAES(values.answer2) }, { question: values.question3, answer: encryptAES(values.answer3) }]
         }
         let verifedRes;
         try {
