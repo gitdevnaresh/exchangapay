@@ -22,7 +22,7 @@ import useEncryptDecrypt from "../../hooks/useEncryption_Decryption";
 
 const SecurityQuestion = (props: any) => {
     const nameRef = useRef();
-    const { encryptAES } = useEncryptDecrypt();
+    const { encryptAES, decryptSensitive } = useEncryptDecrypt();
     const isFocused = useIsFocused();
     const securityVerifySk = securityCEnterVerify(1);
     const [errormsg, setErrormsg] = useState<string>('');
@@ -109,13 +109,19 @@ const SecurityQuestion = (props: any) => {
         try {
             const response: any = await ProfileService.getSecurityQuestionsdata();
             if (response.data && response.data.length > 0) {
+                // Answers are stored encrypted (encryptAES on save), so decrypt them
+                // for the form. Uncached: these are secrets. A value that does not
+                // decrypt is left blank rather than shown raw, so saving the form
+                // can never re-encrypt ciphertext.
+                const decryptAnswer = (answer?: string) =>
+                    (answer && decryptSensitive(answer)) || "";
                 setInitValues({
                     question1: response.data[0]?.question || null,
-                    answer: response.data[0]?.answer || null,
+                    answer: decryptAnswer(response.data[0]?.answer),
                     question2: response.data[1]?.question || null,
-                    answer2: response.data[1]?.answer || null,
+                    answer2: decryptAnswer(response.data[1]?.answer),
                     question3: response.data[2]?.question || null,
-                    answer3: response.data[2]?.answer || null
+                    answer3: decryptAnswer(response.data[2]?.answer)
                 })
             }
             setquestiionsInfo(response.data)
