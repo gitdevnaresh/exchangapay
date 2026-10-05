@@ -179,6 +179,26 @@ yarn.lock
 # Bin directory (CocoaPods binaries)
 bin/
 
+# Signing material — ignored ANYWHERE in the repo, not just android/app (L-21).
+# Keystores, certificates with private keys, provisioning profiles and API
+# signing keys must never be committed; keep them in the CI secret store or a
+# local path outside the repo. To share a public certificate on purpose, add a
+# specific !negation for that one file.
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.p8
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+*.certSigningRequest
+keystore.properties
+key.properties
+signing.properties
+ios/firebase/
+
 # Android - Comprehensive gradle and build files
 android/app/build/
 android/build/
