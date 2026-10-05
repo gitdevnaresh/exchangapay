@@ -88,8 +88,8 @@ export interface KycAddressProps {
 }
 const emailRegex = /^[\w-]+(?:\.[\w-]+)*@(?:[\w-]+\.)*\w[\w-]{0,66}\.[a-z]{2,200}(?:\.[a-z]{2})?$/;
 const ONLY_NUMBERS_REGEX = /^\d+$/;
-const HTML_REGEX = /<[^>]*>?/g;
-const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FAB0}-\u{1FAB6}\u{1FAC0}-\u{1FAC2}\u{1FAD0}\u{200D}\u{2640}\u{200D}\u{2642}]/gu;
+const HTML_REGEX = /<[^>]*>?/;
+const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FAB0}-\u{1FAB6}\u{1FAC0}-\u{1FAC2}\u{1FAD0}\u{200D}\u{2640}\u{200D}\u{2642}]/u;
 const SPACE_NUMBERS_REGEX = /^(?=.*\S).+$/;
 // City / state: must contain at least one letter; numbers and special characters are fine alongside it.
 const PLACE_NAME_REGEX = /[A-Za-zÀ-ÖØ-öø-ÿ]/;
@@ -291,13 +291,37 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
                 if (!value) return true;
                 return SPACE_NUMBERS_REGEX.test(value);
             }),
-        town: Yup.string().required('Is required'),
+        town: Yup.string().required('Is required')
+            .test('no-emojis', 'Town cannot contain emojis.', value => {
+                if (!value) return true;
+                return !EMOJI_REGEX.test(value);
+            })
+            .test('no-html', 'Town cannot contain HTML tags.', value => {
+                if (!value) return true;
+                return !HTML_REGEX.test(value);
+            }),
     },
     emergencycontact: {
         emergencyContactName: Yup.string().required('Is required')
+            .test('no-emojis', 'Emergency contact name cannot contain emojis.', value => {
+                if (!value) return true;
+                return !EMOJI_REGEX.test(value);
+            })
+            .test('no-html', 'Emergency contact name cannot contain HTML tags.', value => {
+                if (!value) return true;
+                return !HTML_REGEX.test(value);
+            })
     },
     address: {
         addressLine1: Yup.string().required('Is required')
+            .test('no-emojis', 'Address Line1 cannot contain emojis.', value => {
+                if (!value) return true;
+                return !EMOJI_REGEX.test(value);
+            })
+            .test('no-html', 'Address Line1 cannot contain HTML tags.', value => {
+                if (!value) return true;
+                return !HTML_REGEX.test(value);
+            })
     },
     financialprofile: {
         occupation: Yup.string()
