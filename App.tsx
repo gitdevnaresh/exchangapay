@@ -46,6 +46,7 @@ import {
 import { cleanupLegacyTokenStorage } from "./src/utils/storage/storagePolicy";
 import ErrorBoundary from "./src/components/errorBoundary/ErrorBoundary";
 import DeviceSecurityGate from "./src/components/DeviceSecurityGate";
+import { clearExpiredClipboard } from "./src/utils/clipboard";
 
 import * as Sentry from "@sentry/react-native";
 
@@ -135,10 +136,13 @@ export default Sentry.wrap(function App() {
 
   // A device can be rooted between sessions, so a launch-time verdict goes stale.
   // Re-check on foreground; the result only ever reaches high-risk operations.
+ 
   useEffect(() => {
+    clearExpiredClipboard();
     const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
       if (nextState === "active") {
         refreshDeviceIntegrity();
+        clearExpiredClipboard();
       }
     });
     return () => subscription.remove();

@@ -118,12 +118,11 @@ const VerifyCode = React.memo((props: any) => {
   // It does not expire and cannot be rotated without re-enrolment, so a copy
   // that survives is permanent second-factor compromise (any foreground app can
   // read the clipboard on Android 10+, and iOS syncs it via Universal
-  // Clipboard). 30 s rather than the 60 s default: the shortest window that
-  // still lets a user paste into an authenticator app.
+  // Clipboard). Cleared after the same 30 s as every other copy.
   // L-06: copied flagged sensitive (Android) / local-only (iOS); see copySensitive.
   const copyToClipboard = async () => {
     const text = extractSecretFromOTPAuthURI(data);
-    const copied = await copySensitive(text, "Authenticator secret", 30_000);
+    const copied = await copySensitive(text, "Authenticator secret");
     if (!copied) {
       Alert.alert("Copy", "Failed to copy the setup key. Please scan the QR code instead.");
     }
