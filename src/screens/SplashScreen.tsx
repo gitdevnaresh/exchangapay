@@ -45,6 +45,9 @@ import {
   isDeviceCompromised,
   isEnforcementEnabled,
 } from "../security";
+
+const AUTHORIZE_OPTIONS = { ephemeralSession: true };
+
 const SplashScreen = React.memo(() => {
   const { authorize, getCredentials, clearCredentials } = useAuth0();
   const [loading, setLoading] = React.useState(false);
@@ -224,7 +227,7 @@ const SplashScreen = React.memo(() => {
         additionalParameters: { prompt: "login" },
       };
 
-      const credentials = await authorize(authConfig);
+      const credentials = await authorize(authConfig, AUTHORIZE_OPTIONS);
       if (credentials?.accessToken) {
         await storeLoginCredentials(credentials);
         await restoreUserSession(true);
@@ -248,7 +251,7 @@ const SplashScreen = React.memo(() => {
         scope: getOAuthValue("scope"),
         audience: getOAuthValue("audience"),
         additionalParameters: { screen_hint: "signup", prompt: "login" },
-      });
+      }, AUTHORIZE_OPTIONS);
       if (credentials?.accessToken) {
         await storeLoginCredentials(credentials);
         await restoreUserSession(true);

@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { useSelector } from "react-redux";
 import { useAuth0 } from "react-native-auth0";
 import { useNavigation, CommonActions } from "@react-navigation/native";
@@ -41,7 +42,7 @@ const attempt = async (label: string, work: () => Promise<unknown> | unknown) =>
 let logoutInFlight: Promise<void> | null = null;
 
 const useLogout = () => {
-    const { clearCredentials, revokeRefreshToken } = useAuth0();
+    const { clearCredentials, clearSession, revokeRefreshToken } = useAuth0();
     const navigation = useNavigation<any>();
     const { userInfo } = useSelector((state: any) => state.UserReducer);
 
@@ -79,10 +80,20 @@ const useLogout = () => {
             }
             await attempt("revokeRefreshToken", async () => {
                 const { status, value } = await readRefreshToken();
-                if (status === "ok" && value) {
+                if (status !== "ok" || !value) return;
+                try {
                     await withTimeout(revokeRefreshToken({ refreshToken: value }));
+                } catch {
+                    try {
+                        await withTimeout(revokeRefreshToken({ refreshToken: value }));
+                    } catch (error) {
+                        log.error("[logout] refresh token could not be revoked; it stays valid at Auth0 until it expires", error);
+                    }
                 }
             });
+            if (Platform.OS === "android") {
+                await attempt("auth0BrowserSession", () => clearSession());
+            }
         } finally {
             await attempt("auth0Credentials", clearCredentials);
             // Keychain, persisted state, caches, keys, cookies, and every Redux
