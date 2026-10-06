@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Modal,TouchableOpacity,Image,StyleSheet } from 'react-native';
-import Text from '../components/Text';
+import { View, Modal,TouchableOpacity,StyleSheet } from 'react-native';
 import { Picker } from './Picker';
-import { ms, s } from '../constants/theme/scale';
-import { text } from '../constants/theme/mixins';
+import { s } from '../constants/theme/scale';
 import { NEW_COLOR } from '../constants/theme/variables';
-import AntDesign from "react-native-vector-icons/AntDesign";
-import Icons from '../assets/icons';
 import ParagraphComponent from './Paragraph/Paragraph';
 import { commonStyles } from './CommonStyles';
-import { Arrowdown } from '../assets/svg';
 import Feather from "react-native-vector-icons/Feather";
 import { ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 interface ModalPickerProps {
    placeholder:any;
@@ -84,14 +80,19 @@ const ModalPicker = ({
         animationType="slide"
         style={{ flex: 1 }}
       >
-        <Picker
-          data={data}
-          changeModalVisible={changeModalVisibility}
-          setData={setData}
-          selected={selected}
-          customBind={customBind}
-          modalTitle={modalTitle}
-        />
+        {/* A Modal renders in its own native window on iOS, so it needs its own
+            provider or the SafeAreaView inside Picker gets zero insets and the
+            header slides under the status bar / notch. */}
+        <SafeAreaProvider>
+          <Picker
+            data={data}
+            changeModalVisible={changeModalVisibility}
+            setData={setData}
+            selected={selected}
+            customBind={customBind}
+            modalTitle={modalTitle}
+          />
+        </SafeAreaProvider>
       </Modal>
     </>
   );
