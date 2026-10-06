@@ -139,10 +139,12 @@ export default Sentry.wrap(function App() {
  
   useEffect(() => {
     clearExpiredClipboard();
+    fcmNotification.clearBadge();
     const subscription = AppState.addEventListener("change", (nextState: AppStateStatus) => {
       if (nextState === "active") {
         refreshDeviceIntegrity();
         clearExpiredClipboard();
+        fcmNotification.clearBadge();
       }
     });
     return () => subscription.remove();

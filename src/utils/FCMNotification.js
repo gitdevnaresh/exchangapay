@@ -101,7 +101,16 @@ class FCMNotification {
     return [onMessageUnsubscribe, onTokenRefreshUnsubscribe, onOpenedUnsubscribe];
   };
 
+  // iOS keeps the server-sent APNs `badge` count on the app icon until the app
+  // resets it, so without this the icon showed a stale count forever.
+  clearBadge = () => {
+    notifee.setBadgeCount(0).catch(err => {
+      log.error('[FCMService] clearBadge failed', err);
+    });
+  };
+
   unRegister = async () => {
+    this.clearBadge();
     // PushNotification.unregister() dropped the device registration so the
     // signed-out user stopped receiving pushes. Deleting the FCM token is the
     // equivalent, and it is what the server keys delivery on.
