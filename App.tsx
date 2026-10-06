@@ -150,9 +150,10 @@ export default Sentry.wrap(function App() {
 
   useEffect(() => {
     checkVersionUpdate();
-    fcmNotification.initiate(onNotificationAction);
+    const teardownFcm = fcmNotification.initiate(onNotificationAction, onFcmTokenRefresh);
     requestUserPermission();
     RNBootSplash.hide({ fade: true });
+    return teardownFcm;
   }, []);
 
   const requestUserPermission = async () => {
@@ -169,6 +170,15 @@ export default Sentry.wrap(function App() {
   };
 
   const onNotificationAction = (notificationData: any) => { };
+
+  // Only while signed in: a signed-out call has no customer to attach the
+  // token to, and the next login registers the current token anyway.
+  const onFcmTokenRefresh = (token: string) => {
+    if (!store?.getState()?.UserReducer?.login) return;
+    OnBoardingService.saveFcmToken(token).catch(() => {
+      log.warn("[FCM] could not register refreshed push token");
+    });
+  };
   useEffect(() => {
     checkAppVersion();
   }, [versionInfo]);

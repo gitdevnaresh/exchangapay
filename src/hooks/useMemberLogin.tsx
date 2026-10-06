@@ -14,6 +14,8 @@ import {
   setUserInfo,
 } from "../redux/Actions/UserActions";
 import crashlytics from "@react-native-firebase/crashlytics";
+import messaging from "@react-native-firebase/messaging";
+import { log } from "../utils/logger";
 import useChekBio from "./useCheckBio";
 import { KEYCHAIN_SERVICES, writeSecret } from "../utils/storage/keychainPolicy";
 
@@ -37,10 +39,17 @@ const useMemberLogin = () => {
     return route.name;
   });
 
+  // Splash reads the token asynchronously, so the one it passes can still be
+  // empty; ask Firebase directly rather than registering nothing. The server
+  // ignores a token it already has, so calling this on every launch is safe.
   const updateFcmToken = async (fcmToken?: any) => {
-    const response: any = await post(`/api/v1/Notification/SaveUserToken`, {
-      token: fcmToken,
-    });
+    try {
+      const token = fcmToken || (await messaging().getToken());
+      if (!token) return;
+      await post(`/api/v1/Notification/SaveUserToken`, { token });
+    } catch (error) {
+      log.warn("[FCM] could not register push token");
+    }
   };
   const loginLogData = async (data: any) => {
     const ip = await DeviceInfo.getIpAddress();
@@ -86,6 +95,10 @@ const useMemberLogin = () => {
         dispatch(isLogin(true));
         if (userInfo?.isNewLogin) {
           loginLogData(userLoginInfo.data);
+        }
+        // Restored sessions too: after an iOS reinstall the Keychain session
+        // survives but Firebase issues a new token the server has never seen.
+        if (userInfo?.isSplashScreen) {
           updateFcmToken(userInfo?.fcmTken);
         }
         if (userDetails?.role !== "Customer") {

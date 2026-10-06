@@ -19,7 +19,23 @@ class FCMNotification {
   // foreground handler cheap.
   createdChannels = new Set();
 
-  initiate = onNotificationAction => {
+  // Drops every listener a previous initiate() added. Kept on globalThis, not
+  // the instance: Fast Refresh re-evaluates this module and builds a new
+  // instance, but the old native listeners stay attached — each one then
+  // displayed its own copy of every push.
+  teardown = () => {
+    const unsubscribers = globalThis.__fcmListenerUnsubscribers || [];
+    unsubscribers.forEach(unsubscribe => {
+      try {
+        unsubscribe?.();
+      } catch (err) {}
+    });
+    globalThis.__fcmListenerUnsubscribers = [];
+  };
+
+  initiate = (onNotificationAction, onTokenRefresh) => {
+    this.teardown();
+    this.onTokenRefresh = onTokenRefresh;
     // Asks on iOS, and on Android 13+ maps to POST_NOTIFICATIONS. Without this
     // displayNotification is silently dropped, which is what
     // PushNotification.configure({ requestPermissions: true }) used to cover.
@@ -30,7 +46,7 @@ class FCMNotification {
     // A tap on a notification we displayed ourselves while the app was in the
     // foreground. Backgrounded/quit taps arrive through
     // messaging().onNotificationOpenedApp / getInitialNotification below.
-    this.foregroundEventUnsubscribe = notifee.onForegroundEvent(
+    const foregroundEventUnsubscribe = notifee.onForegroundEvent(
       ({ type, detail }) => {
         if (type === EventType.PRESS && detail.notification?.data) {
           onNotificationAction(detail.notification.data);
@@ -38,11 +54,23 @@ class FCMNotification {
       },
     );
 
-    this.registerServices(onNotificationAction);
+    globalThis.__fcmListenerUnsubscribers = [
+      foregroundEventUnsubscribe,
+      ...this.registerServices(onNotificationAction),
+    ];
+    return this.teardown;
   };
 
   registerServices = onNotificationAction => {
-    this.fcmForegroundService = messaging().onMessage(async remoteMessage => {
+    const onMessageUnsubscribe = messaging().onMessage(async remoteMessage => {
+      // Push-duplication tracing: a repeated messageId means FCM redelivered one
+      // send; different ids mean the server sent several pushes.
+      log.info('[FCM] foreground message', {
+        messageId: remoteMessage?.messageId,
+        sentTime: remoteMessage?.sentTime,
+        title: remoteMessage?.notification?.title,
+        collapseKey: remoteMessage?.collapseKey,
+      });
       if (Platform.OS === 'android') {
         await this.showAndroidLocalNotification(remoteMessage);
       } else {
@@ -51,11 +79,14 @@ class FCMNotification {
     });
 
     // Triggered when have new token
-    messaging().onTokenRefresh(fcmToken => {
-      // console.log('[FCMService] New token refresh ', fcmToken);
+    // Firebase rotates the token on its own (restore, reinstall, expiry). The
+    // server keys delivery on it, so a rotation it never hears about means the
+    // device silently stops receiving pushes.
+    const onTokenRefreshUnsubscribe = messaging().onTokenRefresh(fcmToken => {
+      this.onTokenRefresh?.(fcmToken);
     });
 
-    messaging().onNotificationOpenedApp(remoteMessage => {
+    const onOpenedUnsubscribe = messaging().onNotificationOpenedApp(remoteMessage => {
       onNotificationAction(remoteMessage?.data);
     });
 
@@ -66,18 +97,22 @@ class FCMNotification {
           onNotificationAction(remoteMessage?.data);
         }
       });
+
+    return [onMessageUnsubscribe, onTokenRefreshUnsubscribe, onOpenedUnsubscribe];
   };
 
-  unRegister = () => {
+  unRegister = async () => {
     // PushNotification.unregister() dropped the device registration so the
     // signed-out user stopped receiving pushes. Deleting the FCM token is the
     // equivalent, and it is what the server keys delivery on.
-    messaging()
-      .deleteToken()
-      .catch(err => {
-        log.error('[FCMService] unRegister failed', err);
-      });
+    // Returned so logout can wait for it: a getToken() that runs before the
+    // delete lands reads the old token, which the next login then registers dead.
     notifee.cancelAllNotifications().catch(() => {});
+    try {
+      await messaging().deleteToken();
+    } catch (err) {
+      log.error('[FCMService] unRegister failed', err);
+    }
   };
 
   deleteToken = () => {
@@ -135,6 +170,9 @@ class FCMNotification {
       }, {});
 
       await notifee.displayNotification({
+        // Same FCM message → same notification id, so a second display of one
+        // push replaces the first instead of stacking a duplicate.
+        id: remoteMessage?.messageId,
         title: notification?.title,
         body: notification?.body,
         data: payload,

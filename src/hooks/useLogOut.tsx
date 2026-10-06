@@ -101,6 +101,10 @@ const useLogout = () => {
                 // Never leave refresh suspended, or the next login could not refresh.
                 resumeTokenRefresh();
             }
+            // Before the reset: Splash reads the FCM token on mount, and if the
+            // delete has not landed yet it reads the old one, which the next
+            // login registers and Firebase then rejects — no pushes until reinstall.
+            await attempt("fcmUnregister", () => withTimeout(fcmNotification.unRegister()));
             navigation.dispatch(
                 CommonActions.reset({
                     index: 0,
@@ -113,7 +117,6 @@ const useLogout = () => {
             if (Platform.OS === "android") {
                 await attempt("auth0BrowserSession", () => clearSession());
             }
-            await attempt("fcmUnregister", () => fcmNotification.unRegister());
         }
     };
 

@@ -59,6 +59,9 @@ const OnBoardingService = {
         const data = post(`/api/v1/Notification/DeleteUserToken`, { token: token });
         return data
 
+    },
+    saveFcmToken: async (token: string) => {
+        return post(`/api/v1/Notification/SaveUserToken`, { token })
     }
 
 }
