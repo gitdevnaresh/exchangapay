@@ -62,6 +62,13 @@ import type { CryptoContext } from "./integrityTelemetry";
 export const LEGACY_FORMATS_ENABLED = true;
 
 /**
+ * The agreed date by which LEGACY_FORMATS_ENABLED must be false. A release build
+ * fails past this date while the flag is still true (android/app/build.gradle,
+ * M-08 guard). To extend it, change the date here and record why.
+ */
+export const LEGACY_FORMAT_REMOVAL_DATE = "2026-11-01";
+
+/**
  * `zero-iv` is the weak one: a fixed all-zero IV, so identical plaintext always
  * produced identical ciphertext. `v2-hex` used a random IV but a bespoke
  * `v2:<hex-iv><base64-ct>` envelope that predates the versioned binary header.
