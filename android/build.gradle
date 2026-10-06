@@ -31,8 +31,16 @@ allprojects {
   repositories {
       google()
       mavenCentral()
-      maven { url "https://maven.sumsub.com/repository/maven-public/" }
-      maven { url "https://www.jitpack.io" }
+      // Sumsub's repo may only serve Sumsub artifacts, so a look-alike package
+      // published there can't shadow a Google/Maven Central dependency.
+      exclusiveContent {
+          forRepository {
+              maven { url "https://maven.sumsub.com/repository/maven-public/" }
+          }
+          filter {
+              includeGroupByRegex "com\\.sumsub.*"
+          }
+      }
   }
 }
 
