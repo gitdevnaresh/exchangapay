@@ -9,6 +9,7 @@ import { readRefreshToken } from "../utils/storage/authTokens";
 import OnBoardingService from "../services/onBoardingService";
 import { clearLocalSession } from "../utils/session/clearLocalSession";
 import { log } from "../utils/logger";
+import { suspendTokenRefresh, resumeTokenRefresh } from "../utils/helpers";
 
 
 interface LogoutOptions {
@@ -69,6 +70,9 @@ const useLogout = () => {
     const runLogout = async (options?: LogoutOptions) => {
         const { clearCookies = true } = options || {};
         try {
+            // L-02: first, so a refresh racing logout neither revokes-then-restores
+            // the session nor leaves the rotated refresh token un-revoked.
+            await attempt("suspendTokenRefresh", () => suspendTokenRefresh());
             await attempt("fcmToken", () => withTimeout(OnBoardingService.updateFcmToken()));
             if (userInfo) {
                 await attempt("logoutLog", () => withTimeout(logOutLogData()));
@@ -83,7 +87,12 @@ const useLogout = () => {
             await attempt("auth0Credentials", clearCredentials);
             // Keychain, persisted state, caches, keys, cookies, and every Redux
             // slice — the same wipe the splash screen runs (L-09).
-            await clearLocalSession({ clearCookies });
+            try {
+                await clearLocalSession({ clearCookies });
+            } finally {
+                // Never leave refresh suspended, or the next login could not refresh.
+                resumeTokenRefresh();
+            }
             navigation.dispatch(
                 CommonActions.reset({
                     index: 0,

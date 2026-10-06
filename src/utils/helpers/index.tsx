@@ -541,7 +541,7 @@ const getAuthClient = (): Auth0 => {
  * The expiry is checked before the refresh token is read: a still-valid access
  * token is "ok" on its own, and the refresh token is only needed to replace it.
  */
-const refreshIfNeeded = async (): Promise<TokenRefreshOutcome> => {
+const refreshIfNeeded = async (generation: number): Promise<TokenRefreshOutcome> => {
   try {
     const expiry = await readAccessTokenExpiry();
     if (expiry.status === "empty") {
@@ -574,6 +574,18 @@ const refreshIfNeeded = async (): Promise<TokenRefreshOutcome> => {
       // Handle refresh token rotation: use the new refresh token from the
       // response if it exists, otherwise keep the one we already hold.
       const newRefreshToken = refreshed.refreshToken || refresh.value;
+      if (generation !== sessionGeneration) {
+        // L-02: logout started while this request was out. Storing now would
+        // write a live session back after clearLocalSession wiped it, so the
+        // tokens are dropped and the rotated refresh token is revoked here —
+        // logout only ever saw the old one.
+        if (refreshed.refreshToken && refreshed.refreshToken !== refresh.value) {
+          await getAuthClient()
+            .auth.revoke({ refreshToken: refreshed.refreshToken })
+            .catch(() => log.warn("Could not revoke a refresh token rotated during logout"));
+        }
+        return "no-session";
+      }
       await storeAuthTokens(refreshed.accessToken, newRefreshToken);
     } catch (error: any) {
       // Usually an expired or revoked refresh token. Reported rather than
@@ -597,13 +609,46 @@ const refreshIfNeeded = async (): Promise<TokenRefreshOutcome> => {
  */
 let refreshInFlight: Promise<TokenRefreshOutcome> | null = null;
 
+/**
+ * L-02: logout must not race a refresh. Bumping the generation marks any
+ * in-flight attempt as stale so it cannot store tokens after the wipe, and
+ * `refreshSuspended` stops the timer from starting a new one mid-logout.
+ */
+let sessionGeneration = 0;
+let refreshSuspended = false;
+
 export const checkAndRefreshToken = (): Promise<TokenRefreshOutcome> => {
+  if (refreshSuspended) {
+    return Promise.resolve("no-session");
+  }
   if (!refreshInFlight) {
-    refreshInFlight = refreshIfNeeded().finally(() => {
+    refreshInFlight = refreshIfNeeded(sessionGeneration).finally(() => {
       refreshInFlight = null;
     });
   }
   return refreshInFlight;
+};
+
+/**
+ * Call at the start of logout. Waits (bounded) for an in-flight refresh to
+ * settle, so the refresh token logout reads and revokes is the current one.
+ */
+export const suspendTokenRefresh = async (timeoutMs = 5000): Promise<void> => {
+  refreshSuspended = true;
+  sessionGeneration += 1;
+  const inFlight = refreshInFlight;
+  if (!inFlight) return;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    inFlight.catch(() => undefined),
+    new Promise<void>(resolve => { timer = setTimeout(resolve, timeoutMs); }),
+  ]);
+  if (timer) clearTimeout(timer);
+};
+
+/** Call once logout has wiped the session, so the next login can refresh. */
+export const resumeTokenRefresh = (): void => {
+  refreshSuspended = false;
 };
 
 //Navigation Sliding Animations
