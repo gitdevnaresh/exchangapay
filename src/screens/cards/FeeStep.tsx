@@ -10,7 +10,7 @@ import ParagraphComponent from "../../components/Paragraph/Paragraph";
 import { s } from "../../constants/theme/scale";
 import StepComponent from "../../components/steps/Steps";
 import { commonStyles } from "../../components/CommonStyles";
-import { formatCurrency, isErrorDispaly } from "../../utils/helpers";
+import { formatCurrency, isErrorDispaly, safeServerMessage } from "../../utils/helpers";
 import CardsModuleService from "../../services/card";
 import ErrorComponent from "../../components/Error";
 import { setPersonalInfo } from "../../redux/Actions/UserActions";
@@ -176,10 +176,15 @@ const FeeStep = (props: any) => {
                 setErrormsg('');
             } else {
                 if (res.status === 523) {
-                    if (res.data?.title.indexOf(',') > -1) {
-                        setCustumErrormsg({ isShow: true, errorList: res.data?.title?.split(',') })
+                    // L-06: each server line is shown only if it passes the same filter
+                    // as every other server error message.
+                    const errorList = String(res.data?.title ?? '')
+                        .split(',')
+                        .filter(line => !!safeServerMessage(line));
+                    if (errorList.length > 0) {
+                        setCustumErrormsg({ isShow: true, errorList })
                     } else {
-                        setCustumErrormsg({ isShow: true, errorList: [res.data?.title] })
+                        setErrormsg(isErrorDispaly(undefined));
                     }
 
                 } else {

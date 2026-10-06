@@ -4,7 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useDispatch, useSelector } from 'react-redux';
 import useEncryptDecrypt from '../../hooks/useEncryption_Decryption';
-import { KommoChatAPI } from '../../services/chatService';
+import ChatbotService from './chatbotService';
 import ParagraphComponent from '../../components/Paragraph/Paragraph';
 import { NEW_COLOR } from '../../constants/theme/variables';
 import { s } from '../../constants/theme/scale';
@@ -46,7 +46,6 @@ const ChatImage = ({ uri, style }: { uri: string, style: any }) => {
 
 
 const KommoChatScreen = (props: any) => {
-    const [chatAPI, setChatAPI] = useState(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [inputText, setInputText] = useState<any>('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -76,7 +75,6 @@ const KommoChatScreen = (props: any) => {
     const [inputKey, setInputKey] = useState(0);
     const dispatch = useDispatch();
     const [filePreview, setFilePreview] = useState<{ uri: string, type: string } | null>(null);
-    const api = new KommoChatAPI();
 
     useEffect(() => {
         // initializeChat loads the history once /Chats has answered.
@@ -129,25 +127,32 @@ const KommoChatScreen = (props: any) => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await api.connectChannel();
+            const connectRes: any = await ChatbotService.connectChannel();
+            // A failed response goes to the catch below; a 200 without a
+            // scope_id gives isErrorDispaly's default message there.
+            if (!connectRes?.ok || !connectRes?.data?.scope_id) throw connectRes;
             setIsConnected(true);
-            const chatResponse = await api.createChat();
-            chatIdRef.current = chatResponse?.id || null;
-            setCurrentChatId(chatResponse.id);
-            setChatAPI(api);
+            const chatRes: any = await ChatbotService.createChat({});
+            if (!chatRes?.ok) throw chatRes;
+            chatIdRef.current = chatRes.data?.id || null;
+            setCurrentChatId(chatRes.data?.id || null);
             await getChatHistory();
         } catch (error: any) {
-            setError(error.message);
-            Alert.alert('Connection Error', error.message, [
-                { text: 'Retry', onPress: initializeChat },
-                { text: 'Cancel', onPress: props?.close || props?.onClose }
-            ]);
+            const message = isErrorDispaly(error);
+            setError(message);
+            // No message on 401: isErrorDispaly has started the session-expired flow.
+            if (message) {
+                Alert.alert('Connection Error', message, [
+                    { text: 'Retry', onPress: initializeChat },
+                    { text: 'Cancel', onPress: props?.close || props?.onClose }
+                ]);
+            }
         } finally {
             setIsLoading(false);
         }
     };
     const sendImageMessage = async () => {
-        if (!selectedImage || isSending || !chatAPI || !currentChatId) return;
+        if (!selectedImage || isSending || !isConnected || !currentChatId) return;
         const tempId = Date.now().toString();
         const tempMessage = {
             id: tempId,
@@ -173,9 +178,9 @@ const KommoChatScreen = (props: any) => {
                 media: selectedImage, // Send the public URL to Kommo
             };
             setSelectedImage(null);
-            const result: any = await api.sendUserMessage(messageConfig);
-            if (result?.success) {
-                if (result?.data.new_message && result.data?.new_message.conversation_id) {
+            const result: any = await ChatbotService.sendMessage(messageConfig);
+            if (result?.ok) {
+                if (result?.data?.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id
                             ? {
@@ -194,13 +199,13 @@ const KommoChatScreen = (props: any) => {
             } else {
                 setIsSending(false);
                 setMessages(prev => prev.filter(msg => msg.id !== tempId));
-                setError(isErrorDispaly(result.error));
+                setError(isErrorDispaly(result));
             }
 
         } catch (error: any) {
             setIsSending(false);
             setMessages(prev => prev.filter(msg => msg.id !== tempId));
-            setError(isErrorDispaly(error.message));
+            setError(isErrorDispaly(error));
         }
     };
 
@@ -282,8 +287,8 @@ const KommoChatScreen = (props: any) => {
             // The backend reads the conversation from its own table, so history
             // loads straight after login and nothing is stored on the device.
             if (!chatIdRef.current) return;
-            const chatHistory = await api.sendSignedGetRequest();
-            if (chatHistory?.success) {
+            const chatHistory: any = await ChatbotService.getHistory();
+            if (chatHistory?.ok) {
                 // amojo answers 204 with an empty body when the conversation
                 // has no messages, so `messages` can be missing.
                 const apiMessages = Array.isArray(chatHistory.data?.messages) ? chatHistory.data.messages : [];
@@ -294,16 +299,16 @@ const KommoChatScreen = (props: any) => {
                 setMessages(merged);
                 updateMessageCount();
             } else {
-                setError(isErrorDispaly(chatHistory.error));
+                setError(isErrorDispaly(chatHistory));
                 setMessages([]);
             }
         } catch (error: any) {
-            setError(isErrorDispaly(error.message));
+            setError(isErrorDispaly(error));
         }
     };
 
     const sendMessage = async () => {
-        if (!inputText.trim() || isSending || !chatAPI || !currentChatId) return;
+        if (!inputText.trim() || isSending || !isConnected || !currentChatId) return;
         const messageText = inputText.trim();
         const tempMessage = {
             id: Date.now().toString(),
@@ -323,10 +328,10 @@ const KommoChatScreen = (props: any) => {
             type: 'text'
         }
         try {
-            const result: any = await api.sendUserMessage(messageConfig);
-            if (result?.success) {
+            const result: any = await ChatbotService.sendMessage(messageConfig);
+            if (result?.ok) {
                 setMessages(prev => [...prev, tempMessage]);
-                if (result?.data.new_message && result.data?.new_message.conversation_id) {
+                if (result?.data?.new_message && result.data?.new_message.conversation_id) {
                     setMessages(prev => prev?.map(msg =>
                         msg?.id === tempMessage?.id
                             ? {
@@ -342,11 +347,11 @@ const KommoChatScreen = (props: any) => {
                 trackPending(tempMessage, result);
                 getChatHistory();
             } else {
-                setError(isErrorDispaly(result.error));
+                setError(isErrorDispaly(result));
             }
         } catch (error: any) {
             setInputText(messageText);
-            setError(isErrorDispaly(error.message));
+            setError(isErrorDispaly(error));
         } finally {
             setIsSending(false);
         }

@@ -173,22 +173,54 @@ const ERROR_MESSAGES = {
   TIMEOUT: "This is taking longer than expected. Please check your connection and try again.",
 };
 
+/**
+ * L-06: server text is shown only when it reads like a message written for a
+ * user. Framework output (model-binding errors such as "The JSON value could
+ * not be converted to System.Int32. Path: $.amount | LineNumber: 0", exception
+ * names, stack frames, file paths, HTML error pages) falls back to the generic
+ * message instead of reaching the screen.
+ */
+const INTERNAL_DETAIL = [
+  // Case-sensitive: .NET namespaces, so "a problem with our system." still shows.
+  /\b(?:System|Microsoft|Npgsql)\.[A-Z]/,
+  /exception|stack ?trace|traceback|\bat [\w.$<>]+\(|\bSql|LineNumber|BytePosition|Path: ?\$|\$\.[A-Za-z]|[A-Za-z]:\\|\/(?:src|app|var|usr|home)\/|<\/?[a-z][^<>]*>/i,
+  // Crash text that names no type: common .NET and JavaScript runtime messages.
+  /object reference|null reference|undefined|\bnull\b|Sequence contains|Index was outside|not in a correct format|Nullable object must|does not indicate success|disposed object|is not a function|Cannot read propert/i,
+];
+export const safeServerMessage = (text: unknown): string | undefined => {
+  if (typeof text !== "string") return undefined;
+  const trimmed = text.trim();
+  if (
+    !trimmed ||
+    /[\r\n]/.test(trimmed) ||
+    INTERNAL_DETAIL.some(pattern => pattern.test(trimmed))
+  ) {
+    return undefined;
+  }
+  return trimmed;
+};
+
 const getErrorsMessage = (errors: any) => {
   if (errors && typeof errors === "object") {
+    // Same output as before, minus any line that fails safeServerMessage
+    // (e.g. "$.amount is invalid" or a model-binding error).
     return Object.entries(errors)
-      ?.map(([field, fieldErrors]: [string, any]) =>
-        typeof fieldErrors[0] === "string"
-          ? fieldErrors[0]
-          : `${field} is invalid`
+      .map(([field, fieldErrors]: [string, any]) =>
+        safeServerMessage(
+          typeof fieldErrors?.[0] === "string" ? fieldErrors[0] : `${field} is invalid`
+        )
       )
-      ?.join(",");
+      .filter((message): message is string => !!message)
+      .join(",");
   }
   return "";
 };
 
 export const isErrorDispaly = (errorToDerive: any) => {
   if (typeof errorToDerive === "string") {
-    return errorToDerive;
+    // An empty string still means "no error", as before.
+    if (!errorToDerive.trim()) return errorToDerive;
+    return safeServerMessage(errorToDerive) || ERROR_MESSAGES.DEFAULT;
   }
   if (typeof errorToDerive !== "object") {
     return ERROR_MESSAGES.DEFAULT;
@@ -198,7 +230,7 @@ export const isErrorDispaly = (errorToDerive: any) => {
   }
   const { status, data } = errorToDerive;
   if (status === 400 || data?.status === 400) {
-    return `${ERROR_MESSAGES[400]} ${getErrorsMessage(data.errors)}`;
+    return `${ERROR_MESSAGES[400]} ${getErrorsMessage(data?.errors)}`;
   }
   if (
     status === 409 ||
@@ -206,13 +238,24 @@ export const isErrorDispaly = (errorToDerive: any) => {
     status === 422 ||
     data?.status === 422
   ) {
-    return data.title;
+    // No title stays as before (nothing shown); only an unsafe one is replaced.
+    if (!data?.title) return data?.title;
+    return safeServerMessage(data.title) || ERROR_MESSAGES.DEFAULT;
   }
   if (status === 429 || data?.status === 429) {
-    return data?.message || data?.title || ERROR_MESSAGES[429];
+    return (
+      safeServerMessage(data?.message) ||
+      safeServerMessage(data?.title) ||
+      ERROR_MESSAGES[429]
+    );
   }
   if (status >= 500 || data?.status >= 500) {
-    return `Error ${data?.traceId}: Unable to process your request at the moment. Please try again after some time!`;
+    // Same message as before. A traceId that is not an id is not shown.
+    const traceId =
+      typeof data?.traceId === "string" && !/^[\w.:|-]{1,80}$/.test(data.traceId)
+        ? undefined
+        : data?.traceId;
+    return `Error ${traceId}: Unable to process your request at the moment. Please try again after some time!`;
   }
   if (status === 401) {
     store.dispatch(isSessionExpired(true));
