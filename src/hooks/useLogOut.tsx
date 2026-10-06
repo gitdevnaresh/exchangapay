@@ -91,9 +91,6 @@ const useLogout = () => {
                     }
                 }
             });
-            if (Platform.OS === "android") {
-                await attempt("auth0BrowserSession", () => clearSession());
-            }
         } finally {
             await attempt("auth0Credentials", clearCredentials);
             // Keychain, persisted state, caches, keys, cookies, and every Redux
@@ -110,6 +107,12 @@ const useLogout = () => {
                     routes: [{ name: DRAWER_CONSTATNTS.SPLASH_SCREEN }],
                 })
             );
+            // L-03: clearSession opens a browser tab on Android. Run it only after
+            // the reset, so the tab closes back onto Splash instead of the screen
+            // that started logout (which then flashed before Splash).
+            if (Platform.OS === "android") {
+                await attempt("auth0BrowserSession", () => clearSession());
+            }
             await attempt("fcmUnregister", () => fcmNotification.unRegister());
         }
     };

@@ -115,11 +115,20 @@ const KommoChatScreen = (props: any) => {
         await AsyncStorage.setItem('supportMessageCount', '0');
 
     };
+    // isSending state lags a render, so a return-key submit and a button tap
+    // in the same frame could both pass its check and send twice.
+    const sendLockRef = useRef(false);
     const handleSend = async () => {
-        if (selectedImage) {
-            await sendImageMessage();
-        } else if (inputText.trim()) {
-            await sendMessage();
+        if (sendLockRef.current) return;
+        sendLockRef.current = true;
+        try {
+            if (selectedImage) {
+                await sendImageMessage();
+            } else if (inputText.trim()) {
+                await sendMessage();
+            }
+        } finally {
+            sendLockRef.current = false;
         }
     };
 
@@ -357,12 +366,6 @@ const KommoChatScreen = (props: any) => {
         }
     };
 
-    const handleKeyPress = (e: any) => {
-        if (e.nativeEvent.key === 'Enter') {
-           handleSend();
-        }
-    };
-
 
 
     const renderMessage = ({ item }: { item: any }) => {
@@ -558,9 +561,7 @@ const KommoChatScreen = (props: any) => {
                                 multiline
                                 maxLength={1000}
                                 key={inputKey}
-                                editable={!isSending && !isUploading}
-                                onKeyPress={handleKeyPress}
-                            />
+                                editable={!isSending && !isUploading}                            />
                         </View>
                         <TouchableOpacity
                             onPress={handleSend}
