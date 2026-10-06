@@ -36,9 +36,28 @@
 -dontwarn com.facebook.hermes.**
 
 
+# --- Blanket keeps removed — security finding L-16 --------------------------
+# `-keep class X.** { *; }` kept every class and member of these packages under
+# its real name, which made the auth and keychain code trivial to locate and
+# hook (Frida etc.). Each library already ships the narrow consumer rules it
+# needs inside its AAR, so the blanket keeps only bought readability for an
+# attacker:
+#   Firebase / GMS  — consumer rules in every firebase-* / play-services-* AAR
+#                     (ComponentRegistrar discovery, messaging service).
+#   Auth0           — auth0 AAR keeps its Gson @SerializedName models;
+#                     A0Auth0Module is a NativeModule (kept by RN's rules) and
+#                     AuthenticationActivity is kept via the manifest.
+#   Keychain        — KeychainModule is a NativeModule (kept by RN's rules); the
+#                     cipher classes are never looked up by name or reflection,
+#                     so R8 is free to rename them.
+#   SumSub          — its AAR keeps com.sumsub** names itself
+#                     (-keep,allowshrinking class com.sumsub** { *; }); that is
+#                     the vendor's rule and cannot be overridden from here.
+# If a release build throws ClassNotFoundException / NoSuchMethodException in
+# one of these, add a rule for that one class — never the package again.
+
+
 # --- Firebase (app, messaging, crashlytics) ---------------------------------
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
@@ -49,19 +68,15 @@
 
 
 # --- SumSub KYC SDK ---------------------------------------------------------
-# Heavy reflection + Kotlin serialisation internally; keep it whole.
--keep class com.sumsub.** { *; }
 -dontwarn com.sumsub.**
 
 
 # --- Auth0 ------------------------------------------------------------------
--keep class com.auth0.** { *; }
 -dontwarn com.auth0.**
 
 
 # --- Native modules linked by this app --------------------------------------
 # Each of these crosses the JNI / TurboModule boundary by name.
--keep class com.oblador.keychain.** { *; }
 -keep class com.mrousavy.camera.** { *; }
 -keep class com.margelo.nitro.** { *; }
 -keep class com.swmansion.** { *; }
