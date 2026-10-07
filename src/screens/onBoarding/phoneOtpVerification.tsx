@@ -126,7 +126,6 @@ const PhoneOtpVerification = () => {
                 phoneNumber: encryptAES(phoneNumber),
                 isResendOTP: true,
             };
-            console.log("handleConfirmAndContinue payload", obj);   
             try {
                 if (isResend) setIsResendLoading(true); // start loader
                 const response = await AuthService.getPhoneNumberOtp(obj);
@@ -172,7 +171,6 @@ const PhoneOtpVerification = () => {
                     "phoneNumber": encryptAES(values.phoneNumber),
                     "isChangePhoneNumber": true
                 };
-                console.log("handleConfirmAndContinue verifyPhoneNumberOtp payload", Obj);
                 setResendTimer(60);
                 const response = await AuthService.verifyPhoneNumberOtp(Obj);
                 if (response?.ok) {

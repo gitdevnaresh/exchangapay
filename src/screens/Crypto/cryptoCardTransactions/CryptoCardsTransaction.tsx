@@ -10,12 +10,15 @@ import EXChangaTransactionHistory from './TransactionHistory';
 import EXChangaApplicationRecords from './ApplicationRecords';
 import { commonStyles } from '../../../components/CommonStyles';
 import { useIsFocused } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import NotificationModuleService from '../../../services/notification';
+import { setNotificationCount } from '../../../redux/Actions/UserActions';
 
 const CryptoCardsTransaction = React.memo((props: any) => {
   const styles = useStyleSheet(themedStyles);
   const tabStylescss = useStyleSheet(tabStyles);
   const userInfo = useSelector((state: any) => state.UserReducer?.userInfo);
+  const dispatch=useDispatch();
   const [state, setState] = useState<any>({
     index: 0,
     routes: [
@@ -29,7 +32,7 @@ const CryptoCardsTransaction = React.memo((props: any) => {
     setTimeout(() => {
       setUp(true);
     }, 100);
-
+   getAllNotificationCount();
     return () => {
       _handleIndexChange(0)
       setUp(false)
@@ -48,8 +51,11 @@ const CryptoCardsTransaction = React.memo((props: any) => {
     return () => backHandler.remove();
   }, [])
 
-  const handleGoBack = () => {
-    props.navigation.push('Dashboard', { screen: 'Home' });
+  const getAllNotificationCount = async () => {
+    const res = await NotificationModuleService.getAllNotificationCount();
+    if (res.status === 200) {
+      dispatch(setNotificationCount(res.data));
+    }
   };
 
   const _handleIndexChange = (index: any) => setState({ ...state, index });
