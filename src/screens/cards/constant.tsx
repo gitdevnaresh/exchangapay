@@ -303,6 +303,11 @@ const kycValidationMap: Record<string, Record<string, Yup.AnySchema>> = {
     },
     emergencycontact: {
         emergencyContactName: Yup.string().required('Is required')
+            .matches(/^[a-zA-Z ]*$/, "Emergency contact name must contain only characters")
+            .test('no-whitespace', 'Emergency contact name cannot contain whitespace.', value => {
+                if (!value) return true;
+                return SPACE_NUMBERS_REGEX.test(value);
+            })
             .test('no-emojis', 'Emergency contact name cannot contain emojis.', value => {
                 if (!value) return true;
                 return !EMOJI_REGEX.test(value);
@@ -493,6 +498,7 @@ export const feePhysicalCardApplyValidation = (applyCardsInfo: any) => {
     return Yup.object({
         cardNumber: Yup.string()
             .required("is required")
+            .matches(/^[0-9]*$/, "Card number must contain only numbers")
             .length(16, "Card number must be 16 digits long"),
 
         envelopenumber: applyCardsInfo?.envelopeNoRequired

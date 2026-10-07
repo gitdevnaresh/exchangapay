@@ -41,6 +41,9 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
   }
 
 
+  // NFKC turns ligatures such as "ﬃ" in "Air Crew Oﬃcers" into plain "ffi", so typed text matches.
+  const normalizeSearchText = (text: any) => text?.normalize("NFKC").toLowerCase();
+
   const handleChangeSearch = (e: any) => {
     let value = e;
     if (typeof value === 'string') {
@@ -48,8 +51,9 @@ const Picker = ({ changeModalVisible, data = [], setData, modalTitle, customBind
       setSearchKey(value);
     }
     if (value && typeof value === 'string') {
+      const searchText = normalizeSearchText(value);
       const filterData = data.filter((item: any) => {
-        return (item.name?.toLowerCase().includes(value.toLowerCase()) || item?.code?.toLowerCase().includes(value.toLowerCase()));
+        return (normalizeSearchText(item.name)?.includes(searchText) || normalizeSearchText(item?.code)?.includes(searchText));
       });
       const listData = filterData.map((item: any) => ({
         ...item,

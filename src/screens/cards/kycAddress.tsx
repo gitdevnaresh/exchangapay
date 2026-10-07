@@ -1939,6 +1939,9 @@ const KycAddress: React.FC<KycAddressProps> = ({
           customContainerStyle={{}}
           placeholder={FORM_DATA_PLACEHOLDER.EMERGENCY_CONTACT_NAME}
           component={InputDefault}
+          onChangeText={(value: any) =>
+            handleChangeEmergencyContactName(value, setFieldValue)
+          }
           innerRef={kycDetailsRef.emergencyContactName}
           Children={<LabelComponent text=" *" style={commonStyles.textError} />}
         />
@@ -2049,6 +2052,11 @@ const KycAddress: React.FC<KycAddressProps> = ({
       cleanedText += "." + parts.slice(1).join("");
     }
     setFieldValue("expectedMonthlyVolume", cleanedText);
+  };
+
+  const handleChangeEmergencyContactName = (text: any, setFieldValue: any) => {
+    const nameText = text?.replace(/[^a-zA-Z ]/g, "");
+    setFieldValue("emergencyContactName", nameText);
   };
   const requestCameraPermission = async () => {
     try {

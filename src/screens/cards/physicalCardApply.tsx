@@ -87,6 +87,10 @@ const FeePhysicalCardApply: React.FC<FeePhysicalCardApplyProps> = ({ envelopeNoR
             }));
         }
     };
+    const handleChangeCardNumber = (text: any, setFieldValue: any) => {
+        const numericText = text?.replace(/[^0-9]/g, "");
+        setFieldValue("cardNumber", numericText);
+    };
     return (
 
         <SafeAreaView>
@@ -99,10 +103,12 @@ const FeePhysicalCardApply: React.FC<FeePhysicalCardApplyProps> = ({ envelopeNoR
                     <TextInput
                         style={[styles.inputStyle, commonStyles.flex1, { backgroundColor: loading ? NEW_COLOR.DISABLED_INPUTBG : NEW_COLOR.SCREENBG_WHITE }]}
                         placeholder={"Link Card Number"}
-                        onChangeText={handleChange("cardNumber")}
+                        onChangeText={(value: any) =>
+                            handleChangeCardNumber(value, setFieldValue)
+                        }
                         onBlur={handleBlur("cardNumber")}
                         value={values.cardNumber}
-                        keyboardType={"phone-pad"}
+                        keyboardType={"number-pad"}
                         maxLength={16}
                         placeholderTextColor={NEW_COLOR.PLACEHOLDER_STYLE}
                         multiline={false}

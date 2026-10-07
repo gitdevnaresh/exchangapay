@@ -53,12 +53,13 @@ const DeafultList: React.FC<DeafultListProps> = ({ changeModalVisible, data = []
         if (value) {
             // favoriteName arrives encrypted (it is rendered via decryptAES), so
             // match on the decrypted name and the shown wallet address.
-            const query = value.toLowerCase();
+            // NFKC turns ligatures such as "ﬃ" into plain "ffi", so typed text matches.
+            const query = value.normalize("NFKC").toLowerCase();
             const filtered = data.filter((item: any) =>
                 [
                     item?.favoriteName ? decryptAES(item.favoriteName) : item?.name,
                     item?.walletAddress,
-                ].some((field) => field?.toLowerCase().includes(query))
+                ].some((field) => field?.normalize("NFKC").toLowerCase().includes(query))
             );
             const newList = filtered.map((item: any) => ({
                 ...item,
