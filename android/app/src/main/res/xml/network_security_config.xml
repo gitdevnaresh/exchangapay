@@ -45,7 +45,7 @@
   trusting this comment to stay current.
 
   In short, the obsolete development, Azure and Suissebase hosts were removed from the
-  app configuration. Auth0 and Sumsub are pinned at root level in the second
+  app configuration. Auth0 and every Sumsub SDK host are pinned at root level in the second
   domain-config below. Sentry and CoinGecko remain exempt third-party services;
   their documented exemptions are reviewed in security/pinning-policy.json.
 
@@ -110,6 +110,8 @@
     <domain includeSubdomains="false">exchangapay.eu.auth0.com</domain>
     <domain includeSubdomains="false">exchangapay-tst.eu.auth0.com</domain>
     <domain includeSubdomains="false">api.sumsub.com</domain>
+    <domain includeSubdomains="false">static.sumsub.com</domain>
+    <domain includeSubdomains="false">sentry.sumsub.com</domain>
     <pin-set expiration="2027-06-01">
       <!-- Let's Encrypt: ISRG Root X1 (RSA), ISRG Root X2 (ECDSA), Root YE (2025 gen) -->
       <pin digest="SHA-256">C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=</pin>

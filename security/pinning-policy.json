@@ -95,7 +95,13 @@
       "vendor moves to a CA outside this list, iOS login/KYC fails CLOSED until a",
       "release — re-run ./scripts/compute-spki-pins.sh <host> at every reviewBy."
     ],
-    "hosts": ["exchangapay.eu.auth0.com", "exchangapay-tst.eu.auth0.com", "api.sumsub.com"],
+    "hosts": [
+      "exchangapay.eu.auth0.com",
+      "exchangapay-tst.eu.auth0.com",
+      "api.sumsub.com",
+      "static.sumsub.com",
+      "sentry.sumsub.com"
+    ],
     "pins": {
       "ISRG Root X1": "C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=",
       "ISRG Root X2": "diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=",
@@ -113,6 +119,30 @@
         "api.sumsub.com: leaf CN=sumsub.com -> GTS WE1 -> GTS Root R4. GTS Root R4 SPKI matches the pin.",
         "The remaining root hashes were computed from the macOS system root store."
       ]
+    },
+    "sdkNetworking": {
+      "_comment": [
+        "M-19 — only api.sumsub.com was pinned; whether the rest of the SDK's traffic",
+        "was covered had never been checked. Re-do this at every Sumsub SDK upgrade:",
+        "the host list below comes from the binaries, not from Sumsub's docs."
+      ],
+      "sdkVersion": "1.45.1",
+      "verified": "2026-10-08",
+      "method": "URL and TLS-API strings extracted from idensic-mobile-sdk-1.45.1.aar (classes.jar) and IdensicMobileSDK.xcframework/ios-arm64; live chains fetched with openssl s_client.",
+      "hosts": {
+        "api.sumsub.com": "REST API and the liveness websocket (wss://<baseUrl>/ws/liveness). Both platforms.",
+        "static.sumsub.com": "CDN for SDK assets. Both platforms.",
+        "sentry.sumsub.com": "The SDK's own bundled Sentry client (com.sumsub.sentry). Android only; pinned on iOS too so the platform parity guard holds."
+      },
+      "notReached": "dev-in.sumsub.com and test-api.sumsub.com appear in the SDK but are only used with withBaseUrl()/onTestEnv(); src/components/sumsub.tsx calls neither.",
+      "chains": "All three hosts resolve to the same Cloudflare edge and serve the same CN=sumsub.com leaf -> GTS WE1 -> GTS Root R4. Covered by the existing GTS Root R4 pin; no new pin was needed.",
+      "android": "Covered in full. The SDK ships no X509TrustManager, HostnameVerifier, CertificatePinner or custom SSLSocketFactory; it uses plain OkHttp (REST and websocket), which honours network_security_config.xml. No WebRTC native library is bundled, because videoident is not included.",
+      "ios": "The REST API and the default websocket (SNSNativeWebSocket, URLSessionWebSocketTask) use URLSession, so ATS NSPinnedDomains applies.",
+      "residualRisk": [
+        "iOS: the SDK also contains a legacy websocket (SNSLegacyWebSocket -> SNSJFRWebSocket, a vendored Jetfire fork on CFStreamCreatePairWithSocketToHost). CFStream is outside ATS, so NSPinnedDomains does NOT cover it, and it trusts user-installed CA profiles. Liveness frames would go over it if Sumsub turns on the server-side flag 'iosLegacyWebSockets'. Only Sumsub can set that flag. Ask them to confirm it is off for our client and stays off.",
+        "iOS: the SDK implements URLSession:didReceiveChallenge: and calls SecTrustEvaluate itself. ATS pinning should still be enforced before the delegate runs. Confirm on a device, not from this file."
+      ],
+      "runtimeCheck": "On a test device, install a user CA (mitmproxy/Charles), route traffic through the proxy, and run a full KYC flow including liveness. Expected: every *.sumsub.com connection fails the TLS handshake on both platforms, and no *.sumsub.com host appears in the proxy log with decrypted content."
     },
     "owner": "mobile-platform",
     "reviewBy": "2027-04-01"

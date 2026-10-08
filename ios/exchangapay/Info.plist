@@ -259,6 +259,90 @@
 					</dict>
 				</array>
 			</dict>
+			<!-- M-19 — the Sumsub SDK reaches more than its API: static.sumsub.com
+			     (CDN assets, iOS and Android) and sentry.sumsub.com (its bundled crash
+			     reporter, Android only, listed here for the parity guard). Same edge,
+			     cert and GTS Root R4 chain as api.sumsub.com, so the same eight roots. -->
+			<key>static.sumsub.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+				<key>NSPinnedCAIdentities</key>
+				<array>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</string>
+					</dict>
+				</array>
+			</dict>
+			<key>sentry.sumsub.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+				<key>NSPinnedCAIdentities</key>
+				<array>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</string>
+					</dict>
+					<dict>
+						<key>SPKI-SHA256-BASE64</key>
+						<string>i7WTqTvh0OioIruIfFR4kMPnBqrS2rdiVPl/s2uC/CY=</string>
+					</dict>
+				</array>
+			</dict>
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
