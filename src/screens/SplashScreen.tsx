@@ -33,7 +33,7 @@ import LockedModal from "../components/LockedModal";
 import { getAllEnvData } from "../../Environment";
 import useMemberLogin from "../hooks/useMemberLogin";
 import useChekBio from "../hooks/useCheckBio";
-import { checkAndRefreshToken, storeToken } from "../utils/helpers";
+import { checkAndRefreshToken, flushPendingRevokes, storeToken } from "../utils/helpers";
 import {
   isTransientTokenFailure,
   readAccessToken,
@@ -71,6 +71,8 @@ const SplashScreen = React.memo(() => {
   useEffect(() => {
     const initializeAuth = async () => {
       if (isInitialized) return;
+      // L-03: retry revokes an offline logout could not complete.
+      flushPendingRevokes();
       // Hold login until the device passes the root/jailbreak check.
       const integrity = await initializeDeviceIntegrity();
       if (isEnforcementEnabled() && isDeviceCompromised(integrity)) return;

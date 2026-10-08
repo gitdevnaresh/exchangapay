@@ -8,11 +8,8 @@ import {
   useNavigation,
   useNavigationState,
 } from "@react-navigation/native";
-import {
-  isLogin,
-  isSessionExpired,
-  setUserInfo,
-} from "../redux/Actions/UserActions";
+import { isLogin, setUserInfo } from "../redux/Actions/UserActions";
+import { reportSessionExpired } from "../utils/helpers";
 import crashlytics from "@react-native-firebase/crashlytics";
 import messaging from "@react-native-firebase/messaging";
 import { log } from "../utils/logger";
@@ -205,7 +202,7 @@ const useMemberLogin = () => {
           }
         }
       } else if (userLoginInfo?.status === 401) {
-        dispatch(isSessionExpired(true));
+        reportSessionExpired();
         return;
       } else {
         navigation.navigate("SomethingWentWrong");

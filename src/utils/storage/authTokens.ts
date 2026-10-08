@@ -29,6 +29,7 @@ import { jwtDecode } from "jwt-decode";
 import { log } from "../logger";
 import {
   KEYCHAIN_SERVICES,
+  PENDING_REVOKE_SERVICE,
   readSecret,
   REFRESH_TOKEN_WRITE_OPTIONS,
   resetSecret,
@@ -175,6 +176,45 @@ export const readRefreshToken = async (): Promise<TokenRead<string>> => {
   }
 
   return { status: "ok", value: legacyToken };
+};
+
+/**
+ * VAPT L-03: refresh tokens whose revoke did not reach Auth0 at logout.
+ * Retried by flushPendingRevokes (helpers) until Auth0 confirms each one.
+ * A few logouts in a row while offline is the realistic worst case.
+ */
+const MAX_PENDING_REVOKES = 5;
+
+/** Queued tokens. A locked or unreadable entry reads as empty: retry later. */
+export const readPendingRevokes = async (): Promise<string[]> => {
+  const result = await readSecret(PENDING_REVOKE_SERVICE);
+  if (result.status !== "ok" || !result.value) return [];
+  try {
+    const parsed = JSON.parse(result.value);
+    return Array.isArray(parsed) ? parsed.filter((t) => typeof t === "string" && t) : [];
+  } catch {
+    return [];
+  }
+};
+
+/** Replace the queue; an empty list deletes the entry. */
+export const writePendingRevokes = async (tokens: string[]): Promise<void> => {
+  if (!tokens.length) {
+    await resetSecret(PENDING_REVOKE_SERVICE);
+    return;
+  }
+  await writeSecret(
+    PENDING_REVOKE_SERVICE,
+    "pendingRevoke",
+    JSON.stringify(tokens.slice(-MAX_PENDING_REVOKES)),
+    REFRESH_TOKEN_WRITE_OPTIONS
+  );
+};
+
+export const queueRefreshTokenRevoke = async (refreshToken: string): Promise<void> => {
+  const pending = await readPendingRevokes();
+  if (pending.includes(refreshToken)) return;
+  await writePendingRevokes([...pending, refreshToken]);
 };
 
 /** Drop both token entries. Used by the sign-out paths. */

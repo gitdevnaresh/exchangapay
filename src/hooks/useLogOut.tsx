@@ -1,16 +1,16 @@
-import { Platform } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useAuth0 } from "react-native-auth0";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import DeviceInfo from "react-native-device-info";
 import AuthService from "../services/auth";
 import { fcmNotification } from "../utils/FCMNotification";
 import { DRAWER_CONSTATNTS } from "../screens/AccountDashboard/constants";
-import { readRefreshToken } from "../utils/storage/authTokens";
+import { queueRefreshTokenRevoke, readRefreshToken } from "../utils/storage/authTokens";
 import OnBoardingService from "../services/onBoardingService";
 import { clearLocalSession } from "../utils/session/clearLocalSession";
 import { log } from "../utils/logger";
-import { suspendTokenRefresh, resumeTokenRefresh } from "../utils/helpers";
+import { suspendTokenRefresh, resumeTokenRefresh, setLogoutInProgress } from "../utils/helpers";
+import { isSessionExpired } from "../redux/Actions/UserActions";
 
 
 interface LogoutOptions {
@@ -42,8 +42,9 @@ const attempt = async (label: string, work: () => Promise<unknown> | unknown) =>
 let logoutInFlight: Promise<void> | null = null;
 
 const useLogout = () => {
-    const { clearCredentials, clearSession, revokeRefreshToken } = useAuth0();
+    const { clearCredentials, revokeRefreshToken } = useAuth0();
     const navigation = useNavigation<any>();
+    const dispatch = useDispatch();
     const { userInfo } = useSelector((state: any) => state.UserReducer);
 
     const logOutLogData = async () => {
@@ -61,7 +62,12 @@ const useLogout = () => {
 
     const logout = (options?: LogoutOptions): Promise<void> => {
         if (!logoutInFlight) {
+            setLogoutInProgress(true);
             logoutInFlight = runLogout(options).finally(() => {
+                // A 401 that slipped in before the flag was set must not
+                // reopen the popup over Splash.
+                dispatch(isSessionExpired(false));
+                setLogoutInProgress(false);
                 logoutInFlight = null;
             });
         }
@@ -87,7 +93,10 @@ const useLogout = () => {
                     try {
                         await withTimeout(revokeRefreshToken({ refreshToken: value }));
                     } catch (error) {
-                        log.error("[logout] refresh token could not be revoked; it stays valid at Auth0 until it expires", error);
+                        // L-03: queued and retried on next start / reconnect
+                        // (flushPendingRevokes) until Auth0 confirms the revoke.
+                        log.error("[logout] refresh token revoke failed; queued for retry", error);
+                        await queueRefreshTokenRevoke(value);
                     }
                 }
             });
@@ -111,12 +120,6 @@ const useLogout = () => {
                     routes: [{ name: DRAWER_CONSTATNTS.SPLASH_SCREEN }],
                 })
             );
-            // L-03: clearSession opens a browser tab on Android. Run it only after
-            // the reset, so the tab closes back onto Splash instead of the screen
-            // that started logout (which then flashed before Splash).
-            if (Platform.OS === "android") {
-                await attempt("auth0BrowserSession", () => clearSession());
-            }
         }
     };
 

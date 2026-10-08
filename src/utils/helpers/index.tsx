@@ -10,8 +10,10 @@ import { isValidAddressForNetwork } from "../cryptoAddress";
 import {
   readAccessToken,
   readAccessTokenExpiry,
+  readPendingRevokes,
   readRefreshToken,
   storeAuthTokens,
+  writePendingRevokes,
 } from "../storage/authTokens";
 declare const global: any;
 if (typeof global.atob === "undefined") {
@@ -258,7 +260,7 @@ export const isErrorDispaly = (errorToDerive: any) => {
     return `Error ${traceId}: Unable to process your request at the moment. Please try again after some time!`;
   }
   if (status === 401) {
-    store.dispatch(isSessionExpired(true));
+    reportSessionExpired();
     return;
   }
   return (
@@ -692,6 +694,72 @@ export const suspendTokenRefresh = async (timeoutMs = 5000): Promise<void> => {
 /** Call once logout has wiped the session, so the next login can refresh. */
 export const resumeTokenRefresh = (): void => {
   refreshSuspended = false;
+};
+
+/**
+ * VAPT L-03: revokes the refresh tokens logout queued because Auth0 could not
+ * be reached then. Run on app start and when the network comes back. A token
+ * stays queued only while Auth0 is unreachable; an answer from Auth0 (success,
+ * or a 4xx meaning the token is already dead) removes it.
+ */
+let revokeFlushInFlight: Promise<void> | null = null;
+
+export const flushPendingRevokes = (): Promise<void> => {
+  if (!revokeFlushInFlight) {
+    revokeFlushInFlight = runRevokeFlush().finally(() => {
+      revokeFlushInFlight = null;
+    });
+  }
+  return revokeFlushInFlight;
+};
+
+const runRevokeFlush = async (): Promise<void> => {
+  try {
+    const pending = await readPendingRevokes();
+    if (!pending.length) return;
+    const remaining: string[] = [];
+    for (const refreshToken of pending) {
+      try {
+        await getAuthClient().auth.revoke({ refreshToken });
+      } catch (error: any) {
+        const status = Number(error?.status);
+        if (!(status >= 400 && status < 500)) remaining.push(refreshToken);
+      }
+    }
+    // A logout can queue a token while this runs; keep anything added meanwhile.
+    const latest = await readPendingRevokes();
+    const added = latest.filter((token) => !pending.includes(token));
+    await writePendingRevokes([...remaining, ...added]);
+    if (remaining.length) {
+      log.warn("[logout] queued refresh-token revoke still pending", { count: remaining.length });
+    }
+  } catch {
+    log.warn("[logout] queued refresh-token revoke could not run");
+  }
+};
+
+/**
+ * Set for the whole logout run. Logout wipes the Keychain while the dashboard
+ * is still mounted, so requests already in flight (or started by a focus/poll
+ * effect) go out with no bearer and come back 401. Those are not an expired
+ * session, and must not raise the "Session Expired" popup over Splash.
+ */
+let logoutInProgress = false;
+
+export const setLogoutInProgress = (value: boolean): void => {
+  logoutInProgress = value;
+};
+
+/**
+ * The one place a 401 raises the "Session Expired" popup. Skipped while
+ * logging out, and when there is no access token at all: that user is
+ * signed out, not expired.
+ */
+export const reportSessionExpired = async (): Promise<void> => {
+  if (logoutInProgress) return;
+  const { status } = await readAccessToken();
+  if (status === "empty" || logoutInProgress) return;
+  store.dispatch(isSessionExpired(true));
 };
 
 //Navigation Sliding Animations

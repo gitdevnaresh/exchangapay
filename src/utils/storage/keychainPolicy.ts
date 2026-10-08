@@ -72,6 +72,13 @@ export const KEYCHAIN_SERVICES = {
 export type KeychainService =
   (typeof KEYCHAIN_SERVICES)[keyof typeof KEYCHAIN_SERVICES];
 
+/**
+ * VAPT L-03: refresh tokens logout could not revoke (offline, timeout), kept
+ * until Auth0 confirms the revoke. Deliberately NOT in KEYCHAIN_SERVICES:
+ * logout's wipe must not drop the queue it has just written.
+ */
+export const PENDING_REVOKE_SERVICE = "exchangapay.pendingRevoke.v1";
+
 /** Everything logout must clear. Order does not matter; all are independent. */
 export const ALL_KEYCHAIN_SERVICES: ReadonlyArray<string> =
   Object.values(KEYCHAIN_SERVICES);

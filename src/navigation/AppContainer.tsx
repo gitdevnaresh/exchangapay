@@ -91,7 +91,7 @@ import EmailOtpVerification from "../screens/Addressbook/payeeEmailVerification"
 import CompleteKyc from "../screens/onBoarding/CompleteKyc";
 import SessionExpired from "../components/secessionExpired";
 import { isSetIpInfo } from "../redux/Actions/UserActions";
-import { getAnimationForRoute } from "../utils/helpers";
+import { flushPendingRevokes, getAnimationForRoute } from "../utils/helpers";
 import AddressDetails from "../screens/Profile/accountInformation/addressView";
 import SuspectedFraud from "../screens/onBoarding/suspectedFraud";
 enableScreens();
@@ -110,6 +110,8 @@ const AppContainer = () => {
         getIpAddress();
       } else {
         setIsConnected(false);
+        // L-03: back online, so retry revokes an offline logout queued.
+        flushPendingRevokes();
       }
     } else {
       setIsConnected(false);
